@@ -1,0 +1,75 @@
+name: kawalo_mobile
+description: "A new Flutter project built with Feature-First and Clean Architecture."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  cached_network_image: ^4.0.0
+  camera: ^0.12.1
+  connectivity_plus: ^7.3.1
+  crypto: ^3.0.7
+  dart_jsonwebtoken: ^3.4.1
+  dio: ^5.11.1
+  equatable: ^2.0.5
+  file_picker: ^13.1.0
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_dotenv: ^6.0.1
+  flutter_localizations:
+    sdk: flutter
+  flutter_map: ^8.2.2
+  flutter_secure_storage: ^11.1.1
+  flutter_svg: ^2.0.10
+  fpdart: ^1.1.0
+  geolocator: ^14.1.1
+  google_fonts: ^9.0.0
+  image: ^4.12.0
+  image_picker: ^1.2.4
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.2
+  jailbreak_root_detection: ^1.2.3
+  latlong2: ^0.10.1
+  material_3_expressive: ^1.1.2
+  material_ui: ^1.2.0
+  package_info_plus: ^10.2.1
+  path_provider: ^2.1.6
+  screen_brightness: ^2.1.11
+  sensors_plus: ^7.1.1
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  bloc_test: ^10.0.0
+  build_runner: ^2.15.1
+  flutter_launcher_icons: ^0.14.4
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  isar_community_generator: ^3.3.2
+  mocktail: ^1.0.3
+  very_good_analysis: ^11.0.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  # Konfigurasi untuk iOS & Android versi lama menggunakan PNG utama
+  image_path: "assets/logos/launcher.png"
+
+  # Konfigurasi Adaptive Icon khusus Android modern
+  adaptive_icon_background: "#F3FCF1"
+  adaptive_icon_foreground: "assets/logos/launcher_foreground.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/color/
+    - assets/icons/vector/
+    - assets/logos/
+    - assets/illustrations/
+    - assets/emojis/color/
+    - assets/emojis/metadata.json

@@ -1,0 +1,296 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
+import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
+import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
+import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_params.dart';
+import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_usecase.dart';
+import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_params.dart';
+import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_usecase.dart';
+import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_params.dart';
+import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_usecase.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
+
+class PttCubit extends Cubit<PttState> {
+  PttCubit({
+    required this.joinChannelUseCase,
+    required this.startTransmissionUseCase,
+    required this.stopTransmissionUseCase,
+    required this.repository,
+  }) : super(const PttInitial()) {
+    _initStreamSubscriptions();
+  }
+
+  final JoinChannelUseCase joinChannelUseCase;
+  final StartTransmissionUseCase startTransmissionUseCase;
+  final StopTransmissionUseCase stopTransmissionUseCase;
+  final PttRepository repository;
+
+  StreamSubscription<PttFloorStateEntity>? _floorSubscription;
+  StreamSubscription<PttConnectionStatus>? _connectionSubscription;
+  StreamSubscription<int>? _memberCountSubscription;
+  StreamSubscription<Map<String, dynamic>>? _transmissionSubscription;
+
+  void _initStreamSubscriptions() {
+    _floorSubscription = repository.watchFloorState().listen((floorState) {
+      final currentChannel = state.channel.copyWith(
+        memberCount: floorState.memberCount,
+      );
+
+      if (floorState.isOccupied) {
+        // Jika pembicara aktif adalah orang lain dan kita tidak
+        // sedang mentransmisi atau sedang meminta floor
+        if (state is! PttTransmitting && state is! PttRequestingFloor) {
+          emit(
+            PttListening(
+              channel: currentChannel,
+              floorState: floorState,
+            ),
+          );
+        }
+      } else {
+        // Channel IDLE
+        if (state is! PttRequestingFloor && state is! PttTransmitting) {
+          emit(
+            PttIdle(
+              channel: currentChannel,
+              floorState: floorState,
+            ),
+          );
+        }
+      }
+    });
+
+    _connectionSubscription =
+        repository.watchConnectionStatus().listen((connectionStatus) {
+      final updatedChannel = state.channel.copyWith(
+        connectionStatus: connectionStatus,
+      );
+
+      switch (connectionStatus) {
+        case PttConnectionStatus.connecting:
+          emit(
+            PttConnecting(
+              channel: updatedChannel,
+              floorState: state.floorState,
+            ),
+          );
+        case PttConnectionStatus.connected:
+          if (state is! PttTransmitting && state is! PttListening) {
+            emit(
+              PttIdle(
+                channel: updatedChannel,
+                floorState: state.floorState,
+              ),
+            );
+          }
+        case PttConnectionStatus.reconnecting:
+          emit(
+            PttReconnecting(
+              channel: updatedChannel,
+              floorState: state.floorState,
+            ),
+          );
+        case PttConnectionStatus.disconnected:
+          emit(
+            PttDisconnected(
+              channel: updatedChannel,
+              floorState: state.floorState,
+            ),
+          );
+      }
+    });
+
+    _memberCountSubscription =
+        repository.watchMemberCount().listen((memberCount) {
+      final updatedChannel = state.channel.copyWith(memberCount: memberCount);
+      final updatedFloor = PttFloorStateEntity(
+        status: state.floorState.status,
+        speaker: state.floorState.speaker,
+        memberCount: memberCount,
+      );
+
+      if (state is PttIdle) {
+        emit(PttIdle(channel: updatedChannel, floorState: updatedFloor));
+      } else if (state is PttListening) {
+        emit(
+          PttListening(
+            channel: updatedChannel,
+            floorState: updatedFloor,
+            preemptedBy: (state as PttListening).preemptedBy,
+          ),
+        );
+      } else if (state is PttTransmitting) {
+        emit(
+          PttTransmitting(
+            channel: updatedChannel,
+            floorState: updatedFloor,
+            leaseTtlMs: (state as PttTransmitting).leaseTtlMs,
+          ),
+        );
+      }
+    });
+
+    _transmissionSubscription =
+        repository.watchTransmissionEvents().listen((event) {
+      final eventState = event['state']?.toString().toUpperCase();
+
+      if (eventState == 'GRANTED') {
+        final leaseTtlMs = (event['leaseTtlMs'] as num?)?.toInt() ?? 2000;
+        emit(
+          PttTransmitting(
+            channel: state.channel,
+            floorState: state.floorState,
+            leaseTtlMs: leaseTtlMs,
+          ),
+        );
+      } else if (eventState == 'DENIED') {
+        final reason = event['reason']?.toString() ?? 'CHANNEL_BUSY';
+        emit(
+          PttFloorDenied(
+            channel: state.channel,
+            floorState: state.floorState,
+            reason: reason,
+          ),
+        );
+      } else if (eventState == 'REVOKED') {
+        final preemptedBy = event['preemptedBy']?.toString();
+        emit(
+          PttListening(
+            channel: state.channel,
+            floorState: state.floorState,
+            preemptedBy: preemptedBy,
+          ),
+        );
+      }
+    });
+  }
+
+  /// Bergabung ke saluran PTT grup dengan kredensial aktif.
+  Future<void> joinChannel({
+    required String channelUrl,
+    required String groupUid,
+    required String token,
+  }) async {
+    emit(
+      PttConnecting(
+        channel: PttChannelEntity(
+          groupUid: groupUid,
+          connectionStatus: PttConnectionStatus.connecting,
+        ),
+        floorState: state.floorState,
+      ),
+    );
+
+    final result = await joinChannelUseCase(
+      JoinChannelParams(
+        channelUrl: channelUrl,
+        groupUid: groupUid,
+        token: token,
+      ),
+    );
+
+    result.fold(
+      (failure) {
+        emit(
+          PttDisconnected(
+            channel: state.channel.copyWith(
+              connectionStatus: PttConnectionStatus.disconnected,
+            ),
+            floorState: state.floorState,
+            errorMessage: failure.message,
+          ),
+        );
+      },
+      (_) {},
+    );
+  }
+
+  /// Keluar dari saluran PTT dan hentikan background service.
+  Future<void> leaveChannel() async {
+    await repository.leaveChannel();
+    emit(const PttInitial());
+  }
+
+  /// Memeriksa dan meminta izin mikrofon jika belum diberikan.
+  Future<bool> checkAndRequestMicrophonePermission() async {
+    final hasPermission = await repository.hasRecordAudioPermission();
+    if (!hasPermission) {
+      return await repository.requestRecordAudioPermission();
+    }
+    return true;
+  }
+
+  /// Aksi saat tombol PTT ditekan (Touch Down / Hardware Key Down).
+  Future<void> pressPttButton() async {
+    // Abaikan jika sedang mentransmisi atau sedang menunggu response
+    if (state is PttTransmitting || state is PttRequestingFloor) return;
+
+    final hasPermission = await repository.hasRecordAudioPermission();
+    if (!hasPermission) {
+      final granted = await repository.requestRecordAudioPermission();
+      if (!granted) {
+        emit(
+          PttFloorDenied(
+            channel: state.channel,
+            floorState: state.floorState,
+            reason: 'PERMISSION_DENIED',
+          ),
+        );
+        return;
+      }
+    }
+
+    final requestId = 'req_${DateTime.now().millisecondsSinceEpoch}';
+    emit(
+      PttRequestingFloor(
+        channel: state.channel,
+        floorState: state.floorState,
+        requestId: requestId,
+      ),
+    );
+
+    final result = await startTransmissionUseCase(
+      StartTransmissionParams(requestId: requestId),
+    );
+
+    result.fold(
+      (failure) {
+        emit(
+          PttFloorDenied(
+            channel: state.channel,
+            floorState: state.floorState,
+            reason: failure.message,
+          ),
+        );
+      },
+      (_) {},
+    );
+  }
+
+  /// Aksi saat tombol PTT dilepas (Touch Up / Hardware Key Up).
+  Future<void> releasePttButton() async {
+    // Selalu kirim stop transmission untuk menjamin mikrofon native
+    // berhenti dan server melepaskan floor terlepas dari state UI apapun
+    await stopTransmissionUseCase(const StopTransmissionParams());
+
+    if (state is PttTransmitting || state is PttRequestingFloor) {
+      emit(
+        PttIdle(
+          channel: state.channel,
+          floorState: const PttFloorStateEntity.idle(),
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _floorSubscription?.cancel();
+    _connectionSubscription?.cancel();
+    _memberCountSubscription?.cancel();
+    _transmissionSubscription?.cancel();
+    return super.close();
+  }
+}

@@ -1,0 +1,13 @@
+# Contoh konfigurasi penandatanganan rilis Android (Release Keystore)
+#
+# PANDUAN PENGGUNAAN:
+# 1. Salin berkas ini menjadi "key.properties" di folder android/
+# 2. Letakkan berkas keystore rilis Anda (misal: upload-keystore.jks) di folder android/app/
+# 3. Isi nilai properti di bawah ini sesuai informasi keystore Anda.
+# 4. Berkas key.properties asli dan *.keystore sudah diabaikan oleh .gitignore
+#    sehingga AMAN dan tidak akan ter-commit ke repositori Git.
+
+keyAlias=kawalo_release_key
+keyPassword=your_key_password_here
+storeFile=app/upload-keystore.jks
+storePassword=your_keystore_password_here

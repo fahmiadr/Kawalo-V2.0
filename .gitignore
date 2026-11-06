@@ -1,0 +1,177 @@
+# ==============================================================================
+# Gitignore untuk Kawalo Mobile (Flutter Android & iOS)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment & Secrets (Opsi B: --dart-define-from-file)
+# ------------------------------------------------------------------------------
+# Abaikan seluruh file .env aktif dan variannya
+.env*
+# Pengecualian: Lacak template contoh untuk pengembang baru
+!.env*.example
+!.env.example
+
+# Kunci, Keystore & Sertifikat Android/iOS
+key.properties
+**/android/key.properties
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.cer
+*.crt
+
+# ------------------------------------------------------------------------------
+# 2. Database & Data Dumps
+# ------------------------------------------------------------------------------
+# Mencegah dump database lokal (misal: data.sql phpMyAdmin) masuk ke repo
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# ------------------------------------------------------------------------------
+# 3. Flutter, Dart & Pub Artifacts
+# ------------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+*.lcov
+lcov.info
+
+# Symbolication & Obfuscation (BUILD_GUIDE.md)
+app.*.symbols
+app.*.map.json
+build/symbols/
+**/symbols/
+
+# Widget Preview Tooling
+.widget_preview/
+
+# ------------------------------------------------------------------------------
+# 4. Android Platform Artifacts
+# ------------------------------------------------------------------------------
+**/android/.gradle/
+**/android/.kotlin/
+**/android/local.properties
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/build/
+**/android/.cxx/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/wrapper/gradle-wrapper.jar
+GeneratedPluginRegistrant.java
+
+# Android binaries
+*.apk
+*.ap_
+*.aab
+*.dex
+
+# ------------------------------------------------------------------------------
+# 5. iOS Platform & Xcode Artifacts
+# ------------------------------------------------------------------------------
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/flutter_native_integration.env
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/DerivedData/
+**/DerivedData/
+xcuserdata/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+ServiceDefinitions.json
+
+# ------------------------------------------------------------------------------
+# 6. IDEs & Editors
+# ------------------------------------------------------------------------------
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code (Berbagi launch configurations tim, abaikan workspace & cache lokal)
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+*.code-workspace
+
+# Editor lainnya
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# ------------------------------------------------------------------------------
+# 7. Operating System Artifacts
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ------------------------------------------------------------------------------
+# 8. Temporary & Log Files
+# ------------------------------------------------------------------------------
+*.log
+*.class
+*.pyc
+*.swp
+*.swo
+*.bak
+*.tmp
+*.temp
+.history
+.svn/
+.atom/
+.build/
+.buildlog/
+migrate_working_dir/

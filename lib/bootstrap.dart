@@ -1,0 +1,33 @@
+import 'package:flutter/material.dart';
+import 'package:kawalo_mobile/core/config/env_config.dart';
+import 'package:kawalo_mobile/core/config/environment.dart';
+import 'package:kawalo_mobile/core/security/device_integrity_service.dart';
+import 'package:kawalo_mobile/core/storage/isar_database.dart';
+import 'package:kawalo_mobile/core/theme/app_layout.dart';
+import 'package:kawalo_mobile/main.dart';
+
+/// Runner sentral untuk bootstrapping aplikasi Kawalo Mobile lintas
+/// environment.
+///
+/// Menginisialisasi:
+/// 1. Orientasi layar portrait terpadu
+///    ([AppLayout.applyPreferredOrientations]).
+/// 2. Konfigurasi environment dan guardrails keamanan ([EnvConfig.init]).
+/// 3. Validasi integritas perangkat terhadap root/jailbreak & tampering
+///    ([DeviceIntegrityService.checkIntegrity]).
+/// 4. Engine penyimpanan lokal [IsarDatabase.init].
+/// 5. Root widget aplikasi [MyApp].
+Future<void> bootstrap(AppEnvironment env) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppLayout.applyPreferredOrientations();
+  await EnvConfig.init(env);
+
+  final violation = await DeviceIntegrityService.checkIntegrity();
+  if (violation != null) {
+    runApp(MyApp(securityViolation: violation));
+    return;
+  }
+
+  final isar = await IsarDatabase.init();
+  runApp(MyApp(isar: isar));
+}
