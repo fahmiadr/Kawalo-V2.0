@@ -39,7 +39,6 @@ enum AppActionableErrorThemeMode {
 /// ```
 @immutable
 class AppActionableErrorData extends Equatable {
-  /// Membuat instance [AppActionableErrorData].
   const AppActionableErrorData({
     required this.title,
     required this.message,

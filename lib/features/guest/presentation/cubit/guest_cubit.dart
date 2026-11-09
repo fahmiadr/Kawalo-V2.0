@@ -24,8 +24,8 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart
 
 /// Cubit pengelola state dan logika bisnis layar data tamu.
 ///
-/// Kerangka fetch/paginasi/greeting ada di [ListFetchCubit]; kelas ini
-/// menambahkan filter pembuat, use case, dan mutasi item tamu.
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class only maps the guest use cases and state.
 class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
   /// Membuat instance [GuestCubit].
   GuestCubit({

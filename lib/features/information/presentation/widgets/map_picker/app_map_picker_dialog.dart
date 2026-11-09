@@ -52,7 +52,6 @@ export 'package:kawalo_mobile/features/information/presentation/widgets/map_pick
 /// }
 /// ```
 class AppMapPickerDialog extends StatefulWidget {
-  /// Membuat instans [AppMapPickerDialog].
   const AppMapPickerDialog({
     super.key,
     this.initialLatitude,

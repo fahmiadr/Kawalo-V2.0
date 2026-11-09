@@ -22,8 +22,8 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 
 /// Cubit pengelola state dan logika bisnis modul Data Informasi.
 ///
-/// Kerangka fetch/paginasi/greeting ada di [ListFetchCubit]; kelas ini
-/// menambahkan filter pembuat, use case, dan mutasi item informasi.
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class only maps the information use cases and state.
 class InformationCubit
     extends ListFetchCubit<InformationState, InformationItemEntity> {
   /// Membuat instance [InformationCubit].

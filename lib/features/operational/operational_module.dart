@@ -11,10 +11,9 @@ import 'package:kawalo_mobile/features/operational/presentation/cubit/operationa
 
 /// Feature Composition Root untuk modul Operasional pada Frontend.
 ///
-/// Menerima dependensi bersama satu kali dan membangun
-/// [OperationalRepository] satu kali untuk dipakai ulang oleh factory cubit.
+/// Receives the shared dependencies once and builds a single
+/// [OperationalRepository] that every cubit factory reuses.
 final class OperationalModule {
-  /// Membangun modul beserta [repository] tunggalnya.
   OperationalModule({
     required ApiClient apiClient,
     required Isar isar,
@@ -30,8 +29,6 @@ final class OperationalModule {
   }
 
   final SyncStorageService _syncStorage;
-
-  /// Repository operasional tunggal yang dipakai semua factory.
   late final OperationalRepository repository;
 
   /// Merakit dan mengembalikan instance [OperationalCubit] yang siap pakai.

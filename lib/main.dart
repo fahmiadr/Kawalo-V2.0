@@ -116,8 +116,8 @@ class _MyAppState extends State<MyApp> {
       syncStorageService: syncStorage,
     );
 
-    // Dependensi bersama dirakit sekali di sini; tiap modul membangun
-    // repository-nya sendiri satu kali lalu dipakai ulang oleh semua cubit.
+    // Shared dependencies are assembled once here; each module builds its own
+    // repository a single time and every cubit reuses it.
     final getGroupMembersUseCase = GroupModule.createGetGroupMembersUseCase(
       apiClient: _apiClient,
       networkInfo: _networkInfo,

@@ -11,10 +11,9 @@ import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_
 
 /// Feature Composition Root untuk modul Absensi pada Frontend.
 ///
-/// Menerima dependensi bersama satu kali dan membangun [AttendanceRepository]
-/// satu kali untuk dipakai ulang oleh factory cubit.
+/// Receives the shared dependencies once and builds a single
+/// [AttendanceRepository] that every cubit factory reuses.
 final class AttendanceModule {
-  /// Membangun modul beserta [repository] tunggalnya.
   AttendanceModule({
     required ApiClient apiClient,
     required Isar isar,
@@ -30,8 +29,6 @@ final class AttendanceModule {
   }
 
   final SyncStorageService _syncStorage;
-
-  /// Repository absensi tunggal yang dipakai semua factory.
   late final AttendanceRepository repository;
 
   /// Merakit dan mengembalikan instance [AttendanceCubit] yang siap pakai.

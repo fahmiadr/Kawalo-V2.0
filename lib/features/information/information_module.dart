@@ -19,12 +19,11 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 
 /// Feature Composition Root untuk modul Informasi / Feed pada Frontend.
 ///
-/// Menerima dependensi bersama (ApiClient, Isar, NetworkInfo,
-/// SyncStorageService) satu kali, membangun [InformationRepository] satu
-/// kali, lalu memakainya ulang untuk semua factory cubit. Didaftarkan lewat
-/// `RepositoryProvider` agar layer presentation tidak merakit dependensi.
+/// Receives the shared dependencies once and builds a single
+/// [InformationRepository] that every cubit factory reuses. Registered through
+/// `RepositoryProvider` so the presentation layer never assembles dependencies
+/// itself.
 final class InformationModule {
-  /// Membangun modul beserta [repository] tunggalnya.
   InformationModule({
     required ApiClient apiClient,
     required Isar isar,
@@ -47,8 +46,6 @@ final class InformationModule {
 
   final SyncStorageService _syncStorage;
   final GetGroupMembersUseCase _getGroupMembersUseCase;
-
-  /// Repository informasi tunggal yang dipakai semua factory.
   late final InformationRepository repository;
 
   /// Merakit dan mengembalikan instance [InformationCubit] yang siap pakai.

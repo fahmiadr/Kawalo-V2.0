@@ -16,11 +16,11 @@ import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list
 
 /// Feature Composition Root untuk fitur Insiden.
 ///
-/// Menerima dependensi bersama satu kali dan membangun [IncidentRepository]
-/// satu kali untuk dipakai ulang oleh semua factory cubit. Didaftarkan lewat
-/// `RepositoryProvider` agar layer presentation tidak merakit dependensi.
+/// Receives the shared dependencies once and builds a single
+/// [IncidentRepository] that every cubit factory reuses. Registered through
+/// `RepositoryProvider` so the presentation layer never assembles dependencies
+/// itself.
 final class IncidentModule {
-  /// Membangun modul beserta [repository] tunggalnya.
   IncidentModule({
     required ApiClient apiClient,
     required NetworkInfo networkInfo,
@@ -28,8 +28,6 @@ final class IncidentModule {
           remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
           networkInfo: networkInfo,
         );
-
-  /// Repository insiden tunggal yang dipakai semua factory.
   final IncidentRepository repository;
 
   /// Merakit dan mengembalikan instance [IncidentListCubit] yang siap pakai.

@@ -10,8 +10,8 @@ import 'package:kawalo_mobile/features/operational/presentation/cubit/operationa
 
 /// Cubit pengelola state dan logika bisnis modul Aktifitas Operasional.
 ///
-/// Kerangka fetch/paginasi/greeting ada di [ListFetchCubit]; kelas ini hanya
-/// memetakan use case dan state operasional.
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class only maps the operational use cases and state.
 class OperationalCubit
     extends ListFetchCubit<OperationalState, OperationalItemEntity> {
   /// Membuat instance [OperationalCubit].

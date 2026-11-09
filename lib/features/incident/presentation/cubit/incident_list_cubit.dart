@@ -12,8 +12,9 @@ import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list
 
 /// Cubit pengelola state dan logika bisnis layar daftar insiden.
 ///
-/// Kerangka fetch/paginasi/greeting ada di [ListFetchCubit]; kelas ini
-/// menambahkan filter status, parameter sesi, dan mutasi item insiden.
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class adds the status filter, session parameters and incident item
+/// mutations.
 class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
   /// Membuat instance [IncidentListCubit].
   IncidentListCubit({
@@ -48,8 +49,9 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     return null;
   }
 
-  /// Insiden selalu dari server (tanpa cache): setiap penentuan greeting
-  /// (termasuk saat gagal) mencatat waktu sinkronisasi sekarang.
+  /// Incidents always come from the server (no cache): every greeting
+  /// resolution, including on failure, records the current time as the sync
+  /// time.
   @override
   Future<String> resolveGreeting({required bool isFromCache}) =>
       saveSyncGreeting(DateTime.now());

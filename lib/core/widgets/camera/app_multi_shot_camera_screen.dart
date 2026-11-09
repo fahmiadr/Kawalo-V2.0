@@ -64,7 +64,6 @@ import 'package:kawalo_mobile/core/widgets/camera/camera_viewfinder.dart';
 /// );
 /// ```
 class AppMultiShotCameraScreen extends StatefulWidget {
-  /// Membuat instans [AppMultiShotCameraScreen].
   const AppMultiShotCameraScreen({
     this.maxPhotos = 4,
     this.alreadyAttachedCount = 0,

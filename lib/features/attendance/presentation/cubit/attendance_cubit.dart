@@ -10,8 +10,8 @@ import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_
 
 /// Cubit pengelola state dan logika bisnis modul Data Absensi.
 ///
-/// Kerangka fetch/paginasi/greeting ada di [ListFetchCubit]; kelas ini hanya
-/// memetakan use case dan state absensi.
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class only maps the attendance use cases and state.
 class AttendanceCubit
     extends ListFetchCubit<AttendanceState, AttendanceItemEntity> {
   /// Membuat instance [AttendanceCubit].

@@ -82,7 +82,6 @@ class _CompactErrorScrollableBody extends StatelessWidget {
 /// Mengisi kontainer induk (seperti area *viewfinder* kamera atau *empty state*
 /// halaman) tanpa menutup navigasi atau kontrol di sekitarnya.
 class AppActionableErrorView extends StatelessWidget {
-  /// Membuat instance [AppActionableErrorView].
   const AppActionableErrorView({
     required this.data,
     super.key,
@@ -162,7 +161,6 @@ class AppActionableErrorView extends StatelessWidget {
 /// di tengah alur kerja aktif (misal: saat kamera aktif dan foto gagal
 /// disimpan) tanpa meninggalkan konteks halaman saat ini.
 class AppActionableErrorBottomSheet extends StatelessWidget {
-  /// Membuat instance [AppActionableErrorBottomSheet].
   const AppActionableErrorBottomSheet({
     required this.data,
     super.key,
@@ -220,7 +218,6 @@ class AppActionableErrorBottomSheet extends StatelessWidget {
 /// Disajikan saat memerlukan konfirmasi pengguna atau dialog peringatan dengan
 /// fokus interaksi terarah.
 class AppActionableErrorDialog extends StatelessWidget {
-  /// Membuat instance [AppActionableErrorDialog].
   const AppActionableErrorDialog({
     required this.data,
     super.key,
@@ -281,7 +278,6 @@ class AppActionableErrorDialog extends StatelessWidget {
 /// jika [isBlocking] bernilai `true` (misalnya pada pelanggaran keamanan
 /// fatal).
 class AppActionableErrorFullScreen extends StatelessWidget {
-  /// Membuat instance [AppActionableErrorFullScreen].
   const AppActionableErrorFullScreen({
     required this.data,
     super.key,

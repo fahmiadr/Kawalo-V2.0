@@ -21,12 +21,10 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit
 
 /// Feature Composition Root untuk modul Tamu pada Frontend.
 ///
-/// Menerima dependensi bersama (ApiClient, Isar, NetworkInfo,
-/// SyncStorageService) satu kali, membangun [GuestRepository] satu kali, lalu
-/// memakainya ulang untuk semua factory cubit. Didaftarkan lewat
-/// `RepositoryProvider` agar layer presentation tidak merakit dependensi.
+/// Receives the shared dependencies once and builds a single [GuestRepository]
+/// that every cubit factory reuses. Registered through `RepositoryProvider` so
+/// the presentation layer never assembles dependencies itself.
 final class GuestModule {
-  /// Membangun modul beserta [repository] tunggalnya.
   GuestModule({
     required ApiClient apiClient,
     required Isar isar,
@@ -49,8 +47,6 @@ final class GuestModule {
 
   final SyncStorageService _syncStorage;
   final GetGroupMembersUseCase _getGroupMembersUseCase;
-
-  /// Repository tamu tunggal yang dipakai semua factory.
   late final GuestRepository repository;
 
   /// Merakit dan mengembalikan instance [GuestCubit] yang siap pakai.

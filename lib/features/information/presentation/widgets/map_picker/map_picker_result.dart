@@ -15,7 +15,6 @@ import 'package:flutter/material.dart';
 /// pemilihan titik lokasi.
 @immutable
 class AppMapPickerResult extends Equatable {
-  /// Membuat instans [AppMapPickerResult].
   const AppMapPickerResult({
     required this.latitude,
     required this.longitude,

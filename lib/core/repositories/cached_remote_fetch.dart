@@ -6,51 +6,46 @@ import 'package:kawalo_mobile/core/network/network_error_handler.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 
-/// Operasi cache lokal sebuah fitur, dibungkus agar penanganan data source
-/// lokal yang opsional (nullable) terpusat: repositori cukup meneruskan
-/// `null` bila tidak ada cache.
+/// Local cache operations of a feature, wrapped so the handling of an optional
+/// (nullable) local data source stays in one place: a repository simply passes
+/// `null` when it has no cache.
 class CacheOps<M> {
-  /// Membuat instance [CacheOps].
   const CacheOps({
     required this.read,
     required this.write,
     required this.deleteOlderThan,
   });
 
-  /// Membaca data dari cache lokal sesuai filter permintaan.
   final Future<List<M>> Function() read;
 
-  /// Menyimpan `models` ke cache lokal.
   final Future<void> Function(List<M> models) write;
 
-  /// Menghapus data cache yang lebih lama dari ambang waktu.
   final Future<void> Function(DateTime threshold) deleteOlderThan;
 }
 
-/// Menjalankan [op] (sinkronisasi cache setelah mutasi remote berhasil) secara
-/// best-effort: `null` berarti tidak ada cache, dan kegagalan I/O cache tidak
-/// membatalkan konfirmasi sukses dari server yang sudah otoritatif.
+/// Runs [op] (cache sync after a successful remote mutation) on a best-effort
+/// basis: `null` means there is no cache, and a cache I/O failure must not undo
+/// the success already confirmed by the authoritative server.
 Future<void> bestEffortCache(Future<void> Function()? op) async {
   if (op == null) return;
   try {
     await op();
   } on Object catch (_) {
-    // Sengaja diabaikan, lihat dokumentasi di atas.
+    // Intentionally ignored, see the documentation above.
   }
 }
 
-/// Alur baku "remote dulu, fallback cache" untuk daftar.
+/// Standard "remote first, cache fallback" flow for lists.
 ///
-/// 1. Bila bukan [isRefresh] dan perangkat offline: langsung dari cache
-///    (atau gagal `offlineNoStorage` bila [cache] `null`).
-/// 2. Ambil dari remote; bila berhasil dan tidak kosong, simpan ke cache
-///    lalu hapus data lebih lama dari
-///    [AppConstants.cacheRetentionDuration]; catat waktu sinkronisasi.
-/// 3. Bila gagal: batal -> [RequestCancelledFailure]; selain itu fallback ke
-///    cache bila tersedia (kecuali [AuthException]), jika tidak
-///    kembalikan failure.
+/// 1. When not [isRefresh] and the device is offline: serve from the cache (or
+///   fail with `offlineNoStorage` when [cache] is `null`).
+/// 2. Fetch from remote; on a non-empty success, write to the cache, evict data
+///   older than [AppConstants.cacheRetentionDuration] and record the sync time.
+/// 3. On failure: cancelled -> [RequestCancelledFailure]; otherwise fall back
+///   to the cache when available (except for [AuthException]), else return the
+///   failure.
 ///
-/// [toResult] memetakan model (remote maupun cache) ke hasil domain fitur.
+/// [toResult] maps models (remote or cached) to the feature's domain result.
 Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
   required bool isRefresh,
   required NetworkInfo? networkInfo,
@@ -64,7 +59,7 @@ Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
         toResult(await ops.read(), isFromCache: true),
       );
 
-  // Pull-to-refresh selalu mencoba remote meskipun sedang offline.
+  // Pull-to-refresh always tries the remote, even while offline.
   if (!isRefresh) {
     final isConnected = await (networkInfo?.isConnected ?? Future.value(true));
     if (!isConnected) {
@@ -83,7 +78,7 @@ Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
       );
     }
 
-    // Catat waktu sinkronisasi HANYA ketika remote berhasil.
+    // Record the sync time ONLY when the remote call succeeds.
     await (syncStorageService ?? SyncStorageService.singleton())
         .saveLastSync(syncKey, DateTime.now());
 

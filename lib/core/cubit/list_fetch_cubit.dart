@@ -9,43 +9,35 @@ import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/utils/request_sequence_guard.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 
-/// Kontrak minimal state daftar: filter periode/tanggal/pencarian dan label
-/// sinkronisasi. Dipenuhi oleh seluruh turunan state basis tiap fitur.
+/// Minimal contract of a list state: period/date/search filters and the sync
+/// label. Implemented by every feature's base state.
 abstract interface class ListFilterState {
-  /// Periode filter waktu yang sedang aktif.
   AppDateFilterPeriod get filterPeriod;
 
-  /// Tanggal awal rentang kustom.
   DateTime? get startDate;
 
-  /// Tanggal akhir rentang kustom.
   DateTime? get endDate;
 
-  /// Tanggal awal filter (ISO 8601) yang telah disanitasi.
+  /// Sanitized start date of the filter (ISO 8601).
   String? get startDateIso;
 
-  /// Tanggal akhir filter (ISO 8601) yang telah disanitasi.
+  /// Sanitized end date of the filter (ISO 8601).
   String? get endDateIso;
 
-  /// Kata kunci pencarian yang sedang aktif.
   String? get searchQuery;
 
-  /// Label waktu sinkronisasi terakhir.
   String get lastSync;
 }
 
-/// Kontrak state "Loaded" yang mendukung infinite scroll.
+/// Contract of the "Loaded" state that supports infinite scroll.
 abstract interface class ListLoadedState implements ListFilterState {
-  /// Apakah masih ada halaman berikutnya di server.
   bool get hasMore;
 
-  /// Apakah halaman berikutnya sedang dimuat.
   bool get isLoadingMore;
 }
 
-/// Filter efektif hasil resolusi parameter fetch terhadap state aktif.
+/// Effective filter resolved from the fetch arguments and the current state.
 class ListFilter {
-  /// Membuat instance [ListFilter].
   const ListFilter({
     required this.period,
     required this.start,
@@ -55,48 +47,43 @@ class ListFilter {
     required this.search,
   });
 
-  /// Periode filter efektif.
   final AppDateFilterPeriod period;
 
-  /// Tanggal awal rentang kustom efektif.
   final DateTime? start;
 
-  /// Tanggal akhir rentang kustom efektif.
   final DateTime? end;
 
-  /// Tanggal awal efektif (ISO 8601, sudah disanitasi).
+  /// Effective start date (ISO 8601, sanitized).
   final String? startIso;
 
-  /// Tanggal akhir efektif (ISO 8601, sudah disanitasi).
+  /// Effective end date (ISO 8601, sanitized).
   final String? endIso;
 
-  /// Kata kunci pencarian efektif (`null` bila kosong).
+  /// Effective search keyword (`null` when empty).
   final String? search;
 
-  /// Periode bawaan (hari ini/minggu ini/bulan ini) dimuat tanpa paginasi.
+  /// Default periods (today/this week/this month) are loaded without
+  /// pagination.
   bool get isDefaultPeriod => isDefaultFilterPeriod(period);
 }
 
-/// Apakah [period] termasuk periode bawaan yang dimuat tanpa paginasi.
+/// Whether [period] is a default period, which is loaded without pagination.
 bool isDefaultFilterPeriod(AppDateFilterPeriod period) =>
     period == AppDateFilterPeriod.today ||
     period == AppDateFilterPeriod.thisWeek ||
     period == AppDateFilterPeriod.thisMonth;
 
-/// Satu halaman hasil use case daftar, tidak bergantung pada tipe hasil
-/// spesifik fitur.
+/// One page of results from a list use case, independent of the feature-
+/// specific result type.
 class ListPage<I> {
-  /// Membuat instance [ListPage].
   const ListPage(this.items, {this.isFromCache = false});
 
-  /// Item pada halaman ini.
   final List<I> items;
 
-  /// Apakah data bersumber dari cache lokal.
   final bool isFromCache;
 }
 
-/// Fungsi fetch fitur yang menerima parameter filter bersama.
+/// Feature fetch function that accepts the shared filter parameters.
 typedef ListFetchFn = Future<AppFetchResult> Function({
   String? search,
   AppDateFilterPeriod? filterPeriod,
@@ -106,15 +93,15 @@ typedef ListFetchFn = Future<AppFetchResult> Function({
   String? endDateIso,
 });
 
-/// Basis cubit daftar berpaginasi dengan filter periode/pencarian.
+/// Base cubit for paginated lists with period/search filters.
 ///
-/// Memusatkan kerangka yang identik antar fitur: greeting sinkronisasi,
-/// resolusi filter efektif, penjagaan urutan request (dedup + pembatalan
-/// superseded), dan infinite scroll. Hal khusus fitur (filter tambahan,
-/// pembentukan params use case, konstruksi state) disuplai lewat callback.
+/// Centralizes the skeleton shared by every feature: sync greeting, effective
+/// filter resolution, request ordering guard (dedup plus cancellation of
+/// superseded requests) and infinite scroll. Feature-specific parts (extra
+/// filters, use case params, state construction) are supplied through
+/// callbacks.
 abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     with RequestSequenceGuard {
-  /// Membuat instance [ListFetchCubit].
   ListFetchCubit(
     super.initialState, {
     required this.syncKey,
@@ -124,10 +111,8 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     _initGreeting();
   }
 
-  /// Kunci penyimpanan waktu sinkronisasi fitur ini.
   final String syncKey;
 
-  /// Ukuran data per halaman untuk paginasi.
   final int pageSize;
 
   final SyncStorageService _syncStorage;
@@ -135,12 +120,11 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
   String? _activeFetchKey;
   Future<AppFetchResult>? _activeFetchFuture;
 
-  /// Label waktu greeting klien saat ini berdasarkan Single Source of Truth
-  /// state.
+  /// Current greeting label; the state is the single source of truth.
   String get currentGreeting => state.lastSync;
 
-  /// Salinan state aktif dengan [greeting] sebagai `lastSync`, atau `null`
-  /// bila tipe state aktif tidak perlu diperbarui.
+  /// Copy of the current state with [greeting] as `lastSync`, or `null` when
+  /// the current state type needs no update.
   @protected
   S? stateWithLastSync(String greeting);
 
@@ -156,8 +140,8 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     }
   }
 
-  /// Menentukan label greeting. Dari cache: waktu sinkronisasi tersimpan;
-  /// dari server: waktu sekarang.
+  /// Resolves the greeting label: the stored sync time for cached data, the
+  /// current time for server data.
   @protected
   Future<String> resolveGreeting({required bool isFromCache}) async {
     if (isFromCache) {
@@ -170,15 +154,15 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     return AppDateFormat.formatGreeting(DateTime.now());
   }
 
-  /// Mencatat waktu sinkronisasi [now] dan mengembalikan label greeting-nya.
+  /// Records the sync time [now] and returns its greeting label.
   @protected
   Future<String> saveSyncGreeting(DateTime now) async {
     await _syncStorage.saveLastSync(syncKey, now);
     return AppDateFormat.formatGreeting(now);
   }
 
-  /// Menyelesaikan filter efektif dari argumen fetch dan state aktif, lalu
-  /// menyanitasi rentang tanggal ke ISO 8601.
+  /// Resolves the effective filter from the fetch arguments and the current
+  /// state, then sanitizes the date range to ISO 8601.
   @protected
   ListFilter resolveFilter({
     String? search,
@@ -217,14 +201,13 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     );
   }
 
-  /// Menjalankan satu siklus fetch dengan penjagaan urutan request.
+  /// Runs one fetch cycle guarded by the request sequence.
   ///
-  /// - [extraKey]: bagian kunci dedup dari filter khusus fitur.
-  /// - [currentItems]: item yang sedang tampil (dipertahankan saat refresh
-  ///   gagal).
-  /// - [loading]: state skeleton (hanya untuk fetch non-refresh).
-  /// - [request]: memanggil use case fitur.
-  /// - [loaded] / [error]: membangun state hasil.
+  /// - [extraKey]: feature-specific part of the dedup key.
+  /// - [currentItems]: items currently shown (kept when a refresh fails).
+  /// - [loading]: skeleton state (non-refresh fetches only).
+  /// - [request]: calls the feature use case.
+  /// - [loaded] / [error]: build the resulting state.
   @protected
   Future<AppFetchResult> runFetch({
     required bool isRefresh,
@@ -251,8 +234,8 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
         '${filter.search}|$extraKey';
 
     if (isFetching && _activeFetchKey == fetchKey) {
-      // Request dengan parameter sama sedang berjalan: gunakan kembali tanpa
-      // membatalkan maupun menduplikasi panggilan ke server.
+      // A request with the same parameters is already in flight: reuse it
+      // without cancelling it or duplicating the server call.
       if (_activeFetchFuture != null) {
         return await _activeFetchFuture!;
       }
@@ -360,8 +343,8 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     }
   }
 
-  /// Memuat halaman berikutnya untuk infinite scroll bila state aktif bertipe
-  /// [L], masih ada data, tidak sedang memuat, dan periode bukan bawaan.
+  /// Loads the next page for infinite scroll when the current state is [L],
+  /// more data exists, no page is loading and the period is not a default one.
   @protected
   Future<void> runLoadMore<L extends ListLoadedState>({
     required Future<Either<Failure, ListPage<I>>> Function(L current) request,
@@ -390,7 +373,7 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     );
   }
 
-  /// Menerapkan filter waktu dari [filterResult] via [fetch].
+  /// Applies the time filter from [filterResult] via [fetch].
   @protected
   Future<AppFetchResult> applyDateFilter(
     ListFetchFn fetch,
@@ -405,13 +388,14 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
         endDateIso: filterResult.endDateIso,
       );
 
-  /// Mereset filter tanggal ke default 'Hari ini' via [fetch] tanpa
-  /// menghapus kata kunci pencarian.
+  /// Resets the date filter to the "today" default via [fetch] without clearing
+  /// the search keyword.
   @protected
   Future<AppFetchResult> resetDateFilterWith(ListFetchFn fetch) =>
       applyDateFilter(fetch, AppDateFilterResult.defaultFilter());
 
-  /// Mereset filter tanggal dan pencarian ke default via [fetch].
+  /// Resets both the date filter and the search keyword to their defaults via
+  /// [fetch].
   @protected
   Future<AppFetchResult> resetAllFiltersWith(ListFetchFn fetch) {
     final defaultFilter = AppDateFilterResult.defaultFilter();
