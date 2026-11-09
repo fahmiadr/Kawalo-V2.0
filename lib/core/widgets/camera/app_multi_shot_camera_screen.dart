@@ -22,6 +22,7 @@ import 'package:kawalo_mobile/core/widgets/camera/camera_overlays.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_quota_badge.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_viewfinder.dart';
+import 'package:kawalo_mobile/core/widgets/camera/controllers/captured_photos_controller.dart';
 
 /// Layar kamera multi-shot standar Material 3 Expressive untuk menangkap
 /// foto dokumentasi secara berurutan.
@@ -345,15 +346,12 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
   static const Duration _teleportHalfDuration = AppDuration.medium1;
 
-  final List<AppMediaFile> _capturedPhotos = [];
-  final List<AppMediaFile> _selectedPhotos = [];
+  final CapturedPhotosController _photos = CapturedPhotosController();
   bool _isDoneSubmitted = false;
-  String? _removingPhotoPath;
 
   int get _maxSelectable => widget.maxPhotos - widget.alreadyAttachedCount;
   int get _totalSelected =>
-      widget.alreadyAttachedCount + _selectedPhotos.length;
-  bool get _canSelectMore => _selectedPhotos.length < _maxSelectable;
+      widget.alreadyAttachedCount + _photos.selected.length;
 
   /// Status apakah subsistem kamera sedang berada dalam proses transisi atau
   /// pemotretan.
@@ -731,7 +729,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
   void dispose() {
     _initGeneration++;
     if (!_isDoneSubmitted) {
-      _cleanupUnsubmittedPhotos();
+      _photos.cleanupUnsubmitted();
     }
     _restoreSystemUI();
     unawaited(_restoreBrightness());
@@ -1107,10 +1105,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       if (mounted) {
         setState(() {
           _latestCapturedPath = mediaFile.path;
-          _capturedPhotos.insert(0, mediaFile);
-          if (_canSelectMore) {
-            _selectedPhotos.add(mediaFile);
-          }
+          _photos.addCaptured(mediaFile, maxSelectable: _maxSelectable);
           _isCapturing = false;
         });
 
@@ -1155,86 +1150,58 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
   void _togglePhotoSelection(AppMediaFile photo) {
     setState(() {
-      if (_selectedPhotos.contains(photo)) {
-        _selectedPhotos.remove(photo);
-      } else {
-        if (_canSelectMore) {
-          _selectedPhotos.add(photo);
-        } else {
-          AppSnackbar.show(
-            context,
-            message: 'Maksimal $_maxSelectable foto dapat dipilih.',
-          );
-        }
+      final accepted = _photos.toggleSelection(
+        photo,
+        maxSelectable: _maxSelectable,
+      );
+      if (!accepted) {
+        AppSnackbar.show(
+          context,
+          message: 'Maksimal $_maxSelectable foto dapat dipilih.',
+        );
       }
     });
   }
 
   void _removeCapturedPhoto(int index) {
-    if (index >= 0 && index < _capturedPhotos.length) {
-      final photo = _capturedPhotos[index];
+    if (index >= 0 && index < _photos.captured.length) {
+      final photo = _photos.captured[index];
       final isReducedMotion = AppMotion.isReducedMotion(context);
 
       if (isReducedMotion) {
-        final removed = _capturedPhotos.removeAt(index);
-        _selectedPhotos.remove(removed);
+        _photos.removeNow(index);
         setState(() {});
         return;
       }
 
       // Tandai foto untuk animasi pengempisan keluar (exit collapse).
       // Lepas dari seleksi segera agar badge counter responsif seketika.
-      setState(() {
-        _removingPhotoPath = photo.path;
-        _selectedPhotos.remove(photo);
-      });
+      setState(() => _photos.beginRemoval(photo));
 
       // Setelah durasi animasi collapse selesai, lepas item dari list.
       Future<void>.delayed(AppDuration.short4, () {
         if (!mounted) return;
-        setState(() {
-          _capturedPhotos.remove(photo);
-          if (_removingPhotoPath == photo.path) {
-            _removingPhotoPath = null;
-          }
-        });
+        setState(() => _photos.finishRemoval(photo));
       });
     }
   }
 
-  void _cleanupUnsubmittedPhotos() {
-    for (final photo in _capturedPhotos) {
-      if (photo.path != null) {
-        try {
-          final file = File(photo.path!);
-          if (file.existsSync()) {
-            file.deleteSync();
-          }
-        } on Exception catch (_) {
-          // Abaikan kegagalan penghapusan berkas sementara
-        }
-      }
-    }
-    _capturedPhotos.clear();
-    _selectedPhotos.clear();
-    PaintingBinding.instance.imageCache.clear();
-    PaintingBinding.instance.imageCache.clearLiveImages();
-  }
-
   void _handleBackOrClose() {
-    if (_selectedPhotos.isNotEmpty) {
-      setState(_selectedPhotos.clear);
+    if (_photos.selected.isNotEmpty) {
+      setState(_photos.clearSelection);
       return;
     }
     _restoreSystemUI();
-    _cleanupUnsubmittedPhotos();
+    _photos.cleanupUnsubmitted();
     Navigator.of(context).pop();
   }
 
   void _handleDone() {
     _isDoneSubmitted = true;
     _restoreSystemUI();
-    Navigator.of(context).pop(List<AppMediaFile>.unmodifiable(_selectedPhotos));
+    Navigator.of(
+      context,
+    ).pop(List<AppMediaFile>.unmodifiable(_photos.selected));
   }
 
   Widget _buildLandscapeQuotaBadge({
@@ -1284,12 +1251,12 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: _lightOverlayStyle,
       child: PopScope<List<AppMediaFile>>(
-        canPop: _selectedPhotos.isEmpty,
+        canPop: _photos.selected.isEmpty,
         onPopInvokedWithResult: (didPop, _) {
           if (didPop) {
             _restoreSystemUI();
             if (!_isDoneSubmitted) {
-              _cleanupUnsubmittedPhotos();
+              _photos.cleanupUnsubmitted();
             }
             return;
           }
@@ -1431,8 +1398,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                     right: 0,
                                     bottom: 0,
                                     child: CameraBottomControls(
-                                      capturedPhotos: _capturedPhotos,
-                                      selectedPhotos: _selectedPhotos,
+                                      capturedPhotos: _photos.captured,
+                                      selectedPhotos: _photos.selected,
                                       scrollController:
                                           _thumbnailScrollController,
                                       latestCapturedPath: _latestCapturedPath,
@@ -1452,7 +1419,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                           _togglePhotoSelection,
                                       onRemoveCapturedPhoto:
                                           _removeCapturedPhoto,
-                                      removingPhotoPath: _removingPhotoPath,
+                                      removingPhotoPath: _photos.removingPath,
                                       onTakePicture: _takePicture,
                                       onDone: _handleDone,
                                     ),
