@@ -3,22 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_state.dart';
@@ -50,8 +44,9 @@ class _OperationalScreenState extends State<OperationalScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
+    _scrollController = LoadMoreScrollController(
+      onLoadMore: () => _resolveCubit(context).loadMoreOperationals(),
+    );
 
     final cubit = _resolveCubit(context);
     final initialQuery = cubit.state.searchQuery ?? '';
@@ -78,22 +73,21 @@ class _OperationalScreenState extends State<OperationalScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    if (maxScroll > 0 && currentScroll >= maxScroll * 0.85) {
-      _resolveCubit(context).loadMoreOperationals();
-    }
-  }
-
   OperationalCubit _resolveCubit(BuildContext context) {
     return widget.cubit ?? context.read<OperationalCubit>();
+  }
+
+  void _showFeedback(OperationalCubit cubit, AppFetchResult result) {
+    if (!mounted) return;
+    AppFetchFeedback.show(
+      context,
+      result: result,
+      hasData: cubit.state.displayedOperationals.isNotEmpty,
+    );
   }
 
   Future<void> _handleRefresh(OperationalCubit cubit) async {
@@ -147,12 +141,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
   Future<void> _onSearch(String query) async {
     final currentCubit = _resolveCubit(context);
     final result = await currentCubit.fetchOperationals(search: query);
-    if (!mounted) return;
-    AppFetchFeedback.show(
-      context,
-      result: result,
-      hasData: currentCubit.state.displayedOperationals.isNotEmpty,
-    );
+    _showFeedback(currentCubit, result);
   }
 
   Future<void> _onFilterPressed() async {
@@ -171,40 +160,19 @@ class _OperationalScreenState extends State<OperationalScreen> {
     );
 
     if (result != null && mounted) {
-      final fetchResult = await cubit.setFilter(result);
-      if (mounted) {
-        AppFetchFeedback.show(
-          context,
-          result: fetchResult,
-          hasData: cubit.state.displayedOperationals.isNotEmpty,
-        );
-      }
+      _showFeedback(cubit, await cubit.setFilter(result));
     }
   }
 
   Future<void> _onResetDateFilter() async {
     final cubit = _resolveCubit(context);
-    final fetchResult = await cubit.resetDateFilter();
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedOperationals.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.resetDateFilter());
   }
 
   Future<void> _resetAllFilters() async {
     final cubit = _resolveCubit(context);
     _searchController.clear();
-    final fetchResult = await cubit.resetFilters();
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedOperationals.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.resetFilters());
   }
 
   @override
@@ -227,23 +195,35 @@ class _OperationalScreenState extends State<OperationalScreen> {
         }
       },
       builder: (context, state) {
-        final greeting = state.lastSync;
         final isOffline = isDeviceOffline;
         final isInitialLoading =
             state is OperationalInitial || state is OperationalLoading;
 
-        return _buildScaffold(
-          context: context,
-          greeting: greeting,
-          cubit: cubit,
-          isOffline: isOffline,
+        return ListScreenScaffold(
+          title: 'Aktifitas operasional',
+          searchLabel: 'Cari aktifitas operasional',
+          refreshLabel: 'Memuat ulang aktifitas operasional',
+          greeting: state.lastSync,
           isInitialLoading: isInitialLoading,
-          filterBar: _buildFilterBar(
-            context: context,
-            state: state,
+          isOffline: isOffline,
+          isSearchExpanded: _isSearchExpanded,
+          searchController: _searchController,
+          onSearch: _onSearch,
+          onOpenSearch: _onOpenSearch,
+          onCloseSearch: _onCloseSearch,
+          onRefresh: () => _handleRefresh(cubit),
+          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
+          filterBar: ListFilterBar(
             isLoading: isInitialLoading,
+            isDateActive: state.hasActiveDateFilter,
+            dateLabel: state.filterPeriod.resolveDisplayLabel(
+              startDate: state.startDate,
+              endDate: state.endDate,
+            ),
+            onDatePressed: _onFilterPressed,
+            onDateReset: _onResetDateFilter,
           ),
-          bodyContent: _buildBody(context, state, cubit),
+          body: _buildBody(context, state, cubit),
         );
       },
     );
@@ -270,15 +250,21 @@ class _OperationalScreenState extends State<OperationalScreen> {
     OperationalCubit cubit,
   ) {
     if (state is OperationalInitial || state is OperationalLoading) {
-      return _buildLoadingSkeleton();
+      return ListScreenSkeleton(
+        bottomPadding: AppSpacing.space200,
+        itemBuilder: (_, _) => const OperationalCardSkeleton(),
+      );
     }
 
     if (state is OperationalLoaded) {
       if (state.operationals.isEmpty) {
         if (state.hasActiveFilter) {
-          return _buildEmptySearchResult(context);
+          return ListEmptySearchResult(
+            noun: 'aktifitas operasional',
+            onReset: _resetAllFilters,
+          );
         }
-        return _buildEmptyGroupState(context);
+        return _buildEmptyGroupState();
       }
       return _buildOperationalListView(
         operationals: state.operationals,
@@ -293,175 +279,29 @@ class _OperationalScreenState extends State<OperationalScreen> {
           isLoadingMore: false,
         );
       }
-      return _buildErrorState(context, state.message, cubit);
+      return ListErrorState(
+        noun: 'aktifitas operasional',
+        message: state.message,
+        onRetry: () {
+          final query = _searchController.text;
+          cubit.fetchOperationals(search: query.isEmpty ? null : query);
+        },
+      );
     }
 
     return const SizedBox.shrink();
-  }
-
-  Widget _buildFilterBar({
-    required BuildContext context,
-    required bool isLoading,
-    required OperationalState state,
-  }) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    final isDateActive = state.hasActiveDateFilter;
-    final dateLabel = isDateActive
-        ? state.filterPeriod.resolveDisplayLabel(
-            startDate: state.startDate,
-            endDate: state.endDate,
-          )
-        : 'Tanggal';
-
-    return Container(
-      width: double.infinity,
-      color: colorScheme.surface,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space100,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            AppChip(
-              type: AppChipType.filter,
-              label: dateLabel,
-              selected: isDateActive,
-              trailing: isDateActive
-                  ? null
-                  : AppSvgIcon(
-                      KawaloVectors.arrowDown01,
-                      size: 18,
-                      color: !isLoading
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface.withValues(
-                              alpha: AppStateLayer.disabledOpacity,
-                            ),
-                    ),
-              onDeleted: isDateActive && !isLoading ? _onResetDateFilter : null,
-              onPressed: isLoading ? null : _onFilterPressed,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildScaffold({
-    required BuildContext context,
-    required String greeting,
-    required OperationalCubit cubit,
-    required Widget filterBar,
-    required Widget bodyContent,
-    bool isOffline = false,
-    bool isInitialLoading = false,
-  }) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: colorScheme.surface,
-      appBar: AppHomeAppBar(
-        greeting: greeting,
-        reserveGreetingSpace: true,
-        greetingLoading: isInitialLoading && greeting.isEmpty,
-        title: _isSearchExpanded ? null : 'Aktifitas operasional',
-        titleWidget: _isSearchExpanded
-            ? AppSearchBar(
-                controller: _searchController,
-                hintText: 'Cari aktifitas operasional',
-                autoFocus: true,
-                enabled: !isInitialLoading,
-                onSearch: _onSearch,
-                constraints: const BoxConstraints(minHeight: 40, maxHeight: 40),
-              )
-            : null,
-        showBackButton: true,
-        trailing: AppIconButton(
-          onPressed: !isInitialLoading
-              ? (_isSearchExpanded ? _onCloseSearch : _onOpenSearch)
-              : null,
-          semanticLabel: _isSearchExpanded
-              ? 'Tutup pencarian'
-              : 'Cari aktifitas operasional',
-          icon: AppSvgIcon(
-            _isSearchExpanded ? KawaloVectors.cancel01 : KawaloVectors.search01,
-            size: 24,
-            color: !isInitialLoading
-                ? colorScheme.onSurface
-                : colorScheme.onSurface.withValues(
-                    alpha: AppStateLayer.disabledOpacity,
-                  ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-      body: SafeArea(
-        top: false,
-        child: AppKeyboardInsetsPadding(
-          isOffline: isOffline,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              filterBar,
-              Expanded(
-                child: AppRefreshIndicator.contained(
-                  semanticsLabel: 'Memuat ulang aktifitas operasional',
-                  onRefresh: () => _handleRefresh(cubit),
-                  child: bodyContent,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingSkeleton() {
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        top: AppSpacing.space150,
-        bottom: AppSpacing.space200,
-      ),
-      itemCount: 4,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
-      itemBuilder: (_, _) => const OperationalCardSkeleton(),
-    );
   }
 
   Widget _buildOperationalListView({
     required List<OperationalItemEntity> operationals,
     required bool isLoadingMore,
   }) {
-    final totalCount = operationals.length + (isLoadingMore ? 1 : 0);
-
-    return ListView.separated(
+    return ListScreenListView(
       controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        top: AppSpacing.space150,
-        bottom: AppSpacing.space200,
-      ),
-      itemCount: totalCount,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      bottomPadding: AppSpacing.space200,
+      itemCount: operationals.length,
+      isLoadingMore: isLoadingMore,
       itemBuilder: (context, index) {
-        if (index == operationals.length) {
-          return const Padding(
-            padding: AppSpacing.paddingVertical200,
-            child: Center(child: AppLoadingIndicator()),
-          );
-        }
-
         final item = operationals[index];
         return OperationalCard(
           item: item,
@@ -471,38 +311,11 @@ class _OperationalScreenState extends State<OperationalScreen> {
     );
   }
 
-  Widget _buildEmptyGroupState(BuildContext context) {
+  Widget _buildEmptyGroupState() {
     return const AppEmptyState(
       icon: AppSvgIcon.color(KawaloColorVectors.patrol2),
       title: 'Belum ada aktifitas operasional',
       description: 'Belum ada aktifitas tugas personil pada hari ini.',
-    );
-  }
-
-  Widget _buildEmptySearchResult(BuildContext context) {
-    return AppEmptyState.search(
-      title: 'Aktifitas operasional tidak ditemukan',
-      description:
-          'Tidak ada aktifitas operasional yang cocok dengan '
-          'pencarian atau filter yang diterapkan.',
-      actionLabel: 'Reset filter & pencarian',
-      onActionPressed: _resetAllFilters,
-    );
-  }
-
-  Widget _buildErrorState(
-    BuildContext context,
-    String message,
-    OperationalCubit cubit,
-  ) {
-    return AppEmptyState.error(
-      title: 'Gagal memuat aktifitas operasional',
-      description: message,
-      retryLabel: 'Coba lagi',
-      onRetry: () {
-        final query = _searchController.text;
-        cubit.fetchOperationals(search: query.isEmpty ? null : query);
-      },
     );
   }
 }
