@@ -20,17 +20,16 @@ class IncidentReplyModel extends Equatable {
   factory IncidentReplyModel.fromJson(Map<String, dynamic> json) {
     return IncidentReplyModel(
       id: json['id'] as String,
-      incidentId: (json['incident_id'] ?? json['incidentId'] ?? '') as String,
-      senderId: (json['sender_id'] ?? json['senderId'] ?? '') as String,
-      senderName: (json['sender_name'] ?? json['senderName'] ?? '') as String,
-      senderRole: (json['sender_role'] ?? json['senderRole'] ?? '') as String,
+      incidentId: (json['incident_id'] ?? '') as String,
+      senderId: (json['sender_id'] ?? '') as String,
+      senderName: (json['sender_name'] ?? '') as String,
+      senderRole: (json['sender_role'] ?? '') as String,
       message: (json['message'] ?? '') as String,
       photos: json['photos'] != null
           ? (json['photos'] as List<dynamic>).map((e) => e.toString()).toList()
           : const [],
-      createdAt: (json['created_at'] ??
-          json['createdAt'] ??
-          DateTime.now().toIso8601String()) as String,
+      createdAt:
+          (json['created_at'] ?? DateTime.now().toIso8601String()) as String,
     );
   }
 

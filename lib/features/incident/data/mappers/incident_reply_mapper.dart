@@ -70,14 +70,11 @@ abstract final class IncidentReplyMapper {
         return IncidentReplyStreamEvent(toEntity(replyModel));
 
       case 'thread_resolved':
-        final incidentId =
-            (decoded['incident_id'] ?? decoded['incidentId'] ?? '') as String;
-        final resolvedBy =
-            (decoded['resolved_by'] ?? decoded['resolvedBy'] ?? '') as String;
-        final resolvedByName = (decoded['resolved_by_name'] ??
-            decoded['resolvedByName'] ??
-            'Rekan') as String;
-        final rawResolvedAt = decoded['resolved_at'] ?? decoded['resolvedAt'];
+        final incidentId = (decoded['incident_id'] ?? '') as String;
+        final resolvedBy = (decoded['resolved_by'] ?? '') as String;
+        final resolvedByName =
+            (decoded['resolved_by_name'] ?? 'Rekan') as String;
+        final rawResolvedAt = decoded['resolved_at'];
         final resolvedAt = rawResolvedAt != null
             ? (DateTime.tryParse(rawResolvedAt.toString()) ?? DateTime.now())
             : DateTime.now();
@@ -90,9 +87,8 @@ abstract final class IncidentReplyMapper {
         );
 
       case 'incident_deleted':
-        final incidentId =
-            (decoded['incident_id'] ?? decoded['incidentId'] ?? '') as String;
-        final rawDeletedAt = decoded['deleted_at'] ?? decoded['deletedAt'];
+        final incidentId = (decoded['incident_id'] ?? '') as String;
+        final rawDeletedAt = decoded['deleted_at'];
         final deletedAt = rawDeletedAt != null
             ? (DateTime.tryParse(rawDeletedAt.toString()) ?? DateTime.now())
             : DateTime.now();
