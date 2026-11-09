@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 
 /// Status state dasar untuk modul Informasi / Feed.
-abstract class InformationState extends Equatable {
+abstract class InformationState extends Equatable implements ListFilterState {
   /// Membuat instance [InformationState].
   const InformationState();
 
@@ -13,6 +14,7 @@ abstract class InformationState extends Equatable {
   List<InformationItemEntity> get displayedInformation => const [];
 
   /// Periode filter waktu yang sedang aktif.
+  @override
   AppDateFilterPeriod get filterPeriod => AppDateFilterPeriod.today;
 
   /// Email pembuat informasi yang sedang difilter (ADMIN).
@@ -22,21 +24,27 @@ abstract class InformationState extends Equatable {
   String? get filterAuthorName => null;
 
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get startDate => null;
 
   /// Tanggal akhir rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get endDate => null;
 
   /// Tanggal awal filter dalam format ISO 8601 string yang telah disanitasi.
+  @override
   String? get startDateIso => null;
 
   /// Tanggal akhir filter dalam format ISO 8601 string yang telah disanitasi.
+  @override
   String? get endDateIso => null;
 
   /// Kata kunci pencarian yang sedang aktif.
+  @override
   String? get searchQuery => null;
 
   /// Label waktu sinkronisasi terakhir data dengan server.
+  @override
   String get lastSync => '';
 
   /// Apakah terdapat filter tanggal aktif selain default hari ini.
@@ -80,7 +88,7 @@ class InformationLoading extends InformationState {
 }
 
 /// Keadaan ketika data informasi berhasil dimuat.
-class InformationLoaded extends InformationState {
+class InformationLoaded extends InformationState implements ListLoadedState {
   /// Membuat instance [InformationLoaded].
   const InformationLoaded({
     required this.information,
@@ -111,9 +119,11 @@ class InformationLoaded extends InformationState {
   final String lastSync;
 
   /// Apakah masih terdapat data berikutnya di server untuk pagination.
+  @override
   final bool hasMore;
 
   /// Apakah sedang memuat data halaman berikutnya (infinite scroll).
+  @override
   final bool isLoadingMore;
 
   /// Periode filter waktu yang sedang aktif.
