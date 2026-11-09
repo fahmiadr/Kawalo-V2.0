@@ -85,9 +85,11 @@ class InformationModel extends Equatable {
   final int? eventDuration;
 
   /// Garis lintang GPS.
+  @StringFromNumOrStringConverter()
   final String? glat;
 
   /// Garis bujur GPS.
+  @StringFromNumOrStringConverter()
   final String? glong;
 
   @override

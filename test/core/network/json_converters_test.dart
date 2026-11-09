@@ -26,4 +26,23 @@ void main() {
       expect(converter.fromJson(5.0), 5);
     });
   });
+
+  group('StringFromNumOrStringConverter', () {
+    const converter = StringFromNumOrStringConverter();
+
+    test('keeps null and strings untouched', () {
+      expect(converter.fromJson(null), isNull);
+      expect(converter.fromJson('-6.2'), '-6.2');
+      expect(converter.fromJson(''), '');
+    });
+
+    test('stringifies numbers', () {
+      expect(converter.fromJson(-6.2), '-6.2');
+      expect(converter.fromJson(106), '106');
+    });
+
+    test('rejects other types', () {
+      expect(() => converter.fromJson(true), throwsFormatException);
+    });
+  });
 }

@@ -23,3 +23,21 @@ class NullableIntFromNumConverter implements JsonConverter<int?, Object?> {
   @override
   Object? toJson(int? object) => object;
 }
+
+/// Reads an optional string field that the server may send as a JSON number
+/// (for example GPS coordinates). `null` stays `null`; strings pass through.
+class StringFromNumOrStringConverter
+    implements JsonConverter<String?, Object?> {
+  const StringFromNumOrStringConverter();
+
+  @override
+  String? fromJson(Object? json) => switch (json) {
+    null => null,
+    final String value => value,
+    final num value => value.toString(),
+    _ => throw FormatException('Expected a string or number, got $json'),
+  };
+
+  @override
+  Object? toJson(String? object) => object;
+}

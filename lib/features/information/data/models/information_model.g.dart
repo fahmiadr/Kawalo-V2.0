@@ -29,6 +29,6 @@ InformationModel _$InformationModelFromJson(Map<String, dynamic> json) =>
       eventDuration: const NullableIntFromNumConverter().fromJson(
         json['event_duration'],
       ),
-      glat: json['glat'] as String?,
-      glong: json['glong'] as String?,
+      glat: const StringFromNumOrStringConverter().fromJson(json['glat']),
+      glong: const StringFromNumOrStringConverter().fromJson(json['glong']),
     );

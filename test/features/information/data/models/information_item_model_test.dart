@@ -93,5 +93,16 @@ void main() {
 
       expect(model.eventDuration, 90);
     });
+
+    test('reads glat and glong sent as JSON numbers', () {
+      final model = InformationModel.fromJson(const {
+        'id': '1',
+        'glat': -6.2,
+        'glong': 106,
+      });
+
+      expect(model.glat, '-6.2');
+      expect(model.glong, '106');
+    });
   });
 }
