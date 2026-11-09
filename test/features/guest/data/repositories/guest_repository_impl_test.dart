@@ -3,6 +3,7 @@ import 'package:kawalo_mobile/core/error/exceptions.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_source.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_remote_data_source.dart';
 import 'package:kawalo_mobile/features/guest/data/models/checkout_guest_model.dart';
@@ -65,6 +66,7 @@ void main() {
     when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
 
     repository = GuestRepositoryImpl(
+      syncStorageService: SyncStorageService(),
       remoteDataSource: mockRemoteDataSource,
       localDataSource: mockLocalDataSource,
       networkInfo: mockNetworkInfo,
@@ -123,6 +125,7 @@ void main() {
     test('should return ServerFailure when remote throws ServerException '
         'and localDataSource is null', () async {
       final repoNoLocal = GuestRepositoryImpl(
+        syncStorageService: SyncStorageService(),
         remoteDataSource: mockRemoteDataSource,
         networkInfo: mockNetworkInfo,
       );
@@ -323,6 +326,7 @@ void main() {
       'returns NoInternetFailure when offline and localDataSource is null',
       () async {
         final repoWithoutLocal = GuestRepositoryImpl(
+          syncStorageService: SyncStorageService(),
           remoteDataSource: mockRemoteDataSource,
           networkInfo: mockNetworkInfo,
         );
@@ -411,6 +415,7 @@ void main() {
       'returns Right(null) and completes normally when localDataSource is null',
       () async {
         final repoNoLocal = GuestRepositoryImpl(
+          syncStorageService: SyncStorageService(),
           remoteDataSource: mockRemoteDataSource,
           networkInfo: mockNetworkInfo,
         );
@@ -580,6 +585,7 @@ void main() {
 
     test('returns Right(entity) even when localDataSource is null', () async {
       final repoNoLocal = GuestRepositoryImpl(
+        syncStorageService: SyncStorageService(),
         remoteDataSource: mockRemoteDataSource,
         networkInfo: mockNetworkInfo,
       );
@@ -778,6 +784,7 @@ void main() {
 
     test('returns Right(entity) even when localDataSource is null', () async {
       final repoNoLocal = GuestRepositoryImpl(
+        syncStorageService: SyncStorageService(),
         remoteDataSource: mockRemoteDataSource,
         networkInfo: mockNetworkInfo,
       );

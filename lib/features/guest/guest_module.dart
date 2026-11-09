@@ -28,9 +28,9 @@ final class GuestModule implements CacheWipeableModule {
     required ApiClient apiClient,
     required Isar isar,
     required NetworkInfo networkInfo,
-    SyncStorageService? syncStorageService,
+    required SyncStorageService syncStorageService,
     GroupRepository? groupRepository,
-  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+  }) : _syncStorage = syncStorageService,
        _groupRepository =
            groupRepository ??
            GroupModule.createRepository(

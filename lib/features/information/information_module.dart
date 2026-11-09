@@ -29,11 +29,11 @@ final class InformationModule implements CacheWipeableModule {
     required ApiClient apiClient,
     required Isar isar,
     required NetworkInfo networkInfo,
-    SyncStorageService? syncStorageService,
+    required SyncStorageService syncStorageService,
     GroupRepository? groupRepository,
     LocationService? locationService,
   }) : _locationService = locationService ?? const DefaultLocationService(),
-       _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+       _syncStorage = syncStorageService,
        _groupRepository =
            groupRepository ??
            GroupModule.createRepository(

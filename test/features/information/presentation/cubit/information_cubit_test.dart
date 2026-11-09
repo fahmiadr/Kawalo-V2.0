@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
@@ -68,6 +69,7 @@ void main() {
     mockDeleteInformationUseCase = MockDeleteInformationUseCase();
     mockDeleteBatchInformationUseCase = MockDeleteBatchInformationUseCase();
     cubit = InformationCubit(
+      syncStorageService: SyncStorageService(),
       informationRepository: mockInformationRepository,
       deleteInformationUseCase: mockDeleteInformationUseCase,
       deleteBatchInformationUseCase: mockDeleteBatchInformationUseCase,
@@ -554,6 +556,7 @@ void main() {
         ).thenAnswer((_) async => const Right(tMembers));
 
         final cubitWithMembers = InformationCubit(
+          syncStorageService: SyncStorageService(),
           informationRepository: mockInformationRepository,
           deleteInformationUseCase: mockDeleteInformationUseCase,
           deleteBatchInformationUseCase: mockDeleteBatchInformationUseCase,
@@ -580,6 +583,7 @@ void main() {
         ).thenAnswer((_) async => const Left(tFailure));
 
         final cubitWithMembers = InformationCubit(
+          syncStorageService: SyncStorageService(),
           informationRepository: mockInformationRepository,
           deleteInformationUseCase: mockDeleteInformationUseCase,
           deleteBatchInformationUseCase: mockDeleteBatchInformationUseCase,

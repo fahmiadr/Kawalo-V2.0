@@ -22,8 +22,8 @@ class OperationalRepositoryImpl implements OperationalRepository {
   /// Membuat instance [OperationalRepositoryImpl].
   const OperationalRepositoryImpl({
     required this.remoteDataSource,
+    required this.syncStorageService,
     this.localDataSource,
-    this.syncStorageService,
     this.networkInfo,
   });
 
@@ -34,7 +34,7 @@ class OperationalRepositoryImpl implements OperationalRepository {
   final OperationalLocalDataSource? localDataSource;
 
   /// Layanan persistensi waktu sinkronisasi.
-  final SyncStorageService? syncStorageService;
+  final SyncStorageService syncStorageService;
 
   /// Utilitas pengecekan konektivitas jaringan perangkat.
   final NetworkInfo? networkInfo;

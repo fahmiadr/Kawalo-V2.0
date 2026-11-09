@@ -6,6 +6,7 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
@@ -319,6 +320,7 @@ void main() {
         );
 
         final cubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchUseCase,

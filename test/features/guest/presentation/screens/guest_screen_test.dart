@@ -7,6 +7,7 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
@@ -219,6 +220,7 @@ void main() {
       });
 
       final cubit = GuestCubit(
+        syncStorageService: SyncStorageService(),
         guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -396,6 +398,7 @@ void main() {
         });
 
         final cubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -448,6 +451,7 @@ void main() {
         )..setStatus(ConnectivityStatus.offline);
 
         final guestCubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -507,6 +511,7 @@ void main() {
       );
 
       final guestCubit = GuestCubit(
+        syncStorageService: SyncStorageService(),
         guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -559,6 +564,7 @@ void main() {
         );
 
         final guestCubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -623,6 +629,7 @@ void main() {
         );
 
         final guestCubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -691,6 +698,7 @@ void main() {
         );
 
         final guestCubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -735,6 +743,7 @@ void main() {
         );
 
         final guestCubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),

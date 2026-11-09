@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/domain/repositories/attendance_repository.dart';
@@ -22,7 +23,10 @@ void main() {
 
   setUp(() {
     mockRepo = MockAttendanceRepository();
-    cubit = AttendanceCubit(repository: mockRepo);
+    cubit = AttendanceCubit(
+      syncStorageService: SyncStorageService(),
+      repository: mockRepo,
+    );
   });
 
   tearDown(() {

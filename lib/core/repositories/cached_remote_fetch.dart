@@ -49,7 +49,7 @@ Future<void> bestEffortCache(Future<void> Function()? op) async {
 Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
   required bool isRefresh,
   required NetworkInfo? networkInfo,
-  required SyncStorageService? syncStorageService,
+  required SyncStorageService syncStorageService,
   required String syncKey,
   required Future<List<M>> Function() fetchRemote,
   required R Function(List<M> models, {required bool isFromCache}) toResult,
@@ -78,10 +78,7 @@ Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
     }
 
     // Record the sync time ONLY when the remote call succeeds.
-    await (syncStorageService ?? SyncStorageService.singleton()).saveLastSync(
-      syncKey,
-      DateTime.now(),
-    );
+    await syncStorageService.saveLastSync(syncKey, DateTime.now());
 
     return Right(toResult(models, isFromCache: false));
   } on AppException catch (e) {

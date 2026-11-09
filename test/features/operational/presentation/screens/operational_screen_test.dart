@@ -5,6 +5,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
@@ -213,7 +214,10 @@ void main() {
         return Right(OperationalResult(items: testWorkers));
       });
 
-      final cubit = OperationalCubit(repository: mockRepo);
+      final cubit = OperationalCubit(
+        syncStorageService: SyncStorageService(),
+        repository: mockRepo,
+      );
 
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -280,7 +284,10 @@ void main() {
           return Right(OperationalResult(items: testWorkers));
         });
 
-        final cubit = OperationalCubit(repository: mockRepo);
+        final cubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -328,7 +335,10 @@ void main() {
           checkConnection: () async => false,
         )..setStatus(ConnectivityStatus.offline);
 
-        final operationalCubit = OperationalCubit(repository: mockRepo);
+        final operationalCubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         await tester.pumpWidget(
           BlocProvider<ConnectivityCubit>.value(
@@ -382,7 +392,10 @@ void main() {
         () => mockRepo.getOperationals(any()),
       ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-      final operationalCubit = OperationalCubit(repository: mockRepo);
+      final operationalCubit = OperationalCubit(
+        syncStorageService: SyncStorageService(),
+        repository: mockRepo,
+      );
 
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -430,7 +443,10 @@ void main() {
           () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(repository: mockRepo);
+        final operationalCubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -489,7 +505,10 @@ void main() {
           (_) async => const Left(ServerFailure('Koneksi terputus')),
         );
 
-        final operationalCubit = OperationalCubit(repository: mockRepo);
+        final operationalCubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -551,7 +570,10 @@ void main() {
           () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(repository: mockRepo);
+        final operationalCubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         // Fetch with search 'Agus' and filter 'thisWeek'
         await operationalCubit.fetchOperationals(
@@ -592,7 +614,10 @@ void main() {
               const Right(OperationalResult(items: [], isFromCache: true)),
         );
 
-        final operationalCubit = OperationalCubit(repository: mockRepo);
+        final operationalCubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         await operationalCubit.fetchOperationals(search: 'NonExistent');
 
@@ -633,7 +658,10 @@ void main() {
           () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(repository: mockRepo);
+        final operationalCubit = OperationalCubit(
+          syncStorageService: SyncStorageService(),
+          repository: mockRepo,
+        );
 
         await tester.pumpWidget(
           M3EMaterialApp(

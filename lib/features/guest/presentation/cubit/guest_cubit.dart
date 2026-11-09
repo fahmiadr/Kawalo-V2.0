@@ -31,11 +31,11 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     required this.guestRepository,
     required this.deleteGuestUseCase,
     required this.deleteBatchGuestUseCase,
+    required super.syncStorageService,
     this.checkoutGuestUseCase,
     this.groupRepository,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
-    super.syncStorageService,
   }) : super(
          GuestInitial(
            lastSync: SyncStorageService.resolveInitialGreeting(

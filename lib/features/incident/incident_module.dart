@@ -1,5 +1,6 @@
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/incident/data/datasources/incident_remote_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/repositories/incident_repository_impl.dart';
 import 'package:kawalo_mobile/features/incident/domain/repositories/incident_repository.dart';
@@ -24,16 +25,20 @@ final class IncidentModule {
   IncidentModule({
     required ApiClient apiClient,
     required NetworkInfo networkInfo,
-  }) : repository = IncidentRepositoryImpl(
+    required SyncStorageService syncStorageService,
+  }) : _syncStorage = syncStorageService,
+       repository = IncidentRepositoryImpl(
          remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
          networkInfo: networkInfo,
        );
+  final SyncStorageService _syncStorage;
   final IncidentRepository repository;
 
   /// Merakit dan mengembalikan instance [IncidentListCubit] yang siap pakai.
   IncidentListCubit createIncidentListCubit() {
     return IncidentListCubit(
       getIncidentsUseCase: GetIncidentsUseCase(repository),
+      syncStorageService: _syncStorage,
     );
   }
 

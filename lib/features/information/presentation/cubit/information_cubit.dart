@@ -30,10 +30,10 @@ class InformationCubit
     required this.informationRepository,
     required this.deleteInformationUseCase,
     required this.deleteBatchInformationUseCase,
+    required super.syncStorageService,
     this.groupRepository,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
-    super.syncStorageService,
   }) : super(
          InformationInitial(
            lastSync: SyncStorageService.resolveInitialGreeting(

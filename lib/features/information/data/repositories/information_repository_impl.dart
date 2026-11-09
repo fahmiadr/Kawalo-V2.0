@@ -34,8 +34,8 @@ class InformationRepositoryImpl implements InformationRepository {
   /// Membuat instance [InformationRepositoryImpl].
   const InformationRepositoryImpl({
     required this.remoteDataSource,
+    required this.syncStorageService,
     this.localDataSource,
-    this.syncStorageService,
     this.networkInfo,
   });
 
@@ -46,7 +46,7 @@ class InformationRepositoryImpl implements InformationRepository {
   final InformationLocalDataSource? localDataSource;
 
   /// Layanan persistensi waktu sinkronisasi.
-  final SyncStorageService? syncStorageService;
+  final SyncStorageService syncStorageService;
 
   /// Layanan pengecekan status konektivitas jaringan.
   final NetworkInfo? networkInfo;

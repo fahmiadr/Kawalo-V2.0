@@ -17,9 +17,9 @@ class AttendanceCubit
   /// Membuat instance [AttendanceCubit].
   AttendanceCubit({
     required this.repository,
+    required super.syncStorageService,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
-    super.syncStorageService,
   }) : super(
          AttendanceInitial(
            lastSync: SyncStorageService.resolveInitialGreeting(

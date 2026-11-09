@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
@@ -74,6 +75,7 @@ void main() {
     mockDeleteGuestUseCase = MockDeleteGuestUseCase();
     mockDeleteBatchGuestUseCase = MockDeleteBatchGuestUseCase();
     cubit = GuestCubit(
+      syncStorageService: SyncStorageService(),
       guestRepository: mockGuestRepository,
       deleteGuestUseCase: mockDeleteGuestUseCase,
       deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
@@ -113,6 +115,7 @@ void main() {
 
   test('initial state contains initialGreeting when provided', () {
     final customCubit = GuestCubit(
+      syncStorageService: SyncStorageService(),
       guestRepository: mockGuestRepository,
       deleteGuestUseCase: mockDeleteGuestUseCase,
       deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
@@ -654,6 +657,7 @@ void main() {
         ).thenAnswer((_) async => const Right(tMembers));
 
         final cubitWithMembers = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
@@ -680,6 +684,7 @@ void main() {
         ).thenAnswer((_) async => const Left(tFailure));
 
         final cubitWithMembers = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
@@ -750,6 +755,7 @@ void main() {
 
         final cubitWithCheckout =
             GuestCubit(
+              syncStorageService: SyncStorageService(),
               guestRepository: mockGuestRepository,
               deleteGuestUseCase: mockDeleteGuestUseCase,
               deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
@@ -795,6 +801,7 @@ void main() {
 
         final cubitWithCheckout =
             GuestCubit(
+              syncStorageService: SyncStorageService(),
               guestRepository: mockGuestRepository,
               deleteGuestUseCase: mockDeleteGuestUseCase,
               deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,

@@ -30,7 +30,6 @@ void main() {
   setUp(() {
     mockGetIncidentsUseCase = MockGetIncidentsUseCase();
     syncStorageService = SyncStorageService();
-    SyncStorageService.mockInstance = syncStorageService;
     cubit = IncidentListCubit(
       getIncidentsUseCase: mockGetIncidentsUseCase,
       syncStorageService: syncStorageService,
@@ -77,6 +76,7 @@ void main() {
 
     test('initial state contains initialGreeting when provided', () {
       final customCubit = IncidentListCubit(
+        syncStorageService: SyncStorageService(),
         getIncidentsUseCase: mockGetIncidentsUseCase,
         initialGreeting: 'Diperbarui Hari ini, 15.20',
       );

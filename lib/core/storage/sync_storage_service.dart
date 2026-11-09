@@ -1,6 +1,6 @@
 import 'dart:io' as io;
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 
@@ -13,11 +13,6 @@ class SyncStorageService {
           storageService ??
           (_isTestEnvironment ? null : SecureStorageService());
 
-  /// Factory constructor singleton untuk kemudahan akses di Shared Kernel.
-  factory SyncStorageService.singleton({SecureStorageService? storageService}) {
-    return _instance ??= SyncStorageService(storageService: storageService);
-  }
-
   static bool get _isTestEnvironment {
     try {
       return !kIsWeb && io.Platform.environment.containsKey('FLUTTER_TEST');
@@ -28,15 +23,6 @@ class SyncStorageService {
 
   final SecureStorageService? _storageService;
   final Map<String, DateTime> _memoryCache = {};
-
-  static SyncStorageService? _instance;
-
-  /// Instance mock untuk pengujian.
-  @visibleForTesting
-  static SyncStorageService? get mockInstance => _instance;
-
-  @visibleForTesting
-  static set mockInstance(SyncStorageService? service) => _instance = service;
 
   /// Menyimpan waktu sinkronisasi terakhir untuk [featureKey] baik di memori
   /// maupun di persistent storage.
@@ -92,11 +78,10 @@ class SyncStorageService {
   static String resolveInitialGreeting({
     required String initialGreeting,
     required String featureKey,
-    SyncStorageService? storageService,
+    required SyncStorageService storageService,
   }) {
     if (initialGreeting.isNotEmpty) return initialGreeting;
-    final service = storageService ?? SyncStorageService.singleton();
-    return service.getCachedGreeting(featureKey) ?? '';
+    return storageService.getCachedGreeting(featureKey) ?? '';
   }
 
   /// Menghasilkan teks greeting tersinkronisasi berdasarkan waktu sinkronisasi

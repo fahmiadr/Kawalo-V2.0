@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
@@ -23,7 +24,10 @@ void main() {
 
   setUp(() {
     mockRepo = MockOperationalRepository();
-    cubit = OperationalCubit(repository: mockRepo);
+    cubit = OperationalCubit(
+      syncStorageService: SyncStorageService(),
+      repository: mockRepo,
+    );
   });
 
   tearDown(() {
@@ -65,6 +69,7 @@ void main() {
 
   test('initial state contains initialGreeting when provided', () {
     final customCubit = OperationalCubit(
+      syncStorageService: SyncStorageService(),
       repository: mockRepo,
       initialGreeting: 'Diperbarui Hari ini, 15.20',
     );

@@ -22,8 +22,8 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   /// Membuat instance [AttendanceRepositoryImpl].
   const AttendanceRepositoryImpl({
     required this.remoteDataSource,
+    required this.syncStorageService,
     this.localDataSource,
-    this.syncStorageService,
     this.networkInfo,
   });
 
@@ -34,7 +34,7 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   final AttendanceLocalDataSource? localDataSource;
 
   /// Layanan persistensi waktu sinkronisasi.
-  final SyncStorageService? syncStorageService;
+  final SyncStorageService syncStorageService;
 
   /// Layanan pengecekan status konektivitas jaringan.
   final NetworkInfo? networkInfo;

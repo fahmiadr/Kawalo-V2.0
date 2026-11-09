@@ -36,8 +36,8 @@ class GuestRepositoryImpl implements GuestRepository {
   /// Membuat instance [GuestRepositoryImpl].
   const GuestRepositoryImpl({
     required this.remoteDataSource,
+    required this.syncStorageService,
     this.localDataSource,
-    this.syncStorageService,
     this.networkInfo,
   });
 
@@ -48,7 +48,7 @@ class GuestRepositoryImpl implements GuestRepository {
   final GuestLocalDataSource? localDataSource;
 
   /// Layanan persistensi waktu sinkronisasi.
-  final SyncStorageService? syncStorageService;
+  final SyncStorageService syncStorageService;
 
   /// Utilitas pengecekan konektivitas jaringan perangkat.
   final NetworkInfo? networkInfo;

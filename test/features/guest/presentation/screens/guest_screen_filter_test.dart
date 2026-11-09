@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
@@ -112,6 +113,7 @@ void main() {
       });
 
       final cubit = GuestCubit(
+        syncStorageService: SyncStorageService(),
         guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -166,6 +168,7 @@ void main() {
       );
 
       final cubit = GuestCubit(
+        syncStorageService: SyncStorageService(),
         guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
@@ -235,6 +238,7 @@ void main() {
         });
 
         final cubit = GuestCubit(
+          syncStorageService: SyncStorageService(),
           guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),

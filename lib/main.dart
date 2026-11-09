@@ -93,9 +93,7 @@ class _MyAppState extends State<MyApp> {
     _apiClient = ApiClient(storage: _storageService);
     _networkInfo = NetworkInfoImpl();
 
-    final syncStorage = SyncStorageService.singleton(
-      storageService: _storageService,
-    );
+    final syncStorage = SyncStorageService(storageService: _storageService);
 
     // Shared dependencies are assembled once here; each module builds its own
     // repository a single time and every cubit reuses it.
@@ -132,6 +130,7 @@ class _MyAppState extends State<MyApp> {
     _incidentModule = IncidentModule(
       apiClient: _apiClient,
       networkInfo: _networkInfo,
+      syncStorageService: syncStorage,
     );
 
     _cacheWiper = CacheWiper(

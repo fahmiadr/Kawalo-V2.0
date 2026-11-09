@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/error/exceptions.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_local_data_source.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_remote_data_source.dart';
 import 'package:kawalo_mobile/features/information/data/models/create_information_model.dart';
@@ -53,6 +54,7 @@ void main() {
     when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
 
     repository = InformationRepositoryImpl(
+      syncStorageService: SyncStorageService(),
       remoteDataSource: mockRemoteDataSource,
       localDataSource: mockLocalDataSource,
       networkInfo: mockNetworkInfo,
@@ -312,6 +314,7 @@ void main() {
       'returns NoInternetFailure when offline and localDataSource is null',
       () async {
         final repoWithoutLocal = InformationRepositoryImpl(
+          syncStorageService: SyncStorageService(),
           remoteDataSource: mockRemoteDataSource,
           networkInfo: mockNetworkInfo,
         );
@@ -399,6 +402,7 @@ void main() {
       'returns Right(null) and completes normally when localDataSource is null',
       () async {
         final repoNoLocal = InformationRepositoryImpl(
+          syncStorageService: SyncStorageService(),
           remoteDataSource: mockRemoteDataSource,
           networkInfo: mockNetworkInfo,
         );

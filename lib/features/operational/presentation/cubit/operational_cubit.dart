@@ -17,9 +17,9 @@ class OperationalCubit
   /// Membuat instance [OperationalCubit].
   OperationalCubit({
     required this.repository,
+    required super.syncStorageService,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
-    super.syncStorageService,
   }) : super(
          OperationalInitial(
            lastSync: SyncStorageService.resolveInitialGreeting(

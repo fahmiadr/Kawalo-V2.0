@@ -107,8 +107,8 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     super.initialState, {
     required this.syncKey,
     required this.pageSize,
-    SyncStorageService? syncStorageService,
-  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton() {
+    required SyncStorageService syncStorageService,
+  }) : _syncStorage = syncStorageService {
     _initGreeting();
   }
 

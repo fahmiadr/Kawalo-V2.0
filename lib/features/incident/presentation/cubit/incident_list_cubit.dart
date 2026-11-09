@@ -19,9 +19,9 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
   /// Membuat instance [IncidentListCubit].
   IncidentListCubit({
     required this.getIncidentsUseCase,
+    required super.syncStorageService,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
-    super.syncStorageService,
   }) : super(
          IncidentInitial(
            lastSync: SyncStorageService.resolveInitialGreeting(

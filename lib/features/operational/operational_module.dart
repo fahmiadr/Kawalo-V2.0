@@ -18,8 +18,8 @@ final class OperationalModule implements CacheWipeableModule {
     required ApiClient apiClient,
     required Isar isar,
     required NetworkInfo networkInfo,
-    SyncStorageService? syncStorageService,
-  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton() {
+    required SyncStorageService syncStorageService,
+  }) : _syncStorage = syncStorageService {
     final localDataSource = OperationalLocalDataSourceImpl(isar: isar);
     cacheWipeable = localDataSource;
     repository = OperationalRepositoryImpl(

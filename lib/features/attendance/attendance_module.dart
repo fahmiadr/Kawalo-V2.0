@@ -18,8 +18,8 @@ final class AttendanceModule implements CacheWipeableModule {
     required ApiClient apiClient,
     required Isar isar,
     required NetworkInfo networkInfo,
-    SyncStorageService? syncStorageService,
-  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton() {
+    required SyncStorageService syncStorageService,
+  }) : _syncStorage = syncStorageService {
     final localDataSource = AttendanceLocalDataSourceImpl(isar: isar);
     cacheWipeable = localDataSource;
     repository = AttendanceRepositoryImpl(
