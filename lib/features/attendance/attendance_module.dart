@@ -6,7 +6,6 @@ import 'package:kawalo_mobile/features/attendance/data/datasources/attendance_lo
 import 'package:kawalo_mobile/features/attendance/data/datasources/attendance_remote_data_source.dart';
 import 'package:kawalo_mobile/features/attendance/data/repositories/attendance_repository_impl.dart';
 import 'package:kawalo_mobile/features/attendance/domain/repositories/attendance_repository.dart';
-import 'package:kawalo_mobile/features/attendance/domain/usecases/get_attendances/get_attendances_usecase.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
 
 /// Feature Composition Root untuk modul Absensi pada Frontend.
@@ -34,7 +33,7 @@ final class AttendanceModule {
   /// Merakit dan mengembalikan instance [AttendanceCubit] yang siap pakai.
   AttendanceCubit createCubit() {
     return AttendanceCubit(
-      getAttendancesUseCase: GetAttendancesUseCase(repository),
+      repository: repository,
       syncStorageService: _syncStorage,
     );
   }

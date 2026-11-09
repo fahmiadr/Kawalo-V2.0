@@ -4,19 +4,19 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
-import 'package:kawalo_mobile/features/attendance/domain/usecases/get_attendances/get_attendances_usecase.dart';
+import 'package:kawalo_mobile/features/attendance/domain/repositories/attendance_repository.dart';
 import 'package:kawalo_mobile/features/attendance/domain/value_objects/get_attendances_params.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_state.dart';
 
 /// Cubit pengelola state dan logika bisnis modul Data Absensi.
 ///
 /// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
-/// class only maps the attendance use cases and state.
+/// class only maps the attendance repository and state.
 class AttendanceCubit
     extends ListFetchCubit<AttendanceState, AttendanceItemEntity> {
   /// Membuat instance [AttendanceCubit].
   AttendanceCubit({
-    required this.getAttendancesUseCase,
+    required this.repository,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
@@ -31,8 +31,8 @@ class AttendanceCubit
          syncKey: AppConstants.syncKeyAttendance,
        );
 
-  /// Use case untuk mengambil data absensi.
-  final GetAttendancesUseCase getAttendancesUseCase;
+  /// Repositori data absensi.
+  final AttendanceRepository repository;
 
   @override
   AttendanceState? stateWithLastSync(String greeting) {
@@ -105,7 +105,7 @@ class AttendanceCubit
       filter: filter,
       currentItems: state.displayedAttendances,
       loading: (lastSync) => AttendanceLoading(lastSync: lastSync),
-      request: (limit, cancelToken) async => (await getAttendancesUseCase(
+      request: (limit, cancelToken) async => (await repository.getAttendances(
         GetAttendancesParams(
           search: filter.search,
           limit: limit,
@@ -145,7 +145,7 @@ class AttendanceCubit
 
   /// Memuat halaman berikutnya untuk infinite scroll.
   Future<void> loadMoreAttendances() => runLoadMore<AttendanceLoaded>(
-    request: (current) async => (await getAttendancesUseCase(
+    request: (current) async => (await repository.getAttendances(
       GetAttendancesParams(
         search: current.searchQuery,
         limit: pageSize,
