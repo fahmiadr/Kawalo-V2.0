@@ -9,7 +9,6 @@ import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_option_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_location_source_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_photo_action_bottom_sheet.dart';
@@ -32,7 +31,7 @@ void main() {
     tearDown(resetAppBottomSheetActiveForTesting);
 
     const testUsers = [
-      GroupMemberEntity(email: 'user@kawalo.id', name: 'User Test'),
+      UserFilterOption(email: 'user@kawalo.id', name: 'User Test'),
     ];
 
     const testSession = AuthSessionEntity(

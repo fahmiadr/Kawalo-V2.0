@@ -29,6 +29,7 @@ import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
+import 'package:kawalo_mobile/features/group/presentation/group_member_filter_options.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
@@ -418,7 +419,7 @@ class _GuestScreenState extends State<GuestScreen> {
     final session = _resolveSession(context);
     final result = await showAppUserFilterBottomSheet(
       context: context,
-      onLoadUsers: cubit.loadGroupMembers,
+      onLoadUsers: () => loadGroupMemberFilterOptions(cubit.loadGroupMembers),
       selectedEmail: cubit.state.filterCreatorEmail,
       currentUserSession: session,
     );

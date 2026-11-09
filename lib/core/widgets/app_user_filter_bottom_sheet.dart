@@ -19,7 +19,32 @@ import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
+
+/// Opsi personil yang dapat dipilih pada [AppUserFilterBottomSheet].
+class UserFilterOption extends Equatable {
+  /// Membuat instance [UserFilterOption].
+  const UserFilterOption({
+    required this.email,
+    this.name,
+    this.profilePic,
+  });
+
+  /// Alamat email unik personil.
+  final String email;
+
+  /// Nama lengkap personil (opsional).
+  final String? name;
+
+  /// URL foto profil personil (opsional).
+  final String? profilePic;
+
+  /// Label nama tampilan untuk antarmuka pengguna (fallback ke email).
+  String get displayName =>
+      (name != null && name!.trim().isNotEmpty) ? name! : email;
+
+  @override
+  List<Object?> get props => [email, name, profilePic];
+}
 
 /// Hasil seleksi penyaringan personil dari [AppUserFilterBottomSheet].
 class AppUserFilterResult extends Equatable {
@@ -29,8 +54,8 @@ class AppUserFilterResult extends Equatable {
     this.isReset = false,
   });
 
-  /// Anggota grup terpilih (null jika direset ke seluruh personil).
-  final GroupMemberEntity? selectedUser;
+  /// Personil terpilih (null jika direset ke seluruh personil).
+  final UserFilterOption? selectedUser;
 
   /// Menandakan apakah modal disubmit dengan pilihan reset.
   final bool isReset;
@@ -56,13 +81,13 @@ class AppUserFilterBottomSheet extends StatefulWidget {
   });
 
   /// Daftar seluruh personil aktif dalam grup (opsional).
-  final List<GroupMemberEntity>? users;
+  final List<UserFilterOption>? users;
 
   /// Callback untuk memuat daftar personil secara asinkron saat modal dibuka.
   ///
   /// Menerima pengembalian bertipe
-  /// `Future<Either<Failure, List<GroupMemberEntity>>>`
-  /// atau `Future<List<GroupMemberEntity>>`.
+  /// `Future<Either<Failure, List<UserFilterOption>>>`
+  /// atau `Future<List<UserFilterOption>>`.
   final Future<dynamic> Function()? onLoadUsers;
 
   /// Email personil yang sedang terpilih saat modal dibuka.
@@ -85,7 +110,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
   late String? _selectedEmail;
   String _searchQuery = '';
   bool _hasSearchText = false;
-  late List<GroupMemberEntity> _users;
+  late List<UserFilterOption> _users;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -125,7 +150,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
       final result = await widget.onLoadUsers!();
       if (!mounted) return;
 
-      if (result is Either<Failure, List<GroupMemberEntity>>) {
+      if (result is Either<Failure, List<UserFilterOption>>) {
         result.fold(
           (failure) {
             setState(() {
@@ -147,7 +172,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
             });
           },
         );
-      } else if (result is List<GroupMemberEntity>) {
+      } else if (result is List<UserFilterOption>) {
         setState(() {
           _users = result;
           _isLoading = false;
@@ -181,7 +206,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
     super.dispose();
   }
 
-  List<GroupMemberEntity> get _filteredUsers {
+  List<UserFilterOption> get _filteredUsers {
     if (_searchQuery.isEmpty) {
       return _users;
     }
@@ -199,7 +224,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
     });
   }
 
-  GroupMemberEntity? _resolveSelectedUser() {
+  UserFilterOption? _resolveSelectedUser() {
     final email = _selectedEmail;
     if (email == null) return null;
 
@@ -208,12 +233,12 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
 
     final session = widget.currentUserSession;
     if (session != null && session.email == email) {
-      return GroupMemberEntity(
+      return UserFilterOption(
         email: session.email,
         name: session.name,
       );
     }
-    return GroupMemberEntity(email: email);
+    return UserFilterOption(email: email);
   }
 
   String? _resolveCurrentUserPic() {
@@ -460,13 +485,13 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
 }
 
 /// Menampilkan bottom sheet pemilih personil pembuat data
-/// [GroupMemberEntity] dengan hasil terstruktur [AppUserFilterResult].
+/// [UserFilterOption] dengan hasil terstruktur [AppUserFilterResult].
 ///
 /// Jika [onLoadUsers] disediakan, bottom sheet langsung terbuka seketika
 /// dan memuat data personil secara asinkron dengan [AppLoadingIndicator].
 Future<AppUserFilterResult?> showAppUserFilterBottomSheet({
   required BuildContext context,
-  List<GroupMemberEntity>? users,
+  List<UserFilterOption>? users,
   Future<dynamic> Function()? onLoadUsers,
   String? selectedEmail,
   AuthSessionEntity? currentUserSession,

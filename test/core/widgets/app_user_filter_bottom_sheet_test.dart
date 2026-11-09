@@ -11,17 +11,16 @@ import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 
 void main() {
   group('AppUserFilterBottomSheet Widget Tests', () {
     tearDown(AppSnackbar.hideCurrent);
     const testUsers = [
-      GroupMemberEntity(
+      UserFilterOption(
         email: 'budi@kawalo.id',
         name: 'Budi Santoso',
       ),
-      GroupMemberEntity(
+      UserFilterOption(
         email: 'siti@kawalo.id',
         name: 'Siti Rahmawati',
       ),
@@ -263,7 +262,7 @@ void main() {
 
     testWidgets('shows loading indicator when onLoadUsers is fetching',
         (tester) async {
-      final completer = Completer<List<GroupMemberEntity>>();
+      final completer = Completer<List<UserFilterOption>>();
 
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -299,9 +298,8 @@ void main() {
     });
 
     testWidgets(
-      'shows AppSnackbar and error view when onLoadUsers returns '
-      'Left(NoInternetFailure)',
-      (tester) async {
+        'shows AppSnackbar and error view when onLoadUsers returns '
+        'Left(NoInternetFailure)', (tester) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -312,7 +310,7 @@ void main() {
                   onPressed: () => showAppUserFilterBottomSheet(
                     context: context,
                     onLoadUsers: () async =>
-                        const Left<Failure, List<GroupMemberEntity>>(
+                        const Left<Failure, List<UserFilterOption>>(
                       NoInternetFailure('Koneksi internet tidak tersedia.'),
                     ),
                     currentUserSession: testSession,
@@ -337,9 +335,8 @@ void main() {
     });
 
     testWidgets(
-      'shows AppSnackbar and error view when onLoadUsers returns '
-      'Left(ServerFailure)',
-      (tester) async {
+        'shows AppSnackbar and error view when onLoadUsers returns '
+        'Left(ServerFailure)', (tester) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -350,7 +347,7 @@ void main() {
                   onPressed: () => showAppUserFilterBottomSheet(
                     context: context,
                     onLoadUsers: () async =>
-                        const Left<Failure, List<GroupMemberEntity>>(
+                        const Left<Failure, List<UserFilterOption>>(
                       ServerFailure('Terjadi kendala pada server.'),
                     ),
                     currentUserSession: testSession,
@@ -391,11 +388,11 @@ void main() {
                     onLoadUsers: () async {
                       callCount++;
                       if (callCount == 1) {
-                        return const Left<Failure, List<GroupMemberEntity>>(
+                        return const Left<Failure, List<UserFilterOption>>(
                           NoInternetFailure(),
                         );
                       }
-                      return const Right<Failure, List<GroupMemberEntity>>(
+                      return const Right<Failure, List<UserFilterOption>>(
                         testUsers,
                       );
                     },
@@ -506,7 +503,7 @@ void main() {
       (tester) async {
         final manyUsers = List.generate(
           20,
-          (i) => GroupMemberEntity(
+          (i) => UserFilterOption(
             email: 'user$i@kawalo.id',
             name: 'User Ke-$i',
           ),
@@ -538,8 +535,7 @@ void main() {
         // Verifikasi posisi awal widget sticky
         final searchBarInitialTop =
             tester.getTopLeft(find.byType(AppSearchBar)).dy;
-        final siapapunInitialTop =
-            tester.getTopLeft(find.text('Siapapun')).dy;
+        final siapapunInitialTop = tester.getTopLeft(find.text('Siapapun')).dy;
         final sayaInitialTop = tester.getTopLeft(find.text('Saya')).dy;
 
         // Scroll daftar pengguna ke atas
