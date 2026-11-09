@@ -8,15 +8,12 @@ import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_cha
 import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_params.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_usecase.dart';
-import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_params.dart';
-import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 
 class PttCubit extends Cubit<PttState> {
   PttCubit({
     required this.joinChannelUseCase,
     required this.startTransmissionUseCase,
-    required this.stopTransmissionUseCase,
     required this.repository,
   }) : super(const PttInitial()) {
     _initStreamSubscriptions();
@@ -24,7 +21,6 @@ class PttCubit extends Cubit<PttState> {
 
   final JoinChannelUseCase joinChannelUseCase;
   final StartTransmissionUseCase startTransmissionUseCase;
-  final StopTransmissionUseCase stopTransmissionUseCase;
   final PttRepository repository;
 
   StreamSubscription<PttFloorStateEntity>? _floorSubscription;
@@ -257,7 +253,7 @@ class PttCubit extends Cubit<PttState> {
   Future<void> releasePttButton() async {
     // Selalu kirim stop transmission untuk menjamin mikrofon native
     // berhenti dan server melepaskan floor terlepas dari state UI apapun
-    await stopTransmissionUseCase(const StopTransmissionParams());
+    await repository.stopTransmission();
 
     if (state is PttTransmitting || state is PttRequestingFloor) {
       emit(

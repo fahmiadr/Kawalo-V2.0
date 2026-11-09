@@ -4,8 +4,6 @@ import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_repository_impl
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_usecase.dart';
-import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_usecase.dart';
-import 'package:kawalo_mobile/features/ptt/domain/usecases/watch_floor_state/watch_floor_state_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 
 /// Feature Composition Root untuk modul Push-to-Talk (PTT).
@@ -40,14 +38,7 @@ class PttModule {
     return PttCubit(
       joinChannelUseCase: JoinChannelUseCase(repo),
       startTransmissionUseCase: StartTransmissionUseCase(repo),
-      stopTransmissionUseCase: StopTransmissionUseCase(repo),
       repository: repo,
     );
-  }
-
-  static WatchFloorStateUseCase createWatchFloorStateUseCase({
-    PttRepository? repository,
-  }) {
-    return WatchFloorStateUseCase(repository ?? createRepository());
   }
 }

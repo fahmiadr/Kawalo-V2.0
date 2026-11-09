@@ -11,8 +11,6 @@ import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_cha
 import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_params.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_usecase.dart';
-import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_params.dart';
-import 'package:kawalo_mobile/features/ptt/domain/usecases/stop_transmission/stop_transmission_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 import 'package:mocktail/mocktail.dart';
@@ -24,14 +22,10 @@ class MockJoinChannelUseCase extends Mock implements JoinChannelUseCase {}
 class MockStartTransmissionUseCase extends Mock
     implements StartTransmissionUseCase {}
 
-class MockStopTransmissionUseCase extends Mock
-    implements StopTransmissionUseCase {}
-
 void main() {
   late MockPttRepository mockRepository;
   late MockJoinChannelUseCase mockJoinChannel;
   late MockStartTransmissionUseCase mockStartTransmission;
-  late MockStopTransmissionUseCase mockStopTransmission;
 
   late StreamController<PttFloorStateEntity> floorController;
   late StreamController<PttConnectionStatus> connectionController;
@@ -47,14 +41,12 @@ void main() {
       ),
     );
     registerFallbackValue(const StartTransmissionParams(requestId: 'req_1'));
-    registerFallbackValue(const StopTransmissionParams());
   });
 
   setUp(() {
     mockRepository = MockPttRepository();
     mockJoinChannel = MockJoinChannelUseCase();
     mockStartTransmission = MockStartTransmissionUseCase();
-    mockStopTransmission = MockStopTransmissionUseCase();
 
     floorController = StreamController<PttFloorStateEntity>.broadcast();
     connectionController = StreamController<PttConnectionStatus>.broadcast();
@@ -92,7 +84,6 @@ void main() {
     return PttCubit(
       joinChannelUseCase: mockJoinChannel,
       startTransmissionUseCase: mockStartTransmission,
-      stopTransmissionUseCase: mockStopTransmission,
       repository: mockRepository,
     );
   }
@@ -203,7 +194,7 @@ void main() {
       'releasePttButton calls stopTransmission and emits PttIdle',
       setUp: () {
         when(
-          () => mockStopTransmission(any()),
+          () => mockRepository.stopTransmission(),
         ).thenAnswer((_) async => const Right(null));
       },
       build: createCubit,
@@ -219,9 +210,7 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(
-          () => mockStopTransmission(const StopTransmissionParams()),
-        ).called(1);
+        verify(() => mockRepository.stopTransmission()).called(1);
       },
     );
 
