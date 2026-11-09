@@ -1,14 +1,17 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:kawalo_mobile/core/constants/app_constants.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
+import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/get_incidents/get_incidents_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/get_incidents/get_incidents_usecase.dart';
+import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_list_result.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_state.dart';
@@ -94,9 +97,9 @@ void main() {
       'emits [IncidentLoading, IncidentLoaded] on successful fetch from '
       'initial',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
         return cubit;
       },
       act: (c) => c.fetchIncidents(session: tSession),
@@ -138,9 +141,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'does not emit IncidentLoading when refreshing from IncidentLoaded',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident2]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident2])),
+        );
         return cubit;
       },
       seed: () => IncidentLoaded(
@@ -180,13 +183,88 @@ void main() {
     );
   });
 
+  group('fetchIncidents greeting source', () {
+    final storedSync = DateTime(2026, 11, 2, 8, 30);
+
+    blocTest<IncidentListCubit, IncidentState>(
+      'uses the stored sync time when the data comes from the cache',
+      build: () {
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async =>
+              Right(IncidentListResult(items: [tIncident], isFromCache: true)),
+        );
+        return cubit;
+      },
+      act: (c) async {
+        await syncStorageService.saveLastSync(
+          AppConstants.syncKeyIncident,
+          storedSync,
+        );
+        await c.fetchIncidents(session: tSession);
+      },
+      expect: () => [
+        isA<IncidentLoading>(),
+        isA<IncidentLoaded>()
+            .having((s) => s.incidents.length, 'incidents length', 1)
+            .having(
+              (s) => s.lastSync,
+              'lastSync',
+              AppDateFormat.formatGreeting(storedSync),
+            ),
+      ],
+    );
+
+    blocTest<IncidentListCubit, IncidentState>(
+      'uses the current time when the data comes from the server',
+      build: () {
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
+        return cubit;
+      },
+      act: (c) async {
+        await syncStorageService.saveLastSync(
+          AppConstants.syncKeyIncident,
+          storedSync,
+        );
+        await c.fetchIncidents(session: tSession);
+      },
+      expect: () => [
+        isA<IncidentLoading>(),
+        isA<IncidentLoaded>().having(
+          (s) => s.lastSync,
+          'lastSync',
+          startsWith('Diperbarui Hari ini'),
+        ),
+      ],
+    );
+
+    blocTest<IncidentListCubit, IncidentState>(
+      'reports a cached fallback result when the data comes from the cache',
+      build: () {
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async =>
+              Right(IncidentListResult(items: [tIncident], isFromCache: true)),
+        );
+        return cubit;
+      },
+      act: (c) async {
+        expect(
+          await c.fetchIncidents(session: tSession),
+          AppFetchResult.cachedFallback,
+        );
+      },
+      expect: () => [isA<IncidentLoading>(), isA<IncidentLoaded>()],
+    );
+  });
+
   group('loadMore', () {
     blocTest<IncidentListCubit, IncidentState>(
       'appends newly fetched incidents when hasMore is true',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident2]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident2])),
+        );
         return cubit;
       },
       seed: () => IncidentLoaded(
@@ -225,9 +303,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'setFilter updates selectedFilter and refetches',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
         return cubit;
       },
       act: (c) => c.setFilter(IncidentStatus.open, session: tSession),
@@ -242,9 +320,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'setFilter null clears selectedFilter and refetches',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
         return cubit;
       },
       seed: () => const IncidentLoaded(
@@ -263,9 +341,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'setDateFilter updates date fields and refetches',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
         return cubit;
       },
       act: (c) {
@@ -283,9 +361,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'resetDateFilter clears date fields and refetches',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
         return cubit;
       },
       seed: () => IncidentLoaded(
@@ -307,9 +385,9 @@ void main() {
     test(
       'searchIncidents returns AppFetchResult.success and updates query',
       () async {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
 
         final result = await cubit.searchIncidents('pintu', session: tSession);
         expect(result, equals(AppFetchResult.success));
@@ -320,9 +398,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'resetFilters clears status, search, and date filters',
       build: () {
-        when(
-          () => mockGetIncidentsUseCase(any()),
-        ).thenAnswer((_) async => Right([tIncident]));
+        when(() => mockGetIncidentsUseCase(any())).thenAnswer(
+          (_) async => Right(IncidentListResult(items: [tIncident])),
+        );
         return cubit;
       },
       seed: () => IncidentLoaded(

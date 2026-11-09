@@ -1,13 +1,13 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
-import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/repositories/incident_repository.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/get_incidents/get_incidents_params.dart';
+import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_list_result.dart';
 
 /// Use case untuk mengambil daftar laporan insiden aktif/selesai dalam grup pengguna.
 class GetIncidentsUseCase
-    implements UseCase<List<IncidentEntity>, GetIncidentsParams> {
+    implements UseCase<IncidentListResult, GetIncidentsParams> {
   /// Membuat instance [GetIncidentsUseCase].
   const GetIncidentsUseCase(this.repository);
 
@@ -15,7 +15,7 @@ class GetIncidentsUseCase
   final IncidentRepository repository;
 
   @override
-  Future<Either<Failure, List<IncidentEntity>>> call(
+  Future<Either<Failure, IncidentListResult>> call(
     GetIncidentsParams params,
   ) async {
     if (!params.isAuthorized) {

@@ -6,6 +6,7 @@ import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_e
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_stream_event.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/create_incident_data.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_detail_result.dart';
+import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_list_result.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_query_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/post_incident_reply_data.dart';
 
@@ -16,7 +17,7 @@ import 'package:kawalo_mobile/features/incident/domain/value_objects/post_incide
 abstract class IncidentRepository {
   /// Mengambil daftar ringkasan laporan insiden berdasarkan parameter filter
   /// grup & status.
-  Future<Either<Failure, List<IncidentEntity>>> getIncidents(
+  Future<Either<Failure, IncidentListResult>> getIncidents(
     IncidentQueryParams params,
   );
 

@@ -16,6 +16,7 @@ import 'package:kawalo_mobile/features/incident/data/repositories/incident_repos
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_stream_event.dart';
 import 'package:kawalo_mobile/features/incident/domain/repositories/incident_repository.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/create_incident_data.dart';
+import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_list_result.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_query_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:mocktail/mocktail.dart';
@@ -57,27 +58,26 @@ void main() {
   );
 
   group('IncidentRepositoryImpl Tests', () {
-    test(
-      'getIncidents returns Right(List<IncidentEntity>) on success',
-      () async {
-        when(
-          () => mockRemoteDataSource.getIncidents(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => [tIncidentModel]);
+    test('getIncidents returns Right(IncidentListResult) on success', () async {
+      when(
+        () => mockRemoteDataSource.getIncidents(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => [tIncidentModel]);
 
-        const params = IncidentQueryParams(groupId: 'grp_1');
-        final result = await repository.getIncidents(params);
+      const params = IncidentQueryParams(groupId: 'grp_1');
+      final result = await repository.getIncidents(params);
 
-        expect(result.isRight(), isTrue);
-        result.fold((_) => fail('Should be right'), (items) {
-          expect(items.length, equals(1));
-          expect(items[0].id, equals('inc_1'));
-          expect(items[0].status, equals(IncidentStatus.open));
-        });
-      },
-    );
+      expect(result.isRight(), isTrue);
+      result.fold((_) => fail('Should be right'), (result) {
+        expect(result.isFromCache, isFalse);
+        final items = result.items;
+        expect(items.length, equals(1));
+        expect(items[0].id, equals('inc_1'));
+        expect(items[0].status, equals(IncidentStatus.open));
+      });
+    });
 
     test('getIncidents returns Left(Failure) on AppException', () async {
       when(
@@ -156,10 +156,10 @@ void main() {
           const IncidentQueryParams(groupId: 'grp_1'),
         );
 
-        result.fold(
-          (_) => fail('Should serve the cache'),
-          (items) => expect(items.single.id, 'inc_1'),
-        );
+        result.fold((_) => fail('Should serve the cache'), (result) {
+          expect(result.items.single.id, 'inc_1');
+          expect(result.isFromCache, isTrue);
+        });
       });
 
       test(
@@ -178,7 +178,11 @@ void main() {
             ),
           );
 
-          expect(result.getOrElse((_) => []).single.id, 'inc_1');
+          final served = result.getOrElse(
+            (_) => const IncidentListResult(items: []),
+          );
+          expect(served.items.single.id, 'inc_1');
+          expect(served.isFromCache, isTrue);
           verify(
             () => mockLocal.getCachedIncidents(
               groupId: 'grp_1',
@@ -204,10 +208,10 @@ void main() {
           const IncidentQueryParams(groupId: 'grp_1', offset: 20),
         );
 
-        result.fold(
-          (_) => fail('Should serve the cache'),
-          (items) => expect(items, isEmpty),
-        );
+        result.fold((_) => fail('Should serve the cache'), (result) {
+          expect(result.items, isEmpty);
+          expect(result.isFromCache, isTrue);
+        });
       });
 
       test('pull-to-refresh still tries the remote while offline', () async {

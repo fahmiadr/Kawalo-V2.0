@@ -18,6 +18,7 @@ import 'package:kawalo_mobile/features/incident/domain/entities/incident_stream_
 import 'package:kawalo_mobile/features/incident/domain/repositories/incident_repository.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/create_incident_data.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_detail_result.dart';
+import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_list_result.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_query_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/post_incident_reply_data.dart';
 
@@ -48,11 +49,11 @@ class IncidentRepositoryImpl implements IncidentRepository {
   final NetworkInfo? networkInfo;
 
   @override
-  Future<Either<Failure, List<IncidentEntity>>> getIncidents(
+  Future<Either<Failure, IncidentListResult>> getIncidents(
     IncidentQueryParams params,
   ) {
     final local = localDataSource;
-    return fetchRemoteWithCacheFallback<IncidentModel, List<IncidentEntity>>(
+    return fetchRemoteWithCacheFallback<IncidentModel, IncidentListResult>(
       isRefresh: params.isRefresh,
       networkInfo: networkInfo,
       syncStorageService: syncStorageService,
@@ -63,10 +64,12 @@ class IncidentRepositoryImpl implements IncidentRepository {
       ),
       // The cache is not paginated: serving it for a later page would repeat
       // the first page, so only offset 0 reads from it.
-      toResult: (models, {required isFromCache}) =>
-          isFromCache && (params.offset ?? 0) > 0
-          ? const []
-          : IncidentMapper.toEntityList(models),
+      toResult: (models, {required isFromCache}) => IncidentListResult(
+        items: isFromCache && (params.offset ?? 0) > 0
+            ? const []
+            : IncidentMapper.toEntityList(models),
+        isFromCache: isFromCache,
+      ),
       cache: local == null
           ? null
           : CacheOps(

@@ -49,13 +49,6 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     return null;
   }
 
-  /// Incidents always come from the server (no cache): every greeting
-  /// resolution, including on failure, records the current time as the sync
-  /// time.
-  @override
-  Future<String> resolveGreeting({required bool isFromCache}) =>
-      saveSyncGreeting(DateTime.now());
-
   /// Mengambil data insiden dari repositori (baik remote maupun mock).
   Future<AppFetchResult> fetchIncidents({
     required AuthSessionEntity? session,
@@ -145,7 +138,7 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      )).map(ListPage.new),
+      )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
       loaded: (page, lastSync, {required hasMore}) => IncidentLoaded(
         incidents: page.items,
         lastSync: lastSync,
@@ -187,7 +180,7 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
             startDate: current.startDateIso,
             endDate: current.endDateIso,
           ),
-        )).map(ListPage.new),
+        )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
         setLoadingMore: (current, {required loadingMore}) =>
             current.copyWith(isLoadingMore: loadingMore),
         append: (current, newItems, {required hasMore}) => current.copyWith(
