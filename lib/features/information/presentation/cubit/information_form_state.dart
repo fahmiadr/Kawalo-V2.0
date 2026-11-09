@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/information_feed_type.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
@@ -59,6 +60,9 @@ class InformationFormState extends Equatable {
     this.errorMessage,
     this.createdOrUpdatedItem,
     this.validationAttempt = 0,
+    this.isResolvingLocation = false,
+    this.gpsResult,
+    this.gpsResultVersion = 0,
   });
 
   /// Mode operasi formulir (create / update).
@@ -131,6 +135,16 @@ class InformationFormState extends Equatable {
   /// Penghitung percobaan validasi submit untuk memicu auto-focus
   /// ke field pertama yang bermasalah pada lapisan UI.
   final int validationAttempt;
+
+  final bool isResolvingLocation;
+
+  /// Latest GPS lookup outcome. Equal results (e.g. two timeouts in a row)
+  /// compare equal, so listeners must key on [gpsResultVersion] instead.
+  final LocationResult? gpsResult;
+
+  /// Incremented on every delivered GPS outcome so listeners fire even
+  /// when [gpsResult] is equal to the previous one.
+  final int gpsResultVersion;
 
   /// Batas kuota maksimal foto dokumentasi yang diizinkan pada formulir.
   static const int maxPhotosLimit = 4;
@@ -261,6 +275,9 @@ class InformationFormState extends Equatable {
     ValueGetter<String?>? errorMessage,
     InformationItemEntity? createdOrUpdatedItem,
     int? validationAttempt,
+    bool? isResolvingLocation,
+    LocationResult? gpsResult,
+    int? gpsResultVersion,
   }) {
     return InformationFormState(
       mode: mode ?? this.mode,
@@ -294,6 +311,9 @@ class InformationFormState extends Equatable {
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       createdOrUpdatedItem: createdOrUpdatedItem ?? this.createdOrUpdatedItem,
       validationAttempt: validationAttempt ?? this.validationAttempt,
+      isResolvingLocation: isResolvingLocation ?? this.isResolvingLocation,
+      gpsResult: gpsResult ?? this.gpsResult,
+      gpsResultVersion: gpsResultVersion ?? this.gpsResultVersion,
     );
   }
 
@@ -322,5 +342,8 @@ class InformationFormState extends Equatable {
     errorMessage,
     createdOrUpdatedItem,
     validationAttempt,
+    isResolvingLocation,
+    gpsResult,
+    gpsResultVersion,
   ];
 }

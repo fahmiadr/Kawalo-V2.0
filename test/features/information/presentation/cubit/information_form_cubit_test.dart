@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_params.dart';
@@ -526,4 +529,136 @@ void main() {
       await cubit.close();
     });
   });
+
+  group('InformationFormCubit - GPS', () {
+    final position = Position(
+      latitude: -6.2,
+      longitude: 106.8,
+      timestamp: DateTime(2026),
+      accuracy: 5,
+      altitude: 0,
+      altitudeAccuracy: 0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
+
+    InformationFormCubit build() => InformationFormCubit(
+      createInformationUseCase: mockCreateUseCase,
+      updateInformationUseCase: mockUpdateUseCase,
+    );
+
+    test('success fills coordinates and publishes the result', () async {
+      final cubit = build();
+      final completer = Completer<LocationResult>();
+
+      final future = cubit.resolveGpsLocation(
+        fetchPosition: () => completer.future,
+      );
+      expect(cubit.state.isResolvingLocation, isTrue);
+
+      completer.complete(LocationResult.success(position));
+      await future;
+
+      expect(cubit.state.isResolvingLocation, isFalse);
+      expect(cubit.state.glat, '-6.2');
+      expect(cubit.state.glong, '106.8');
+      expect(cubit.state.gpsResult?.isSuccess, isTrue);
+      expect(cubit.state.gpsResultVersion, 1);
+      await cubit.close();
+    });
+
+    test('failure leaves coordinates untouched', () async {
+      final cubit = build();
+
+      await cubit.resolveGpsLocation(
+        fetchPosition: () async => const LocationResult.serviceDisabled(),
+      );
+
+      expect(cubit.state.glat, isEmpty);
+      expect(cubit.state.gpsResult?.status, LocationStatus.serviceDisabled);
+      expect(cubit.state.isResolvingLocation, isFalse);
+      await cubit.close();
+    });
+
+    test('equal consecutive results still bump the version', () async {
+      final cubit = build();
+
+      for (var i = 0; i < 2; i++) {
+        await cubit.resolveGpsLocation(
+          fetchPosition: () async => const LocationResult.timeout(),
+        );
+      }
+
+      expect(cubit.state.gpsResultVersion, 2);
+      await cubit.close();
+    });
+
+    test('ignores a second call while a lookup is in flight', () async {
+      final cubit = build();
+      final completer = Completer<LocationResult>();
+      var calls = 0;
+      Future<LocationResult> fetch() {
+        calls++;
+        return completer.future;
+      }
+
+      final first = cubit.resolveGpsLocation(fetchPosition: fetch);
+      await cubit.resolveGpsLocation(fetchPosition: fetch);
+      completer.complete(const LocationResult.timeout());
+      await first;
+
+      expect(calls, 1);
+      await cubit.close();
+    });
+
+    test('resets the flag and rethrows when the provider throws', () async {
+      final cubit = build();
+
+      await expectLater(
+        cubit.resolveGpsLocation(
+          fetchPosition: () async => throw StateError('x'),
+        ),
+        throwsStateError,
+      );
+
+      expect(cubit.state.isResolvingLocation, isFalse);
+      expect(cubit.state.gpsResult, isNull);
+      await cubit.close();
+    });
+
+    test('closing mid-lookup does not emit afterwards', () async {
+      final cubit = build();
+      final completer = Completer<LocationResult>();
+
+      final future = cubit.resolveGpsLocation(
+        fetchPosition: () => completer.future,
+      );
+      await cubit.close();
+      completer.complete(LocationResult.success(position));
+
+      await expectLater(future, completes);
+    });
+
+    test('uses the injected LocationService by default', () async {
+      final service = _MockLocationService();
+      when(
+        service.getCurrentPosition,
+      ).thenAnswer((_) async => LocationResult.success(position));
+      final cubit = InformationFormCubit(
+        createInformationUseCase: mockCreateUseCase,
+        updateInformationUseCase: mockUpdateUseCase,
+        locationService: service,
+      );
+
+      await cubit.resolveGpsLocation();
+
+      verify(service.getCurrentPosition).called(1);
+      expect(cubit.state.glat, '-6.2');
+      await cubit.close();
+    });
+  });
 }
+
+class _MockLocationService extends Mock implements LocationService {}

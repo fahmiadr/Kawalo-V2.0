@@ -255,10 +255,8 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
   InformationFormCubit? _internalCubit;
   bool _ownsCubit = false;
   bool _isDiscarding = false;
-  bool _isResolvingLocation = false;
   int _lastHandledValidationAttempt = 0;
   bool _isErrorSheetVisible = false;
-  int _gpsGeneration = 0;
   late final AppLifecycleListener _lifecycleListener;
 
   @override
@@ -450,10 +448,9 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
   void _handleAppResume() {
     if (!mounted) return;
     final cubit = _resolveCubit(context);
-    final shouldRecover = _isErrorSheetVisible && !_isResolvingLocation;
-    if (shouldRecover) {
-      unawaited(_handleGetGpsLocation(cubit, isAutoRecovery: true));
-    }
+    final shouldRecover =
+        _isErrorSheetVisible && !cubit.state.isResolvingLocation;
+    if (shouldRecover) _resolveGps(cubit);
   }
 
   void _dismissErrorSheetIfVisible() {
@@ -465,31 +462,16 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     }
   }
 
-  Future<void> _handleGetGpsLocation(
-    InformationFormCubit cubit, {
-    bool isAutoRecovery = false,
-  }) async {
-    if (_isResolvingLocation) return;
-    final generation = ++_gpsGeneration;
-    setState(() => _isResolvingLocation = true);
+  void _resolveGps(InformationFormCubit cubit) {
+    unawaited(cubit.resolveGpsLocation(fetchPosition: widget.locationProvider));
+  }
 
-    final LocationResult result;
-    try {
-      final fetchPosition =
-          widget.locationProvider ?? widget.locationService.getCurrentPosition;
-      result = await fetchPosition();
-    } finally {
-      if (mounted && generation == _gpsGeneration) {
-        setState(() => _isResolvingLocation = false);
-      }
-    }
-
-    if (!mounted || generation != _gpsGeneration) return;
-
+  Future<void> _handleGpsResult(
+    InformationFormCubit cubit,
+    LocationResult result,
+  ) async {
     if (result.isSuccess && result.coordinates != null) {
       _dismissErrorSheetIfVisible();
-      final (lat, lng) = result.coordinates!;
-      cubit.onSetLocationCoordinates(lat: lat, lng: lng);
       AppSnackbar.show(
         context,
         message: 'Titik lokasi GPS berhasil diperoleh.',
@@ -497,12 +479,10 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     } else if (result.status == LocationStatus.timeout) {
       LocationActionableError.showTimeoutSnackbar(
         context,
-        onRetry: () => unawaited(_handleGetGpsLocation(cubit)),
+        onRetry: () => _resolveGps(cubit),
       );
-    } else {
-      if (!_isErrorSheetVisible) {
-        await _presentLocationError(cubit, result);
-      }
+    } else if (!_isErrorSheetVisible) {
+      await _presentLocationError(cubit, result);
     }
   }
 
@@ -532,7 +512,7 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
         onRetry: () {
           _isErrorSheetVisible = false;
           Navigator.of(context).maybePop();
-          unawaited(_handleGetGpsLocation(cubit));
+          _resolveGps(cubit);
         },
         launcherService: widget.launcherService,
         openAppSettingsFn: widget.openAppSettingsFn,
@@ -552,7 +532,7 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     if (source == null || !mounted) return;
 
     if (source == InformationLocationSource.currentLocation) {
-      await _handleGetGpsLocation(cubit);
+      _resolveGps(cubit);
     } else if (source == InformationLocationSource.pickOnMap) {
       await _handlePickOnMap(cubit);
     }
@@ -627,190 +607,217 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     return BlocProvider.value(
       value: cubit,
       child: BlocListener<InformationFormCubit, InformationFormState>(
+        listenWhen: (previous, current) =>
+            previous.gpsResultVersion != current.gpsResultVersion,
         listener: (context, state) {
-          _syncControllerIfUnfocused(
-            _titleController,
-            _titleFocusNode,
-            state.title,
-          );
-          _syncControllerIfUnfocused(
-            _textController,
-            _textFocusNode,
-            state.text,
-          );
-          _syncControllerIfUnfocused(
-            _eventLocationController,
-            _eventLocationFocusNode,
-            state.eventLocation,
-          );
-
-          if (state.validationAttempt > _lastHandledValidationAttempt) {
-            _lastHandledValidationAttempt = state.validationAttempt;
-            _handleValidationFailure(state);
-          }
-
-          if (state.status == InformationFormStatus.success &&
-              state.createdOrUpdatedItem != null) {
-            final msg = state.isCreateMode
-                ? 'Informasi "${state.title}" berhasil dipublikasikan.'
-                : 'Informasi "${state.title}" berhasil diperbarui.';
-            AppSnackbar.show(context, message: msg);
-            Navigator.of(context).pop(state.createdOrUpdatedItem);
-          } else if (state.status == InformationFormStatus.failure &&
-              state.errorMessage != null) {
-            AppSnackbar.show(context, message: state.errorMessage!);
-          }
+          final result = state.gpsResult;
+          if (result != null) unawaited(_handleGpsResult(cubit, result));
         },
-        child:
-            BlocSelector<
-              InformationFormCubit,
-              InformationFormState,
-              ({bool isDirty, bool isSuccess, bool isSubmitting, bool isCreate})
-            >(
-              selector: (state) => (
-                isDirty: state.isDirty,
-                isSuccess: state.status == InformationFormStatus.success,
-                isSubmitting: state.isSubmitting,
-                isCreate: state.isCreateMode,
-              ),
-              builder: (popContext, record) {
-                return PopScope(
-                  canPop:
-                      _isDiscarding ||
-                      record.isSuccess ||
-                      (!record.isDirty && !record.isSubmitting),
-                  onPopInvokedWithResult: (didPop, _) async {
-                    if (didPop || record.isSubmitting) return;
-                    final confirmed =
-                        await InformationFormDialog._confirmDiscard(popContext);
-                    if (confirmed && popContext.mounted) {
-                      setState(() => _isDiscarding = true);
-                      Navigator.of(popContext).pop();
-                    }
-                  },
-                  child: Scaffold(
-                    backgroundColor: colorScheme.surface,
-                    resizeToAvoidBottomInset: false,
-                    body: BlocSelector<InformationFormCubit, InformationFormState, bool>(
-                      selector: (state) => state.isSubmitting,
-                      builder: (context, isSubmitting) {
-                        final overlayMsg = record.isCreate
-                            ? 'Mempublikasikan informasi...'
-                            : 'Menyimpan perubahan informasi...';
+        child: BlocListener<InformationFormCubit, InformationFormState>(
+          listener: (context, state) {
+            _syncControllerIfUnfocused(
+              _titleController,
+              _titleFocusNode,
+              state.title,
+            );
+            _syncControllerIfUnfocused(
+              _textController,
+              _textFocusNode,
+              state.text,
+            );
+            _syncControllerIfUnfocused(
+              _eventLocationController,
+              _eventLocationFocusNode,
+              state.eventLocation,
+            );
 
-                        return AppLoadingOverlay(
-                          isLoading: isSubmitting,
-                          message: overlayMsg,
-                          child: AppKeyboardInsetsPadding(
-                            child: SingleChildScrollView(
-                              controller: _scrollController,
-                              keyboardDismissBehavior:
-                                  ScrollViewKeyboardDismissBehavior.onDrag,
-                              padding: const EdgeInsets.only(
-                                left: AppSpacing.space200,
-                                right: AppSpacing.space200,
-                                top: AppSpacing.space150,
-                                bottom: AppSpacing.space800 * 2,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // ── SEKSI 1: DETAIL PUBLIKASI & KATEGORI ────
-                                  RepaintBoundary(
-                                    child: InformationPublicationSection(
-                                      titleController: _titleController,
-                                      textController: _textController,
-                                      titleFocusNode: _titleFocusNode,
-                                      textFocusNode: _textFocusNode,
-                                      isSubmitting: isSubmitting,
-                                      onTitleChanged: cubit.onTitleChanged,
-                                      onTextChanged: cubit.onTextChanged,
-                                      onFeedTypeChanged:
-                                          cubit.onFeedTypeChanged,
+            if (state.validationAttempt > _lastHandledValidationAttempt) {
+              _lastHandledValidationAttempt = state.validationAttempt;
+              _handleValidationFailure(state);
+            }
+
+            if (state.status == InformationFormStatus.success &&
+                state.createdOrUpdatedItem != null) {
+              final msg = state.isCreateMode
+                  ? 'Informasi "${state.title}" berhasil dipublikasikan.'
+                  : 'Informasi "${state.title}" berhasil diperbarui.';
+              AppSnackbar.show(context, message: msg);
+              Navigator.of(context).pop(state.createdOrUpdatedItem);
+            } else if (state.status == InformationFormStatus.failure &&
+                state.errorMessage != null) {
+              AppSnackbar.show(context, message: state.errorMessage!);
+            }
+          },
+          child:
+              BlocSelector<
+                InformationFormCubit,
+                InformationFormState,
+                ({
+                  bool isDirty,
+                  bool isSuccess,
+                  bool isSubmitting,
+                  bool isCreate,
+                })
+              >(
+                selector: (state) => (
+                  isDirty: state.isDirty,
+                  isSuccess: state.status == InformationFormStatus.success,
+                  isSubmitting: state.isSubmitting,
+                  isCreate: state.isCreateMode,
+                ),
+                builder: (popContext, record) {
+                  return PopScope(
+                    canPop:
+                        _isDiscarding ||
+                        record.isSuccess ||
+                        (!record.isDirty && !record.isSubmitting),
+                    onPopInvokedWithResult: (didPop, _) async {
+                      if (didPop || record.isSubmitting) return;
+                      final confirmed =
+                          await InformationFormDialog._confirmDiscard(
+                            popContext,
+                          );
+                      if (confirmed && popContext.mounted) {
+                        setState(() => _isDiscarding = true);
+                        Navigator.of(popContext).pop();
+                      }
+                    },
+                    child: Scaffold(
+                      backgroundColor: colorScheme.surface,
+                      resizeToAvoidBottomInset: false,
+                      body: BlocSelector<InformationFormCubit, InformationFormState, bool>(
+                        selector: (state) => state.isSubmitting,
+                        builder: (context, isSubmitting) {
+                          final overlayMsg = record.isCreate
+                              ? 'Mempublikasikan informasi...'
+                              : 'Menyimpan perubahan informasi...';
+
+                          return AppLoadingOverlay(
+                            isLoading: isSubmitting,
+                            message: overlayMsg,
+                            child: AppKeyboardInsetsPadding(
+                              child: SingleChildScrollView(
+                                controller: _scrollController,
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                padding: const EdgeInsets.only(
+                                  left: AppSpacing.space200,
+                                  right: AppSpacing.space200,
+                                  top: AppSpacing.space150,
+                                  bottom: AppSpacing.space800 * 2,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    // ── SEKSI 1: DETAIL PUBLIKASI & KATEGORI ────
+                                    RepaintBoundary(
+                                      child: InformationPublicationSection(
+                                        titleController: _titleController,
+                                        textController: _textController,
+                                        titleFocusNode: _titleFocusNode,
+                                        textFocusNode: _textFocusNode,
+                                        isSubmitting: isSubmitting,
+                                        onTitleChanged: cubit.onTitleChanged,
+                                        onTextChanged: cubit.onTextChanged,
+                                        onFeedTypeChanged:
+                                            cubit.onFeedTypeChanged,
+                                      ),
                                     ),
-                                  ),
 
-                                  AppSpacing.vGap400,
+                                    AppSpacing.vGap400,
 
-                                  // ── SEKSI 2: DOKUMENTASI FOTO ────────────────
-                                  RepaintBoundary(
-                                    child: InformationPhotosSection(
-                                      isSubmitting: isSubmitting,
-                                      onPickPhoto: () =>
-                                          _handlePickPhoto(cubit),
-                                      onClearAll: () =>
-                                          _handleClearAllPhotos(cubit),
-                                      onTapPhoto: (index) {
-                                        final photos = cubit.state.photos;
-                                        if (index < 0 ||
-                                            index >= photos.length) {
-                                          return;
-                                        }
-                                        if (photos[index].isLoading) return;
-                                        AppImageViewer.show(
-                                          context,
-                                          imageUrls: photos
-                                              .map((p) => p.displaySource)
-                                              .toList(),
-                                          initialIndex: index,
-                                          heroTagPrefix: 'info_form_photo',
+                                    // ── SEKSI 2: DOKUMENTASI FOTO ────────────────
+                                    RepaintBoundary(
+                                      child: InformationPhotosSection(
+                                        isSubmitting: isSubmitting,
+                                        onPickPhoto: () =>
+                                            _handlePickPhoto(cubit),
+                                        onClearAll: () =>
+                                            _handleClearAllPhotos(cubit),
+                                        onTapPhoto: (index) {
+                                          final photos = cubit.state.photos;
+                                          if (index < 0 ||
+                                              index >= photos.length) {
+                                            return;
+                                          }
+                                          if (photos[index].isLoading) return;
+                                          AppImageViewer.show(
+                                            context,
+                                            imageUrls: photos
+                                                .map((p) => p.displaySource)
+                                                .toList(),
+                                            initialIndex: index,
+                                            heroTagPrefix: 'info_form_photo',
+                                          );
+                                        },
+                                        onRemovePhoto: cubit.onRemovePhoto,
+                                        onMoreOptions: (index) =>
+                                            _showPhotoActionMenu(
+                                              context,
+                                              cubit,
+                                              index,
+                                            ),
+                                      ),
+                                    ),
+
+                                    AppSpacing.vGap400,
+
+                                    // ── SEKSI 3: DOKUMEN LAMPIRAN ────────
+                                    RepaintBoundary(
+                                      child: InformationDocumentSection(
+                                        isSubmitting: isSubmitting,
+                                        onPickDocument: () =>
+                                            _handlePickDocument(cubit),
+                                        onClearDocument:
+                                            cubit.onClearDocumentMedia,
+                                      ),
+                                    ),
+
+                                    AppSpacing.vGap400,
+
+                                    // ── SEKSI 4: LOKASI KEJADIAN & PETA ─────────
+                                    BlocSelector<
+                                      InformationFormCubit,
+                                      InformationFormState,
+                                      bool
+                                    >(
+                                      selector: (state) =>
+                                          state.isResolvingLocation,
+                                      builder: (context, isResolvingLocation) {
+                                        return RepaintBoundary(
+                                          child: InformationLocationSection(
+                                            eventLocationController:
+                                                _eventLocationController,
+                                            eventLocationFocusNode:
+                                                _eventLocationFocusNode,
+                                            isSubmitting: isSubmitting,
+                                            isResolvingLocation:
+                                                isResolvingLocation,
+                                            onLocationNameChanged:
+                                                cubit.onEventLocationChanged,
+                                            onPickLocation: () =>
+                                                _handlePickLocation(cubit),
+                                            onClearLocation: cubit
+                                                .onClearLocationCoordinates,
+                                            reverseGeocodeService:
+                                                widget.reverseGeocodeService,
+                                          ),
                                         );
                                       },
-                                      onRemovePhoto: cubit.onRemovePhoto,
-                                      onMoreOptions: (index) =>
-                                          _showPhotoActionMenu(
-                                            context,
-                                            cubit,
-                                            index,
-                                          ),
                                     ),
-                                  ),
-
-                                  AppSpacing.vGap400,
-
-                                  // ── SEKSI 3: DOKUMEN LAMPIRAN ────────
-                                  RepaintBoundary(
-                                    child: InformationDocumentSection(
-                                      isSubmitting: isSubmitting,
-                                      onPickDocument: () =>
-                                          _handlePickDocument(cubit),
-                                      onClearDocument:
-                                          cubit.onClearDocumentMedia,
-                                    ),
-                                  ),
-
-                                  AppSpacing.vGap400,
-
-                                  // ── SEKSI 4: LOKASI KEJADIAN & PETA ─────────
-                                  RepaintBoundary(
-                                    child: InformationLocationSection(
-                                      eventLocationController:
-                                          _eventLocationController,
-                                      eventLocationFocusNode:
-                                          _eventLocationFocusNode,
-                                      isSubmitting: isSubmitting,
-                                      isResolvingLocation: _isResolvingLocation,
-                                      onLocationNameChanged:
-                                          cubit.onEventLocationChanged,
-                                      onPickLocation: () =>
-                                          _handlePickLocation(cubit),
-                                      onClearLocation:
-                                          cubit.onClearLocationCoordinates,
-                                      reverseGeocodeService:
-                                          widget.reverseGeocodeService,
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+        ),
       ),
     );
   }

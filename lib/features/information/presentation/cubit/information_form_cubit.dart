@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
+import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/utils/app_validator.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
@@ -19,8 +20,10 @@ class InformationFormCubit extends Cubit<InformationFormState> {
   InformationFormCubit({
     required this.createInformationUseCase,
     required this.updateInformationUseCase,
+    LocationService locationService = const DefaultLocationService(),
     InformationItemEntity? initialItem,
-  }) : super(_buildInitialState(initialItem));
+  }) : _locationService = locationService,
+       super(_buildInitialState(initialItem));
 
   /// Use case untuk mempublikasikan feed informasi baru.
   final CreateInformationUseCase createInformationUseCase;
@@ -28,7 +31,10 @@ class InformationFormCubit extends Cubit<InformationFormState> {
   /// Use case untuk memperbarui feed informasi yang sudah ada.
   final UpdateInformationUseCase updateInformationUseCase;
 
+  final LocationService _locationService;
+
   AppCancellationToken? _submitCancelToken;
+  int _gpsGeneration = 0;
 
   static InformationFormState _buildInitialState(
     InformationItemEntity? initialItem,
@@ -251,6 +257,41 @@ class InformationFormCubit extends Cubit<InformationFormState> {
         glongError: () => null,
         errorMessage: () => null,
         status: _statusOnInput(),
+      ),
+    );
+  }
+
+  /// Resolves the device GPS position into the form coordinates and publishes
+  /// the outcome through [InformationFormState.gpsResult].
+  ///
+  /// [fetchPosition] overrides the injected [LocationService] (test seam).
+  /// A call made while a lookup is in flight is ignored.
+  Future<void> resolveGpsLocation({
+    Future<LocationResult> Function()? fetchPosition,
+  }) async {
+    if (state.isResolvingLocation) return;
+    final generation = ++_gpsGeneration;
+    emit(state.copyWith(isResolvingLocation: true));
+
+    final LocationResult result;
+    try {
+      result = await (fetchPosition ?? _locationService.getCurrentPosition)();
+    } finally {
+      if (!isClosed && generation == _gpsGeneration) {
+        emit(state.copyWith(isResolvingLocation: false));
+      }
+    }
+
+    if (isClosed || generation != _gpsGeneration) return;
+
+    final coordinates = result.coordinates;
+    if (result.isSuccess && coordinates != null) {
+      onSetLocationCoordinates(lat: coordinates.$1, lng: coordinates.$2);
+    }
+    emit(
+      state.copyWith(
+        gpsResult: result,
+        gpsResultVersion: state.gpsResultVersion + 1,
       ),
     );
   }

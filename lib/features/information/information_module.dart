@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
@@ -29,7 +30,9 @@ final class InformationModule {
     required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
     GroupRepository? groupRepository,
-  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+    LocationService? locationService,
+  }) : _locationService = locationService ?? const DefaultLocationService(),
+       _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
        _groupRepository =
            groupRepository ??
            GroupModule.createRepository(
@@ -44,6 +47,7 @@ final class InformationModule {
     );
   }
 
+  final LocationService _locationService;
   final SyncStorageService _syncStorage;
   final GroupRepository _groupRepository;
   late final InformationRepository repository;
@@ -65,6 +69,7 @@ final class InformationModule {
     return InformationFormCubit(
       createInformationUseCase: CreateInformationUseCase(repository),
       updateInformationUseCase: UpdateInformationUseCase(repository),
+      locationService: _locationService,
       initialItem: initialItem,
     );
   }
