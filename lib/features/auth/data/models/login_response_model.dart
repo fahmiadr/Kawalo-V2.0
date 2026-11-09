@@ -1,32 +1,20 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:kawalo_mobile/features/auth/data/models/auth_tokens_model.dart';
 import 'package:kawalo_mobile/features/auth/data/models/user_model.dart';
 
+part 'login_response_model.g.dart';
+
 /// Model respons login untuk pertukaran JSON dengan backend
 /// (`LoginResponseDto`).
-///
-/// Merupakan Pure DTO tanpa mengimpor atau mewarisi domain entity, tanpa
-/// fallback dummy, mengikuti spesifikasi kontrak backend.
+@JsonSerializable(createToJson: false, checked: true)
 class LoginResponseModel extends Equatable {
-  /// Membuat instance [LoginResponseModel].
-  const LoginResponseModel({
-    required this.user,
-    required this.tokens,
-  });
+  const LoginResponseModel({required this.user, required this.tokens});
 
-  /// Mengonversi payload map JSON menjadi [LoginResponseModel] murni sesuai
-  /// LoginResponseDto.
-  factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
-    return LoginResponseModel(
-      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-      tokens: AuthTokensModel.fromJson(json['tokens'] as Map<String, dynamic>),
-    );
-  }
+  factory LoginResponseModel.fromJson(Map<String, dynamic> json) =>
+      _$LoginResponseModelFromJson(json);
 
-  /// Profil data pengguna.
   final UserModel user;
-
-  /// Sepasang token akses dan token refresh.
   final AuthTokensModel tokens;
 
   @override

@@ -1,12 +1,17 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:kawalo_mobile/core/network/json_converters.dart';
+
+part 'auth_tokens_model.g.dart';
 
 /// Model serialisasi token autentikasi (JWT Access Token & Refresh Token)
 /// (`TokensResponseDto`).
-///
-/// Merupakan Pure DTO tanpa mengimpor domain entity, tanpa logika bisnis,
-/// tanpa fallback dummy, dan tanpa sanitasi data.
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  createToJson: false,
+  checked: true,
+)
 class AuthTokensModel extends Equatable {
-  /// Membuat instance [AuthTokensModel].
   const AuthTokensModel({
     required this.accessToken,
     required this.refreshToken,
@@ -14,27 +19,17 @@ class AuthTokensModel extends Equatable {
     required this.expiresIn,
   });
 
-  /// Mengonversi payload map JSON menjadi [AuthTokensModel] tanpa fallback
-  /// dummy dan tanpa sanitasi data.
-  factory AuthTokensModel.fromJson(Map<String, dynamic> json) {
-    return AuthTokensModel(
-      accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String,
-      tokenType: json['token_type'] as String,
-      expiresIn: json['expires_in'] as int,
-    );
-  }
+  factory AuthTokensModel.fromJson(Map<String, dynamic> json) =>
+      _$AuthTokensModelFromJson(json);
 
-  /// Token akses (JWT).
   final String accessToken;
-
-  /// Token penyegaran sesi.
   final String refreshToken;
 
   /// Tipe token (misal: "Bearer").
   final String tokenType;
 
   /// Masa berlaku dalam detik.
+  @IntFromNumConverter()
   final int expiresIn;
 
   @override

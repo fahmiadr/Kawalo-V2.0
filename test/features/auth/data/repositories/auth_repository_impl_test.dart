@@ -108,7 +108,7 @@ void main() {
   late MockAuthLocalDataSource mockLocalDataSource;
   final testRsaKey = RSAPrivateKey(_testPrivateKeyPem);
 
-  String generateTestToken({bool isExpired = false}) {
+  String generateTestToken({bool isExpired = false, bool omitSub = false}) {
     final exp = (DateTime.now().millisecondsSinceEpoch ~/ 1000) +
         (isExpired ? -3600 : 3600);
     return JWT(
@@ -122,7 +122,7 @@ void main() {
         'allow_patrol': false,
         'allow_mon_patrol': false,
         'exp': exp,
-      },
+      }..removeWhere((key, _) => omitSub && key == 'sub'),
       header: {
         'alg': 'RS256',
         'typ': 'JWT',
@@ -275,6 +275,36 @@ JWT_PUBLIC_KEY="$escapedPem"
     );
 
     test(
+      'should return AuthFailure and persist nothing when the verified token '
+      'lacks mandatory claims',
+      () async {
+        final malformedTokens = AuthTokensModel(
+          accessToken: generateTestToken(omitSub: true),
+          refreshToken: 'mock_refresh_token',
+          tokenType: 'Bearer',
+          expiresIn: 900,
+        );
+        when(() => mockRemoteDataSource.login(any())).thenAnswer(
+          (_) async => LoginResponseModel(
+            user: tUserModel,
+            tokens: malformedTokens,
+          ),
+        );
+
+        final result =
+            await repository.login(email: tEmail, password: tPassword);
+
+        expect(result.isLeft(), isTrue);
+        result.match(
+          (failure) => expect(failure, isA<AuthFailure>()),
+          (_) => fail('expected a failure'),
+        );
+        verifyNever(() => mockLocalDataSource.saveTokens(any()));
+        verifyNever(() => mockLocalDataSource.saveSession(any()));
+      },
+    );
+
+    test(
       'should return ServerFailure when remote data source throws '
       'ServerException',
       () async {
@@ -360,8 +390,7 @@ JWT_PUBLIC_KEY="$escapedPem"
 
     test('should return null when no cached user is present', () async {
       // Arrange
-      when(() => mockLocalDataSource.getUser())
-          .thenAnswer((_) async => null);
+      when(() => mockLocalDataSource.getUser()).thenAnswer((_) async => null);
       when(() => mockLocalDataSource.getAccessToken())
           .thenAnswer((_) async => null);
       when(() => mockLocalDataSource.getRefreshToken())
@@ -392,6 +421,30 @@ JWT_PUBLIC_KEY="$escapedPem"
       expect(result, const Right<Failure, UserEntity?>(null));
       verify(() => mockLocalDataSource.getUser()).called(1);
     });
+
+    test(
+      'should clear session and return null when a verified token lacks '
+      'mandatory claims',
+      () async {
+        final malformedToken = generateTestToken(omitSub: true);
+        when(() => mockLocalDataSource.getUser())
+            .thenAnswer((_) async => tUserModel);
+        when(() => mockLocalDataSource.getAccessToken())
+            .thenAnswer((_) async => malformedToken);
+        when(() => mockLocalDataSource.getRefreshToken())
+            .thenAnswer((_) async => 'mock_refresh_token');
+
+        final result = await repository.getCurrentUser();
+
+        expect(result, const Right<Failure, UserEntity?>(null));
+        verify(
+          () => mockLocalDataSource.clearSession(
+            preserveEmail: any(named: 'preserveEmail'),
+          ),
+        ).called(1);
+        verifyNever(() => mockLocalDataSource.saveSession(any()));
+      },
+    );
 
     test(
       'should silently refresh token when access token is expired and return '

@@ -22,6 +22,28 @@ void main() {
       },
     );
 
+    test('fromJson accepts a decimal expires_in', () {
+      final model = AuthTokensModel.fromJson(const {
+        'access_token': 'a',
+        'refresh_token': 'r',
+        'token_type': 'Bearer',
+        'expires_in': 900.0,
+      });
+
+      expect(model.expiresIn, 900);
+    });
+
+    test('fromJson throws an Exception when expires_in is missing', () {
+      expect(
+        () => AuthTokensModel.fromJson(const {
+          'access_token': 'a',
+          'refresh_token': 'r',
+          'token_type': 'Bearer',
+        }),
+        throwsA(isA<Exception>()),
+      );
+    });
+
     test('props equality compares models correctly', () {
       const m1 = AuthTokensModel(
         accessToken: 'a',

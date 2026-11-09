@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'user_model.g.dart';
 
 /// Model data grup kawasan pengguna untuk pertukaran JSON dengan backend
 /// (`UserGroupAccessDto`).
-///
-/// Merupakan Pure DTO tanpa mengimpor atau mewarisi domain entity, tanpa
-/// fallback dummy, mengikuti spesifikasi kontrak backend.
+@JsonSerializable(fieldRename: FieldRename.snake, checked: true)
 class UserGroupModel extends Equatable {
-  /// Membuat instance [UserGroupModel].
   const UserGroupModel({
     required this.groupUid,
     required this.allowAdmin,
@@ -21,33 +21,11 @@ class UserGroupModel extends Equatable {
     this.status,
   });
 
-  /// Mengonversi payload map JSON menjadi [UserGroupModel] tanpa fallback
-  /// dummy dan tanpa sanitasi data.
-  factory UserGroupModel.fromJson(Map<String, dynamic> json) {
-    final rawFeatures = json['features'] as List<dynamic>;
+  factory UserGroupModel.fromJson(Map<String, dynamic> json) =>
+      _$UserGroupModelFromJson(json);
 
-    return UserGroupModel(
-      groupUid: json['group_uid'] as String,
-      groupName: json['group_name'] as String?,
-      groupOwner: json['group_owner'] as String?,
-      groupLogo: json['group_logo'] as String?,
-      groupStatus: json['group_status'] as String?,
-      category: json['category'] as String?,
-      status: json['status'] as String?,
-      allowAdmin: json['allow_admin'] as bool,
-      allowPatrol: json['allow_patrol'] as bool,
-      allowMonPatrol: json['allow_mon_patrol'] as bool,
-      features: rawFeatures.cast<String>().toList(growable: false),
-    );
-  }
-
-  /// UID unik grup.
   final String groupUid;
-
-  /// Nama grup kawasan.
   final String? groupName;
-
-  /// Pemilik grup.
   final String? groupOwner;
 
   /// Kategori grup (role pengguna di grup, e.g. "ADMIN", "GUARD").
@@ -59,37 +37,23 @@ class UserGroupModel extends Equatable {
   /// Status langganan grup (e.g. "CLIENT", "TRIAL").
   final String? groupStatus;
 
-  /// URL logo grup.
   final String? groupLogo;
 
-  /// Izin administratif.
+  // Missing permission flags default to false: denying access is the safe side.
+  @JsonKey(defaultValue: false)
   final bool allowAdmin;
 
-  /// Izin patroli.
+  @JsonKey(defaultValue: false)
   final bool allowPatrol;
 
-  /// Izin monitor patroli.
+  @JsonKey(defaultValue: false)
   final bool allowMonPatrol;
 
   /// Fitur-fitur aktif grup.
+  @JsonKey(defaultValue: <String>[])
   final List<String> features;
 
-  /// Mengonversi objek menjadi representasi map JSON.
-  Map<String, dynamic> toJson() {
-    return {
-      'group_uid': groupUid,
-      'group_name': groupName,
-      'group_owner': groupOwner,
-      'category': category,
-      'status': status,
-      'group_status': groupStatus,
-      'group_logo': groupLogo,
-      'allow_admin': allowAdmin,
-      'allow_patrol': allowPatrol,
-      'allow_mon_patrol': allowMonPatrol,
-      'features': features,
-    };
-  }
+  Map<String, dynamic> toJson() => _$UserGroupModelToJson(this);
 
   @override
   List<Object?> get props => [
@@ -109,11 +73,12 @@ class UserGroupModel extends Equatable {
 
 /// Model data profil pengguna untuk pertukaran JSON dengan backend
 /// (`SafeUserDto`).
-///
-/// Merupakan Pure DTO tanpa mengimpor atau mewarisi domain entity, tanpa
-/// fallback dummy, mengikuti spesifikasi kontrak backend.
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  explicitToJson: true,
+  checked: true,
+)
 class UserModel extends Equatable {
-  /// Membuat instance [UserModel].
   const UserModel({
     required this.id,
     required this.email,
@@ -123,36 +88,12 @@ class UserModel extends Equatable {
     this.activeGroup,
   });
 
-  /// Mengonversi payload map JSON menjadi [UserModel] murni sesuai
-  /// SafeUserDto.
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    final activeGroupJson = json['active_group'] as Map<String, dynamic>?;
-    final groupsJson = json['groups'] as List<dynamic>;
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
 
-    return UserModel(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      name: json['name'] as String,
-      avatarUrl: json['avatar_url'] as String?,
-      activeGroup: activeGroupJson != null
-          ? UserGroupModel.fromJson(activeGroupJson)
-          : null,
-      groups: groupsJson
-          .map((e) => UserGroupModel.fromJson(e as Map<String, dynamic>))
-          .toList(growable: false),
-    );
-  }
-
-  /// ID unik pengguna.
   final String id;
-
-  /// Alamat email pengguna.
   final String email;
-
-  /// Nama lengkap pengguna.
   final String name;
-
-  /// URL avatar pengguna.
   final String? avatarUrl;
 
   /// Grup aktif pengguna saat ini.
@@ -161,17 +102,7 @@ class UserModel extends Equatable {
   /// Daftar semua grup yang diikuti pengguna.
   final List<UserGroupModel> groups;
 
-  /// Mengonversi objek menjadi representasi map JSON.
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'name': name,
-      'avatar_url': avatarUrl,
-      'active_group': activeGroup?.toJson(),
-      'groups': groups.map((g) => g.toJson()).toList(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
   @override
   List<Object?> get props => [

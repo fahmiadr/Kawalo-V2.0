@@ -1,9 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'auth_session_model.g.dart';
 
 /// Model DTO untuk serialisasi sesi autentikasi pengguna dari klaim JWT
 /// atau penyimpanan lokal aman (Secure Storage).
+@JsonSerializable(fieldRename: FieldRename.snake, checked: true)
 class AuthSessionModel extends Equatable {
-  /// Membuat instance [AuthSessionModel].
   const AuthSessionModel({
     required this.userId,
     required this.email,
@@ -15,42 +18,42 @@ class AuthSessionModel extends Equatable {
     this.groupUid,
   });
 
-  /// Mengonversi payload map JWT yang terverifikasi menjadi [AuthSessionModel]
-  /// tanpa fallback dummy dan tanpa sanitasi data.
+  /// Builds the session from verified JWT claims.
+  ///
+  /// Throws [FormatException] when a mandatory claim (`sub`, `email`, `name`)
+  /// is missing or not a string; callers treat that as an invalid token.
+  /// Missing `allow_*` flags become `false` so a malformed token can only
+  /// lose access, never gain it.
   factory AuthSessionModel.fromJwtPayload(Map<String, dynamic> payload) {
+    String requiredClaim(String claim) {
+      final value = payload[claim];
+      if (value is String && value.isNotEmpty) return value;
+      throw FormatException('Klaim JWT "$claim" tidak ada atau tidak valid.');
+    }
+
+    String? optionalClaim(String claim) {
+      final value = payload[claim];
+      return value is String ? value : null;
+    }
+
     return AuthSessionModel(
-      userId: payload['sub'] as String,
-      email: payload['email'] as String,
-      name: payload['name'] as String,
-      role: payload['role'] as String?,
-      groupUid: payload['group_uid'] as String?,
-      allowAdmin: payload['allow_admin'] as bool,
-      allowPatrol: payload['allow_patrol'] as bool,
-      allowMonPatrol: payload['allow_mon_patrol'] as bool,
+      userId: requiredClaim('sub'),
+      email: requiredClaim('email'),
+      name: requiredClaim('name'),
+      role: optionalClaim('role'),
+      groupUid: optionalClaim('group_uid'),
+      allowAdmin: payload['allow_admin'] == true,
+      allowPatrol: payload['allow_patrol'] == true,
+      allowMonPatrol: payload['allow_mon_patrol'] == true,
     );
   }
 
-  /// Mengonversi JSON map dari secure storage menjadi [AuthSessionModel].
-  factory AuthSessionModel.fromJson(Map<String, dynamic> json) {
-    return AuthSessionModel(
-      userId: json['user_id'] as String,
-      email: json['email'] as String,
-      name: json['name'] as String,
-      role: json['role'] as String?,
-      groupUid: json['group_uid'] as String?,
-      allowAdmin: json['allow_admin'] as bool,
-      allowPatrol: json['allow_patrol'] as bool,
-      allowMonPatrol: json['allow_mon_patrol'] as bool,
-    );
-  }
+  factory AuthSessionModel.fromJson(Map<String, dynamic> json) =>
+      _$AuthSessionModelFromJson(json);
 
   /// ID unik pengguna (`sub`).
   final String userId;
-
-  /// Alamat email pengguna.
   final String email;
-
-  /// Nama lengkap pengguna.
   final String name;
 
   /// Role aktif pengguna pada grup saat ini.
@@ -59,26 +62,16 @@ class AuthSessionModel extends Equatable {
   /// UID grup aktif sesi saat ini.
   final String? groupUid;
 
-  /// Izin akses panel admin.
+  @JsonKey(defaultValue: false)
   final bool allowAdmin;
 
-  /// Izin akses fitur patroli lapangan.
+  @JsonKey(defaultValue: false)
   final bool allowPatrol;
 
-  /// Izin akses fitur monitoring patroli.
+  @JsonKey(defaultValue: false)
   final bool allowMonPatrol;
 
-  /// Mengonversi model ke JSON map untuk disimpan di Secure Storage.
-  Map<String, dynamic> toJson() => {
-        'user_id': userId,
-        'email': email,
-        'name': name,
-        'role': role,
-        'group_uid': groupUid,
-        'allow_admin': allowAdmin,
-        'allow_patrol': allowPatrol,
-        'allow_mon_patrol': allowMonPatrol,
-      };
+  Map<String, dynamic> toJson() => _$AuthSessionModelToJson(this);
 
   @override
   List<Object?> get props => [

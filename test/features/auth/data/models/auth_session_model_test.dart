@@ -60,6 +60,91 @@ void main() {
       expect(model.allowMonPatrol, isFalse);
     });
 
+    test('fromJwtPayload defaults missing allow_* flags to false', () {
+      final model = AuthSessionModel.fromJwtPayload(const <String, dynamic>{
+        'sub': 'usr_003',
+        'email': 'guard@kawalo.id',
+        'name': 'Andi',
+      });
+
+      expect(model.allowAdmin, isFalse);
+      expect(model.allowPatrol, isFalse);
+      expect(model.allowMonPatrol, isFalse);
+    });
+
+    test('fromJwtPayload does not treat non-bool flags as granted', () {
+      final model = AuthSessionModel.fromJwtPayload(const <String, dynamic>{
+        'sub': 'usr_003',
+        'email': 'guard@kawalo.id',
+        'name': 'Andi',
+        'allow_admin': 'true',
+        'allow_patrol': 1,
+        'allow_mon_patrol': null,
+      });
+
+      expect(model.allowAdmin, isFalse);
+      expect(model.allowPatrol, isFalse);
+      expect(model.allowMonPatrol, isFalse);
+    });
+
+    for (final claim in ['sub', 'email', 'name']) {
+      test('fromJwtPayload throws FormatException when "$claim" is missing',
+          () {
+        final payload = <String, dynamic>{
+          'sub': 'usr_001',
+          'email': 'personil@kawalo.id',
+          'name': 'Budi Santoso',
+        }..remove(claim);
+
+        expect(
+          () => AuthSessionModel.fromJwtPayload(payload),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains(claim),
+            ),
+          ),
+        );
+      });
+    }
+
+    test('fromJwtPayload throws FormatException when a claim has wrong type',
+        () {
+      expect(
+        () => AuthSessionModel.fromJwtPayload(const <String, dynamic>{
+          'sub': 42,
+          'email': 'personil@kawalo.id',
+          'name': 'Budi Santoso',
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('fromJson defaults missing allow_* flags to false', () {
+      final model = AuthSessionModel.fromJson(const <String, dynamic>{
+        'user_id': 'usr_001',
+        'email': 'personil@kawalo.id',
+        'name': 'Budi Santoso',
+      });
+
+      expect(model.allowAdmin, isFalse);
+      expect(model.allowPatrol, isFalse);
+      expect(model.allowMonPatrol, isFalse);
+      expect(model.role, isNull);
+      expect(model.groupUid, isNull);
+    });
+
+    test('fromJson throws an Exception (not TypeError) on missing user_id', () {
+      expect(
+        () => AuthSessionModel.fromJson(const <String, dynamic>{
+          'email': 'personil@kawalo.id',
+          'name': 'Budi Santoso',
+        }),
+        throwsA(isA<Exception>()),
+      );
+    });
+
     test('fromJson and toJson perform lossless roundtrip serialization', () {
       final json = tSession.toJson();
       final fromJsonModel = AuthSessionModel.fromJson(json);

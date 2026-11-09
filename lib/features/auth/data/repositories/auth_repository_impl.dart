@@ -36,6 +36,16 @@ class AuthRepositoryImpl implements AuthRepository {
   final ApiClient? _apiClient;
   final JwksService _jwksService;
 
+  /// Malformed claims in a signature-verified token mean the token is unusable,
+  /// so they surface as [AuthException] instead of a raw [FormatException].
+  AuthSessionModel _sessionFromPayload(Map<String, dynamic> payload) {
+    try {
+      return AuthSessionModel.fromJwtPayload(payload);
+    } on FormatException catch (_) {
+      throw const AuthException('Token otentikasi tidak valid dari server');
+    }
+  }
+
   @override
   Future<Either<Failure, UserEntity>> login({
     required String email,
@@ -55,7 +65,7 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      final sessionModel = AuthSessionModel.fromJwtPayload(payload);
+      final sessionModel = _sessionFromPayload(payload);
       final sessionUser = response.user.toEntity();
       await localDataSource.saveTokens(response.tokens);
       await localDataSource.saveUser(response.user);
@@ -124,7 +134,13 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       if (verifiedPayload != null) {
-        final sessionModel = AuthSessionModel.fromJwtPayload(verifiedPayload);
+        final AuthSessionModel sessionModel;
+        try {
+          sessionModel = _sessionFromPayload(verifiedPayload);
+        } on AuthException catch (_) {
+          await localDataSource.clearSession();
+          return const Right(null);
+        }
         await localDataSource.saveSession(sessionModel);
       }
 
@@ -195,7 +211,7 @@ class AuthRepositoryImpl implements AuthRepository {
             return const Right(null);
           }
 
-          final newSession = AuthSessionModel.fromJwtPayload(newPayload);
+          final newSession = _sessionFromPayload(newPayload);
           await localDataSource.saveTokens(newTokens);
           await localDataSource.saveSession(newSession);
           return Right(userEntity);
@@ -262,7 +278,7 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      final sessionModel = AuthSessionModel.fromJwtPayload(payload);
+      final sessionModel = _sessionFromPayload(payload);
       final sessionUser = response.user.toEntity();
       await localDataSource.saveTokens(response.tokens);
       await localDataSource.saveUser(response.user);

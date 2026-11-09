@@ -1,36 +1,29 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'login_request_model.g.dart';
 
 /// Model request keluar (outbound DTO) untuk proses login pengguna
-/// (`LoginDto`).
-///
-/// Merupakan Outbound Pure DTO yang hanya memiliki serialisasi ke luar
-/// ([toJson]) dan tidak memiliki deserialisasi `fromJson`.
+/// (`LoginDto`, `POST /v1/auth/login`).
+@JsonSerializable(fieldRename: FieldRename.snake)
 class LoginRequestModel extends Equatable {
-  /// Membuat instance [LoginRequestModel].
   const LoginRequestModel({
     required this.email,
     required this.password,
     this.groupUid,
   });
 
-  /// Alamat email personil Kawalo.
   final String email;
-
-  /// Kata sandi personil.
   final String password;
 
   /// UID grup aktif pilihan (opsional).
   final String? groupUid;
 
-  /// Mengonversi payload menjadi representasi JSON outbound untuk dikirim ke
-  /// backend API (`POST /v1/auth/login`).
-  Map<String, dynamic> toJson() {
-    return {
-      'email': email,
-      'password': password,
-      if (groupUid != null && groupUid!.isNotEmpty) 'group_uid': groupUid,
-    };
-  }
+  /// A null or empty `group_uid` is dropped before it reaches the backend.
+  Map<String, dynamic> toJson() => _$LoginRequestModelToJson(this)
+    ..removeWhere(
+      (key, value) => key == 'group_uid' && (value == null || value == ''),
+    );
 
   @override
   List<Object?> get props => [email, password, groupUid];

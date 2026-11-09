@@ -92,5 +92,27 @@ void main() {
         expect(group.features, ['ADMIN_PANEL']);
       },
     );
+    test('UserGroupModel.fromJson defaults missing flags and features', () {
+      final group = UserGroupModel.fromJson(const {'group_uid': 'grp_789'});
+
+      expect(group.allowAdmin, isFalse);
+      expect(group.allowPatrol, isFalse);
+      expect(group.allowMonPatrol, isFalse);
+      expect(group.features, isEmpty);
+    });
+
+    test('UserGroupModel.fromJson throws an Exception on missing group_uid',
+        () {
+      expect(
+        () => UserGroupModel.fromJson(const {'allow_admin': true}),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test('UserModel toJson and fromJson roundtrip nested groups', () {
+      final user = UserModel.fromJson(tUserJson);
+
+      expect(UserModel.fromJson(user.toJson()), equals(user));
+    });
   });
 }

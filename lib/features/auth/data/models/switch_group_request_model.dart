@@ -1,26 +1,18 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'switch_group_request_model.g.dart';
 
 /// Model request keluar (outbound DTO) untuk berganti grup aktif
-/// (`SwitchGroupDto`).
-///
-/// Merupakan Outbound Pure DTO yang hanya memiliki serialisasi ke luar
-/// ([toJson]) dan tidak memiliki deserialisasi `fromJson`.
+/// (`SwitchGroupDto`, `POST /v1/auth/switch-group`).
+@JsonSerializable(fieldRename: FieldRename.snake)
 class SwitchGroupRequestModel extends Equatable {
-  /// Membuat instance [SwitchGroupRequestModel].
-  const SwitchGroupRequestModel({
-    required this.groupUid,
-  });
+  const SwitchGroupRequestModel({required this.groupUid});
 
   /// Target Group UID yang akan diaktifkan.
   final String groupUid;
 
-  /// Mengonversi payload menjadi representasi JSON outbound untuk dikirim ke
-  /// backend API (`POST /v1/auth/switch-group`).
-  Map<String, dynamic> toJson() {
-    return {
-      'group_uid': groupUid,
-    };
-  }
+  Map<String, dynamic> toJson() => _$SwitchGroupRequestModelToJson(this);
 
   @override
   List<Object?> get props => [groupUid];
