@@ -21,6 +21,7 @@ import 'package:kawalo_mobile/core/widgets/camera/camera_overlays.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_quota_badge.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_viewfinder.dart';
+import 'package:kawalo_mobile/core/widgets/camera/controllers/camera_flash_controller.dart';
 import 'package:kawalo_mobile/core/widgets/camera/controllers/camera_orientation_controller.dart';
 import 'package:kawalo_mobile/core/widgets/camera/controllers/camera_system_ui_controller.dart';
 import 'package:kawalo_mobile/core/widgets/camera/controllers/captured_photos_controller.dart';
@@ -293,9 +294,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
   CameraController? _controller;
   List<CameraDescription> _availableCameras = [];
   int _selectedCameraIndex = 0;
-  FlashMode _flashMode = FlashMode.off;
-  bool _isScreenFlashActive = false;
-  bool _hasPhysicalFlash = false;
+  late final CameraFlashController _flash;
 
   bool get _isCurrentCameraFront {
     final controller = _controller;
@@ -309,26 +308,10 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     return false;
   }
 
-  /// Flash didukung jika kamera memiliki lampu LED fisik ATAU kamera depan
-  /// yang mendukung tirai Screen Flash.
-  bool get _isFlashSupported {
-    if (_availableCameras.isEmpty && _controller == null) {
-      return true;
-    }
-    return _hasPhysicalFlash || _isCurrentCameraFront;
-  }
-
-  Future<bool> _checkPhysicalFlashSupport(CameraController controller) async {
-    try {
-      await controller.setFlashMode(FlashMode.auto);
-      try {
-        await controller.setFlashMode(FlashMode.off);
-      } on Exception catch (_) {}
-      return true;
-    } on Exception catch (_) {
-      return false;
-    }
-  }
+  bool get _isFlashSupported => _flash.isSupported(
+    cameraStateUnknown: _availableCameras.isEmpty && _controller == null,
+    isCurrentCameraFront: _isCurrentCameraFront,
+  );
 
   bool _isInitializing = true;
   bool _isCapturing = false;
@@ -368,8 +351,6 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
   final CameraSystemUiController _systemUi = CameraSystemUiController();
   AppLifecycleState? _previousLifecycleState;
   bool _wasInBackground = false;
-  late final ScreenBrightnessService _brightnessService;
-  double? _originalBrightness;
 
   Future<bool> _handleOpenAppSettings() async {
     _wasInBackground = true;
@@ -419,25 +400,15 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     }
   }
 
-  Future<void> _restoreBrightness() async {
-    final original = _originalBrightness;
-    _originalBrightness = null;
-    if (original != null) {
-      await _brightnessService.setBrightness(original);
-    } else {
-      await _brightnessService.resetBrightness();
-    }
-  }
-
   /// Menormalkan kembali kecerahan layar dan menonaktifkan tirai screen flash.
   void _deactivateScreenFlash() {
-    if (_isScreenFlashActive) {
+    if (_flash.isScreenFlashActive) {
       if (mounted) {
-        setState(() => _isScreenFlashActive = false);
+        setState(() => _flash.isScreenFlashActive = false);
       } else {
-        _isScreenFlashActive = false;
+        _flash.isScreenFlashActive = false;
       }
-      unawaited(_restoreBrightness());
+      unawaited(_flash.restoreBrightness());
     }
   }
 
@@ -448,15 +419,17 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
   void _restoreSystemUI() => _systemUi.restore(
     unlockCaptureOrientation: () => _controller?.unlockCaptureOrientation(),
-    restoreBrightness: _restoreBrightness,
+    restoreBrightness: _flash.restoreBrightness,
   );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _brightnessService =
-        widget.brightnessService ?? const DefaultScreenBrightnessService();
+    _flash = CameraFlashController(
+      brightnessService:
+          widget.brightnessService ?? const DefaultScreenBrightnessService(),
+    );
     _systemUi.setup(isMounted: () => mounted);
 
     final initialOrientation =
@@ -509,9 +482,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         } on Object catch (_) {}
       }
       final isFront = _isFrontCamera(widget.controller!);
-      _hasPhysicalFlash = widget.hasPhysicalFlash ?? !isFront;
+      _flash.hasPhysicalFlash = widget.hasPhysicalFlash ?? !isFront;
       if (!_isFlashSupported) {
-        _flashMode = FlashMode.off;
+        _flash.mode = FlashMode.off;
       }
     } else {
       _initCamera();
@@ -544,7 +517,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       _photos.cleanupUnsubmitted();
     }
     _restoreSystemUI();
-    unawaited(_restoreBrightness());
+    unawaited(_flash.restoreBrightness());
     _orientation.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _shutterFlashController.dispose();
@@ -672,23 +645,17 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       // controller.
       final hasPhysicalFlash =
           widget.hasPhysicalFlash ??
-          (!isFront && await _checkPhysicalFlashSupport(newController));
-      _hasPhysicalFlash = hasPhysicalFlash;
+          (!isFront && await _flash.checkPhysicalFlashSupport(newController));
+      _flash.hasPhysicalFlash = hasPhysicalFlash;
 
       // Normalisasi mode flash berdasarkan ketersediaan hardware
-      if (!isFront && !hasPhysicalFlash) {
-        _flashMode = FlashMode.off;
-      } else if (isFront && !hasPhysicalFlash) {
-        if (_flashMode == FlashMode.torch || _flashMode == FlashMode.auto) {
-          _flashMode = FlashMode.off;
-        }
-      }
+      _flash.normalizeModeFor(isFront: isFront);
 
       try {
-        await newController.setFlashMode(_flashMode);
+        await newController.setFlashMode(_flash.mode);
       } on Exception catch (_) {
         if (!isFront && !hasPhysicalFlash) {
-          _flashMode = FlashMode.off;
+          _flash.mode = FlashMode.off;
         }
       }
 
@@ -753,8 +720,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       _isInitializing = true;
       _controller = null;
       _switchCameraTurns -= 0.5;
-      if (_flashMode == FlashMode.torch) {
-        _flashMode = FlashMode.off;
+      if (_flash.mode == FlashMode.torch) {
+        _flash.mode = FlashMode.off;
       }
     });
 
@@ -795,27 +762,14 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     }
 
     final isFront = _isFrontCamera(controller);
-    final isScreenFlashOnly = isFront && !_hasPhysicalFlash;
-    // Kamera depan tanpa LED fisik memakai siklus 2 mode untuk Screen Flash.
-    // Jika kamera memiliki LED fisik (depan/belakang), pakai siklus 4 mode.
-    final order = isScreenFlashOnly
-        ? const [FlashMode.off, FlashMode.always]
-        : const [
-            FlashMode.off,
-            FlashMode.auto,
-            FlashMode.always,
-            FlashMode.torch,
-          ];
-
-    final currentIndex = order.indexOf(_flashMode);
-    final nextIndex = (currentIndex + 1) % order.length;
-    final targetMode = order[nextIndex];
-    final previousMode = _flashMode;
+    final isScreenFlashOnly = isFront && !_flash.hasPhysicalFlash;
+    final targetMode = _flash.nextMode(isScreenFlashOnly: isScreenFlashOnly);
+    final previousMode = _flash.mode;
 
     // Optimistic UI Update: Segera perbarui state pada frame ke-0 saat tombol
     // disentuh agar animasi transisi ikon langsung meluncur seketika tanpa
     // tertahan latensi hardware platform channel kamera (150-400ms).
-    setState(() => _flashMode = targetMode);
+    setState(() => _flash.mode = targetMode);
 
     try {
       await controller.setFlashMode(targetMode);
@@ -823,7 +777,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       // Kamera depan tanpa LED fisik memakai Screen Flash (software brightness)
       // sehingga penolakan hardware adalah normal dan tidak boleh di-rollback.
       if (!isScreenFlashOnly && mounted) {
-        setState(() => _flashMode = previousMode);
+        setState(() => _flash.mode = previousMode);
       }
     }
   }
@@ -848,18 +802,21 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
     final isFrontCamera = _isFrontCamera(controller);
     final needsScreenFlash =
-        isFrontCamera && !_hasPhysicalFlash && _flashMode == FlashMode.always;
+        isFrontCamera &&
+        !_flash.hasPhysicalFlash &&
+        _flash.mode == FlashMode.always;
 
     if (needsScreenFlash) {
-      _originalBrightness = await _brightnessService.currentBrightness;
-      await _brightnessService.setBrightness(1);
+      _flash.originalBrightness =
+          await _flash.brightnessService.currentBrightness;
+      await _flash.brightnessService.setBrightness(1);
       if (mounted) {
-        setState(() => _isScreenFlashActive = true);
+        setState(() => _flash.isScreenFlashActive = true);
       }
       // Jeda 180ms agar intensitas cahaya layar sempat menerangi wajah
       // pengguna sebelum shutter sensor kamera merekam citra.
       await Future<void>.delayed(const Duration(milliseconds: 180));
-      if (!mounted || !_isScreenFlashActive) {
+      if (!mounted || !_flash.isScreenFlashActive) {
         if (mounted) {
           setState(() => _isCapturing = false);
         }
@@ -871,12 +828,12 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       final xFile = await controller.takePicture();
 
       if (needsScreenFlash && mounted) {
-        setState(() => _isScreenFlashActive = false);
+        setState(() => _flash.isScreenFlashActive = false);
       }
       _triggerShutterFlash();
 
       // Pastikan mode torch tetap menyala jika sedang aktif (proteksi reset)
-      if (_flashMode == FlashMode.torch && mounted) {
+      if (_flash.mode == FlashMode.torch && mounted) {
         try {
           await controller.setFlashMode(FlashMode.torch);
         } on Exception catch (_) {}
@@ -930,7 +887,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       if (mounted) {
         setState(() {
           _isCapturing = false;
-          _isScreenFlashActive = false;
+          _flash.isScreenFlashActive = false;
         });
         unawaited(
           AppActionableErrorBottomSheet.show<void>(
@@ -946,10 +903,10 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       }
     } finally {
       if (needsScreenFlash) {
-        if (mounted && _isScreenFlashActive) {
-          setState(() => _isScreenFlashActive = false);
+        if (mounted && _flash.isScreenFlashActive) {
+          setState(() => _flash.isScreenFlashActive = false);
         }
-        await _restoreBrightness();
+        await _flash.restoreBrightness();
       }
     }
   }
@@ -1087,7 +1044,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                       onClose: _handleBackOrClose,
                       totalPhotos: _totalSelected,
                       maxPhotos: widget.maxPhotos,
-                      flashMode: _flashMode,
+                      flashMode: _flash.mode,
                       deviceOrientation: _orientation.deviceOrientation,
                       orientationTurns: _orientation.turns,
                       activeBadgeOrientation:
@@ -1147,9 +1104,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                             child: CameraViewfinder(
                                               controller: controller,
                                               colorScheme: colorScheme,
-                                              flashMode: _flashMode,
+                                              flashMode: _flash.mode,
                                               hasPhysicalFlash:
-                                                  _hasPhysicalFlash,
+                                                  _flash.hasPhysicalFlash,
                                             ),
                                           ),
                                         ),
@@ -1164,7 +1121,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                 // 2. Lapisan Screen Flash Kamera Depan
                                 // (Illuminated Frame Translusen).
                                 if (_actionableError == null &&
-                                    _isScreenFlashActive)
+                                    _flash.isScreenFlashActive)
                                   const Positioned.fill(
                                     child: IlluminatedFrameOverlay(
                                       key: ValueKey<String>(
@@ -1214,7 +1171,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                           _thumbnailScrollController,
                                       latestCapturedPath: _latestCapturedPath,
                                       isCapturing: _isBusy,
-                                      isScreenFlashActive: _isScreenFlashActive,
+                                      isScreenFlashActive:
+                                          _flash.isScreenFlashActive,
                                       colorScheme: colorScheme,
                                       isCurrentCameraFront:
                                           _isCurrentCameraFront,
