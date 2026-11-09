@@ -5,8 +5,8 @@ import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_multi_shot_camera_screen.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/camera/app_multi_shot_camera_screen.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_attachment_preview.dart';
 

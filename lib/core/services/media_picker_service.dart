@@ -6,7 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kawalo_mobile/core/widgets/app_multi_shot_camera_screen.dart';
+import 'package:kawalo_mobile/core/widgets/camera/app_multi_shot_camera_screen.dart';
 
 /// Representasi berkas media hasil tangkapan kamera, galeri, atau pemilih
 /// dokumen.

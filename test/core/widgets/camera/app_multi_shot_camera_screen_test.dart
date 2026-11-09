@@ -20,9 +20,10 @@ import 'package:kawalo_mobile/core/widgets/app_actionable_error.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_multi_shot_camera_screen.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tappable.dart';
+import 'package:kawalo_mobile/core/widgets/camera/app_multi_shot_camera_screen.dart';
+import 'package:kawalo_mobile/core/widgets/camera/camera_actionable_error.dart';
 import 'package:mocktail/mocktail.dart';
 
 Widget _buildTestApp(Widget child) {
@@ -1151,7 +1152,7 @@ void main() {
             find.byKey(const ValueKey<String>('camera_shutter_flash'));
         expect(flashFinder, findsOneWidget);
 
-        // With reduced motion, _CameraShutterFlash returns SizedBox.shrink()
+        // With reduced motion, CameraShutterFlash returns SizedBox.shrink()
         final sizedBoxFinder = find.descendant(
           of: flashFinder,
           matching: find.byType(SizedBox),

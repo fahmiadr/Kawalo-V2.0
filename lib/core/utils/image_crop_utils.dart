@@ -1,4 +1,4 @@
-/// @docImport 'package:kawalo_mobile/core/widgets/app_multi_shot_camera_screen.dart';
+/// @docImport 'package:kawalo_mobile/core/widgets/camera/app_multi_shot_camera_screen.dart';
 library;
 
 import 'dart:io';
