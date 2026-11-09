@@ -1,24 +1,21 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'master_guest_type_model.g.dart';
 
 /// Pure DTO model untuk satu item master tipe tamu (`MasterGuestTypeItemDto`).
 ///
 /// Digunakan untuk deserialisasi response `GET /v1/guests/master-types`.
+@JsonSerializable(createToJson: false)
 class MasterGuestTypeModel extends Equatable {
-  /// Membuat instance [MasterGuestTypeModel].
   const MasterGuestTypeModel({
     required this.id,
     required this.uid,
     required this.name,
   });
 
-  /// Mengonversi dari Map JSON API backend.
-  factory MasterGuestTypeModel.fromJson(Map<String, dynamic> json) {
-    return MasterGuestTypeModel(
-      id: json['id'] as String,
-      uid: json['uid'] as String,
-      name: json['name'] as String,
-    );
-  }
+  factory MasterGuestTypeModel.fromJson(Map<String, dynamic> json) =>
+      _$MasterGuestTypeModelFromJson(json);
 
   /// ID master tipe tamu.
   final String id;

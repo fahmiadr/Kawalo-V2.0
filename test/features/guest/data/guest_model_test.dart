@@ -89,5 +89,13 @@ void main() {
       expect(model1, equals(model2));
       expect(model1 == model3, isFalse);
     });
+
+    test('fromJson keeps optional keys null when they are missing', () {
+      final model = GuestModel.fromJson(const {'id': '1'});
+
+      expect(model.id, '1');
+      expect(model.guestName, isNull);
+      expect(model.guestDt, isNull);
+    });
   });
 }

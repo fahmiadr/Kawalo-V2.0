@@ -1,11 +1,14 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'guest_model.g.dart';
 
 /// Model data DTO murni untuk payload tamu dari API backend (`GuestItemDto`).
 ///
 /// Merupakan Pure DTO tanpa dependensi ke domain entity, tanpa fallback,
 /// dan tanpa sanitasi logika bisnis. Selaras 100% dengan skema backend.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class GuestModel extends Equatable {
-  /// Membuat instance [GuestModel].
   const GuestModel({
     required this.id,
     this.groupName,
@@ -31,34 +34,8 @@ class GuestModel extends Equatable {
     this.guestCheckoutByName,
   });
 
-  /// Mengonversi map JSON dari endpoint backend (`GuestItemDto`) menjadi
-  /// instance [GuestModel] tanpa fallback atau sanitasi.
-  factory GuestModel.fromJson(Map<String, dynamic> json) {
-    return GuestModel(
-      id: json['id'] as String,
-      groupName: json['group_name'] as String?,
-      guestName: json['guest_name'] as String?,
-      guestNumber: json['guest_number'] as String?,
-      guestIdentity: json['guest_identity'] as String?,
-      guestIdentityType: json['guest_identity_type'] as String?,
-      guestPhoto: json['guest_photo'] as String?,
-      guestDt: json['guest_dt'] as String?,
-      guestAckDt: json['guest_ack_dt'] as String?,
-      guestOutDt: json['guest_out_dt'] as String?,
-      guestPurpose: json['guest_purpose'] as String?,
-      guestDestination: json['guest_destination'] as String?,
-      guestToUserEmail: json['guest_to_user_email'] as String?,
-      guestToUserName: json['guest_to_user_name'] as String?,
-      guestCreatorEmail: json['guest_creator_email'] as String?,
-      guestCreatorName: json['guest_creator_name'] as String?,
-      guestCategory: json['guest_category'] as String?,
-      qrUid: json['qr_uid'] as String?,
-      guestAddress: json['guest_address'] as String?,
-      guestType: json['guest_type'] as String?,
-      guestCheckoutByEmail: json['guest_checkout_by_email'] as String?,
-      guestCheckoutByName: json['guest_checkout_by_name'] as String?,
-    );
-  }
+  factory GuestModel.fromJson(Map<String, dynamic> json) =>
+      _$GuestModelFromJson(json);
 
   /// Identifier unik data tamu.
   final String id;
