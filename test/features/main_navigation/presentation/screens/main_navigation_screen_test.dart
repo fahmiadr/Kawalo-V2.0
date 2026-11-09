@@ -14,7 +14,7 @@ import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/kawalo_logo.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
-import 'package:kawalo_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
@@ -34,7 +34,7 @@ class MockInformationCubit extends MockCubit<InformationState>
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
-class MockGetCurrentUserUseCase extends Mock implements GetCurrentUserUseCase {}
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 
@@ -64,10 +64,15 @@ void main() {
     ConnectivityCubit? connectivityCubit,
   }) {
     final mockLogin = MockLoginUseCase();
-    final mockGetCurrentUser = MockGetCurrentUserUseCase();
+    final mockAuthRepository = MockAuthRepository();
     final mockLogout = MockLogoutUseCase();
 
-    when(() => mockGetCurrentUser(any())).thenAnswer((_) async => Right(user));
+    when(
+      mockAuthRepository.getCurrentUser,
+    ).thenAnswer((_) async => Right(user));
+    when(
+      mockAuthRepository.getActiveSession,
+    ).thenAnswer((_) async => const Right(null));
 
     final mockInformationCubit = MockInformationCubit();
     when(() => mockInformationCubit.state).thenReturn(
@@ -82,7 +87,7 @@ void main() {
         BlocProvider<AuthBloc>(
           create: (_) => AuthBloc(
             loginUseCase: mockLogin,
-            getCurrentUserUseCase: mockGetCurrentUser,
+            authRepository: mockAuthRepository,
             logoutUseCase: mockLogout,
           )..add(const AuthCheckRequested()),
         ),

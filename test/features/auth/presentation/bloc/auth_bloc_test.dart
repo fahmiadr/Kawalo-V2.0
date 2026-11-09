@@ -2,9 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart' hide AuthFailure;
+import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
-import 'package:kawalo_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/switch_group_usecase.dart';
@@ -15,7 +16,7 @@ import 'package:mocktail/mocktail.dart';
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
-class MockGetCurrentUserUseCase extends Mock implements GetCurrentUserUseCase {}
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 
@@ -24,19 +25,22 @@ class MockSwitchGroupUseCase extends Mock implements SwitchGroupUseCase {}
 void main() {
   late AuthBloc authBloc;
   late MockLoginUseCase mockLoginUseCase;
-  late MockGetCurrentUserUseCase mockGetCurrentUserUseCase;
+  late MockAuthRepository mockAuthRepository;
   late MockLogoutUseCase mockLogoutUseCase;
   late MockSwitchGroupUseCase mockSwitchGroupUseCase;
 
   setUp(() {
     mockLoginUseCase = MockLoginUseCase();
-    mockGetCurrentUserUseCase = MockGetCurrentUserUseCase();
+    mockAuthRepository = MockAuthRepository();
+    when(
+      () => mockAuthRepository.getActiveSession(),
+    ).thenAnswer((_) async => const Right<Failure, AuthSessionEntity?>(null));
     mockLogoutUseCase = MockLogoutUseCase();
     mockSwitchGroupUseCase = MockSwitchGroupUseCase();
     authBloc = AuthBloc(
       loginUseCase: mockLoginUseCase,
       switchGroupUseCase: mockSwitchGroupUseCase,
-      getCurrentUserUseCase: mockGetCurrentUserUseCase,
+      authRepository: mockAuthRepository,
       logoutUseCase: mockLogoutUseCase,
     );
     registerFallbackValue(const LoginParams(email: '', password: ''));
@@ -201,7 +205,7 @@ void main() {
       'emits [AuthLoading, Authenticated] when active session is found',
       build: () {
         when(
-          () => mockGetCurrentUserUseCase(any()),
+          () => mockAuthRepository.getCurrentUser(),
         ).thenAnswer((_) async => const Right(tUserEntity));
         return authBloc;
       },
@@ -216,7 +220,7 @@ void main() {
       'emits [AuthLoading, Unauthenticated] when no session is found',
       build: () {
         when(
-          () => mockGetCurrentUserUseCase(any()),
+          () => mockAuthRepository.getCurrentUser(),
         ).thenAnswer((_) async => const Right(null));
         return authBloc;
       },
@@ -253,7 +257,7 @@ void main() {
       'groups but no active group',
       build: () {
         when(
-          () => mockGetCurrentUserUseCase(any()),
+          () => mockAuthRepository.getCurrentUser(),
         ).thenAnswer((_) async => const Right(tMultiGroupUser));
         return authBloc;
       },

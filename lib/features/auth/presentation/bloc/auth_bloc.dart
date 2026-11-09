@@ -1,8 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
-import 'package:kawalo_mobile/features/auth/domain/usecases/get_active_session_usecase.dart';
-import 'package:kawalo_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/switch_group_usecase.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
@@ -12,9 +11,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({
     required this.loginUseCase,
     this.switchGroupUseCase,
-    this.getCurrentUserUseCase,
+    this.authRepository,
     this.logoutUseCase,
-    this.getActiveSessionUseCase,
   }) : super(const AuthInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<SwitchGroupSubmitted>(_onSwitchGroupSubmitted);
@@ -32,13 +30,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final LoginUseCase loginUseCase;
   final SwitchGroupUseCase? switchGroupUseCase;
-  final GetCurrentUserUseCase? getCurrentUserUseCase;
+  final AuthRepository? authRepository;
   final UseCase<void, NoParams>? logoutUseCase;
-  final GetActiveSessionUseCase? getActiveSessionUseCase;
 
   Future<AuthSessionEntity?> _resolveSession() async {
-    if (getActiveSessionUseCase == null) return null;
-    final res = await getActiveSessionUseCase!(const NoParams());
+    final repo = authRepository;
+    if (repo == null) return null;
+    final res = await repo.getActiveSession();
     return res.getOrElse((_) => null);
   }
 
@@ -114,14 +112,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthCheckRequested event,
     Emitter<AuthState> emit,
   ) async {
-    if (getCurrentUserUseCase == null) {
+    final repo = authRepository;
+    if (repo == null) {
       emit(const Unauthenticated());
       return;
     }
 
     emit(const AuthLoading());
     try {
-      final result = await getCurrentUserUseCase!(const NoParams());
+      final result = await repo.getCurrentUser();
 
       await result.fold((_) async => emit(const Unauthenticated()), (
         user,

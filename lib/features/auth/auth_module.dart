@@ -7,8 +7,6 @@ import 'package:kawalo_mobile/features/auth/data/datasources/auth_local_data_sou
 import 'package:kawalo_mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:kawalo_mobile/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
-import 'package:kawalo_mobile/features/auth/domain/usecases/get_active_session_usecase.dart';
-import 'package:kawalo_mobile/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/switch_group_usecase.dart';
@@ -54,7 +52,6 @@ abstract final class AuthModule {
       repository,
       cacheWiper: cacheWiper,
     );
-    final getCurrentUserUseCase = GetCurrentUserUseCase(repository);
     final rawLogoutUseCase = LogoutUseCase(repository);
     final logoutUseCase = cacheWiper != null
         ? LogoutOrchestrator(
@@ -62,14 +59,12 @@ abstract final class AuthModule {
             cacheWiper: cacheWiper,
           )
         : rawLogoutUseCase;
-    final getActiveSessionUseCase = GetActiveSessionUseCase(repository);
 
     return AuthBloc(
       loginUseCase: loginUseCase,
       switchGroupUseCase: switchGroupUseCase,
-      getCurrentUserUseCase: getCurrentUserUseCase,
+      authRepository: repository,
       logoutUseCase: logoutUseCase,
-      getActiveSessionUseCase: getActiveSessionUseCase,
     );
   }
 }
