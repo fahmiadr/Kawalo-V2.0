@@ -4,6 +4,10 @@ import 'package:kawalo_mobile/core/config/environment.dart';
 import 'package:kawalo_mobile/core/security/device_integrity_service.dart';
 import 'package:kawalo_mobile/core/storage/isar_database.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
+import 'package:kawalo_mobile/features/attendance/data/models/attendance_local_model.dart';
+import 'package:kawalo_mobile/features/guest/data/models/guest_local_model.dart';
+import 'package:kawalo_mobile/features/information/data/models/information_local_model.dart';
+import 'package:kawalo_mobile/features/operational/data/models/operational_local_model.dart';
 import 'package:kawalo_mobile/main.dart';
 
 /// Runner sentral untuk bootstrapping aplikasi Kawalo Mobile lintas
@@ -28,6 +32,13 @@ Future<void> bootstrap(AppEnvironment env) async {
     return;
   }
 
-  final isar = await IsarDatabase.init();
+  final isar = await IsarDatabase.init(
+    schemas: [
+      AttendanceLocalModelSchema,
+      OperationalLocalModelSchema,
+      InformationLocalModelSchema,
+      GuestLocalModelSchema,
+    ],
+  );
   runApp(MyApp(isar: isar));
 }
