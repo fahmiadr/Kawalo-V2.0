@@ -10,14 +10,12 @@ import 'package:kawalo_mobile/core/theme/app_motion.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
-import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/auth/presentation/screens/group_selection_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
 import 'package:kawalo_mobile/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:kawalo_mobile/features/splash/presentation/cubit/splash_cubit.dart';
 import 'package:kawalo_mobile/features/splash/presentation/widgets/background_glow_widget.dart';
 import 'package:kawalo_mobile/features/splash/presentation/widgets/brand_logo_widget.dart';
 import 'package:kawalo_mobile/features/splash/presentation/widgets/subtitle_widget.dart';
@@ -70,16 +68,18 @@ class _SplashScreenState extends State<SplashScreen>
   Timer? _splashMinDurationTimer;
   bool _showSlowLoadingIndicator = false;
   bool _isMinDurationElapsed = false;
-  bool _isInitComplete = false;
   bool _hasNavigated = false;
-  bool _isOnboardingCompleted = false;
-  bool _isAuthenticated = false;
-  bool _isGroupSelectionRequired = false;
-  UserEntity? _authenticatedUser;
+  late final SplashCubit _splashCubit;
 
   @override
   void initState() {
     super.initState();
+
+    _splashCubit = SplashCubit(
+      storage: widget.storageService ?? context.read<SecureStorageService?>(),
+      authBloc: context.read<AuthBloc?>(),
+      onInitialize: widget.onInitialize,
+    );
 
     _controller = AnimationController(
       vsync: this,
@@ -142,79 +142,15 @@ class _SplashScreenState extends State<SplashScreen>
         _checkAndNavigate();
       });
 
-      _runInitialization();
+      unawaited(_splashCubit.initialize());
     });
   }
 
-  Future<void> _runInitialization() async {
-    try {
-      if (widget.onInitialize != null) {
-        await widget.onInitialize!();
-      }
-
-      // 1. Periksa status onboarding dari secure storage
-      if (widget.storageService != null) {
-        _isOnboardingCompleted = await widget.storageService!
-            .isOnboardingCompleted();
-      } else {
-        try {
-          final storage = SecureStorageService();
-          _isOnboardingCompleted = await storage.isOnboardingCompleted();
-        } on Object catch (_) {
-          _isOnboardingCompleted = false;
-        }
-      }
-
-      // 2. Periksa status autentikasi aktif
-      if (mounted) {
-        try {
-          final authBloc = BlocProvider.of<AuthBloc>(context);
-          if (authBloc.state is! Authenticated &&
-              authBloc.state is! GroupSelectionRequired) {
-            authBloc.add(const AuthCheckRequested());
-            final state = await authBloc.stream
-                .firstWhere((s) => s is! AuthLoading && s is! AuthInitial)
-                .timeout(
-                  const Duration(seconds: 5),
-                  onTimeout: () => authBloc.state,
-                );
-            _isAuthenticated = state is Authenticated;
-            _isGroupSelectionRequired = state is GroupSelectionRequired;
-            if (state is Authenticated) {
-              _authenticatedUser = state.user;
-            } else if (state is GroupSelectionRequired) {
-              _authenticatedUser = state.user;
-            }
-          } else {
-            _isAuthenticated = authBloc.state is Authenticated;
-            _isGroupSelectionRequired =
-                authBloc.state is GroupSelectionRequired;
-            if (authBloc.state is Authenticated) {
-              _authenticatedUser = (authBloc.state as Authenticated).user;
-            } else if (authBloc.state is GroupSelectionRequired) {
-              _authenticatedUser =
-                  (authBloc.state as GroupSelectionRequired).user;
-            }
-          }
-        } on Object catch (_) {
-          // Fallback tanpa AuthBloc: baca langsung token dari storage
-          try {
-            final storage = widget.storageService ?? SecureStorageService();
-            final token = await storage.getAccessToken();
-            _isAuthenticated = token != null && token.isNotEmpty;
-          } on Object catch (_) {
-            _isAuthenticated = false;
-          }
-        }
-      }
-    } finally {
-      _isInitComplete = true;
-      _checkAndNavigate();
-    }
-  }
-
   void _checkAndNavigate() {
-    if (_isMinDurationElapsed && _isInitComplete && mounted && !_hasNavigated) {
+    if (_isMinDurationElapsed &&
+        _splashCubit.state.isReady &&
+        mounted &&
+        !_hasNavigated) {
       _hasNavigated = true;
       _slowLoadingTimer?.cancel();
       _splashMinDurationTimer?.cancel();
@@ -229,12 +165,14 @@ class _SplashScreenState extends State<SplashScreen>
         persistenceEnabled = widget.enableOnboardingPersistence ?? true;
       }
 
+      final splash = _splashCubit.state;
+      final user = splash.user;
       Widget nextScreen;
-      if (!persistenceEnabled || !_isOnboardingCompleted) {
+      if (!persistenceEnabled || !splash.isOnboardingCompleted) {
         nextScreen = const OnboardingScreen();
-      } else if (_isGroupSelectionRequired && _authenticatedUser != null) {
-        nextScreen = GroupSelectionScreen(user: _authenticatedUser!);
-      } else if (_isAuthenticated) {
+      } else if (splash.isGroupSelectionRequired && user != null) {
+        nextScreen = GroupSelectionScreen(user: user);
+      } else if (splash.isAuthenticated) {
         nextScreen = const MainNavigationScreen();
       } else {
         nextScreen = const LoginScreen();
@@ -250,6 +188,7 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _slowLoadingTimer?.cancel();
     _splashMinDurationTimer?.cancel();
+    unawaited(_splashCubit.close());
     _controller.dispose();
     super.dispose();
   }
@@ -288,64 +227,69 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    return M3ETheme(
-      data: m3eTheme,
-      child: Theme(
-        data: lightTheme,
-        child: Scaffold(
-          backgroundColor: lightTheme.colorScheme.surface,
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: AppSpacing.space300,
-                ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: AppLayout.contentMaxWidth,
+    return BlocListener<SplashCubit, SplashState>(
+      bloc: _splashCubit,
+      listenWhen: (_, current) => current.isReady,
+      listener: (_, _) => _checkAndNavigate(),
+      child: M3ETheme(
+        data: m3eTheme,
+        child: Theme(
+          data: lightTheme,
+          child: Scaffold(
+            backgroundColor: lightTheme.colorScheme.surface,
+            body: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: AppSpacing.space300,
                   ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Background Glow
-                      // Layer Blur 170, Warna Opacity 0% -> 32%
-                      if (isReducedMotion)
-                        const BackgroundGlowWidget()
-                      else
-                        AnimatedBuilder(
-                          animation: _glowColorAnimation,
-                          builder: (context, child) {
-                            return BackgroundGlowWidget(
-                              color: _glowColorAnimation.value,
-                            );
-                          },
-                        ),
-
-                      // Foreground Content Column
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Brand Logo
-                          brandChild,
-
-                          AppSpacing.vGap200,
-
-                          // Subtitle
-                          subtitleChild,
-
-                          AppSpacing.vGap400,
-
-                          // Indikator visual loading resmi dengan slot tinggi
-                          // stabil
-                          SizedBox(
-                            height: AppSpacing.space600,
-                            child: Center(child: loadingIndicatorChild),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppLayout.contentMaxWidth,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Background Glow
+                        // Layer Blur 170, Warna Opacity 0% -> 32%
+                        if (isReducedMotion)
+                          const BackgroundGlowWidget()
+                        else
+                          AnimatedBuilder(
+                            animation: _glowColorAnimation,
+                            builder: (context, child) {
+                              return BackgroundGlowWidget(
+                                color: _glowColorAnimation.value,
+                              );
+                            },
                           ),
-                        ],
-                      ),
-                    ],
+
+                        // Foreground Content Column
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Brand Logo
+                            brandChild,
+
+                            AppSpacing.vGap200,
+
+                            // Subtitle
+                            subtitleChild,
+
+                            AppSpacing.vGap400,
+
+                            // Indikator visual loading resmi dengan slot tinggi
+                            // stabil
+                            SizedBox(
+                              height: AppSpacing.space600,
+                              child: Center(child: loadingIndicatorChild),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

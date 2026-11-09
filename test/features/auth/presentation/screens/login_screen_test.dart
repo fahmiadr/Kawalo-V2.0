@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
@@ -19,6 +20,8 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../helpers/mock_screen_cubits.dart';
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
+
+class MockSecureStorageService extends Mock implements SecureStorageService {}
 
 void main() {
   setUpAll(() {
@@ -256,4 +259,63 @@ void main() {
       expect(masukButtonFinder, findsOneWidget);
     },
   );
+
+  testWidgets('pre-fills the email saved by the previous login', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final storage = MockSecureStorageService();
+    when(storage.getLastEmail).thenAnswer((_) async => 'saved@kawalo.id');
+
+    await tester.pumpWidget(
+      RepositoryProvider<SecureStorageService>.value(
+        value: storage,
+        child: M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          home: BlocProvider<AuthBloc>(
+            create: (_) => AuthBloc(loginUseCase: MockLoginUseCase()),
+            child: const LoginScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('saved@kawalo.id'), findsOneWidget);
+  });
+
+  testWidgets('does not overwrite an email the user already typed', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final storage = MockSecureStorageService();
+    final saved = Completer<String?>();
+    when(storage.getLastEmail).thenAnswer((_) => saved.future);
+
+    await tester.pumpWidget(
+      RepositoryProvider<SecureStorageService>.value(
+        value: storage,
+        child: M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          home: BlocProvider<AuthBloc>(
+            create: (_) => AuthBloc(loginUseCase: MockLoginUseCase()),
+            child: const LoginScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(EditableText).first, 'typed@kawalo.id');
+    saved.complete('saved@kawalo.id');
+    await tester.pumpAndSettle();
+
+    expect(find.text('typed@kawalo.id'), findsOneWidget);
+    expect(find.text('saved@kawalo.id'), findsNothing);
+  });
 }

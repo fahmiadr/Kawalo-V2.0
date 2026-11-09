@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
@@ -18,6 +20,7 @@ import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:kawalo_mobile/features/auth/presentation/cubit/saved_email_cubit.dart';
 import 'package:kawalo_mobile/features/auth/presentation/screens/group_selection_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/auth_header_widget.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/privacy_policy_bottom_sheet.dart';
@@ -45,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final FocusNode _passwordFocusNode;
   late final AppKeyboardAutoScroller _keyboardScroller;
   final GlobalKey _loginButtonKey = GlobalKey();
+  late final SavedEmailCubit _savedEmailCubit;
 
   @override
   void initState() {
@@ -68,27 +72,19 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
 
-    _loadSavedEmail();
+    _savedEmailCubit = SavedEmailCubit(context.read<SecureStorageService?>())
+      ..load();
   }
 
-  Future<void> _loadSavedEmail() async {
-    try {
-      final storage = SecureStorageService();
-      final savedEmail = await storage.getLastEmail();
-      if (mounted && savedEmail != null && savedEmail.isNotEmpty) {
-        if (_emailController.text.isEmpty) {
-          setState(() {
-            _emailController.text = savedEmail;
-          });
-        }
-      }
-    } on Object catch (_) {
-      // Best-effort pre-fill email
+  void _prefillEmail(String email) {
+    if (_emailController.text.isEmpty) {
+      setState(() => _emailController.text = email);
     }
   }
 
   @override
   void dispose() {
+    unawaited(_savedEmailCubit.close());
     _keyboardScroller.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
@@ -152,134 +148,143 @@ class _LoginScreenState extends State<LoginScreen> {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthFailure) {
-          AppSnackbar.show(context, message: state.message);
-        } else if (state is Authenticated) {
-          Navigator.of(context).pushAndRemoveUntil<void>(
-            AppPageRoute.fade<void>(
-              builder: (_) => const MainNavigationScreen(),
-            ),
-            (route) => false,
-          );
-        } else if (state is GroupSelectionRequired) {
-          Navigator.of(context).pushAndRemoveUntil<void>(
-            AppPageRoute.fade<void>(
-              builder: (_) => GroupSelectionScreen(user: state.user),
-            ),
-            (route) => false,
-          );
-        }
+    return BlocListener<SavedEmailCubit, String?>(
+      bloc: _savedEmailCubit,
+      listener: (_, email) {
+        if (email != null) _prefillEmail(email);
       },
-      builder: (context, state) {
-        final isLoading = state is AuthLoading;
+      child: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthFailure) {
+            AppSnackbar.show(context, message: state.message);
+          } else if (state is Authenticated) {
+            Navigator.of(context).pushAndRemoveUntil<void>(
+              AppPageRoute.fade<void>(
+                builder: (_) => const MainNavigationScreen(),
+              ),
+              (route) => false,
+            );
+          } else if (state is GroupSelectionRequired) {
+            Navigator.of(context).pushAndRemoveUntil<void>(
+              AppPageRoute.fade<void>(
+                builder: (_) => GroupSelectionScreen(user: state.user),
+              ),
+              (route) => false,
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is AuthLoading;
 
-        return PopScope(
-          canPop: !isLoading,
-          child: Stack(
-            children: [
-              Scaffold(
-                backgroundColor: colorScheme.surface,
-                body: SafeArea(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isCompact = AppLayout.isCompact(
-                        constraints.maxWidth,
-                      );
-                      final horizontalPadding = AppLayout.horizontalMargin(
-                        constraints.maxWidth,
-                      );
-
-                      Widget formContent = Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (isCompact) const Spacer(),
-
-                          // 1. Header (Logo Responsif, Judul & Subjudul)
-                          const AuthHeaderWidget(),
-
-                          AppSpacing.vGap400,
-
-                          // 2. Input Form (Email & Password)
-                          _buildLoginForm(context, isLoading: isLoading),
-
-                          AppSpacing.vGap300,
-
-                          // 3. Terms & Privacy Consent Text
-                          TermsAndPrivacyWidget(
-                            onPrivacyTap: () =>
-                                showPrivacyPolicyBottomSheet(context),
-                            onTermsTap: () =>
-                                showTermsOfServiceBottomSheet(context),
-                          ),
-
-                          if (isCompact) const Spacer(),
-
-                          AppSpacing.vGap300,
-
-                          // 4. Action Button (Masuk)
-                          AppButton(
-                            key: _loginButtonKey,
-                            shape: AppButtonShape.square,
-                            size: AppButtonSize.md,
-                            enabled: !isLoading,
-                            semanticLabel: isLoading
-                                ? 'Memverifikasi akun'
-                                : 'Masuk',
-                            onPressed: isLoading ? null : _onLoginSubmitted,
-                            child: Text('Masuk', style: typeScale.titleMedium),
-                          ),
-                        ],
-                      );
-
-                      if (!isCompact) {
-                        formContent = AppCard(
-                          variant: AppCardVariant.outlined,
-                          padding: AppSpacing.paddingAllXl,
-                          child: formContent,
+          return PopScope(
+            canPop: !isLoading,
+            child: Stack(
+              children: [
+                Scaffold(
+                  backgroundColor: colorScheme.surface,
+                  body: SafeArea(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isCompact = AppLayout.isCompact(
+                          constraints.maxWidth,
                         );
-                      }
+                        final horizontalPadding = AppLayout.horizontalMargin(
+                          constraints.maxWidth,
+                        );
 
-                      return SingleChildScrollView(
-                        controller: _scrollController,
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: EdgeInsets.only(
-                          left: horizontalPadding,
-                          right: horizontalPadding,
-                          top: AppSpacing.space200,
-                          bottom: AppSpacing.space200,
-                        ),
-                        child: AppScrollPadding(
-                          revealTargetKey: _loginButtonKey,
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: AppLayout.contentMaxWidth,
-                                minHeight:
-                                    constraints.maxHeight -
-                                    (AppSpacing.space200 * 2),
+                        Widget formContent = Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (isCompact) const Spacer(),
+
+                            // 1. Header (Logo Responsif, Judul & Subjudul)
+                            const AuthHeaderWidget(),
+
+                            AppSpacing.vGap400,
+
+                            // 2. Input Form (Email & Password)
+                            _buildLoginForm(context, isLoading: isLoading),
+
+                            AppSpacing.vGap300,
+
+                            // 3. Terms & Privacy Consent Text
+                            TermsAndPrivacyWidget(
+                              onPrivacyTap: () =>
+                                  showPrivacyPolicyBottomSheet(context),
+                              onTermsTap: () =>
+                                  showTermsOfServiceBottomSheet(context),
+                            ),
+
+                            if (isCompact) const Spacer(),
+
+                            AppSpacing.vGap300,
+
+                            // 4. Action Button (Masuk)
+                            AppButton(
+                              key: _loginButtonKey,
+                              shape: AppButtonShape.square,
+                              size: AppButtonSize.md,
+                              enabled: !isLoading,
+                              semanticLabel: isLoading
+                                  ? 'Memverifikasi akun'
+                                  : 'Masuk',
+                              onPressed: isLoading ? null : _onLoginSubmitted,
+                              child: Text(
+                                'Masuk',
+                                style: typeScale.titleMedium,
                               ),
-                              child: isCompact
-                                  ? IntrinsicHeight(child: formContent)
-                                  : formContent,
+                            ),
+                          ],
+                        );
+
+                        if (!isCompact) {
+                          formContent = AppCard(
+                            variant: AppCardVariant.outlined,
+                            padding: AppSpacing.paddingAllXl,
+                            child: formContent,
+                          );
+                        }
+
+                        return SingleChildScrollView(
+                          controller: _scrollController,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: EdgeInsets.only(
+                            left: horizontalPadding,
+                            right: horizontalPadding,
+                            top: AppSpacing.space200,
+                            bottom: AppSpacing.space200,
+                          ),
+                          child: AppScrollPadding(
+                            revealTargetKey: _loginButtonKey,
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: AppLayout.contentMaxWidth,
+                                  minHeight:
+                                      constraints.maxHeight -
+                                      (AppSpacing.space200 * 2),
+                                ),
+                                child: isCompact
+                                    ? IntrinsicHeight(child: formContent)
+                                    : formContent,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
 
-              // Modal Scrim Overlay
-              if (isLoading)
-                const AppLoadingOverlay(semanticLabel: 'Memverifikasi akun'),
-            ],
-          ),
-        );
-      },
+                // Modal Scrim Overlay
+                if (isLoading)
+                  const AppLoadingOverlay(semanticLabel: 'Memverifikasi akun'),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
