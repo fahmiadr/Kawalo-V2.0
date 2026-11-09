@@ -6,29 +6,20 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_chip.dart';
-import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_batch_delete.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_selection_controller.dart';
 import 'package:kawalo_mobile/features/group/presentation/group_member_filter_options.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
@@ -66,8 +57,7 @@ class GuestScreen extends StatefulWidget {
 class _GuestScreenState extends State<GuestScreen> {
   late final TextEditingController _searchController;
   late final ScrollController _scrollController;
-  late final AppSelectionController _selectionController;
-  final Set<String> _selectedIds = <String>{};
+  late final ListSelectionController _selection;
   bool _isDeleting = false;
   bool _isRefreshing = false;
   bool _isSearchExpanded = false;
@@ -75,10 +65,10 @@ class _GuestScreenState extends State<GuestScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
-    _selectionController = AppSelectionController();
-    _selectionController.addListener(_onSelectionChanged);
+    _scrollController = LoadMoreScrollController(
+      onLoadMore: () => _resolveCubit(context).loadMoreGuests(),
+    );
+    _selection = ListSelectionController(onChanged: _onSelectionChanged);
 
     final cubit = _resolveCubit(context);
     final initialQuery = cubit.state.searchQuery ?? '';
@@ -105,9 +95,7 @@ class _GuestScreenState extends State<GuestScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _selectionController.removeListener(_onSelectionChanged);
-    _selectionController.dispose();
-    _scrollController.removeListener(_onScroll);
+    _selection.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -115,31 +103,6 @@ class _GuestScreenState extends State<GuestScreen> {
   void _onSelectionChanged() {
     if (mounted) {
       setState(() {});
-    }
-  }
-
-  void _clearSelection() {
-    _selectedIds.clear();
-    _selectionController.clear();
-  }
-
-  void _resyncSelectionIndices(List<GuestItemEntity> items) {
-    if (_selectedIds.isEmpty) return;
-    _selectedIds.retainAll(items.map((e) => e.id));
-    _selectionController.clear();
-    for (var i = 0; i < items.length; i++) {
-      if (_selectedIds.contains(items[i].id)) {
-        _selectionController.select(i);
-      }
-    }
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    if (maxScroll > 0 && currentScroll >= maxScroll * 0.85) {
-      _resolveCubit(context).loadMoreGuests();
     }
   }
 
@@ -161,8 +124,17 @@ class _GuestScreenState extends State<GuestScreen> {
     }
   }
 
+  void _showFeedback(GuestCubit cubit, AppFetchResult result) {
+    if (!mounted) return;
+    AppFetchFeedback.show(
+      context,
+      result: result,
+      hasData: cubit.state.displayedGuests.isNotEmpty,
+    );
+  }
+
   Future<void> _handleRefresh(GuestCubit cubit) async {
-    if (_selectionController.isSelectionMode) {
+    if (_selection.isSelectionMode) {
       return;
     }
     _isRefreshing = true;
@@ -201,7 +173,7 @@ class _GuestScreenState extends State<GuestScreen> {
     GuestItemEntity item,
     AuthSessionEntity? session,
   ) {
-    if (_selectionController.isSelectionMode) {
+    if (_selection.isSelectionMode) {
       if (!_canSelectOrDelete(item, session)) {
         AppSnackbar.show(
           context,
@@ -210,7 +182,7 @@ class _GuestScreenState extends State<GuestScreen> {
         return;
       }
 
-      _toggleSelection(index, item.id);
+      _selection.toggle(index, item.id);
     } else {
       _onGuestTapped(item);
     }
@@ -221,7 +193,7 @@ class _GuestScreenState extends State<GuestScreen> {
     GuestItemEntity item,
     AuthSessionEntity? session,
   ) {
-    if (_selectionController.isSelectionMode) return;
+    if (_selection.isSelectionMode) return;
 
     if (!_canSelectOrDelete(item, session)) {
       AppSnackbar.show(
@@ -231,11 +203,11 @@ class _GuestScreenState extends State<GuestScreen> {
       return;
     }
 
-    _toggleSelection(index, item.id);
+    _selection.toggle(index, item.id);
   }
 
   Future<void> _onOpenCreateForm() async {
-    if (_selectionController.isSelectionMode) return;
+    if (_selection.isSelectionMode) return;
     final cubit = _resolveCubit(context);
     await GuestFormDialog.showCreate(context, guestCubit: cubit);
   }
@@ -245,95 +217,44 @@ class _GuestScreenState extends State<GuestScreen> {
     required List<GuestItemEntity> items,
     required AuthSessionEntity? session,
   }) {
-    _clearSelection();
-    if (!selectAll) {
-      return;
-    }
-
-    final isAdmin = session?.role == 'ADMIN' || session == null;
-    if (isAdmin) {
-      _selectionController.selectAll(items.length);
-      for (final item in items) {
-        _selectedIds.add(item.id);
-      }
-    } else {
-      for (var i = 0; i < items.length; i++) {
-        if (_canSelectOrDelete(items[i], session)) {
-          _selectionController.select(i);
-          _selectedIds.add(items[i].id);
-        }
-      }
-    }
+    _selection.setAllSelected(
+      selectAll: selectAll,
+      ids: [for (final item in items) item.id],
+      session: session,
+      canSelect: (i) => _canSelectOrDelete(items[i], session),
+    );
   }
 
   Future<void> _onDeleteSelectedPressed({
     required List<GuestItemEntity> items,
-  }) async {
-    final selectedIds = Set<String>.from(_selectedIds);
-    for (final index in _selectionController.selectedIndices) {
-      if (index < items.length) {
-        selectedIds.add(items[index].id);
-      }
-    }
-    if (selectedIds.isEmpty) return;
-
-    final isDeviceOffline =
-        context.read<ConnectivityCubit?>()?.state == ConnectivityStatus.offline;
-    if (isDeviceOffline) {
-      AppSnackbar.show(
-        context,
-        message: 'Tidak dapat menghapus data tamu saat offline.',
-      );
-      return;
-    }
-
-    final count = selectedIds.length;
-    final confirmed = await showAppConfirmationDialog(
+  }) {
+    final selectedIds = _selection.selectedIds([
+      for (final item in items) item.id,
+    ]);
+    return runListBatchDelete(
       context: context,
-      title: 'Hapus $count data tamu?',
-      message: '$count data tamu terpilih akan dihapus secara permanen.',
-    );
-
-    if (!(confirmed ?? false) || !mounted) return;
-
-    setState(() {
-      _isDeleting = true;
-    });
-
-    final cubit = _resolveCubit(context);
-    final result = await cubit.deleteMultipleGuests(
-      selectedIds,
-      session: _resolveSession(context),
-    );
-    if (!mounted) return;
-
-    setState(() {
-      _isDeleting = false;
-      _clearSelection();
-    });
-
-    result.fold(
-      (failure) {
-        AppSnackbar.show(context, message: failure.message);
-      },
-      (_) {
-        AppSnackbar.show(
-          context,
-          message: '$count data tamu berhasil dihapus.',
-        );
-      },
+      ids: selectedIds,
+      noun: 'data tamu',
+      delete: () => _resolveCubit(
+        context,
+      ).deleteMultipleGuests(selectedIds, session: _resolveSession(context)),
+      onDeleting: () => setState(() => _isDeleting = true),
+      onDone: () => setState(() {
+        _isDeleting = false;
+        _selection.clear();
+      }),
     );
   }
 
   void _onOpenSearch() {
-    _clearSelection();
+    _selection.clear();
     setState(() {
       _isSearchExpanded = true;
     });
   }
 
   void _onCloseSearch() {
-    _clearSelection();
+    _selection.clear();
     final hasActiveSearch =
         _searchController.text.isNotEmpty ||
         _resolveCubit(context).state.searchQuery != null &&
@@ -348,19 +269,14 @@ class _GuestScreenState extends State<GuestScreen> {
   }
 
   Future<void> _onSearch(String query) async {
-    _clearSelection();
+    _selection.clear();
     final currentCubit = _resolveCubit(context);
     final result = await currentCubit.fetchGuests(search: query);
-    if (!mounted) return;
-    AppFetchFeedback.show(
-      context,
-      result: result,
-      hasData: currentCubit.state.displayedGuests.isNotEmpty,
-    );
+    _showFeedback(currentCubit, result);
   }
 
   Future<void> _onFilterPressed() async {
-    _clearSelection();
+    _selection.clear();
     final cubit = _resolveCubit(context);
     final state = cubit.state;
     final now = DateTime.now();
@@ -376,32 +292,18 @@ class _GuestScreenState extends State<GuestScreen> {
     );
 
     if (result != null && mounted) {
-      final fetchResult = await cubit.setFilter(result);
-      if (mounted) {
-        AppFetchFeedback.show(
-          context,
-          result: fetchResult,
-          hasData: cubit.state.displayedGuests.isNotEmpty,
-        );
-      }
+      _showFeedback(cubit, await cubit.setFilter(result));
     }
   }
 
   Future<void> _onResetDateFilter() async {
-    _clearSelection();
+    _selection.clear();
     final cubit = _resolveCubit(context);
-    final fetchResult = await cubit.resetDateFilter();
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedGuests.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.resetDateFilter());
   }
 
   Future<void> _onOpenCreatorPicker() async {
-    _clearSelection();
+    _selection.clear();
     final cubit = _resolveCubit(context);
     final session = _resolveSession(context);
     final result = await showAppUserFilterBottomSheet(
@@ -416,31 +318,18 @@ class _GuestScreenState extends State<GuestScreen> {
         email: result.selectedUser?.email,
         name: result.selectedUser?.name,
       );
-      if (mounted) {
-        AppFetchFeedback.show(
-          context,
-          result: fetchResult,
-          hasData: cubit.state.displayedGuests.isNotEmpty,
-        );
-      }
+      _showFeedback(cubit, fetchResult);
     }
   }
 
   Future<void> _onResetCreatorFilter() async {
-    _clearSelection();
+    _selection.clear();
     final cubit = _resolveCubit(context);
-    final fetchResult = await cubit.changeCreatorFilter();
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedGuests.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.changeCreatorFilter());
   }
 
   Future<void> _onToggleMine() async {
-    _clearSelection();
+    _selection.clear();
     final cubit = _resolveCubit(context);
     final session = _resolveSession(context);
     final userEmail = session?.email;
@@ -452,36 +341,14 @@ class _GuestScreenState extends State<GuestScreen> {
     final fetchResult = isCurrentlyMine
         ? await cubit.changeCreatorFilter()
         : await cubit.changeCreatorFilter(email: userEmail, name: userName);
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedGuests.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, fetchResult);
   }
 
   Future<void> _resetAllFilters() async {
-    _clearSelection();
+    _selection.clear();
     final cubit = _resolveCubit(context);
     _searchController.clear();
-    final fetchResult = await cubit.resetFilters();
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedGuests.isNotEmpty,
-      );
-    }
-  }
-
-  void _toggleSelection(int index, String id) {
-    _selectionController.toggle(index);
-    if (_selectionController.isSelected(index)) {
-      _selectedIds.add(id);
-    } else {
-      _selectedIds.remove(id);
-    }
+    _showFeedback(cubit, await cubit.resetFilters());
   }
 
   @override
@@ -502,31 +369,59 @@ class _GuestScreenState extends State<GuestScreen> {
           if (_searchController.text != query) {
             _searchController.text = query;
           }
-          _resyncSelectionIndices(state.displayedGuests);
+          _selection.resync([
+            for (final item in state.displayedGuests) item.id,
+          ]);
         }
       },
       builder: (context, state) {
-        final greeting = state.lastSync;
-
         final isOffline = isDeviceOffline;
         final currentGuests = state.displayedGuests;
         final isInitialLoading = state is GuestInitial || state is GuestLoading;
 
-        return _buildScaffold(
-          context: context,
-          greeting: greeting,
-          cubit: cubit,
-          session: session,
-          currentGuests: currentGuests,
-          isOffline: isOffline,
+        return ListScreenScaffold(
+          title: 'Data tamu',
+          searchLabel: 'Cari data tamu',
+          refreshLabel: 'Memuat ulang data tamu',
+          greeting: state.lastSync,
           isInitialLoading: isInitialLoading,
+          isOffline: isOffline,
+          isSearchExpanded: _isSearchExpanded,
+          searchController: _searchController,
+          onSearch: _onSearch,
+          onOpenSearch: _onOpenSearch,
+          onCloseSearch: _onCloseSearch,
+          onRefresh: () => _handleRefresh(cubit),
+          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
           filterBar: _buildFilterBar(
-            context: context,
             state: state,
             isLoading: isInitialLoading,
             session: session,
           ),
-          bodyContent: _buildBody(context, state, cubit, session),
+          body: _buildBody(context, state, cubit, session),
+          selection: ListScreenSelection(
+            controller: _selection,
+            itemCount: currentGuests.length,
+            onClear: _selection.clear,
+            onAllSelected: (selectAll) {
+              _onSelectAllToggled(
+                selectAll: selectAll,
+                items: currentGuests,
+                session: session,
+              );
+            },
+            onDelete: () => _onDeleteSelectedPressed(items: currentGuests),
+            isDeleting: _isDeleting,
+            deleteLabel: 'Hapus data tamu terpilih',
+            deletingLabel: 'Menghapus data tamu terpilih',
+            deletingMessage: 'Menghapus data tamu...',
+          ),
+          createLabel: 'Tamu',
+          onCreate: GuestItemEntity.canBeCreatedBySession(session)
+              ? _onOpenCreateForm
+              : null,
+          canPop: !_selection.isSelectionMode,
+          onPopBlocked: _selection.clear,
         );
       },
     );
@@ -560,9 +455,12 @@ class _GuestScreenState extends State<GuestScreen> {
     } else if (state is GuestLoaded) {
       if (state.displayedGuests.isEmpty) {
         if (state.hasActiveFilter) {
-          return _buildEmptySearchResult(context);
+          return ListEmptySearchResult(
+            noun: 'data tamu',
+            onReset: _resetAllFilters,
+          );
         } else {
-          return _buildEmptyGroupState(context);
+          return _buildEmptyGroupState();
         }
       } else {
         return _buildGuestListView(
@@ -579,7 +477,14 @@ class _GuestScreenState extends State<GuestScreen> {
           session: session,
         );
       } else {
-        return _buildErrorState(context, state.message, cubit);
+        return ListErrorState(
+          noun: 'data tamu',
+          message: state.message,
+          onRetry: () {
+            final query = _searchController.text;
+            cubit.fetchGuests(search: query.isEmpty ? null : query);
+          },
+        );
       }
     } else {
       return const SizedBox.shrink();
@@ -587,264 +492,36 @@ class _GuestScreenState extends State<GuestScreen> {
   }
 
   Widget _buildFilterBar({
-    required BuildContext context,
     required bool isLoading,
     required AuthSessionEntity? session,
     required GuestState state,
   }) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isAdmin = session?.role == 'ADMIN';
-
-    // 1. Label Chip Tanggal
-    final isDateActive = state.hasActiveDateFilter;
-    final dateLabel = isDateActive
-        ? state.filterPeriod.resolveDisplayLabel(
-            startDate: state.startDate,
-            endDate: state.endDate,
-          )
-        : 'Tanggal';
-
-    // 2. Chip Pembuat (Role-aware)
-    final Widget creatorChip;
-    if (isAdmin) {
-      final isCreatorActive = state.hasActiveCreatorFilter;
-      final creatorName = state.filterCreatorName ?? state.filterCreatorEmail;
-      final creatorLabel = isCreatorActive
-          ? 'Dibuat oleh $creatorName'
-          : 'Dibuat oleh';
-
-      creatorChip = AppChip(
-        type: AppChipType.filter,
-        label: creatorLabel,
-        selected: isCreatorActive,
-        trailing: isCreatorActive
-            ? null
-            : AppSvgIcon(
-                KawaloVectors.arrowDown01,
-                size: 18,
-                color: !isLoading
-                    ? colorScheme.onSurfaceVariant
-                    : colorScheme.onSurface.withValues(
-                        alpha: AppStateLayer.disabledOpacity,
-                      ),
-              ),
-        onDeleted: isCreatorActive && !isLoading ? _onResetCreatorFilter : null,
-        onPressed: isLoading ? null : _onOpenCreatorPicker,
-      );
-    } else {
-      final activeCreatorEmail = state.filterCreatorEmail;
-      final isMine =
-          session?.email != null && activeCreatorEmail == session?.email;
-
-      creatorChip = AppChip(
-        type: AppChipType.filter,
-        label: 'Dibuat oleh saya',
-        selected: isMine,
-        leading: isMine
-            ? AppSvgIcon(
-                KawaloVectors.checkFilled,
-                size: 18,
-                color: !isLoading
-                    ? colorScheme.onSecondaryContainer
-                    : colorScheme.onSurface.withValues(
-                        alpha: AppStateLayer.disabledOpacity,
-                      ),
-              )
-            : null,
-        onPressed: isLoading ? null : _onToggleMine,
-      );
-    }
-
-    return Container(
-      width: double.infinity,
-      color: colorScheme.surface,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space100,
+    return ListFilterBar(
+      isLoading: isLoading,
+      isDateActive: state.hasActiveDateFilter,
+      dateLabel: state.filterPeriod.resolveDisplayLabel(
+        startDate: state.startDate,
+        endDate: state.endDate,
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            AppChip(
-              type: AppChipType.filter,
-              label: dateLabel,
-              selected: isDateActive,
-              trailing: isDateActive
-                  ? null
-                  : AppSvgIcon(
-                      KawaloVectors.arrowDown01,
-                      size: 18,
-                      color: !isLoading
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface.withValues(
-                              alpha: AppStateLayer.disabledOpacity,
-                            ),
-                    ),
-              onDeleted: isDateActive && !isLoading ? _onResetDateFilter : null,
-              onPressed: isLoading ? null : _onFilterPressed,
-            ),
-            AppSpacing.hGapSm,
-            creatorChip,
-          ],
+      onDatePressed: _onFilterPressed,
+      onDateReset: _onResetDateFilter,
+      chips: [
+        ListCreatorFilterChip(
+          session: session,
+          isLoading: isLoading,
+          isActive: state.hasActiveCreatorFilter,
+          activeEmail: state.filterCreatorEmail,
+          activeName: state.filterCreatorName ?? state.filterCreatorEmail,
+          onOpenPicker: _onOpenCreatorPicker,
+          onReset: _onResetCreatorFilter,
+          onToggleMine: _onToggleMine,
         ),
-      ),
-    );
-  }
-
-  Widget _buildScaffold({
-    required BuildContext context,
-    required String greeting,
-    required GuestCubit cubit,
-    required AuthSessionEntity? session,
-    required Widget filterBar,
-    required Widget bodyContent,
-    required List<GuestItemEntity> currentGuests,
-    bool isOffline = false,
-    bool isInitialLoading = false,
-  }) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final canCreate = GuestItemEntity.canBeCreatedBySession(session);
-
-    return PopScope(
-      canPop: !_selectionController.isSelectionMode,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          _clearSelection();
-        }
-      },
-      child: AppLoadingOverlay(
-        isLoading: _isDeleting,
-        semanticLabel: 'Menghapus data tamu terpilih',
-        message: 'Menghapus data tamu...',
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: colorScheme.surface,
-          floatingActionButtonLocation:
-              const AppStationaryEndFloatFabLocation(),
-          floatingActionButtonAnimator:
-              FloatingActionButtonAnimator.noAnimation,
-          appBar: AppSelectionAppBar(
-            idle: AppHomeAppBar(
-              greeting: greeting,
-              reserveGreetingSpace: true,
-              greetingLoading: isInitialLoading && greeting.isEmpty,
-              title: _isSearchExpanded ? null : 'Data tamu',
-              titleWidget: _isSearchExpanded
-                  ? AppSearchBar(
-                      controller: _searchController,
-                      hintText: 'Cari data tamu',
-                      autoFocus: true,
-                      enabled: !isInitialLoading,
-                      onSearch: _onSearch,
-                      constraints: const BoxConstraints(
-                        minHeight: 40,
-                        maxHeight: 40,
-                      ),
-                    )
-                  : null,
-              showBackButton: true,
-              trailing: AppIconButton(
-                onPressed: !isInitialLoading
-                    ? (_isSearchExpanded ? _onCloseSearch : _onOpenSearch)
-                    : null,
-                semanticLabel: _isSearchExpanded
-                    ? 'Tutup pencarian'
-                    : 'Cari data tamu',
-                icon: AppSvgIcon(
-                  _isSearchExpanded
-                      ? KawaloVectors.cancel01
-                      : KawaloVectors.search01,
-                  size: 24,
-                  color: !isInitialLoading
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurface.withValues(
-                          alpha: AppStateLayer.disabledOpacity,
-                        ),
-                ),
-              ),
-            ),
-            controller: _selectionController,
-            showSelectAll: true,
-            itemCount: currentGuests.length,
-            onClear: _clearSelection,
-            onAllSelected: (selectAll) {
-              _onSelectAllToggled(
-                selectAll: selectAll,
-                items: currentGuests,
-                session: session,
-              );
-            },
-            actions: [
-              AppIconButton(
-                onPressed: _isDeleting || isOffline
-                    ? null
-                    : () => _onDeleteSelectedPressed(items: currentGuests),
-                semanticLabel: 'Hapus data tamu terpilih',
-                icon: AppSvgIcon(
-                  KawaloVectors.delete01Filled,
-                  color: _isDeleting || isOffline
-                      ? colorScheme.onSurface.withValues(
-                          alpha: AppStateLayer.disabledOpacity,
-                        )
-                      : colorScheme.error,
-                  size: 24,
-                ),
-              ),
-            ],
-          ),
-          floatingActionButton:
-              _selectionController.isSelectionMode || !canCreate
-              ? null
-              : AppExtendedFab(
-                  onPressed: isOffline ? null : _onOpenCreateForm,
-                  icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
-                  label: 'Tamu',
-                ),
-          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-          body: SafeArea(
-            top: false,
-            child: AppKeyboardInsetsPadding(
-              isOffline: isOffline,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  filterBar,
-                  Expanded(
-                    child: AppRefreshIndicator.contained(
-                      semanticsLabel: 'Memuat ulang data tamu',
-                      notificationPredicate:
-                          _selectionController.isSelectionMode
-                          ? (_) => false
-                          : defaultScrollNotificationPredicate,
-                      onRefresh: () => _handleRefresh(cubit),
-                      child: bodyContent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      ],
     );
   }
 
   Widget _buildLoadingSkeleton() {
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        top: AppSpacing.space150,
-        bottom: AppLayout.fabScrollClearance,
-      ),
-      itemCount: 4,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
-      itemBuilder: (_, _) => const GuestCardSkeleton(),
-    );
+    return ListScreenSkeleton(itemBuilder: (_, _) => const GuestCardSkeleton());
   }
 
   Widget _buildGuestListView({
@@ -852,33 +529,16 @@ class _GuestScreenState extends State<GuestScreen> {
     required bool isLoadingMore,
     required AuthSessionEntity? session,
   }) {
-    final totalCount = guests.length + (isLoadingMore ? 1 : 0);
-    final isSelection = _selectionController.isSelectionMode;
+    final isSelection = _selection.isSelectionMode;
 
-    return ListView.separated(
+    return ListScreenListView(
       controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        top: AppSpacing.space150,
-        bottom: AppLayout.fabScrollClearance,
-      ),
-      itemCount: totalCount,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemCount: guests.length,
+      isLoadingMore: isLoadingMore,
       itemBuilder: (context, index) {
-        if (index == guests.length) {
-          return const Padding(
-            padding: AppSpacing.paddingVertical200,
-            child: Center(child: AppLoadingIndicator()),
-          );
-        }
-
         final item = guests[index];
         final isSelectable = _canSelectOrDelete(item, session);
-        final isSelected =
-            _selectionController.isSelected(index) ||
-            _selectedIds.contains(item.id);
+        final isSelected = _selection.isSelected(index, item.id);
 
         return GuestCard(
           item: item,
@@ -892,40 +552,13 @@ class _GuestScreenState extends State<GuestScreen> {
     );
   }
 
-  Widget _buildEmptyGroupState(BuildContext context) {
+  Widget _buildEmptyGroupState() {
     return const AppEmptyState(
       icon: AppSvgIcon.color(KawaloColorVectors.guestValidation),
       title: 'Belum ada data tamu',
       description:
           'Belum ada kunjungan tamu '
           'pada hari ini.',
-    );
-  }
-
-  Widget _buildEmptySearchResult(BuildContext context) {
-    return AppEmptyState.search(
-      title: 'Data tamu tidak ditemukan',
-      description:
-          'Tidak ada data tamu yang cocok dengan '
-          'pencarian atau filter yang diterapkan.',
-      actionLabel: 'Reset filter & pencarian',
-      onActionPressed: _resetAllFilters,
-    );
-  }
-
-  Widget _buildErrorState(
-    BuildContext context,
-    String message,
-    GuestCubit cubit,
-  ) {
-    return AppEmptyState.error(
-      title: 'Gagal memuat data tamu',
-      description: message,
-      retryLabel: 'Coba lagi',
-      onRetry: () {
-        final query = _searchController.text;
-        cubit.fetchGuests(search: query.isEmpty ? null : query);
-      },
     );
   }
 }
