@@ -11,7 +11,7 @@ String _createdAtOrNow(Object? value) =>
 /// (`IncidentDto`).
 ///
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
-@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
+@JsonSerializable(includeIfNull: false, fieldRename: FieldRename.snake)
 class IncidentModel extends Equatable {
   const IncidentModel({
     required this.id,
@@ -93,27 +93,7 @@ class IncidentModel extends Equatable {
   /// ISO 8601 timestamp pembaruan data insiden terakhir.
   final String? updatedAt;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'group_id': groupId,
-      'title': title,
-      if (description != null) 'description': description,
-      if (category != null) 'category': category,
-      if (glat != null) 'glat': glat,
-      if (glong != null) 'glong': glong,
-      'photos': photos,
-      'status': status,
-      'created_by': createdBy,
-      if (createdByName != null) 'created_by_name': createdByName,
-      if (resolvedBy != null) 'resolved_by': resolvedBy,
-      if (resolvedByName != null) 'resolved_by_name': resolvedByName,
-      if (resolvedAt != null) 'resolved_at': resolvedAt,
-      if (deletedAt != null) 'deleted_at': deletedAt,
-      'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-    };
-  }
+  Map<String, dynamic> toJson() => _$IncidentModelToJson(this);
 
   @override
   List<Object?> get props => [

@@ -10,7 +10,7 @@ String _createdAtOrNow(Object? value) =>
 /// Pure DTO model untuk pesan balasan thread insiden (`IncidentReplyDto`).
 ///
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
-@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class IncidentReplyModel extends Equatable {
   const IncidentReplyModel({
     required this.id,
@@ -57,18 +57,7 @@ class IncidentReplyModel extends Equatable {
   @JsonKey(fromJson: _createdAtOrNow)
   final String createdAt;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'incident_id': incidentId,
-      'sender_id': senderId,
-      'sender_name': senderName,
-      'sender_role': senderRole,
-      'message': message,
-      'photos': photos,
-      'created_at': createdAt,
-    };
-  }
+  Map<String, dynamic> toJson() => _$IncidentReplyModelToJson(this);
 
   @override
   List<Object?> get props => [

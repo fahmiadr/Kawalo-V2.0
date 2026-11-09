@@ -30,3 +30,24 @@ IncidentModel _$IncidentModelFromJson(Map<String, dynamic> json) =>
       deletedAt: json['deleted_at'] as String?,
       updatedAt: json['updated_at'] as String?,
     );
+
+Map<String, dynamic> _$IncidentModelToJson(IncidentModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'group_id': instance.groupId,
+      'title': instance.title,
+      'description': ?instance.description,
+      'category': ?instance.category,
+      'glat': ?instance.glat,
+      'glong': ?instance.glong,
+      'photos': instance.photos,
+      'status': instance.status,
+      'created_by': instance.createdBy,
+      'created_by_name': ?instance.createdByName,
+      'resolved_by': ?instance.resolvedBy,
+      'resolved_by_name': ?instance.resolvedByName,
+      'resolved_at': ?instance.resolvedAt,
+      'deleted_at': ?instance.deletedAt,
+      'created_at': instance.createdAt,
+      'updated_at': ?instance.updatedAt,
+    };

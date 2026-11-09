@@ -21,3 +21,15 @@ IncidentReplyModel _$IncidentReplyModelFromJson(Map<String, dynamic> json) =>
               .toList() ??
           [],
     );
+
+Map<String, dynamic> _$IncidentReplyModelToJson(IncidentReplyModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'incident_id': instance.incidentId,
+      'sender_id': instance.senderId,
+      'sender_name': instance.senderName,
+      'sender_role': instance.senderRole,
+      'message': instance.message,
+      'photos': instance.photos,
+      'created_at': instance.createdAt,
+    };
