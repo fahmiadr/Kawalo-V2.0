@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
@@ -24,6 +26,8 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockConnectivityCubit extends MockCubit<ConnectivityStatus>
@@ -31,6 +35,8 @@ class MockConnectivityCubit extends MockCubit<ConnectivityStatus>
 
 class MockInformationCubit extends MockCubit<InformationState>
     implements InformationCubit {}
+
+class MockPttCubit extends MockCubit<PttState> implements PttCubit {}
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
@@ -62,6 +68,7 @@ void main() {
     int initialIndex = 0,
     UserEntity? user = testUser,
     ConnectivityCubit? connectivityCubit,
+    List<BlocProvider<dynamic>> extraProviders = const [],
   }) {
     final mockLogin = MockLoginUseCase();
     final mockAuthRepository = MockAuthRepository();
@@ -92,6 +99,7 @@ void main() {
           )..add(const AuthCheckRequested()),
         ),
         BlocProvider<InformationCubit>.value(value: mockInformationCubit),
+        ...extraProviders,
       ],
       child: MainNavigationScreen(initialIndex: initialIndex),
     );
@@ -287,6 +295,41 @@ void main() {
         );
       },
     );
+
+    testWidgets('asks PttCubit to join the active group when opened', (
+      tester,
+    ) async {
+      final pttCubit = MockPttCubit();
+      when(() => pttCubit.state).thenReturn(const PttInitial());
+      when(() => pttCubit.joinForGroup(any())).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          extraProviders: [
+            BlocProvider<PttCubit>.value(value: pttCubit),
+            BlocProvider<UserSessionCubit>.value(
+              value: UserSessionCubit(
+                const AuthSessionEntity(
+                  userId: 'usr_1',
+                  email: 'admin@kawalo.co.id',
+                  name: 'Admin',
+                  allowAdmin: true,
+                  allowPatrol: false,
+                  allowMonPatrol: false,
+                  groupUid: 'grp_1',
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // The auth listener triggers it too; the real cubit dedupes by state.
+      verify(
+        () => pttCubit.joinForGroup('grp_1'),
+      ).called(greaterThanOrEqualTo(1));
+    });
 
     testWidgets(
       'hides offline banner content and keeps safe area spacer when online',

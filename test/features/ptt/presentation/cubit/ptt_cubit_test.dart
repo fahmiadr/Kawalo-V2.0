@@ -4,6 +4,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
@@ -14,6 +15,8 @@ import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/st
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 import 'package:mocktail/mocktail.dart';
+
+class MockSecureStorageService extends Mock implements SecureStorageService {}
 
 class MockPttRepository extends Mock implements PttRepository {}
 
@@ -80,11 +83,16 @@ void main() {
     transmissionController.close();
   });
 
-  PttCubit createCubit() {
+  PttCubit createCubit({
+    SecureStorageService? storage,
+    String baseUrl = 'https://api.kawalo.id',
+  }) {
     return PttCubit(
       joinChannelUseCase: mockJoinChannel,
       startTransmissionUseCase: mockStartTransmission,
       repository: mockRepository,
+      storageService: storage,
+      apiBaseUrl: () => baseUrl,
     );
   }
 
@@ -376,5 +384,118 @@ void main() {
         verifyZeroInteractions(mockStartTransmission);
       },
     );
+  });
+
+  group('PttCubit.joinForGroup', () {
+    late MockSecureStorageService storage;
+
+    setUp(() {
+      storage = MockSecureStorageService();
+      when(storage.getAccessToken).thenAnswer((_) async => 'tok');
+      when(
+        () => mockJoinChannel(any()),
+      ).thenAnswer((_) async => const Right(null));
+    });
+
+    JoinChannelParams captured() =>
+        verify(() => mockJoinChannel(captureAny())).captured.single
+            as JoinChannelParams;
+
+    test(
+      'builds a wss URL from an https base and joins with the token',
+      () async {
+        final cubit = createCubit(storage: storage);
+
+        await cubit.joinForGroup('grp_01');
+
+        final params = captured();
+        expect(params.channelUrl, 'wss://api.kawalo.id/ws/ptt/grp_01');
+        expect(params.groupUid, 'grp_01');
+        expect(params.token, 'tok');
+        await cubit.close();
+      },
+    );
+
+    test('builds a ws URL keeping the port for an http base', () async {
+      final cubit = createCubit(
+        storage: storage,
+        baseUrl: 'http://10.0.2.2:3000/api',
+      );
+
+      await cubit.joinForGroup('grp_01');
+
+      expect(captured().channelUrl, 'ws://10.0.2.2:3000/ws/ptt/grp_01');
+      await cubit.close();
+    });
+
+    for (final groupUid in <String?>[null, '']) {
+      test('does nothing for group "$groupUid"', () async {
+        final cubit = createCubit(storage: storage);
+
+        await cubit.joinForGroup(groupUid);
+
+        verifyNever(() => mockJoinChannel(any()));
+        await cubit.close();
+      });
+    }
+
+    test('does nothing without a stored token', () async {
+      when(storage.getAccessToken).thenAnswer((_) async => '');
+      final cubit = createCubit(storage: storage);
+
+      await cubit.joinForGroup('grp_01');
+
+      verifyNever(() => mockJoinChannel(any()));
+      await cubit.close();
+    });
+
+    test('does nothing without storage', () async {
+      final cubit = createCubit();
+
+      await cubit.joinForGroup('grp_01');
+
+      verifyNever(() => mockJoinChannel(any()));
+      await cubit.close();
+    });
+
+    test('does nothing while a channel is already active', () async {
+      final cubit = createCubit(storage: storage)
+        ..emit(
+          const PttIdle(
+            channel: PttChannelEntity(groupUid: 'grp_01'),
+            floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
+          ),
+        );
+
+      await cubit.joinForGroup('grp_01');
+
+      verifyNever(() => mockJoinChannel(any()));
+      await cubit.close();
+    });
+
+    test('rejoins from PttDisconnected', () async {
+      final cubit = createCubit(storage: storage)
+        ..emit(
+          const PttDisconnected(
+            channel: PttChannelEntity(groupUid: 'grp_01'),
+            floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
+          ),
+        );
+
+      await cubit.joinForGroup('grp_01');
+
+      verify(() => mockJoinChannel(any())).called(1);
+      await cubit.close();
+    });
+
+    test('swallows storage and URL failures', () async {
+      when(storage.getAccessToken).thenThrow(StateError('boom'));
+      final cubit = createCubit(storage: storage);
+
+      await expectLater(cubit.joinForGroup('grp_01'), completes);
+
+      verifyNever(() => mockJoinChannel(any()));
+      await cubit.close();
+    });
   });
 }

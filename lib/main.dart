@@ -251,7 +251,10 @@ class _MyAppState extends State<MyApp> {
             create: (context) => _incidentModule.createIncidentListCubit(),
           ),
           BlocProvider<PttCubit>(
-            create: (context) => PttModule.createCubit(apiClient: _apiClient),
+            create: (context) => PttModule.createCubit(
+              apiClient: _apiClient,
+              storageService: _storageService,
+            ),
           ),
         ],
         child: _buildMaterialApp(home: const SplashScreen()),

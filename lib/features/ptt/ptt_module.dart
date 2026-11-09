@@ -1,4 +1,6 @@
+import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
+import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/features/ptt/data/datasources/ptt_native_platform_data_source.dart';
 import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_repository_impl.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
@@ -27,6 +29,7 @@ class PttModule {
   static PttCubit createCubit({
     ApiClient? apiClient,
     PttRepository? repository,
+    SecureStorageService? storageService,
   }) {
     final repo = repository ?? createRepository();
 
@@ -39,6 +42,8 @@ class PttModule {
       joinChannelUseCase: JoinChannelUseCase(repo),
       startTransmissionUseCase: StartTransmissionUseCase(repo),
       repository: repo,
+      storageService: storageService,
+      apiBaseUrl: () => EnvConfig.apiBaseUrl,
     );
   }
 }

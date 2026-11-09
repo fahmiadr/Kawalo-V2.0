@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
@@ -15,6 +16,8 @@ class PttCubit extends Cubit<PttState> {
     required this.joinChannelUseCase,
     required this.startTransmissionUseCase,
     required this.repository,
+    this.storageService,
+    this.apiBaseUrl,
   }) : super(const PttInitial()) {
     _initStreamSubscriptions();
   }
@@ -22,6 +25,11 @@ class PttCubit extends Cubit<PttState> {
   final JoinChannelUseCase joinChannelUseCase;
   final StartTransmissionUseCase startTransmissionUseCase;
   final PttRepository repository;
+  final SecureStorageService? storageService;
+
+  /// Resolved lazily because the environment may not be loaded when the cubit
+  /// is created.
+  final String Function()? apiBaseUrl;
 
   StreamSubscription<PttFloorStateEntity>? _floorSubscription;
   StreamSubscription<PttConnectionStatus>? _connectionSubscription;
@@ -188,6 +196,31 @@ class PttCubit extends Cubit<PttState> {
         ),
       );
     }, (_) {});
+  }
+
+  /// Joins the PTT channel of [groupUid] using the stored access token.
+  ///
+  /// A no-op without a group, a usable token or base URL, or while a channel is
+  /// already connecting/connected. Never throws: the PTT channel is optional for
+  /// the caller.
+  Future<void> joinForGroup(String? groupUid) async {
+    try {
+      if (groupUid == null || groupUid.isEmpty) return;
+      if (state is! PttInitial && state is! PttDisconnected) return;
+
+      final token = await storageService?.getAccessToken();
+      final baseUrl = apiBaseUrl;
+      if (token == null || token.isEmpty || baseUrl == null) return;
+
+      final baseUri = Uri.parse(baseUrl());
+      final wsScheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
+      final portPart = baseUri.hasPort ? ':${baseUri.port}' : '';
+      await joinChannel(
+        channelUrl: '$wsScheme://${baseUri.host}$portPart/ws/ptt/$groupUid',
+        groupUid: groupUid,
+        token: token,
+      );
+    } on Object catch (_) {}
   }
 
   /// Keluar dari saluran PTT dan hentikan background service.

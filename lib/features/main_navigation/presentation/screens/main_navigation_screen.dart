@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -25,7 +23,6 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/screens/information_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 
 /// Halaman shell navigasi utama aplikasi Kawalo.
 ///
@@ -54,34 +51,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     });
   }
 
-  Future<void> _joinPttChannelIfAvailable() async {
+  void _joinPttChannelIfAvailable() {
     try {
-      final session = context.read<UserSessionCubit?>()?.state;
-      final groupUid = session?.groupUid;
-      if (groupUid == null || groupUid.isEmpty) return;
-
+      final groupUid = context.read<UserSessionCubit?>()?.state?.groupUid;
       final pttCubit = context.read<PttCubit?>();
-      if (pttCubit == null) return;
-
-      if (pttCubit.state is! PttInitial && pttCubit.state is! PttDisconnected) {
-        return;
-      }
-
-      final storageService = context.read<SecureStorageService?>();
-      final token = await storageService?.getAccessToken();
-      if (token == null || token.isEmpty) return;
-
-      final baseUri = Uri.parse(EnvConfig.apiBaseUrl);
-      final wsScheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
-      final portPart = baseUri.hasPort ? ':${baseUri.port}' : '';
-      final channelUrl =
-          '$wsScheme://${baseUri.host}$portPart/ws/ptt/$groupUid';
-
-      await pttCubit.joinChannel(
-        channelUrl: channelUrl,
-        groupUid: groupUid,
-        token: token,
-      );
+      if (pttCubit != null) unawaited(pttCubit.joinForGroup(groupUid));
     } on Object catch (_) {}
   }
 
@@ -90,7 +64,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       setState(() {
         _currentIndex = index;
       });
-      unawaited(_joinPttChannelIfAvailable());
+      _joinPttChannelIfAvailable();
     } else if (index == 1) {
       // Refresh data jika tab informasi ditekan kembali saat sudah berada
       // di tab informasi.
@@ -204,7 +178,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is Authenticated) {
-          unawaited(_joinPttChannelIfAvailable());
+          _joinPttChannelIfAvailable();
         } else if (state is Unauthenticated) {
           try {
             unawaited(context.read<PttCubit?>()?.leaveChannel());
