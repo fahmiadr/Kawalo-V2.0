@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_local_data_source.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_remote_data_source.dart';
@@ -29,11 +29,11 @@ final class InformationModule {
     required Isar isar,
     required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
-    GetGroupMembersUseCase? getGroupMembersUseCase,
+    GroupRepository? groupRepository,
   }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
-       _getGroupMembersUseCase =
-           getGroupMembersUseCase ??
-           GroupModule.createGetGroupMembersUseCase(
+       _groupRepository =
+           groupRepository ??
+           GroupModule.createRepository(
              apiClient: apiClient,
              networkInfo: networkInfo,
            ) {
@@ -46,7 +46,7 @@ final class InformationModule {
   }
 
   final SyncStorageService _syncStorage;
-  final GetGroupMembersUseCase _getGroupMembersUseCase;
+  final GroupRepository _groupRepository;
   late final InformationRepository repository;
 
   /// Merakit dan mengembalikan instance [InformationCubit] yang siap pakai.
@@ -55,7 +55,7 @@ final class InformationModule {
       getInformationUseCase: GetInformationUseCase(repository),
       deleteInformationUseCase: DeleteInformationUseCase(repository),
       deleteBatchInformationUseCase: DeleteBatchInformationUseCase(repository),
-      getGroupMembersUseCase: _getGroupMembersUseCase,
+      groupRepository: _groupRepository,
       syncStorageService: _syncStorage,
     );
   }

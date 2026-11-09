@@ -8,8 +8,7 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_usecase.dart';
@@ -31,7 +30,7 @@ class InformationCubit
     required this.getInformationUseCase,
     required this.deleteInformationUseCase,
     required this.deleteBatchInformationUseCase,
-    this.getGroupMembersUseCase,
+    this.groupRepository,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
@@ -55,8 +54,8 @@ class InformationCubit
   /// Use case untuk menghapus beberapa data informasi sekaligus (batch).
   final DeleteBatchInformationUseCase deleteBatchInformationUseCase;
 
-  /// Use case untuk memuat daftar anggota grup on-demand.
-  final GetGroupMembersUseCase? getGroupMembersUseCase;
+  /// Repositori grup untuk memuat daftar anggota on-demand.
+  final GroupRepository? groupRepository;
 
   @override
   InformationState? stateWithLastSync(String greeting) {
@@ -252,11 +251,11 @@ class InformationCubit
   Future<Either<Failure, List<GroupMemberEntity>>> loadGroupMembers({
     AppCancellationToken? cancelToken,
   }) async {
-    final useCase = getGroupMembersUseCase;
-    if (useCase == null) {
+    final repo = groupRepository;
+    if (repo == null) {
       return const Left(ServerFailure('Layanan anggota grup tidak tersedia.'));
     }
-    return await useCase.call(GetGroupMembersParams(cancelToken: cancelToken));
+    return await repo.getMembers(cancelToken: cancelToken);
   }
 
   /// Menghapus data informasi [item] atas nama [session].

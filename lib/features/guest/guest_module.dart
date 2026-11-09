@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_source.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_remote_data_source.dart';
@@ -30,11 +30,11 @@ final class GuestModule {
     required Isar isar,
     required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
-    GetGroupMembersUseCase? getGroupMembersUseCase,
+    GroupRepository? groupRepository,
   }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
-       _getGroupMembersUseCase =
-           getGroupMembersUseCase ??
-           GroupModule.createGetGroupMembersUseCase(
+       _groupRepository =
+           groupRepository ??
+           GroupModule.createRepository(
              apiClient: apiClient,
              networkInfo: networkInfo,
            ) {
@@ -47,7 +47,7 @@ final class GuestModule {
   }
 
   final SyncStorageService _syncStorage;
-  final GetGroupMembersUseCase _getGroupMembersUseCase;
+  final GroupRepository _groupRepository;
   late final GuestRepository repository;
 
   /// Merakit dan mengembalikan instance [GuestCubit] yang siap pakai.
@@ -57,7 +57,7 @@ final class GuestModule {
       deleteGuestUseCase: DeleteGuestUseCase(repository),
       deleteBatchGuestUseCase: DeleteBatchGuestUseCase(repository),
       checkoutGuestUseCase: CheckoutGuestUseCase(repository),
-      getGroupMembersUseCase: _getGroupMembersUseCase,
+      groupRepository: _groupRepository,
       syncStorageService: _syncStorage,
     );
   }
@@ -68,7 +68,7 @@ final class GuestModule {
       createGuestUseCase: CreateGuestUseCase(repository),
       updateGuestUseCase: UpdateGuestUseCase(repository),
       getMasterGuestTypesUseCase: GetMasterGuestTypesUseCase(repository),
-      getGroupMembersUseCase: _getGroupMembersUseCase,
+      groupRepository: _groupRepository,
       initialItem: initialItem,
     );
   }

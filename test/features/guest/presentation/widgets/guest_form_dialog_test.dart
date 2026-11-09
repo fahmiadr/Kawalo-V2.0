@@ -8,8 +8,7 @@ import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
@@ -29,8 +28,7 @@ class MockUpdateGuestUseCase extends Mock implements UpdateGuestUseCase {}
 class MockGetMasterGuestTypesUseCase extends Mock
     implements GetMasterGuestTypesUseCase {}
 
-class MockGetGroupMembersUseCase extends Mock
-    implements GetGroupMembersUseCase {}
+class MockGroupRepository extends Mock implements GroupRepository {}
 
 class MockMediaPickerService extends Mock implements MediaPickerService {}
 
@@ -38,7 +36,7 @@ void main() {
   late MockCreateGuestUseCase mockCreateGuestUseCase;
   late MockUpdateGuestUseCase mockUpdateGuestUseCase;
   late MockGetMasterGuestTypesUseCase mockGetMasterTypesUseCase;
-  late MockGetGroupMembersUseCase mockGetGroupMembersUseCase;
+  late MockGroupRepository mockGroupRepository;
   late MockMediaPickerService mockMediaPicker;
 
   const sampleMasterTypes = [
@@ -73,21 +71,22 @@ void main() {
     );
     registerFallbackValue(const UpdateGuestParams(id: '101'));
     registerFallbackValue(const GetMasterGuestTypesParams());
-    registerFallbackValue(const GetGroupMembersParams());
   });
 
   setUp(() {
     mockCreateGuestUseCase = MockCreateGuestUseCase();
     mockUpdateGuestUseCase = MockUpdateGuestUseCase();
     mockGetMasterTypesUseCase = MockGetMasterGuestTypesUseCase();
-    mockGetGroupMembersUseCase = MockGetGroupMembersUseCase();
+    mockGroupRepository = MockGroupRepository();
     mockMediaPicker = MockMediaPickerService();
 
     when(
       () => mockGetMasterTypesUseCase(any()),
     ).thenAnswer((_) async => const Right(sampleMasterTypes));
     when(
-      () => mockGetGroupMembersUseCase(any()),
+      () => mockGroupRepository.getMembers(
+        cancelToken: any(named: 'cancelToken'),
+      ),
     ).thenAnswer((_) async => const Right(sampleGroupMembers));
   });
 
@@ -96,7 +95,7 @@ void main() {
       createGuestUseCase: mockCreateGuestUseCase,
       updateGuestUseCase: mockUpdateGuestUseCase,
       getMasterGuestTypesUseCase: mockGetMasterTypesUseCase,
-      getGroupMembersUseCase: mockGetGroupMembersUseCase,
+      groupRepository: mockGroupRepository,
       initialItem: initialItem,
     );
   }

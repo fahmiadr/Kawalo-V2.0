@@ -5,8 +5,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_usecase.dart';
@@ -31,8 +30,7 @@ class MockDeleteBatchGuestUseCase extends Mock
 
 class MockCheckoutGuestUseCase extends Mock implements CheckoutGuestUseCase {}
 
-class MockGetGroupMembersUseCase extends Mock
-    implements GetGroupMembersUseCase {}
+class MockGroupRepository extends Mock implements GroupRepository {}
 
 void main() {
   late GuestCubit cubit;
@@ -52,7 +50,6 @@ void main() {
     );
     const dummyGuest = GuestItemEntity(id: 'guest_1');
     registerFallbackValue(const GetGuestsParams());
-    registerFallbackValue(const GetGroupMembersParams());
     registerFallbackValue(
       const DeleteGuestParams(id: '1', session: dummySession, item: dummyGuest),
     );
@@ -636,10 +633,10 @@ void main() {
     });
 
     group('loadGroupMembers', () {
-      late MockGetGroupMembersUseCase mockGetGroupMembersUseCase;
+      late MockGroupRepository mockGroupRepository;
 
       setUp(() {
-        mockGetGroupMembersUseCase = MockGetGroupMembersUseCase();
+        mockGroupRepository = MockGroupRepository();
       });
 
       test('returns remote group members when use case succeeds', () async {
@@ -649,44 +646,56 @@ void main() {
         ];
 
         when(
-          () => mockGetGroupMembersUseCase(any()),
+          () => mockGroupRepository.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
         ).thenAnswer((_) async => const Right(tMembers));
 
         final cubitWithMembers = GuestCubit(
           getGuestsUseCase: mockGetGuestsUseCase,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
-          getGroupMembersUseCase: mockGetGroupMembersUseCase,
+          groupRepository: mockGroupRepository,
         );
 
         final result = await cubitWithMembers.loadGroupMembers();
 
         expect(result, const Right<Failure, List<GroupMemberEntity>>(tMembers));
-        verify(() => mockGetGroupMembersUseCase(any())).called(1);
+        verify(
+          () => mockGroupRepository.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).called(1);
         await cubitWithMembers.close();
       });
 
       test('returns failure when remote fetch fails', () async {
         const tFailure = ServerFailure('Server Error');
         when(
-          () => mockGetGroupMembersUseCase(any()),
+          () => mockGroupRepository.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
         ).thenAnswer((_) async => const Left(tFailure));
 
         final cubitWithMembers = GuestCubit(
           getGuestsUseCase: mockGetGuestsUseCase,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
-          getGroupMembersUseCase: mockGetGroupMembersUseCase,
+          groupRepository: mockGroupRepository,
         );
 
         final result = await cubitWithMembers.loadGroupMembers();
 
         expect(result, const Left<Failure, List<GroupMemberEntity>>(tFailure));
-        verify(() => mockGetGroupMembersUseCase(any())).called(1);
+        verify(
+          () => mockGroupRepository.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).called(1);
         await cubitWithMembers.close();
       });
 
-      test('returns failure when getGroupMembersUseCase is null', () async {
+      test('returns failure when groupRepository is null', () async {
         final result = await cubit.loadGroupMembers();
 
         expect(

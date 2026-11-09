@@ -6,8 +6,7 @@ import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/utils/app_validator.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
@@ -27,7 +26,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     required this.createGuestUseCase,
     required this.updateGuestUseCase,
     required this.getMasterGuestTypesUseCase,
-    required this.getGroupMembersUseCase,
+    required this.groupRepository,
     GuestItemEntity? initialItem,
   }) : super(_buildInitialState(initialItem)) {
     loadMasterData();
@@ -42,8 +41,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
   /// Use case untuk memuat master tipe tamu.
   final GetMasterGuestTypesUseCase getMasterGuestTypesUseCase;
 
-  /// Use case untuk memuat daftar anggota grup (host warga).
-  final GetGroupMembersUseCase getGroupMembersUseCase;
+  /// Repositori grup untuk memuat daftar anggota (host warga).
+  final GroupRepository groupRepository;
 
   AppCancellationToken? _masterCancelToken;
   AppCancellationToken? _submitCancelToken;
@@ -201,7 +200,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       getMasterGuestTypesUseCase(
         GetMasterGuestTypesParams(cancelToken: cancelToken),
       ),
-      getGroupMembersUseCase(GetGroupMembersParams(cancelToken: cancelToken)),
+      groupRepository.getMembers(cancelToken: cancelToken),
     ]);
 
     if (isClosed) return;
@@ -300,9 +299,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       state.copyWith(isLoadingMasterHosts: true, masterHostsError: () => null),
     );
 
-    final result = await getGroupMembersUseCase(
-      GetGroupMembersParams(cancelToken: cancelToken),
-    );
+    final result = await groupRepository.getMembers(cancelToken: cancelToken);
 
     if (isClosed) return;
 

@@ -3,8 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
-import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_usecase.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
@@ -24,14 +23,13 @@ class MockUpdateGuestUseCase extends Mock implements UpdateGuestUseCase {}
 class MockGetMasterGuestTypesUseCase extends Mock
     implements GetMasterGuestTypesUseCase {}
 
-class MockGetGroupMembersUseCase extends Mock
-    implements GetGroupMembersUseCase {}
+class MockGroupRepository extends Mock implements GroupRepository {}
 
 void main() {
   late MockCreateGuestUseCase mockCreateGuestUseCase;
   late MockUpdateGuestUseCase mockUpdateGuestUseCase;
   late MockGetMasterGuestTypesUseCase mockGetMasterTypesUseCase;
-  late MockGetGroupMembersUseCase mockGetGroupMembersUseCase;
+  late MockGroupRepository mockGroupRepository;
 
   const dummySession = AuthSessionEntity(
     userId: '1',
@@ -76,20 +74,21 @@ void main() {
     );
     registerFallbackValue(const UpdateGuestParams(id: '123'));
     registerFallbackValue(const GetMasterGuestTypesParams());
-    registerFallbackValue(const GetGroupMembersParams());
   });
 
   setUp(() {
     mockCreateGuestUseCase = MockCreateGuestUseCase();
     mockUpdateGuestUseCase = MockUpdateGuestUseCase();
     mockGetMasterTypesUseCase = MockGetMasterGuestTypesUseCase();
-    mockGetGroupMembersUseCase = MockGetGroupMembersUseCase();
+    mockGroupRepository = MockGroupRepository();
 
     when(
       () => mockGetMasterTypesUseCase(any()),
     ).thenAnswer((_) async => const Right(sampleMasterTypes));
     when(
-      () => mockGetGroupMembersUseCase(any()),
+      () => mockGroupRepository.getMembers(
+        cancelToken: any(named: 'cancelToken'),
+      ),
     ).thenAnswer((_) async => const Right(sampleGroupMembers));
   });
 
@@ -98,7 +97,7 @@ void main() {
       createGuestUseCase: mockCreateGuestUseCase,
       updateGuestUseCase: mockUpdateGuestUseCase,
       getMasterGuestTypesUseCase: mockGetMasterTypesUseCase,
-      getGroupMembersUseCase: mockGetGroupMembersUseCase,
+      groupRepository: mockGroupRepository,
       initialItem: initialItem,
     );
   }

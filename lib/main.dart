@@ -114,7 +114,7 @@ class _MyAppState extends State<MyApp> {
 
     // Shared dependencies are assembled once here; each module builds its own
     // repository a single time and every cubit reuses it.
-    final getGroupMembersUseCase = GroupModule.createGetGroupMembersUseCase(
+    final groupRepository = GroupModule.createRepository(
       apiClient: _apiClient,
       networkInfo: _networkInfo,
     );
@@ -123,14 +123,14 @@ class _MyAppState extends State<MyApp> {
       isar: isar,
       networkInfo: _networkInfo,
       syncStorageService: syncStorage,
-      getGroupMembersUseCase: getGroupMembersUseCase,
+      groupRepository: groupRepository,
     );
     _informationModule = InformationModule(
       apiClient: _apiClient,
       isar: isar,
       networkInfo: _networkInfo,
       syncStorageService: syncStorage,
-      getGroupMembersUseCase: getGroupMembersUseCase,
+      groupRepository: groupRepository,
     );
     _attendanceModule = AttendanceModule(
       apiClient: _apiClient,
