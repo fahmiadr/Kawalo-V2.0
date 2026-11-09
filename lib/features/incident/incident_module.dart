@@ -1,6 +1,9 @@
+import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
+import 'package:kawalo_mobile/features/incident/data/datasources/incident_local_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/datasources/incident_remote_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/repositories/incident_repository_impl.dart';
 import 'package:kawalo_mobile/features/incident/domain/repositories/incident_repository.dart';
@@ -21,18 +24,28 @@ import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list
 /// [IncidentRepository] that every cubit factory reuses. Registered through
 /// `RepositoryProvider` so the presentation layer never assembles dependencies
 /// itself.
-final class IncidentModule {
+final class IncidentModule implements CacheWipeableModule {
   IncidentModule({
     required ApiClient apiClient,
+    required Isar isar,
     required NetworkInfo networkInfo,
     required SyncStorageService syncStorageService,
-  }) : _syncStorage = syncStorageService,
-       repository = IncidentRepositoryImpl(
-         remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
-         networkInfo: networkInfo,
-       );
+  }) : _syncStorage = syncStorageService {
+    final localDataSource = IncidentLocalDataSourceImpl(isar: isar);
+    cacheWipeable = localDataSource;
+    repository = IncidentRepositoryImpl(
+      remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
+      localDataSource: localDataSource,
+      syncStorageService: syncStorageService,
+      networkInfo: networkInfo,
+    );
+  }
+
   final SyncStorageService _syncStorage;
-  final IncidentRepository repository;
+  late final IncidentRepository repository;
+
+  @override
+  late final CacheWipeable cacheWipeable;
 
   /// Merakit dan mengembalikan instance [IncidentListCubit] yang siap pakai.
   IncidentListCubit createIncidentListCubit() {

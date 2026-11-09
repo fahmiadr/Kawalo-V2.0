@@ -7,6 +7,7 @@ import 'package:kawalo_mobile/core/storage/isar_database.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/features/attendance/data/models/attendance_local_model.dart';
 import 'package:kawalo_mobile/features/guest/data/models/guest_local_model.dart';
+import 'package:kawalo_mobile/features/incident/data/models/incident_local_model.dart';
 import 'package:kawalo_mobile/features/information/data/models/information_local_model.dart';
 import 'package:kawalo_mobile/features/operational/data/models/operational_local_model.dart';
 import 'package:kawalo_mobile/main.dart';
@@ -19,6 +20,7 @@ final List<CollectionSchema<dynamic>> isarSchemas = [
   OperationalLocalModelSchema,
   InformationLocalModelSchema,
   GuestLocalModelSchema,
+  IncidentLocalModelSchema,
 ];
 
 /// Runner sentral untuk bootstrapping aplikasi Kawalo Mobile lintas

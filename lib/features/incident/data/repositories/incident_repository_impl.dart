@@ -1,12 +1,17 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:kawalo_mobile/core/constants/app_constants.dart';
 import 'package:kawalo_mobile/core/error/exceptions.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/network_error_handler.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/repositories/cached_remote_fetch.dart';
+import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
+import 'package:kawalo_mobile/features/incident/data/datasources/incident_local_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/datasources/incident_remote_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/mappers/incident_mapper.dart';
 import 'package:kawalo_mobile/features/incident/data/mappers/incident_reply_mapper.dart';
+import 'package:kawalo_mobile/features/incident/data/models/incident_model.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_stream_event.dart';
@@ -18,15 +23,26 @@ import 'package:kawalo_mobile/features/incident/domain/value_objects/post_incide
 
 /// Implementasi konkret dari [IncidentRepository] yang menjembatani Domain
 /// Layer dengan remote API datasource dan SSE streaming.
+///
+/// Only the incident list is cached for offline reading; detail, replies and
+/// every mutation still require a live connection.
 class IncidentRepositoryImpl implements IncidentRepository {
   /// Membuat instance [IncidentRepositoryImpl].
   const IncidentRepositoryImpl({
     required this.remoteDataSource,
+    required this.syncStorageService,
+    this.localDataSource,
     this.networkInfo,
   });
 
   /// Sumber data remote API.
   final IncidentRemoteDataSource remoteDataSource;
+
+  /// Sumber data lokal untuk cache daftar insiden (opsional).
+  final IncidentLocalDataSource? localDataSource;
+
+  /// Layanan persistensi waktu sinkronisasi.
+  final SyncStorageService syncStorageService;
 
   /// Utilitas pengecekan konektivitas jaringan perangkat (opsional).
   final NetworkInfo? networkInfo;
@@ -34,27 +50,37 @@ class IncidentRepositoryImpl implements IncidentRepository {
   @override
   Future<Either<Failure, List<IncidentEntity>>> getIncidents(
     IncidentQueryParams params,
-  ) async {
-    final isConnected = await (networkInfo?.isConnected ?? Future.value(true));
-    if (!isConnected) {
-      return const Left(NoInternetFailure());
-    }
-
-    try {
-      final queryModel = IncidentMapper.toQueryModel(params);
-      final models = await remoteDataSource.getIncidents(
-        query: queryModel,
+  ) {
+    final local = localDataSource;
+    return fetchRemoteWithCacheFallback<IncidentModel, List<IncidentEntity>>(
+      isRefresh: params.isRefresh,
+      networkInfo: networkInfo,
+      syncStorageService: syncStorageService,
+      syncKey: AppConstants.syncKeyIncident,
+      fetchRemote: () => remoteDataSource.getIncidents(
+        query: IncidentMapper.toQueryModel(params),
         cancelToken: params.cancelToken,
-      );
-      return Right(IncidentMapper.toEntityList(models));
-    } on AppException catch (e) {
-      if (e is RequestCancelledException) {
-        return const Left(RequestCancelledFailure());
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    } on Object catch (e) {
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    }
+      ),
+      // The cache is not paginated: serving it for a later page would repeat
+      // the first page, so only offset 0 reads from it.
+      toResult: (models, {required isFromCache}) =>
+          isFromCache && (params.offset ?? 0) > 0
+          ? const []
+          : IncidentMapper.toEntityList(models),
+      cache: local == null
+          ? null
+          : CacheOps(
+              read: () => local.getCachedIncidents(
+                groupId: params.groupId,
+                status: params.status?.value,
+                search: params.search,
+                startDate: params.startDate,
+                endDate: params.endDate,
+              ),
+              write: local.cacheIncidents,
+              deleteOlderThan: local.deleteOlderThan,
+            ),
+    );
   }
 
   @override

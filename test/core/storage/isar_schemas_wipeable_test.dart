@@ -7,6 +7,7 @@ import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
 import 'package:kawalo_mobile/features/guest/guest_module.dart';
+import 'package:kawalo_mobile/features/incident/incident_module.dart';
 import 'package:kawalo_mobile/features/information/information_module.dart';
 import 'package:kawalo_mobile/features/operational/operational_module.dart';
 import 'package:mocktail/mocktail.dart';
@@ -47,6 +48,12 @@ void main() {
           syncStorageService: syncStorage,
         ),
         OperationalModule(
+          apiClient: apiClient,
+          isar: isar,
+          networkInfo: networkInfo,
+          syncStorageService: syncStorage,
+        ),
+        IncidentModule(
           apiClient: apiClient,
           isar: isar,
           networkInfo: networkInfo,

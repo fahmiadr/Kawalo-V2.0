@@ -129,6 +129,7 @@ class _MyAppState extends State<MyApp> {
     );
     _incidentModule = IncidentModule(
       apiClient: _apiClient,
+      isar: isar,
       networkInfo: _networkInfo,
       syncStorageService: syncStorage,
     );
@@ -140,6 +141,7 @@ class _MyAppState extends State<MyApp> {
           _informationModule,
           _attendanceModule,
           _operationalModule,
+          _incidentModule,
         ])
           module.cacheWipeable,
       ],
