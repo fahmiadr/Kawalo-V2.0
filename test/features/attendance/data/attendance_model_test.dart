@@ -97,14 +97,28 @@ void main() {
         () => AttendanceModel.fromJson(jsonMissingCategory),
         throwsA(isA<TypeError>()),
       );
+    });
 
-      final jsonMissingDiff = {
-        'id': '105',
-        'category': 'masuk',
-      };
+    test('fromJson defaults diff_minutes to 0 when missing or null', () {
+      final base = {'id': '105', 'category': 'masuk'};
+
+      expect(AttendanceModel.fromJson(base).diffMinutes, 0);
       expect(
-        () => AttendanceModel.fromJson(jsonMissingDiff),
-        throwsA(isA<TypeError>()),
+        AttendanceModel.fromJson({...base, 'diff_minutes': null}).diffMinutes,
+        0,
+      );
+    });
+
+    test('fromJson accepts decimal and negative diff_minutes', () {
+      final base = {'id': '106', 'category': 'masuk'};
+
+      expect(
+        AttendanceModel.fromJson({...base, 'diff_minutes': 5.0}).diffMinutes,
+        5,
+      );
+      expect(
+        AttendanceModel.fromJson({...base, 'diff_minutes': -3}).diffMinutes,
+        -3,
       );
     });
   });

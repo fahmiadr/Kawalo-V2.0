@@ -1,10 +1,14 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:kawalo_mobile/core/network/json_converters.dart';
+
+part 'attendance_model.g.dart';
 
 /// Data Transfer Object (DTO) untuk satu butir catatan absensi personil.
 ///
 /// Selaras dengan payload DTO backend `AttendanceItemDto`.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class AttendanceModel extends Equatable {
-  /// Membuat instance [AttendanceModel].
   const AttendanceModel({
     required this.id,
     required this.category,
@@ -24,28 +28,8 @@ class AttendanceModel extends Equatable {
     this.groupName,
   });
 
-  /// Mengonversi map JSON dari endpoint backend (`AttendanceItemDto`) menjadi
-  /// instance [AttendanceModel].
-  factory AttendanceModel.fromJson(Map<String, dynamic> json) {
-    return AttendanceModel(
-      id: json['id'] as String,
-      category: json['category'] as String,
-      diffMinutes: json['diff_minutes'] as int,
-      userEmail: json['user_email'] as String?,
-      userName: json['user_name'] as String?,
-      userProfilePic: json['user_profile_pic'] as String?,
-      userDuty: json['user_duty'] as String?,
-      attendanceDt: json['attendance_dt'] as String?,
-      attendanceType: json['attendance_type'] as String?,
-      latitude: json['latitude'] as String?,
-      longitude: json['longitude'] as String?,
-      locationName: json['location_name'] as String?,
-      shiftName: json['shift_name'] as String?,
-      shiftColor: json['shift_color'] as String?,
-      shiftTimeWindow: json['shift_time_window'] as String?,
-      groupName: json['group_name'] as String?,
-    );
-  }
+  factory AttendanceModel.fromJson(Map<String, dynamic> json) =>
+      _$AttendanceModelFromJson(json);
 
   /// Identifier unik absensi (AbsenID).
   final String id;
@@ -54,6 +38,11 @@ class AttendanceModel extends Equatable {
   final String category;
 
   /// Selisih waktu keterlambatan dalam menit (ADiffMins).
+  ///
+  /// The server sends null while an attendance is still open; it maps to 0
+  /// because the domain entity only accepts a non-null value.
+  @JsonKey(defaultValue: 0)
+  @IntFromNumConverter()
   final int diffMinutes;
 
   /// Email personil/petugas (AbsenEmail).
