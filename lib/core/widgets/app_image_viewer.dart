@@ -1,21 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_image_placeholder.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/image_viewer/image_viewer_chrome.dart';
+import 'package:kawalo_mobile/core/widgets/image_viewer/image_viewer_image_content.dart';
+import 'package:kawalo_mobile/core/widgets/image_viewer/image_viewer_zoom.dart';
 
 /// Komponen penampil gambar layar penuh multi-gambar (`AppImageViewer`)
 /// yang mematuhi standar Material 3 Expressive Design dan WCAG 2.1/2.2 AA.
@@ -305,51 +298,6 @@ class _AppImageViewerState extends State<AppImageViewer>
     return controller.value.getMaxScaleOnAxis() > 1.05;
   }
 
-  /// Membatasi pergeseran matriks transformasi agar foto tidak pernah keluar
-  /// dari area penglihatan, baik secara horizontal maupun vertikal.
-  Matrix4 _clampMatrix(Matrix4 matrix, Size? imageSize, Size viewportSize) {
-    if (viewportSize.width <= 0 || viewportSize.height <= 0) return matrix;
-
-    final scale = matrix.getMaxScaleOnAxis();
-    if (scale <= 1.0) {
-      return Matrix4.identity();
-    }
-
-    final resolvedImageSize = imageSize ?? viewportSize;
-    final fittedSizes = applyBoxFit(
-      BoxFit.contain,
-      resolvedImageSize,
-      viewportSize,
-    );
-    final destSize = fittedSizes.destination;
-
-    final unscaledLeft = (viewportSize.width - destSize.width) / 2;
-    final unscaledTop = (viewportSize.height - destSize.height) / 2;
-
-    var tx = matrix.storage[12];
-    var ty = matrix.storage[13];
-
-    // ── Batasan Horizontal (Smooth Clamping) ─────────────────────────
-    final boundX1 = -unscaledLeft * scale;
-    final boundX2 =
-        viewportSize.width - (unscaledLeft + destSize.width) * scale;
-    final minTx = math.min(boundX1, boundX2);
-    final maxTx = math.max(boundX1, boundX2);
-    tx = tx.clamp(minTx, maxTx);
-
-    // ── Batasan Vertikal (Smooth Clamping Tanpa Reset) ───────────────
-    final boundY1 = -unscaledTop * scale;
-    final boundY2 =
-        viewportSize.height - (unscaledTop + destSize.height) * scale;
-    final minTy = math.min(boundY1, boundY2);
-    final maxTy = math.max(boundY1, boundY2);
-    ty = ty.clamp(minTy, maxTy);
-
-    return matrix.clone()
-      ..storage[12] = tx
-      ..storage[13] = ty;
-  }
-
   void _syncZoomState(int index) {
     if (index != _currentIndex) return;
     final isZoomedNow = _isZoomed(index);
@@ -394,14 +342,18 @@ class _AppImageViewerState extends State<AppImageViewer>
       final matrix = Matrix4.identity()
         ..translateByDouble(tx, ty, 0, 1)
         ..scaleByDouble(2.5, 2.5, 1, 1);
-      controller.value = _clampMatrix(matrix, _imageSizes[index], viewportSize);
+      controller.value = clampImageViewerMatrix(
+        matrix,
+        _imageSizes[index],
+        viewportSize,
+      );
     }
     _syncZoomState(index);
   }
 
   void _handleInteractionUpdate(int index, Size viewportSize) {
     final controller = _getTransformController(index);
-    final clamped = _clampMatrix(
+    final clamped = clampImageViewerMatrix(
       controller.value,
       _imageSizes[index],
       viewportSize,
@@ -414,7 +366,7 @@ class _AppImageViewerState extends State<AppImageViewer>
 
   void _handleInteractionEnd(int index, Size viewportSize) {
     final controller = _getTransformController(index);
-    final clamped = _clampMatrix(
+    final clamped = clampImageViewerMatrix(
       controller.value,
       _imageSizes[index],
       viewportSize,
@@ -609,55 +561,13 @@ class _AppImageViewerState extends State<AppImageViewer>
                       top: 0,
                       left: 0,
                       right: 0,
-                      child: Opacity(
+                      child: ImageViewerTopChrome(
                         opacity: _effectiveChromeOpacity,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: _showChromeNotifier,
-                          builder: (context, showChrome, child) {
-                            return AnimatedSlide(
-                              duration: AppDuration.short4,
-                              curve: AppMotion.standard,
-                              offset: showChrome
-                                  ? Offset.zero
-                                  : const Offset(0, -1),
-                              child: AnimatedOpacity(
-                                duration: AppDuration.short4,
-                                curve: AppMotion.standard,
-                                opacity: showChrome ? 1.0 : 0.0,
-                                child: IgnorePointer(
-                                  ignoring: !showChrome || _dragOffsetY > 0,
-                                  child: child,
-                                ),
-                              ),
-                            );
-                          },
-                          child: SafeArea(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.space200,
-                                vertical: AppSpacing.space100,
-                              ),
-                              child: Row(
-                                children: [
-                                  // Sisi Kiri Penyeimbang
-                                  const SizedBox(
-                                    width: AppStateLayer.minTouchTarget,
-                                  ),
-
-                                  // Tengah: Pill Counter Indeks
-                                  Expanded(
-                                    child: Center(
-                                      child: _buildIndexCounter(context),
-                                    ),
-                                  ),
-
-                                  // Kanan Atas: Tombol Tutup
-                                  _buildCloseButton(context),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                        showChrome: _showChromeNotifier,
+                        isDragging: _dragOffsetY > 0,
+                        currentIndex: _currentIndex,
+                        total: totalImages,
+                        onClose: _handleProgrammaticDismiss,
                       ),
                     ),
                   ],
@@ -701,7 +611,11 @@ class _AppImageViewerState extends State<AppImageViewer>
             child: Center(
               child: Hero(
                 tag: heroTag,
-                child: _buildImageContent(context, index, imageUrl),
+                child: ImageViewerImageContent(
+                  imageUrl: imageUrl,
+                  onImageResolved: (provider) =>
+                      _registerImageSize(index, provider),
+                ),
               ),
             ),
           ),
@@ -724,88 +638,5 @@ class _AppImageViewerState extends State<AppImageViewer>
       stream.removeListener(listener);
     });
     stream.addListener(listener);
-  }
-
-  Widget _buildImageContent(BuildContext context, int index, String imageUrl) {
-    final isNetwork =
-        imageUrl.startsWith('http://') || imageUrl.startsWith('https://');
-
-    if (isNetwork) {
-      return CachedNetworkImage(
-        imageUrl: imageUrl,
-        fit: BoxFit.contain,
-        fadeInDuration: Duration.zero,
-        fadeOutDuration: Duration.zero,
-        imageBuilder: (context, imageProvider) {
-          _registerImageSize(index, imageProvider);
-          return Image(image: imageProvider, fit: BoxFit.contain);
-        },
-        placeholder: (_, _) => const Center(
-          child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
-        ),
-        errorWidget: (_, _, _) => const Center(
-          child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
-        ),
-      );
-    }
-
-    if (!kIsWeb && File(imageUrl).existsSync()) {
-      final fileImage = FileImage(File(imageUrl));
-      _registerImageSize(index, fileImage);
-      return Image(
-        image: fileImage,
-        fit: BoxFit.contain,
-        errorBuilder: (_, _, _) => const Center(
-          child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
-        ),
-      );
-    }
-
-    return const Center(
-      child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
-    );
-  }
-
-  Widget _buildIndexCounter(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final emphasizedTypeScale = theme.typography.emphasized;
-    final total = widget.imageUrls.length;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space150,
-        vertical: AppSpacing.space50,
-      ),
-      decoration: BoxDecoration(
-        color: colorScheme.scrim.withValues(alpha: 0.60),
-        borderRadius: AppRadius.borderFull,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.30)),
-      ),
-      child: Text(
-        '${_currentIndex + 1} / $total',
-        style: emphasizedTypeScale.labelLarge.copyWith(color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildCloseButton(BuildContext context) {
-    final colorScheme = AppTheme.colorSchemeOf(context);
-
-    return AppIconButton(
-      icon: const AppSvgIcon(KawaloVectors.cancel01, color: Colors.white),
-      decoration: M3EIconButtonDecoration(
-        backgroundColor: WidgetStatePropertyAll(
-          colorScheme.scrim.withValues(alpha: 0.60),
-        ),
-        foregroundColor: const WidgetStatePropertyAll(Colors.white),
-        side: WidgetStatePropertyAll(
-          BorderSide(color: Colors.white.withValues(alpha: 0.30)),
-        ),
-      ),
-      tooltip: 'Tutup penampil gambar',
-      semanticLabel: 'Tutup penampil gambar',
-      onPressed: _handleProgrammaticDismiss,
-    );
   }
 }
