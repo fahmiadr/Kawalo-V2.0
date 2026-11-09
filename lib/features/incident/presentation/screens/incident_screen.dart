@@ -6,25 +6,17 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
@@ -66,8 +58,12 @@ class _IncidentScreenState extends State<IncidentScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
+    _scrollController = LoadMoreScrollController(
+      onLoadMore: () {
+        final session = _resolveSession(context);
+        _resolveCubit(context).loadMore(session: session);
+      },
+    );
 
     final cubit = _resolveCubit(context);
     final initialQuery = cubit.state.searchQuery ?? '';
@@ -95,7 +91,6 @@ class _IncidentScreenState extends State<IncidentScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -118,14 +113,13 @@ class _IncidentScreenState extends State<IncidentScreen> {
     }
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    if (maxScroll > 0 && currentScroll >= maxScroll * 0.85) {
-      final session = _resolveSession(context);
-      _resolveCubit(context).loadMore(session: session);
-    }
+  void _showFeedback(IncidentListCubit cubit, AppFetchResult result) {
+    if (!mounted) return;
+    AppFetchFeedback.show(
+      context,
+      result: result,
+      hasData: cubit.state.displayedIncidents.isNotEmpty,
+    );
   }
 
   Future<void> _handleRefresh(IncidentListCubit cubit) async {
@@ -198,12 +192,7 @@ class _IncidentScreenState extends State<IncidentScreen> {
       session: session,
       search: query,
     );
-    if (!mounted) return;
-    AppFetchFeedback.show(
-      context,
-      result: result,
-      hasData: currentCubit.state.displayedIncidents.isNotEmpty,
-    );
+    _showFeedback(currentCubit, result);
   }
 
   Future<void> _onFilterPressed() async {
@@ -224,40 +213,20 @@ class _IncidentScreenState extends State<IncidentScreen> {
     if (result != null && mounted) {
       final session = _resolveSession(context);
       final fetchResult = await cubit.setDateFilter(result, session: session);
-      if (mounted) {
-        AppFetchFeedback.show(
-          context,
-          result: fetchResult,
-          hasData: cubit.state.displayedIncidents.isNotEmpty,
-        );
-      }
+      _showFeedback(cubit, fetchResult);
     }
   }
 
   Future<void> _onResetDateFilter() async {
     final cubit = _resolveCubit(context);
     final session = _resolveSession(context);
-    final fetchResult = await cubit.resetDateFilter(session: session);
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedIncidents.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.resetDateFilter(session: session));
   }
 
   Future<void> _onStatusFilterSelected(IncidentStatus? status) async {
     final cubit = _resolveCubit(context);
     final session = _resolveSession(context);
-    final fetchResult = await cubit.setFilter(status, session: session);
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedIncidents.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.setFilter(status, session: session));
   }
 
   Future<void> _resetAllFilters() async {
@@ -267,14 +236,7 @@ class _IncidentScreenState extends State<IncidentScreen> {
     setState(() {
       _isSearchExpanded = false;
     });
-    final fetchResult = await cubit.resetFilters(session: session);
-    if (mounted) {
-      AppFetchFeedback.show(
-        context,
-        result: fetchResult,
-        hasData: cubit.state.displayedIncidents.isNotEmpty,
-      );
-    }
+    _showFeedback(cubit, await cubit.resetFilters(session: session));
   }
 
   @override
@@ -298,27 +260,33 @@ class _IncidentScreenState extends State<IncidentScreen> {
         }
       },
       builder: (context, state) {
-        final greeting = state.lastSync;
         final isOffline = isDeviceOffline;
-        final currentIncidents = state.displayedIncidents;
         final isInitialLoading =
             state is IncidentInitial || state is IncidentLoading;
 
-        return _buildScaffold(
-          context: context,
-          greeting: greeting,
-          cubit: cubit,
-          session: session,
-          currentIncidents: currentIncidents,
-          isOffline: isOffline,
+        return ListScreenScaffold(
+          title: 'Insiden',
+          searchLabel: 'Cari insiden',
+          refreshLabel: 'Memuat ulang laporan insiden',
+          greeting: state.lastSync,
           isInitialLoading: isInitialLoading,
-          filterBar: _buildFilterBar(
-            context: context,
-            state: state,
-            isLoading: isInitialLoading,
-            session: session,
-          ),
-          bodyContent: _buildBody(context, state, cubit, session),
+          isOffline: isOffline,
+          isSearchExpanded: _isSearchExpanded,
+          searchController: _searchController,
+          onSearch: _onSearch,
+          onOpenSearch: _onOpenSearch,
+          onCloseSearch: _onCloseSearch,
+          onRefresh: () => _handleRefresh(cubit),
+          canRefresh: !_isRefreshing,
+          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
+          filterBar: _buildFilterBar(state: state, isLoading: isInitialLoading),
+          body: _buildBody(context, state, cubit),
+          createLabel: 'Insiden',
+          onCreate: IncidentEntity.canBeCreatedBySession(session)
+              ? _onOpenCreateForm
+              : null,
+          canPop: !_isSearchExpanded,
+          onPopBlocked: _onCloseSearch,
         );
       },
     );
@@ -343,18 +311,22 @@ class _IncidentScreenState extends State<IncidentScreen> {
     BuildContext context,
     IncidentState state,
     IncidentListCubit cubit,
-    AuthSessionEntity? session,
   ) {
     final isLoading = state is IncidentInitial || state is IncidentLoading;
 
     if (isLoading) {
-      return _buildLoadingSkeleton();
+      return ListScreenSkeleton(
+        itemBuilder: (_, _) => const IncidentCardSkeleton(),
+      );
     } else if (state is IncidentLoaded) {
       if (state.displayedIncidents.isEmpty) {
         if (state.hasActiveFilter) {
-          return _buildEmptySearchResult(context);
+          return ListEmptySearchResult(
+            noun: 'laporan insiden',
+            onReset: _resetAllFilters,
+          );
         } else {
-          return _buildEmptyGroupState(context);
+          return _buildEmptyGroupState();
         }
       } else {
         return _buildIncidentListView(
@@ -369,7 +341,18 @@ class _IncidentScreenState extends State<IncidentScreen> {
           isLoadingMore: false,
         );
       } else {
-        return _buildErrorState(context, state.message, cubit);
+        return ListErrorState(
+          noun: 'laporan insiden',
+          message: state.message,
+          onRetry: () {
+            final query = _searchController.text;
+            final session = _resolveSession(context);
+            cubit.fetchIncidents(
+              session: session,
+              search: query.isEmpty ? null : query,
+            );
+          },
+        );
       }
     } else {
       return const SizedBox.shrink();
@@ -377,197 +360,43 @@ class _IncidentScreenState extends State<IncidentScreen> {
   }
 
   Widget _buildFilterBar({
-    required BuildContext context,
     required IncidentState state,
     required bool isLoading,
-    required AuthSessionEntity? session,
   }) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    final isDateActive = state.hasActiveDateFilter;
-    final dateLabel = isDateActive
-        ? state.filterPeriod.resolveDisplayLabel(
-            startDate: state.startDate,
-            endDate: state.endDate,
-          )
-        : 'Tanggal';
-
-    return Container(
-      width: double.infinity,
-      color: colorScheme.surface,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space100,
+    return ListFilterBar(
+      isLoading: isLoading,
+      isDateActive: state.hasActiveDateFilter,
+      dateLabel: state.filterPeriod.resolveDisplayLabel(
+        startDate: state.startDate,
+        endDate: state.endDate,
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            // Chip Filter Tanggal
-            AppChip(
-              type: AppChipType.filter,
-              label: dateLabel,
-              selected: isDateActive,
-              trailing: isDateActive
-                  ? null
-                  : AppSvgIcon(
-                      KawaloVectors.arrowDown01,
-                      size: 18,
-                      color: !isLoading
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface.withValues(
-                              alpha: AppStateLayer.disabledOpacity,
-                            ),
-                    ),
-              onDeleted: isDateActive && !isLoading ? _onResetDateFilter : null,
-              onPressed: isLoading ? null : _onFilterPressed,
-            ),
-            AppSpacing.hGapSm,
-
-            // Filter Status Insiden
-            AppChip(
-              type: AppChipType.filter,
-              label: 'Semua',
-              selected: state.selectedFilter == null,
-              onPressed: isLoading ? null : () => _onStatusFilterSelected(null),
-            ),
-            AppSpacing.hGapSm,
-            AppChip(
-              type: AppChipType.filter,
-              label: 'Terbuka',
-              selected: state.selectedFilter == IncidentStatus.open,
-              onPressed: isLoading
-                  ? null
-                  : () => _onStatusFilterSelected(IncidentStatus.open),
-            ),
-            AppSpacing.hGapSm,
-            AppChip(
-              type: AppChipType.filter,
-              label: 'Selesai',
-              selected: state.selectedFilter == IncidentStatus.resolved,
-              onPressed: isLoading
-                  ? null
-                  : () => _onStatusFilterSelected(IncidentStatus.resolved),
-            ),
-          ],
+      onDatePressed: _onFilterPressed,
+      onDateReset: _onResetDateFilter,
+      chips: [
+        // Filter Status Insiden
+        AppChip(
+          type: AppChipType.filter,
+          label: 'Semua',
+          selected: state.selectedFilter == null,
+          onPressed: isLoading ? null : () => _onStatusFilterSelected(null),
         ),
-      ),
-    );
-  }
-
-  Widget _buildScaffold({
-    required BuildContext context,
-    required String greeting,
-    required IncidentListCubit cubit,
-    required AuthSessionEntity? session,
-    required List<IncidentEntity> currentIncidents,
-    required Widget filterBar,
-    required Widget bodyContent,
-    bool isOffline = false,
-    bool isInitialLoading = false,
-  }) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final canCreate = IncidentEntity.canBeCreatedBySession(session);
-
-    return PopScope(
-      canPop: !_isSearchExpanded,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _isSearchExpanded) {
-          _onCloseSearch();
-        }
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: colorScheme.surface,
-        floatingActionButtonLocation: const AppStationaryEndFloatFabLocation(),
-        floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-        appBar: AppHomeAppBar(
-          greeting: greeting,
-          reserveGreetingSpace: true,
-          greetingLoading: isInitialLoading && greeting.isEmpty,
-          title: _isSearchExpanded ? null : 'Insiden',
-          titleWidget: _isSearchExpanded
-              ? AppSearchBar(
-                  controller: _searchController,
-                  hintText: 'Cari insiden',
-                  autoFocus: true,
-                  enabled: !isInitialLoading,
-                  onSearch: _onSearch,
-                  constraints: const BoxConstraints(
-                    minHeight: 40,
-                    maxHeight: 40,
-                  ),
-                )
-              : null,
-          showBackButton: true,
-          trailing: AppIconButton(
-            onPressed: !isInitialLoading
-                ? (_isSearchExpanded ? _onCloseSearch : _onOpenSearch)
-                : null,
-            semanticLabel: _isSearchExpanded
-                ? 'Tutup pencarian'
-                : 'Cari insiden',
-            icon: AppSvgIcon(
-              _isSearchExpanded
-                  ? KawaloVectors.cancel01
-                  : KawaloVectors.search01,
-              size: 24,
-              color: !isInitialLoading
-                  ? colorScheme.onSurface
-                  : colorScheme.onSurface.withValues(
-                      alpha: AppStateLayer.disabledOpacity,
-                    ),
-            ),
-          ),
+        AppChip(
+          type: AppChipType.filter,
+          label: 'Terbuka',
+          selected: state.selectedFilter == IncidentStatus.open,
+          onPressed: isLoading
+              ? null
+              : () => _onStatusFilterSelected(IncidentStatus.open),
         ),
-        floatingActionButton: !canCreate
-            ? null
-            : AppExtendedFab(
-                onPressed: isOffline ? null : _onOpenCreateForm,
-                icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
-                label: 'Insiden',
-              ),
-        bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-        body: SafeArea(
-          top: false,
-          child: AppKeyboardInsetsPadding(
-            isOffline: isOffline,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                filterBar,
-                Expanded(
-                  child: AppRefreshIndicator.contained(
-                    semanticsLabel: 'Memuat ulang laporan insiden',
-                    notificationPredicate: _isRefreshing
-                        ? (_) => false
-                        : defaultScrollNotificationPredicate,
-                    onRefresh: () => _handleRefresh(cubit),
-                    child: bodyContent,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        AppChip(
+          type: AppChipType.filter,
+          label: 'Selesai',
+          selected: state.selectedFilter == IncidentStatus.resolved,
+          onPressed: isLoading
+              ? null
+              : () => _onStatusFilterSelected(IncidentStatus.resolved),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingSkeleton() {
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        top: AppSpacing.space150,
-        bottom: AppLayout.fabScrollClearance,
-      ),
-      itemCount: 4,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
-      itemBuilder: (_, _) => const IncidentCardSkeleton(),
+      ],
     );
   }
 
@@ -575,27 +404,11 @@ class _IncidentScreenState extends State<IncidentScreen> {
     required List<IncidentEntity> incidents,
     required bool isLoadingMore,
   }) {
-    final totalCount = incidents.length + (isLoadingMore ? 1 : 0);
-
-    return ListView.separated(
+    return ListScreenListView(
       controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        top: AppSpacing.space150,
-        bottom: AppLayout.fabScrollClearance,
-      ),
-      itemCount: totalCount,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemCount: incidents.length,
+      isLoadingMore: isLoadingMore,
       itemBuilder: (context, index) {
-        if (index == incidents.length) {
-          return const Padding(
-            padding: AppSpacing.paddingVertical200,
-            child: Center(child: AppLoadingIndicator()),
-          );
-        }
-
         final incident = incidents[index];
         return IncidentCard(
           incident: incident,
@@ -605,44 +418,13 @@ class _IncidentScreenState extends State<IncidentScreen> {
     );
   }
 
-  Widget _buildEmptyGroupState(BuildContext context) {
+  Widget _buildEmptyGroupState() {
     return const AppEmptyState(
       icon: AppSvgIcon.color(KawaloColorVectors.incident1),
       title: 'Belum ada laporan insiden',
       description:
           'Belum ada laporan insiden '
           'pada hari ini.',
-    );
-  }
-
-  Widget _buildEmptySearchResult(BuildContext context) {
-    return AppEmptyState.search(
-      title: 'Laporan insiden tidak ditemukan',
-      description:
-          'Tidak ada laporan insiden yang cocok dengan '
-          'pencarian atau filter yang diterapkan.',
-      actionLabel: 'Reset filter & pencarian',
-      onActionPressed: _resetAllFilters,
-    );
-  }
-
-  Widget _buildErrorState(
-    BuildContext context,
-    String message,
-    IncidentListCubit cubit,
-  ) {
-    return AppEmptyState.error(
-      title: 'Gagal memuat laporan insiden',
-      description: message,
-      retryLabel: 'Coba lagi',
-      onRetry: () {
-        final query = _searchController.text;
-        final session = _resolveSession(context);
-        cubit.fetchIncidents(
-          session: session,
-          search: query.isEmpty ? null : query,
-        );
-      },
     );
   }
 }
