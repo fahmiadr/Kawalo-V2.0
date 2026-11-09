@@ -12,6 +12,8 @@ linter:
   rules:
     # Disable public API doc requirement for internal application codebase
     public_member_api_docs: false
+    # dart format owns line width; it cannot wrap comments or string literals.
+    lines_longer_than_80_chars: false
     # Allow unawaited futures in UI event callbacks (e.g. showDialog, navigation)
     discarded_futures: false
     # Allow explicit types on test closure parameters (e.g. (WidgetTester tester))
