@@ -18,5 +18,26 @@ void main() {
       expect(model1, equals(model2));
       expect(model1, isNot(equals(model3)));
     });
+
+    test('fromJson accepts a decimal deleted_count', () {
+      const json = {'deleted_count': 3.0};
+      final model = DeleteBatchInformationResponseModel.fromJson(json);
+
+      expect(model.deletedCount, 3);
+    });
+
+    test('fromJson defaults a missing or null deleted_count to 0', () {
+      const missing = <String, dynamic>{};
+      const nulled = {'deleted_count': null};
+
+      expect(
+        DeleteBatchInformationResponseModel.fromJson(missing).deletedCount,
+        0,
+      );
+      expect(
+        DeleteBatchInformationResponseModel.fromJson(nulled).deletedCount,
+        0,
+      );
+    });
   });
 }

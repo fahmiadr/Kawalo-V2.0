@@ -1,12 +1,16 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:kawalo_mobile/core/network/json_converters.dart';
+
+part 'information_model.g.dart';
 
 /// Model serialisasi data feed informasi untuk pertukaran data JSON dengan API
 /// (`InformationItemDto`).
 ///
-/// Merupakan Pure DTO tanpa logika bisnis, tanpa fallback, dan tanpa sanitasi,
+/// Merupakan Pure DTO tanpa logika bisnis dan tanpa sanitasi,
 /// mengikuti standar `AttendanceModel`.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class InformationModel extends Equatable {
-  /// Membuat instance [InformationModel].
   const InformationModel({
     required this.id,
     required this.photos,
@@ -27,34 +31,17 @@ class InformationModel extends Equatable {
     this.glong,
   });
 
-  /// Mengonversi JSON Map dari backend menjadi objek [InformationModel]
-  /// tanpa fallback ataupun sanitasi data.
-  factory InformationModel.fromJson(Map<String, dynamic> json) {
-    return InformationModel(
-      id: json['id'] as String,
-      photos: (json['photos'] as List<dynamic>).cast<String>().toList(),
-      title: json['title'] as String?,
-      text: json['text'] as String?,
-      userEmail: json['user_email'] as String?,
-      userName: json['user_name'] as String?,
-      userProfilePic: json['user_profile_pic'] as String?,
-      feedDt: json['feed_dt'] as String?,
-      feedFile: json['feed_file'] as String?,
-      feedType: json['feed_type'] as String?,
-      groupName: json['group_name'] as String?,
-      eventLocation: json['event_location'] as String?,
-      eventStartDt: json['event_start_dt'] as String?,
-      eventEndDt: json['event_end_dt'] as String?,
-      eventDuration: json['event_duration'] as int?,
-      glat: json['glat'] as String?,
-      glong: json['glong'] as String?,
-    );
-  }
+  factory InformationModel.fromJson(Map<String, dynamic> json) =>
+      _$InformationModelFromJson(json);
 
   /// ID unik internal baris data.
   final String id;
 
   /// Daftar berkas foto feed.
+  ///
+  /// A missing or null list becomes empty; the mapper and entity already
+  /// treat "no photos" as an empty list.
+  @JsonKey(defaultValue: <String>[])
   final List<String> photos;
 
   /// Judul informasi.
@@ -94,6 +81,7 @@ class InformationModel extends Equatable {
   final String? eventEndDt;
 
   /// Durasi acara.
+  @NullableIntFromNumConverter()
   final int? eventDuration;
 
   /// Garis lintang GPS.

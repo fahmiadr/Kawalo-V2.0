@@ -1,26 +1,29 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:kawalo_mobile/core/network/json_converters.dart';
+
+part 'delete_batch_information_response_model.g.dart';
 
 /// Pure DTO model untuk response batch delete informasi
 /// sesuai kontrak backend `DeleteBatchInformationResponseDto`.
 ///
-/// Merupakan Pure DTO tanpa logika bisnis, tanpa fallback, dan tanpa sanitasi.
-/// Seluruh proses sanitasi dan pemetaan nilai default didelegasikan ke
-/// mapper pada Anti-Corruption Layer.
+/// Merupakan Pure DTO tanpa logika bisnis dan tanpa sanitasi. Sanitasi
+/// didelegasikan ke mapper pada Anti-Corruption Layer.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class DeleteBatchInformationResponseModel extends Equatable {
-  /// Membuat instance [DeleteBatchInformationResponseModel].
   const DeleteBatchInformationResponseModel({required this.deletedCount});
 
-  /// Mengonversi JSON Map dari backend menjadi objek
-  /// [DeleteBatchInformationResponseModel] secara murni tanpa sanitasi.
   factory DeleteBatchInformationResponseModel.fromJson(
     Map<String, dynamic> json,
-  ) {
-    return DeleteBatchInformationResponseModel(
-      deletedCount: json['deleted_count'] as int,
-    );
-  }
+  ) =>
+      _$DeleteBatchInformationResponseModelFromJson(json);
 
-  /// Jumlah data informasi yang dihapus sesuai response server.
+  /// Jumlah informasi yang dihapus sesuai response server.
+  ///
+  /// A missing count falls back to 0, matching the data source, which already
+  /// returns a zero count when the response carries no data.
+  @IntFromNumConverter()
+  @JsonKey(defaultValue: 0)
   final int deletedCount;
 
   @override

@@ -75,5 +75,23 @@ void main() {
       expect(model.glat, isNull);
       expect(model.glong, isNull);
     });
+
+    test('treats missing or null photos as an empty list', () {
+      expect(InformationModel.fromJson(const {'id': '1'}).photos, isEmpty);
+      expect(
+        InformationModel.fromJson(const {'id': '1', 'photos': null}).photos,
+        isEmpty,
+      );
+    });
+
+    test('reads event_duration sent as a decimal number', () {
+      final model = InformationModel.fromJson(const {
+        'id': '1',
+        'photos': <String>[],
+        'event_duration': 90.0,
+      });
+
+      expect(model.eventDuration, 90);
+    });
   });
 }
