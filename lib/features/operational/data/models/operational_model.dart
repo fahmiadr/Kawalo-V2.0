@@ -1,12 +1,16 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:kawalo_mobile/core/network/json_converters.dart';
+
+part 'operational_model.g.dart';
 
 /// Model serialisasi JSON untuk satu aktivitas linimasa tugas operasional
 /// (`OperationalTimelineItemDto`).
 ///
 /// Merupakan Pure DTO tanpa logika bisnis, tanpa fallback, dan tanpa sanitasi,
 /// mengikuti standar `AttendanceModel`.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class DutyTimelineModel extends Equatable {
-  /// Membuat instance [DutyTimelineModel].
   const DutyTimelineModel({
     required this.id,
     this.journeyUid,
@@ -16,18 +20,8 @@ class DutyTimelineModel extends Equatable {
     this.stateDt,
   });
 
-  /// Mengonversi map JSON dari backend menjadi objek [DutyTimelineModel]
-  /// tanpa fallback ataupun sanitasi data.
-  factory DutyTimelineModel.fromJson(Map<String, dynamic> json) {
-    return DutyTimelineModel(
-      id: json['id'] as String,
-      journeyUid: json['journey_uid'] as String?,
-      duty: json['duty'] as String?,
-      state: json['state'] as String?,
-      dutyDt: json['duty_dt'] as String?,
-      stateDt: json['state_dt'] as String?,
-    );
-  }
+  factory DutyTimelineModel.fromJson(Map<String, dynamic> json) =>
+      _$DutyTimelineModelFromJson(json);
 
   /// ID unik rekaman tugas.
   final String id;
@@ -63,8 +57,8 @@ class DutyTimelineModel extends Equatable {
 ///
 /// Merupakan Pure DTO tanpa logika bisnis, tanpa fallback, dan tanpa sanitasi,
 /// mengikuti standar `AttendanceModel`.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class OperationalModel extends Equatable {
-  /// Membuat instance [OperationalModel].
   const OperationalModel({
     required this.id,
     required this.userEmail,
@@ -80,30 +74,8 @@ class OperationalModel extends Equatable {
     this.dutyDate,
   });
 
-  /// Mengonversi map JSON dari backend menjadi objek [OperationalModel]
-  /// tanpa fallback ataupun sanitasi data.
-  factory OperationalModel.fromJson(Map<String, dynamic> json) {
-    final rawTimeline = json['timeline'] as List<dynamic>;
-
-    return OperationalModel(
-      id: json['id'] as String,
-      userEmail: json['user_email'] as String,
-      totalActivities: json['total_activities'] as int,
-      userName: json['user_name'] as String?,
-      userProfilePic: json['user_profile_pic'] as String?,
-      groupName: json['group_name'] as String?,
-      latestDuty: json['latest_duty'] as String?,
-      latestState: json['latest_state'] as String?,
-      latestDutyDt: json['latest_duty_dt'] as String?,
-      latestStateDt: json['latest_state_dt'] as String?,
-      dutyDate: json['duty_date'] as String?,
-      timeline: rawTimeline
-          .map(
-            (item) => DutyTimelineModel.fromJson(item as Map<String, dynamic>),
-          )
-          .toList(),
-    );
-  }
+  factory OperationalModel.fromJson(Map<String, dynamic> json) =>
+      _$OperationalModelFromJson(json);
 
   /// ID unik kartu operasional (UserEmail_DutyDate).
   final String id;
@@ -112,9 +84,15 @@ class OperationalModel extends Equatable {
   final String userEmail;
 
   /// Total aktivitas yang tercatat.
+  ///
+  /// Aggregate column: may arrive as a decimal or be absent when the card
+  /// has no activity, so it defaults to 0.
+  @JsonKey(defaultValue: 0)
+  @IntFromNumConverter()
   final int totalActivities;
 
   /// Linimasa kronologis tugas personil.
+  @JsonKey(defaultValue: <DutyTimelineModel>[])
   final List<DutyTimelineModel> timeline;
 
   /// Nama personil operasional.

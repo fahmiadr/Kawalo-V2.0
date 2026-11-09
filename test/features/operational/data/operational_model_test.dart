@@ -74,5 +74,49 @@ void main() {
 
       expect(m1, equals(m2));
     });
+
+    test('fromJson reads decimal total_activities as int', () {
+      final model = OperationalModel.fromJson({
+        ...tWorkerJson,
+        'total_activities': 3.0,
+      });
+
+      expect(model.totalActivities, 3);
+    });
+
+    test('fromJson defaults total_activities and timeline when absent', () {
+      final json = {...tWorkerJson}
+        ..remove('total_activities')
+        ..remove('timeline');
+
+      final model = OperationalModel.fromJson(json);
+
+      expect(model.totalActivities, 0);
+      expect(model.timeline, isEmpty);
+
+      final nulls = OperationalModel.fromJson({
+        ...tWorkerJson,
+        'total_activities': null,
+        'timeline': null,
+      });
+      expect(nulls.totalActivities, 0);
+      expect(nulls.timeline, isEmpty);
+    });
+
+    test('fromJson keeps optional fields null when absent', () {
+      final model = OperationalModel.fromJson(const {
+        'id': 'x_2026-09-10',
+        'user_email': 'x@kawalo.id',
+      });
+
+      expect(model.userName, isNull);
+      expect(model.dutyDate, isNull);
+    });
+
+    test('fromJson throws when required user_email is missing', () {
+      final json = {...tWorkerJson}..remove('user_email');
+
+      expect(() => OperationalModel.fromJson(json), throwsA(isA<TypeError>()));
+    });
   });
 }
