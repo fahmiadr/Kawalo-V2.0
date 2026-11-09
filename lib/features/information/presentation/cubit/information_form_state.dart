@@ -65,6 +65,39 @@ class InformationFormState extends Equatable {
     this.gpsResultVersion = 0,
   });
 
+  /// State awal formulir: kosong untuk create, terisi dari [initialItem]
+  /// untuk update.
+  factory InformationFormState.initial(InformationItemEntity? initialItem) {
+    if (initialItem == null) {
+      return const InformationFormState(status: InformationFormStatus.ready);
+    }
+
+    final initialPhotos = initialItem.photos
+        .map(InformationFormMediaItem.fromRemoteUrl)
+        .toList();
+
+    InformationFormMediaItem? initialDoc;
+    final docFile = initialItem.feedFile;
+    if (docFile != null && docFile.trim().isNotEmpty) {
+      initialDoc = InformationFormMediaItem.fromRemoteUrl(docFile);
+    }
+
+    return InformationFormState(
+      mode: InformationFormMode.update,
+      status: InformationFormStatus.ready,
+      initialItem: initialItem,
+      title: initialItem.title ?? '',
+      text: initialItem.text ?? '',
+      feedType: initialItem.feedType ?? 'GENERAL',
+      photos: List<InformationFormMediaItem>.unmodifiable(initialPhotos),
+      documentMedia: initialDoc,
+      feedFile: initialItem.feedFile ?? '',
+      eventLocation: initialItem.eventLocation ?? '',
+      glat: initialItem.glat != null ? initialItem.glat.toString() : '',
+      glong: initialItem.glong != null ? initialItem.glong.toString() : '',
+    );
+  }
+
   /// Mode operasi formulir (create / update).
   final InformationFormMode mode;
 
