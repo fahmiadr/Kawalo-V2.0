@@ -27,6 +27,18 @@ class CacheOps<M> {
   final Future<void> Function(DateTime threshold) deleteOlderThan;
 }
 
+/// Menjalankan [op] (sinkronisasi cache setelah mutasi remote berhasil) secara
+/// best-effort: `null` berarti tidak ada cache, dan kegagalan I/O cache tidak
+/// membatalkan konfirmasi sukses dari server yang sudah otoritatif.
+Future<void> bestEffortCache(Future<void> Function()? op) async {
+  if (op == null) return;
+  try {
+    await op();
+  } on Object catch (_) {
+    // Sengaja diabaikan, lihat dokumentasi di atas.
+  }
+}
+
 /// Alur baku "remote dulu, fallback cache" untuk daftar.
 ///
 /// 1. Bila bukan [isRefresh] dan perangkat offline: langsung dari cache

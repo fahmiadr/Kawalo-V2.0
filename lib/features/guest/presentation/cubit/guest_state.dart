@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 
 /// Keadaan dasar untuk fitur data tamu.
-abstract class GuestState extends Equatable {
+abstract class GuestState extends Equatable implements ListFilterState {
   /// Membuat instance [GuestState].
   const GuestState();
 
@@ -13,6 +14,7 @@ abstract class GuestState extends Equatable {
   List<GuestItemEntity> get displayedGuests => const [];
 
   /// Periode filter waktu yang sedang aktif.
+  @override
   AppDateFilterPeriod get filterPeriod => AppDateFilterPeriod.today;
 
   /// Email pembuat data tamu yang sedang difilter (ADMIN).
@@ -22,21 +24,27 @@ abstract class GuestState extends Equatable {
   String? get filterCreatorName => null;
 
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get startDate => null;
 
   /// Tanggal akhir rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get endDate => null;
 
   /// Representasi ISO 8601 string tanggal awal yang telah disanitasi.
+  @override
   String? get startDateIso => null;
 
   /// Representasi ISO 8601 string tanggal akhir yang telah disanitasi.
+  @override
   String? get endDateIso => null;
 
   /// Kata kunci pencarian saat ini.
+  @override
   String? get searchQuery => null;
 
   /// Label waktu terakhir pembaruan data yang berhasil.
+  @override
   String get lastSync => '';
 
   /// Apakah terdapat filter tanggal aktif selain default hari ini.
@@ -79,8 +87,8 @@ class GuestLoading extends GuestState {
   List<Object?> get props => [lastSync];
 }
 
-  /// Keadaan ketika data tamu berhasil dimuat.
-class GuestLoaded extends GuestState {
+/// Keadaan ketika data tamu berhasil dimuat.
+class GuestLoaded extends GuestState implements ListLoadedState {
   /// Membuat instance [GuestLoaded].
   const GuestLoaded({
     required this.guests,
@@ -108,9 +116,11 @@ class GuestLoaded extends GuestState {
   final String lastSync;
 
   /// Apakah masih terdapat data berikutnya di server untuk pagination.
+  @override
   final bool hasMore;
 
   /// Apakah sedang memuat data halaman berikutnya (infinite scroll).
+  @override
   final bool isLoadingMore;
 
   @override
