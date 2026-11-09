@@ -1,13 +1,13 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/constants/app_constants.dart';
-import 'package:kawalo_mobile/core/error/exceptions.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
-import 'package:kawalo_mobile/core/network/network_error_handler.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/repositories/cached_remote_fetch.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/operational/data/datasources/operational_local_data_source.dart';
 import 'package:kawalo_mobile/features/operational/data/datasources/operational_remote_data_source.dart';
 import 'package:kawalo_mobile/features/operational/data/mappers/operational_mapper.dart';
+import 'package:kawalo_mobile/features/operational/data/models/operational_model.dart';
 import 'package:kawalo_mobile/features/operational/data/models/operational_query_model.dart';
 import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/get_operationals_params.dart';
@@ -42,105 +42,38 @@ class OperationalRepositoryImpl implements OperationalRepository {
   @override
   Future<Either<Failure, OperationalResult>> getOperationals(
     GetOperationalsParams params,
-  ) async {
-    // 1. Guard Offline: Jika bukan refresh, dilarang memicu remote fetch jika
-    // perangkat sedang offline. Langsung ambil dari local cache seketika.
-    if (!params.isRefresh) {
-      final isConnected =
-          await (networkInfo?.isConnected ?? Future.value(true));
-      if (!isConnected) {
-        if (localDataSource != null) {
-          final cached = await localDataSource!.getCachedOperationals(
-            search: params.search,
-            startDate: params.startDate,
-            endDate: params.endDate,
-          );
-          return Right(
-            OperationalResult(
-              items: OperationalMapper.toEntityList(cached),
-              isFromCache: true,
-            ),
-          );
-        }
-        return const Left(NoInternetFailure.offlineNoStorage());
-      }
-    }
-
-    // 2. Mode Online atau Pull-to-Refresh: Lakukan remote fetch ke server
-    // (pull-to-refresh selalu mencoba ke remote meskipun sedang offline).
-    try {
-      final query = OperationalQueryModel(
-        search: params.search,
-        limit: params.limit,
-        offset: params.offset,
-        startDate: params.startDate,
-        endDate: params.endDate,
-      );
-
-      final operational = await remoteDataSource.getOperationals(
-        query: query,
-        cancelToken: params.cancelToken,
-      );
-
-      // Simpan data ke cache lokal jika tersedia
-      if (localDataSource != null && operational.isNotEmpty) {
-        await localDataSource!.cacheOperationals(operational);
-
-        // Terapkan Cache Invalidation & Eviction: Rolling Window 30 Hari
-        final thirtyDaysAgo =
-            DateTime.now().subtract(AppConstants.cacheRetentionDuration);
-        await localDataSource!.deleteOlderThan(thirtyDaysAgo);
-      }
-
-      // Catat waktu sukses sinkronisasi server
-      await (syncStorageService ?? SyncStorageService.singleton())
-          .saveLastSync(AppConstants.syncKeyOperational, DateTime.now());
-
-      return Right(
-        OperationalResult(
-          items: OperationalMapper.toEntityList(operational),
+  ) {
+    final local = localDataSource;
+    return fetchRemoteWithCacheFallback<OperationalModel, OperationalResult>(
+      isRefresh: params.isRefresh,
+      networkInfo: networkInfo,
+      syncStorageService: syncStorageService,
+      syncKey: AppConstants.syncKeyOperational,
+      fetchRemote: () => remoteDataSource.getOperationals(
+        query: OperationalQueryModel(
+          search: params.search,
+          limit: params.limit,
+          offset: params.offset,
+          startDate: params.startDate,
+          endDate: params.endDate,
         ),
-      );
-    } on AppException catch (e) {
-      if (e is RequestCancelledException) {
-        return const Left(RequestCancelledFailure());
-      }
-      if (localDataSource != null && _canFallbackToCache(e)) {
-        final cached = await localDataSource!.getCachedOperationals(
-          search: params.search,
-          startDate: params.startDate,
-          endDate: params.endDate,
-        );
-        return Right(
-          OperationalResult(
-            items: OperationalMapper.toEntityList(cached),
-            isFromCache: true,
-          ),
-        );
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    } on Exception catch (e) {
-      if (localDataSource != null) {
-        final cached = await localDataSource!.getCachedOperationals(
-          search: params.search,
-          startDate: params.startDate,
-          endDate: params.endDate,
-        );
-        return Right(
-          OperationalResult(
-            items: OperationalMapper.toEntityList(cached),
-            isFromCache: true,
-          ),
-        );
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    }
-  }
-
-  bool _canFallbackToCache(AppException e) {
-    if (e is RequestCancelledException || e is AuthException) {
-      return false;
-    }
-    return true;
+        cancelToken: params.cancelToken,
+      ),
+      toResult: (models, {required isFromCache}) => OperationalResult(
+        items: OperationalMapper.toEntityList(models),
+        isFromCache: isFromCache,
+      ),
+      cache: local == null
+          ? null
+          : CacheOps(
+              read: () => local.getCachedOperationals(
+                search: params.search,
+                startDate: params.startDate,
+                endDate: params.endDate,
+              ),
+              write: local.cacheOperationals,
+              deleteOlderThan: local.deleteOlderThan,
+            ),
+    );
   }
 }

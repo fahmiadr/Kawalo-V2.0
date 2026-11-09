@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
@@ -59,10 +58,9 @@ class IncidentDetailScreen extends StatefulWidget {
   static Route<dynamic> route({required String incidentId}) {
     return AppPageRoute.forwardBackward<dynamic>(
       builder: (context) {
-        final apiClient = context.read<ApiClient>();
+        final module = context.read<IncidentModule>();
         return BlocProvider<IncidentDetailCubit>(
-          create: (context) => IncidentModule.createIncidentDetailCubit(
-            apiClient: apiClient,
+          create: (context) => module.createIncidentDetailCubit(
             incidentId: incidentId,
           ),
           child: IncidentDetailScreen(incidentId: incidentId),

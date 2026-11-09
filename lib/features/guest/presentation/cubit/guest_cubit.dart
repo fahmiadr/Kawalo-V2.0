@@ -1,13 +1,11 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/constants/app_constants.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
-import 'package:kawalo_mobile/core/utils/app_date_format.dart';
-import 'package:kawalo_mobile/core/utils/request_sequence_guard.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
@@ -25,7 +23,10 @@ import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_par
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
 
 /// Cubit pengelola state dan logika bisnis layar data tamu.
-class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
+///
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class only maps the guest use cases and state.
+class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
   /// Membuat instance [GuestCubit].
   GuestCubit({
     required this.getGuestsUseCase,
@@ -34,10 +35,9 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
     this.checkoutGuestUseCase,
     this.getGroupMembersUseCase,
     String initialGreeting = '',
-    this.pageSize = AppConstants.defaultPageSize,
-    SyncStorageService? syncStorageService,
-  })  : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
-        super(
+    super.pageSize = AppConstants.defaultPageSize,
+    super.syncStorageService,
+  }) : super(
           GuestInitial(
             lastSync: SyncStorageService.resolveInitialGreeting(
               initialGreeting: initialGreeting,
@@ -45,9 +45,8 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
               storageService: syncStorageService,
             ),
           ),
-        ) {
-    _initGreeting();
-  }
+          syncKey: AppConstants.syncKeyGuest,
+        );
 
   /// Use case untuk mengambil data tamu.
   final GetGuestsUseCase getGuestsUseCase;
@@ -64,41 +63,18 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
   /// Use case untuk mengambil daftar anggota grup on-demand.
   final GetGroupMembersUseCase? getGroupMembersUseCase;
 
-  /// Layanan persistensi waktu sinkronisasi data dengan server.
-  final SyncStorageService _syncStorage;
-
-  /// Jumlah data per halaman untuk infinite scroll
-  /// (default: [AppConstants.defaultPageSize]).
-  final int pageSize;
-
-  String? _activeFetchKey;
-  Future<AppFetchResult>? _activeFetchFuture;
-
-  void _initGreeting() {
-    if (state.lastSync.isEmpty) {
-      _syncStorage.getLastSync(AppConstants.syncKeyGuest).then((lastSync) {
-        if (lastSync != null && state.lastSync.isEmpty && !isClosed) {
-          final greeting = AppDateFormat.formatGreeting(lastSync);
-          _updateSyncGreeting(greeting);
-        }
-      });
+  @override
+  GuestState? stateWithLastSync(String greeting) {
+    final current = state;
+    if (current is GuestLoaded) {
+      return current.copyWith(lastSync: greeting);
+    } else if (current is GuestInitial) {
+      return GuestInitial(lastSync: greeting);
+    } else if (current is GuestLoading) {
+      return GuestLoading(lastSync: greeting);
     }
+    return null;
   }
-
-  void _updateSyncGreeting(String greeting) {
-    final currentState = state;
-    if (currentState is GuestLoaded) {
-      emit(currentState.copyWith(lastSync: greeting));
-    } else if (currentState is GuestInitial) {
-      emit(GuestInitial(lastSync: greeting));
-    } else if (currentState is GuestLoading) {
-      emit(GuestLoading(lastSync: greeting));
-    }
-  }
-
-  /// Label waktu greeting klien saat ini berdasarkan Single Source of Truth
-  /// state.
-  String get currentGreeting => state.lastSync;
 
   /// Mengambil data tamu dari repositori (baik mock maupun remote).
   Future<AppFetchResult> fetchGuests({
@@ -150,9 +126,6 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
         isRefresh: true,
       );
 
-  /// Implementasi terpusat pemanggilan usecase pengambilan data tamu
-  /// dengan penjagaan urutan request, pembatalan search superseded, dan
-  /// sanitasi rentang tanggal otomatis.
   Future<AppFetchResult> _fetch({
     required bool isRefresh,
     String? search,
@@ -164,313 +137,98 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
     String? creatorEmail,
     String? creatorName,
     bool clearCreatorFilter = false,
-  }) async {
-    final currentLoaded = state is GuestLoaded ? (state as GuestLoaded) : null;
-    final currentError = state is GuestError ? (state as GuestError) : null;
-    final currentGuests = currentLoaded?.guests ??
-        currentError?.cachedGuests ??
-        const <GuestItemEntity>[];
-
-    final effectivePeriod = filterPeriod ?? state.filterPeriod;
-    final effectiveStart = effectivePeriod == AppDateFilterPeriod.custom
-        ? (startDate ?? state.startDate)
-        : null;
-    final effectiveEnd = effectivePeriod == AppDateFilterPeriod.custom
-        ? (endDate ?? state.endDate)
-        : null;
-
-    final effectiveCreatorEmail = clearCreatorFilter
-        ? null
-        : (creatorEmail ?? state.filterCreatorEmail);
-    final effectiveCreatorName = clearCreatorFilter
-        ? null
-        : (creatorName ?? state.filterCreatorName);
-
-    final String? effectiveSearch;
-    if (search != null) {
-      effectiveSearch = search.isNotEmpty ? search : null;
-    } else {
-      effectiveSearch = state.searchQuery;
-    }
-
-    // Resolusi dan sanitasi rentang tanggal ke format ISO 8601 string
-    // langsung menggunakan logika form AppDateFilterResult.
-    final sanitizedFilter = AppDateFilterResult.sanitize(
-      period: effectivePeriod,
-      startDate: effectiveStart,
-      endDate: effectiveEnd,
-      startDateIso: startDateIso ??
-          (effectivePeriod == AppDateFilterPeriod.custom
-              ? state.startDateIso
-              : null),
-      endDateIso: endDateIso ??
-          (effectivePeriod == AppDateFilterPeriod.custom
-              ? state.endDateIso
-              : null),
+  }) {
+    final effectiveCreatorEmail =
+        clearCreatorFilter ? null : (creatorEmail ?? state.filterCreatorEmail);
+    final effectiveCreatorName =
+        clearCreatorFilter ? null : (creatorName ?? state.filterCreatorName);
+    final filter = resolveFilter(
+      search: search,
+      filterPeriod: filterPeriod,
+      startDate: startDate,
+      endDate: endDate,
+      startDateIso: startDateIso,
+      endDateIso: endDateIso,
     );
-
-    final effectiveStartIso = sanitizedFilter.startDateIso;
-    final effectiveEndIso = sanitizedFilter.endDateIso;
-
-    final fetchKey = '$effectivePeriod|'
-        '$effectiveStartIso|'
-        '$effectiveEndIso|$effectiveSearch|'
-        '$effectiveCreatorEmail';
-
-    if (isFetching && _activeFetchKey == fetchKey) {
-      if (_activeFetchFuture != null) {
-        return await _activeFetchFuture!;
-      }
-      return AppFetchResult.cancelled;
-    }
-
-    final reqId = nextRequestId();
-    isFetching = true;
-    _activeFetchKey = fetchKey;
-    final cancelToken = renewSearchCancelToken();
-
-    if (!isRefresh && state is! GuestLoaded) {
-      emit(GuestLoading(lastSync: state.lastSync));
-    }
-
-    final isDefaultPeriod = effectivePeriod == AppDateFilterPeriod.today ||
-        effectivePeriod == AppDateFilterPeriod.thisWeek ||
-        effectivePeriod == AppDateFilterPeriod.thisMonth;
-    final effectiveLimit = isDefaultPeriod ? 0 : pageSize;
-
-    final fetchOperation = _executeFetch(
-      reqId: reqId,
-      effectiveSearch: effectiveSearch,
-      effectivePeriod: effectivePeriod,
-      effectiveCreatorEmail: effectiveCreatorEmail,
-      effectiveCreatorName: effectiveCreatorName,
-      effectiveStart: effectiveStart,
-      effectiveEnd: effectiveEnd,
-      effectiveStartIso: effectiveStartIso,
-      effectiveEndIso: effectiveEndIso,
-      effectiveLimit: effectiveLimit,
-      isDefaultPeriod: isDefaultPeriod,
+    return runFetch(
       isRefresh: isRefresh,
-      currentGuests: currentGuests,
-      cancelToken: cancelToken,
-    );
-
-    _activeFetchFuture = fetchOperation;
-
-    try {
-      return await fetchOperation;
-    } finally {
-      if (isLatest(reqId)) {
-        isFetching = false;
-        _activeFetchKey = null;
-        _activeFetchFuture = null;
-      }
-    }
-  }
-
-  Future<AppFetchResult> _executeFetch({
-    required int reqId,
-    required String? effectiveSearch,
-    required AppDateFilterPeriod effectivePeriod,
-    required String? effectiveCreatorEmail,
-    required String? effectiveCreatorName,
-    required DateTime? effectiveStart,
-    required DateTime? effectiveEnd,
-    required String? effectiveStartIso,
-    required String? effectiveEndIso,
-    required int effectiveLimit,
-    required bool isDefaultPeriod,
-    required bool isRefresh,
-    required List<GuestItemEntity> currentGuests,
-    required AppCancellationToken cancelToken,
-  }) async {
-    try {
-      final result = await getGuestsUseCase(
+      filter: filter,
+      extraKey: '$effectiveCreatorEmail',
+      currentItems: state.displayedGuests,
+      loading: (lastSync) => GuestLoading(lastSync: lastSync),
+      request: (limit, cancelToken) async => (await getGuestsUseCase(
         GetGuestsParams(
-          search: effectiveSearch,
-          limit: effectiveLimit,
+          search: filter.search,
+          limit: limit,
           offset: 0,
-          startDate: effectiveStartIso,
-          endDate: effectiveEndIso,
+          startDate: filter.startIso,
+          endDate: filter.endIso,
           createdBy: effectiveCreatorEmail,
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      );
-
-      if (!isLatest(reqId)) {
-        return AppFetchResult.cancelled;
-      }
-
-      return await result.fold(
-        (failure) async {
-          if (failure is RequestCancelledFailure) {
-            return AppFetchResult.cancelled;
-          }
-          final greeting = await _resolveGreeting(isFromCache: true);
-          emit(
-            GuestError(
-              message: failure.message,
-              failure: failure,
-              cachedGuests: isRefresh ? currentGuests : const [],
-              lastSync: greeting,
-              filterPeriod: effectivePeriod,
-              filterCreatorEmail: effectiveCreatorEmail,
-              filterCreatorName: effectiveCreatorName,
-              startDate: effectiveStart,
-              endDate: effectiveEnd,
-              startDateIso: effectiveStartIso,
-              endDateIso: effectiveEndIso,
-              searchQuery: effectiveSearch,
-            ),
-          );
-          return AppFetchResult.failure;
-        },
-        (guestResult) async {
-          final isFromCache = guestResult.isFromCache;
-          final syncGreeting = await _resolveGreeting(isFromCache: isFromCache);
-
-          final hasMore = !isDefaultPeriod &&
-              !isFromCache &&
-              guestResult.items.length >= pageSize;
-
-          emit(
-            GuestLoaded(
-              guests: guestResult.items,
-              isFromCache: isFromCache,
-              lastSync: syncGreeting,
-              hasMore: hasMore,
-              filterPeriod: effectivePeriod,
-              filterCreatorEmail: effectiveCreatorEmail,
-              filterCreatorName: effectiveCreatorName,
-              startDate: effectiveStart,
-              endDate: effectiveEnd,
-              startDateIso: effectiveStartIso,
-              endDateIso: effectiveEndIso,
-              searchQuery: effectiveSearch,
-            ),
-          );
-          return isFromCache
-              ? AppFetchResult.cachedFallback
-              : AppFetchResult.success;
-        },
-      );
-    } on Object catch (e) {
-      if (cancelToken.isCancelled || !isLatest(reqId)) {
-        return AppFetchResult.cancelled;
-      }
-      if (isLatest(reqId)) {
-        final greeting = await _resolveGreeting(isFromCache: true);
-        final failure = switch (e) {
-          final Failure f => f,
-          _ => const ServerFailure(),
-        };
-        emit(
-          GuestError(
-            message: failure.message,
-            failure: failure,
-            cachedGuests: isRefresh ? currentGuests : const [],
-            lastSync: greeting,
-            filterPeriod: effectivePeriod,
-            filterCreatorEmail: effectiveCreatorEmail,
-            filterCreatorName: effectiveCreatorName,
-            startDate: effectiveStart,
-            endDate: effectiveEnd,
-            startDateIso: effectiveStartIso,
-            endDateIso: effectiveEndIso,
-            searchQuery: effectiveSearch,
-          ),
-        );
-      }
-      return AppFetchResult.failure;
-    }
-  }
-
-  Future<String> _resolveGreeting({required bool isFromCache}) async {
-    if (isFromCache) {
-      final lastSync =
-          await _syncStorage.getLastSync(AppConstants.syncKeyGuest);
-      if (lastSync != null) {
-        return AppDateFormat.formatGreeting(lastSync);
-      }
-      return state.lastSync;
-    }
-    return AppDateFormat.formatGreeting(DateTime.now());
+      ))
+          .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      loaded: (page, lastSync, {required hasMore}) => GuestLoaded(
+        guests: page.items,
+        isFromCache: page.isFromCache,
+        lastSync: lastSync,
+        hasMore: hasMore,
+        filterPeriod: filter.period,
+        filterCreatorEmail: effectiveCreatorEmail,
+        filterCreatorName: effectiveCreatorName,
+        startDate: filter.start,
+        endDate: filter.end,
+        startDateIso: filter.startIso,
+        endDateIso: filter.endIso,
+        searchQuery: filter.search,
+      ),
+      error: (failure, cached, lastSync) => GuestError(
+        message: failure.message,
+        failure: failure,
+        cachedGuests: cached,
+        lastSync: lastSync,
+        filterPeriod: filter.period,
+        filterCreatorEmail: effectiveCreatorEmail,
+        filterCreatorName: effectiveCreatorName,
+        startDate: filter.start,
+        endDate: filter.end,
+        startDateIso: filter.startIso,
+        endDateIso: filter.endIso,
+        searchQuery: filter.search,
+      ),
+    );
   }
 
   /// Memuat halaman data tamu berikutnya untuk mendukung infinite scroll.
-  Future<void> loadMoreGuests() async {
-    if (state is! GuestLoaded) return;
-    final currentState = state as GuestLoaded;
-
-    if (!currentState.hasMore || currentState.isLoadingMore) return;
-
-    final isDefaultPeriod =
-        currentState.filterPeriod == AppDateFilterPeriod.today ||
-            currentState.filterPeriod == AppDateFilterPeriod.thisWeek ||
-            currentState.filterPeriod == AppDateFilterPeriod.thisMonth;
-    if (isDefaultPeriod) return;
-
-    emit(currentState.copyWith(isLoadingMore: true));
-
-    final result = await getGuestsUseCase(
-      GetGuestsParams(
-        search: currentState.searchQuery,
-        limit: pageSize,
-        offset: currentState.guests.length,
-        startDate: currentState.startDateIso,
-        endDate: currentState.endDateIso,
-        createdBy: currentState.filterCreatorEmail,
-      ),
-    );
-
-    result.fold(
-      (failure) {
-        emit(currentState.copyWith(isLoadingMore: false));
-      },
-      (guestResult) {
-        final newGuests = guestResult.items;
-        final allGuests = [...currentState.guests, ...newGuests];
-        final hasMore =
-            !guestResult.isFromCache && newGuests.length >= pageSize;
-
-        emit(
-          currentState.copyWith(
-            guests: allGuests,
-            hasMore: hasMore,
-            isLoadingMore: false,
+  Future<void> loadMoreGuests() => runLoadMore<GuestLoaded>(
+        request: (current) async => (await getGuestsUseCase(
+          GetGuestsParams(
+            search: current.searchQuery,
+            limit: pageSize,
+            offset: current.guests.length,
+            startDate: current.startDateIso,
+            endDate: current.endDateIso,
+            createdBy: current.filterCreatorEmail,
           ),
-        );
-      },
-    );
-  }
+        ))
+            .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+        setLoadingMore: (current, {required loadingMore}) =>
+            current.copyWith(isLoadingMore: loadingMore),
+        append: (current, newItems, {required hasMore}) => current.copyWith(
+          guests: [...current.guests, ...newItems],
+          hasMore: hasMore,
+          isLoadingMore: false,
+        ),
+      );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
-  Future<AppFetchResult> setFilter(
-    AppDateFilterResult filterResult,
-  ) =>
-      fetchGuests(
-        search: state.searchQuery,
-        filterPeriod: filterResult.period,
-        startDate: filterResult.startDate,
-        endDate: filterResult.endDate,
-        startDateIso: filterResult.startDateIso,
-        endDateIso: filterResult.endDateIso,
-      );
+  Future<AppFetchResult> setFilter(AppDateFilterResult filterResult) =>
+      applyDateFilter(fetchGuests, filterResult);
 
   /// Mereset filter tanggal menjadi default 'Hari ini' tanpa menghapus
   /// kata kunci pencarian maupun filter pembuat.
-  Future<AppFetchResult> resetDateFilter() {
-    final defaultFilter = AppDateFilterResult.defaultFilter();
-    return fetchGuests(
-      search: state.searchQuery,
-      filterPeriod: defaultFilter.period,
-      startDate: defaultFilter.startDate,
-      endDate: defaultFilter.endDate,
-      startDateIso: defaultFilter.startDateIso,
-      endDateIso: defaultFilter.endDateIso,
-    );
-  }
+  Future<AppFetchResult> resetDateFilter() => resetDateFilterWith(fetchGuests);
 
   /// Mengubah filter pencatat/pembuat data tamu (Creator) oleh ADMIN.
   Future<AppFetchResult> changeCreatorFilter({
@@ -484,18 +242,25 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
       );
 
   /// Mengatur ulang seluruh filter waktu, pencarian, dan pembuat ke default.
-  Future<AppFetchResult> resetFilters() {
-    final defaultFilter = AppDateFilterResult.defaultFilter();
-    return fetchGuests(
-      search: '',
-      filterPeriod: defaultFilter.period,
-      startDate: defaultFilter.startDate,
-      endDate: defaultFilter.endDate,
-      startDateIso: defaultFilter.startDateIso,
-      endDateIso: defaultFilter.endDateIso,
-      clearCreatorFilter: true,
-    );
-  }
+  Future<AppFetchResult> resetFilters() => resetAllFiltersWith(
+        ({
+          search,
+          filterPeriod,
+          startDate,
+          endDate,
+          startDateIso,
+          endDateIso,
+        }) =>
+            fetchGuests(
+          search: search,
+          filterPeriod: filterPeriod,
+          startDate: startDate,
+          endDate: endDate,
+          startDateIso: startDateIso,
+          endDateIso: endDateIso,
+          clearCreatorFilter: true,
+        ),
+      );
 
   /// Memuat daftar anggota grup secara segar on-demand dari remote service.
   ///
@@ -630,19 +395,9 @@ class GuestCubit extends Cubit<GuestState> with RequestSequenceGuard {
   void onGuestUpdated(GuestItemEntity item) {
     final currentState = state;
     if (currentState is GuestLoaded) {
-      final updated = currentState.guests
-          .map((i) => i.id == item.id ? item : i)
-          .toList();
+      final updated =
+          currentState.guests.map((i) => i.id == item.id ? item : i).toList();
       emit(currentState.copyWith(guests: updated));
     }
-  }
-
-  @override
-  Future<void> close() {
-    cancelActiveSearch();
-    invalidateRequests();
-    _activeFetchKey = null;
-    _activeFetchFuture = null;
-    return super.close();
   }
 }

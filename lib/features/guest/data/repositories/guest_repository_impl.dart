@@ -5,6 +5,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/network_error_handler.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/repositories/cached_remote_fetch.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_source.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_remote_data_source.dart';
@@ -14,6 +15,7 @@ import 'package:kawalo_mobile/features/guest/data/models/checkout_guest_model.da
 import 'package:kawalo_mobile/features/guest/data/models/create_guest_model.dart';
 import 'package:kawalo_mobile/features/guest/data/models/delete_batch_guest_request_model.dart';
 import 'package:kawalo_mobile/features/guest/data/models/guest_id_params_model.dart';
+import 'package:kawalo_mobile/features/guest/data/models/guest_model.dart';
 import 'package:kawalo_mobile/features/guest/data/models/guest_query_model.dart';
 import 'package:kawalo_mobile/features/guest/data/models/update_guest_model.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
@@ -54,103 +56,41 @@ class GuestRepositoryImpl implements GuestRepository {
   @override
   Future<Either<Failure, GuestResult>> getGuests(
     GetGuestsParams params,
-  ) async {
-    // 1. Guard Offline: Jika bukan refresh, dilarang memicu remote fetch jika
-    // perangkat sedang offline. Langsung ambil dari local cache seketika.
-    if (!params.isRefresh) {
-      final isConnected =
-          await (networkInfo?.isConnected ?? Future.value(true));
-      if (!isConnected) {
-        if (localDataSource != null) {
-          final cached = await localDataSource!.getCachedGuests(
-            search: params.search,
-            startDate: params.startDate,
-            endDate: params.endDate,
-            createdBy: params.createdBy,
-          );
-          return Right(
-            GuestResult(
-              items: GuestMapper.toEntityList(cached),
-              isFromCache: true,
-            ),
-          );
-        }
-        return const Left(NoInternetFailure.offlineNoStorage());
-      }
-    }
-
-    // 2. Mode Online atau Pull-to-Refresh: Lakukan remote fetch ke server
-    // (pull-to-refresh selalu mencoba ke remote meskipun sedang offline).
-    try {
-      final query = GuestQueryModel(
-        search: params.search,
-        limit: params.limit,
-        offset: params.offset,
-        startDate: params.startDate,
-        endDate: params.endDate,
-        createdBy: params.createdBy,
-      );
-
-      final guests = await remoteDataSource.getGuests(
-        query: query,
-        cancelToken: params.cancelToken,
-      );
-
-      // Simpan data ke cache HANYA jika bukan rentang kustom
-      if (localDataSource != null && guests.isNotEmpty) {
-        await localDataSource!.cacheGuests(guests);
-
-        // Terapkan Cache Invalidation & Eviction: Rolling Window 30 Hari
-        final thirtyDaysAgo =
-            DateTime.now().subtract(AppConstants.cacheRetentionDuration);
-        await localDataSource!.deleteOlderThan(thirtyDaysAgo);
-      }
-
-      // Catat waktu sukses sinkronisasi server HANYA ketika remote berhasil
-      await (syncStorageService ?? SyncStorageService.singleton())
-          .saveLastSync(AppConstants.syncKeyGuest, DateTime.now());
-
-      return Right(
-        GuestResult(
-          items: GuestMapper.toEntityList(guests),
+  ) {
+    final local = localDataSource;
+    return fetchRemoteWithCacheFallback<GuestModel, GuestResult>(
+      isRefresh: params.isRefresh,
+      networkInfo: networkInfo,
+      syncStorageService: syncStorageService,
+      syncKey: AppConstants.syncKeyGuest,
+      fetchRemote: () => remoteDataSource.getGuests(
+        query: GuestQueryModel(
+          search: params.search,
+          limit: params.limit,
+          offset: params.offset,
+          startDate: params.startDate,
+          endDate: params.endDate,
+          createdBy: params.createdBy,
         ),
-      );
-    } on AppException catch (e) {
-      if (e is RequestCancelledException) {
-        return const Left(RequestCancelledFailure());
-      }
-      if (localDataSource != null && _canFallbackToCache(e)) {
-        final cached = await localDataSource!.getCachedGuests(
-          search: params.search,
-          startDate: params.startDate,
-          endDate: params.endDate,
-          createdBy: params.createdBy,
-        );
-        return Right(
-          GuestResult(
-            items: GuestMapper.toEntityList(cached),
-            isFromCache: true,
-          ),
-        );
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    } on Exception catch (e) {
-      if (localDataSource != null) {
-        final cached = await localDataSource!.getCachedGuests(
-          search: params.search,
-          startDate: params.startDate,
-          endDate: params.endDate,
-          createdBy: params.createdBy,
-        );
-        return Right(
-          GuestResult(
-            items: GuestMapper.toEntityList(cached),
-            isFromCache: true,
-          ),
-        );
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    }
+        cancelToken: params.cancelToken,
+      ),
+      toResult: (models, {required isFromCache}) => GuestResult(
+        items: GuestMapper.toEntityList(models),
+        isFromCache: isFromCache,
+      ),
+      cache: local == null
+          ? null
+          : CacheOps(
+              read: () => local.getCachedGuests(
+                search: params.search,
+                startDate: params.startDate,
+                endDate: params.endDate,
+                createdBy: params.createdBy,
+              ),
+              write: local.cacheGuests,
+              deleteOlderThan: local.deleteOlderThan,
+            ),
+    );
   }
 
   @override
@@ -185,14 +125,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
       // 3. Sinkronisasi Cache Lokal: Simpan data baru ke Isar cache jika
       // tersedia.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.cacheGuests([createdModel]);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.cacheGuests([createdModel]),
+      );
 
       final entity = GuestMapper.toEntity(createdModel);
       return Right(entity);
@@ -241,14 +177,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
       // 3. Sinkronisasi Cache Lokal: Simpan data terupdate ke Isar cache
       // jika tersedia.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.cacheGuests([updatedModel]);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.cacheGuests([updatedModel]),
+      );
 
       final entity = GuestMapper.toEntity(updatedModel);
       return Right(entity);
@@ -285,14 +217,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
       // 3. Sinkronisasi Cache Lokal: Simpan data terupdate ke Isar cache
       // jika tersedia.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.cacheGuests([updatedModel]);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.cacheGuests([updatedModel]),
+      );
 
       final entity = GuestMapper.toEntity(updatedModel);
       return Right(entity);
@@ -349,14 +277,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
       // 3. Sinkronisasi Cache Lokal: Best-effort cache eviction jika remote
       // berhasil.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.deleteGuest(id);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.deleteGuest(id),
+      );
 
       return const Right(null);
     } on AppException catch (e) {
@@ -390,14 +314,10 @@ class GuestRepositoryImpl implements GuestRepository {
 
       // 3. Sinkronisasi Cache Lokal: Best-effort cache eviction jika remote
       // berhasil.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.deleteBatchGuests(ids);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.deleteBatchGuests(ids),
+      );
 
       return Right(GuestMapper.toDeleteBatchResult(response));
     } on AppException catch (e) {
@@ -408,12 +328,5 @@ class GuestRepositoryImpl implements GuestRepository {
     } on Exception catch (e) {
       return Left(NetworkErrorHandler.handleExceptionToFailure(e));
     }
-  }
-
-  bool _canFallbackToCache(AppException e) {
-    if (e is RequestCancelledException || e is AuthException) {
-      return false;
-    }
-    return true;
   }
 }

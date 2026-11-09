@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
@@ -40,11 +39,9 @@ class CreateIncidentScreen extends StatelessWidget {
             mediaPickerService: mediaPickerService,
           );
         }
-        final apiClient = context.read<ApiClient>();
+        final module = context.read<IncidentModule>();
         return BlocProvider<IncidentFormCubit>(
-          create: (_) => IncidentModule.createIncidentFormCubit(
-            apiClient: apiClient,
-          ),
+          create: (_) => module.createIncidentFormCubit(),
           child: IncidentFormDialog(
             mediaPickerService: mediaPickerService,
           ),

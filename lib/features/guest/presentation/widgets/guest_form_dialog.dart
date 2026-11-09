@@ -5,8 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:isar_community/isar.dart';
-import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
@@ -18,7 +16,6 @@ import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_dropdown_menu.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_chip_group.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_empty_placeholder.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_field_slot.dart';
@@ -42,6 +39,7 @@ import 'package:kawalo_mobile/features/guest/guest_module.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
+import 'package:kawalo_mobile/features/guest/presentation/widgets/app_dropdown_menu.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_photo_source_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
@@ -169,14 +167,9 @@ class GuestFormDialog extends StatefulWidget {
       final existing = context.read<GuestFormCubit>();
       return (existing, false);
     } on Object catch (_) {
-      final apiClient = context.read<ApiClient>();
-      final isar = context.read<Isar>();
-
-      final created = GuestModule.createGuestFormCubit(
-        apiClient: apiClient,
-        isar: isar,
-        initialItem: initialItem,
-      );
+      final created = context
+          .read<GuestModule>()
+          .createGuestFormCubit(initialItem: initialItem);
       return (created, true);
     }
   }

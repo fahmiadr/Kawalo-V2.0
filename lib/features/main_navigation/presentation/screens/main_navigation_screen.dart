@@ -13,7 +13,6 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
@@ -24,6 +23,7 @@ import 'package:kawalo_mobile/features/home/presentation/utils/home_greeting_hel
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_dashboard_view.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/screens/information_screen.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 
@@ -77,7 +77,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final baseUri = Uri.parse(EnvConfig.apiBaseUrl);
       final wsScheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
       final portPart = baseUri.hasPort ? ':${baseUri.port}' : '';
-      final channelUrl = '$wsScheme://${baseUri.host}$portPart/ws/ptt/$groupUid';
+      final channelUrl =
+          '$wsScheme://${baseUri.host}$portPart/ws/ptt/$groupUid';
 
       await pttCubit.joinChannel(
         channelUrl: channelUrl,
@@ -249,50 +250,50 @@ class _PlaceholderView extends StatelessWidget {
       maintainBottomViewPadding: true,
       child: Center(
         child: AppRefreshIndicator.contained(
-        semanticsLabel: 'Memuat ulang data $title',
-        onRefresh: () async {
-          await Future<void>.delayed(const Duration(milliseconds: 600));
-          if (context.mounted) {
-            AppSnackbar.show(
-              context,
-              message: '$title berhasil diperbarui.',
-            );
-          }
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.paddingAll300,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AppSvgIcon(
-                iconPath,
-                size: 64,
-                color: colorScheme.primary,
-              ),
-              AppSpacing.vGap300,
-              Text(
-                title,
-                style: typeScale.titleLarge.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
+          semanticsLabel: 'Memuat ulang data $title',
+          onRefresh: () async {
+            await Future<void>.delayed(const Duration(milliseconds: 600));
+            if (context.mounted) {
+              AppSnackbar.show(
+                context,
+                message: '$title berhasil diperbarui.',
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSpacing.paddingAll300,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AppSvgIcon(
+                  iconPath,
+                  size: 64,
+                  color: colorScheme.primary,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              AppSpacing.vGapSm,
-              Text(
-                description,
-                style: typeScale.bodyMedium.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                AppSpacing.vGap300,
+                Text(
+                  title,
+                  style: typeScale.titleLarge.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                AppSpacing.vGapSm,
+                Text(
+                  description,
+                  style: typeScale.bodyMedium.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
 

@@ -10,7 +10,6 @@ import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/kawalo_logo.dart';
@@ -24,6 +23,7 @@ import 'package:kawalo_mobile/features/home/presentation/utils/home_greeting_hel
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockConnectivityCubit extends MockCubit<ConnectivityStatus>
@@ -67,8 +67,7 @@ void main() {
     final mockGetCurrentUser = MockGetCurrentUserUseCase();
     final mockLogout = MockLogoutUseCase();
 
-    when(() => mockGetCurrentUser(any()))
-        .thenAnswer((_) async => Right(user));
+    when(() => mockGetCurrentUser(any())).thenAnswer((_) async => Right(user));
 
     final mockInformationCubit = MockInformationCubit();
     when(() => mockInformationCubit.state).thenReturn(

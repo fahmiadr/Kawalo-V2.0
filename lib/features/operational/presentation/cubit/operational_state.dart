@@ -1,32 +1,40 @@
 import 'package:equatable/equatable.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 
 /// Status state dasar untuk modul Aktifitas Operasional.
-abstract class OperationalState extends Equatable {
+abstract class OperationalState extends Equatable implements ListFilterState {
   /// Membuat instance [OperationalState].
   const OperationalState();
 
   /// Periode filter waktu yang aktif.
+  @override
   AppDateFilterPeriod get filterPeriod => AppDateFilterPeriod.today;
 
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get startDate => null;
 
   /// Tanggal akhir rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get endDate => null;
 
   /// Tanggal awal ISO 8601 terstandarisasi yang dikirim ke API backend.
+  @override
   String? get startDateIso => null;
 
   /// Tanggal akhir ISO 8601 terstandarisasi yang dikirim ke API backend.
+  @override
   String? get endDateIso => null;
 
   /// Kata kunci pencarian saat ini.
+  @override
   String? get searchQuery => null;
 
   /// Label waktu terakhir pembaruan data yang berhasil.
+  @override
   String get lastSync => '';
 
   /// Apakah terdapat filter tanggal aktif selain default hari ini.
@@ -70,7 +78,7 @@ class OperationalLoading extends OperationalState {
 }
 
 /// Keadaan ketika aktifitas operasional berhasil dimuat.
-class OperationalLoaded extends OperationalState {
+class OperationalLoaded extends OperationalState implements ListLoadedState {
   /// Membuat instance [OperationalLoaded].
   const OperationalLoaded({
     required this.operationals,
@@ -99,9 +107,11 @@ class OperationalLoaded extends OperationalState {
   final String lastSync;
 
   /// Apakah masih terdapat data berikutnya di server untuk pagination.
+  @override
   final bool hasMore;
 
   /// Apakah sedang memuat data halaman berikutnya (infinite scroll).
+  @override
   final bool isLoadingMore;
 
   @override

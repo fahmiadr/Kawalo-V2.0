@@ -5,6 +5,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/network_error_handler.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/repositories/cached_remote_fetch.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_local_data_source.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_remote_data_source.dart';
@@ -12,6 +13,7 @@ import 'package:kawalo_mobile/features/information/data/mappers/information_mapp
 import 'package:kawalo_mobile/features/information/data/models/create_information_model.dart';
 import 'package:kawalo_mobile/features/information/data/models/delete_batch_information_request_model.dart';
 import 'package:kawalo_mobile/features/information/data/models/information_id_params_model.dart';
+import 'package:kawalo_mobile/features/information/data/models/information_model.dart';
 import 'package:kawalo_mobile/features/information/data/models/information_query_model.dart';
 import 'package:kawalo_mobile/features/information/data/models/update_information_model.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
@@ -52,103 +54,41 @@ class InformationRepositoryImpl implements InformationRepository {
   @override
   Future<Either<Failure, InformationResult>> getInformation(
     GetInformationParams params,
-  ) async {
-    // 1. Guard Offline: Jika bukan refresh, dilarang memicu remote fetch jika
-    // perangkat sedang offline. Langsung ambil dari local cache seketika.
-    if (!params.isRefresh) {
-      final isConnected =
-          await (networkInfo?.isConnected ?? Future.value(true));
-      if (!isConnected) {
-        if (localDataSource != null) {
-          final cached = await localDataSource!.getCachedInformation(
-            search: params.search,
-            startDate: params.startDate,
-            endDate: params.endDate,
-            createdBy: params.createdBy,
-          );
-          return Right(
-            InformationResult(
-              items: InformationMapper.toEntityList(cached),
-              isFromCache: true,
-            ),
-          );
-        }
-        return const Left(NoInternetFailure.offlineNoStorage());
-      }
-    }
-
-    // 2. Mode Online atau Pull-to-Refresh: Lakukan remote fetch ke server
-    // (pull-to-refresh selalu mencoba ke remote meskipun sedang offline).
-    try {
-      final query = InformationQueryModel(
-        search: params.search,
-        limit: params.limit,
-        offset: params.offset,
-        startDate: params.startDate,
-        endDate: params.endDate,
-        createdBy: params.createdBy,
-      );
-
-      final information = await remoteDataSource.getInformation(
-        query: query,
-        cancelToken: params.cancelToken,
-      );
-
-      // Simpan data ke cache lokal jika tersedia
-      if (localDataSource != null && information.isNotEmpty) {
-        await localDataSource!.cacheInformation(information);
-
-        // Terapkan Cache Invalidation & Eviction: Rolling Window 30 Hari
-        final thirtyDaysAgo =
-            DateTime.now().subtract(AppConstants.cacheRetentionDuration);
-        await localDataSource!.deleteOlderThan(thirtyDaysAgo);
-      }
-
-      // Catat waktu sukses sinkronisasi server HANYA ketika remote berhasil
-      await (syncStorageService ?? SyncStorageService.singleton())
-          .saveLastSync(AppConstants.syncKeyInformation, DateTime.now());
-
-      return Right(
-        InformationResult(
-          items: InformationMapper.toEntityList(information),
+  ) {
+    final local = localDataSource;
+    return fetchRemoteWithCacheFallback<InformationModel, InformationResult>(
+      isRefresh: params.isRefresh,
+      networkInfo: networkInfo,
+      syncStorageService: syncStorageService,
+      syncKey: AppConstants.syncKeyInformation,
+      fetchRemote: () => remoteDataSource.getInformation(
+        query: InformationQueryModel(
+          search: params.search,
+          limit: params.limit,
+          offset: params.offset,
+          startDate: params.startDate,
+          endDate: params.endDate,
+          createdBy: params.createdBy,
         ),
-      );
-    } on AppException catch (e) {
-      if (e is RequestCancelledException) {
-        return const Left(RequestCancelledFailure());
-      }
-      if (localDataSource != null && _canFallbackToCache(e)) {
-        final cached = await localDataSource!.getCachedInformation(
-          search: params.search,
-          startDate: params.startDate,
-          endDate: params.endDate,
-          createdBy: params.createdBy,
-        );
-        return Right(
-          InformationResult(
-            items: InformationMapper.toEntityList(cached),
-            isFromCache: true,
-          ),
-        );
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    } on Exception catch (e) {
-      if (localDataSource != null) {
-        final cached = await localDataSource!.getCachedInformation(
-          search: params.search,
-          startDate: params.startDate,
-          endDate: params.endDate,
-          createdBy: params.createdBy,
-        );
-        return Right(
-          InformationResult(
-            items: InformationMapper.toEntityList(cached),
-            isFromCache: true,
-          ),
-        );
-      }
-      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
-    }
+        cancelToken: params.cancelToken,
+      ),
+      toResult: (models, {required isFromCache}) => InformationResult(
+        items: InformationMapper.toEntityList(models),
+        isFromCache: isFromCache,
+      ),
+      cache: local == null
+          ? null
+          : CacheOps(
+              read: () => local.getCachedInformation(
+                search: params.search,
+                startDate: params.startDate,
+                endDate: params.endDate,
+                createdBy: params.createdBy,
+              ),
+              write: local.cacheInformation,
+              deleteOlderThan: local.deleteOlderThan,
+            ),
+    );
   }
 
   @override
@@ -181,14 +121,10 @@ class InformationRepositoryImpl implements InformationRepository {
 
       // 3. Sinkronisasi Cache Lokal: Simpan data baru ke Isar cache jika
       // tersedia.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.cacheInformation([createdModel]);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.cacheInformation([createdModel]),
+      );
 
       final entity = InformationMapper.toEntity(createdModel);
       return Right(entity);
@@ -235,14 +171,10 @@ class InformationRepositoryImpl implements InformationRepository {
 
       // 3. Sinkronisasi Cache Lokal: Simpan data terupdate ke Isar cache
       // jika tersedia.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.cacheInformation([updatedModel]);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.cacheInformation([updatedModel]),
+      );
 
       final entity = InformationMapper.toEntity(updatedModel);
       return Right(entity);
@@ -277,14 +209,10 @@ class InformationRepositoryImpl implements InformationRepository {
 
       // 3. Sinkronisasi Cache Lokal: Best-effort cache eviction jika remote
       // berhasil.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.deleteInformation(id);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.deleteInformation(id),
+      );
 
       return const Right(null);
     } on AppException catch (e) {
@@ -318,14 +246,10 @@ class InformationRepositoryImpl implements InformationRepository {
 
       // 3. Sinkronisasi Cache Lokal: Best-effort cache eviction jika remote
       // berhasil.
-      if (localDataSource != null) {
-        try {
-          await localDataSource!.deleteBatchInformation(ids);
-        } on Object catch (_) {
-          // Best-effort: kegagalan I/O cache lokal tidak membatalkan
-          // konfirmasi sukses dari server yang sudah otoritatif.
-        }
-      }
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.deleteBatchInformation(ids),
+      );
 
       return Right(InformationMapper.toDeleteBatchResult(response));
     } on AppException catch (e) {
@@ -336,12 +260,5 @@ class InformationRepositoryImpl implements InformationRepository {
     } on Exception catch (e) {
       return Left(NetworkErrorHandler.handleExceptionToFailure(e));
     }
-  }
-
-  bool _canFallbackToCache(AppException e) {
-    if (e is RequestCancelledException || e is AuthException) {
-      return false;
-    }
-    return true;
   }
 }

@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_s
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_remote_data_source.dart';
 import 'package:kawalo_mobile/features/guest/data/repositories/guest_repository_impl.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
@@ -20,199 +21,53 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit
 
 /// Feature Composition Root untuk modul Tamu pada Frontend.
 ///
-/// Bertanggung jawab atas inisialisasi dan perakitan Dependency Injection
-/// (DataSources -> Repository -> UseCases -> Cubit) di tingkat fitur,
-/// selaras dengan pola modular Clean Architecture.
-abstract final class GuestModule {
-  /// Merakit dan mengembalikan instance [GuestCubit] yang siap pakai.
-  static GuestCubit createCubit({
+/// Receives the shared dependencies once and builds a single [GuestRepository]
+/// that every cubit factory reuses. Registered through `RepositoryProvider` so
+/// the presentation layer never assembles dependencies itself.
+final class GuestModule {
+  GuestModule({
     required ApiClient apiClient,
     required Isar isar,
+    required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
     GetGroupMembersUseCase? getGroupMembersUseCase,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final guestLocalDataSource = GuestLocalDataSourceImpl(isar: isar);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: guestLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
+  })  : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+        _getGroupMembersUseCase = getGroupMembersUseCase ??
+            GroupModule.createGetGroupMembersUseCase(
+              apiClient: apiClient,
+              networkInfo: networkInfo,
+            ) {
+    repository = GuestRepositoryImpl(
+      remoteDataSource: GuestRemoteDataSourceImpl(apiClient: apiClient),
+      localDataSource: GuestLocalDataSourceImpl(isar: isar),
+      syncStorageService: _syncStorage,
+      networkInfo: networkInfo,
     );
+  }
 
-    final getGuestsUseCase = GetGuestsUseCase(repository);
-    final deleteGuestUseCase = DeleteGuestUseCase(repository);
-    final deleteBatchGuestUseCase = DeleteBatchGuestUseCase(repository);
-    final checkoutGuestUseCase = CheckoutGuestUseCase(repository);
-    final effectiveGetGroupMembersUseCase = getGroupMembersUseCase ??
-        GroupModule.createGetGroupMembersUseCase(
-          apiClient: apiClient,
-          networkInfo: effectiveNetworkInfo,
-        );
+  final SyncStorageService _syncStorage;
+  final GetGroupMembersUseCase _getGroupMembersUseCase;
+  late final GuestRepository repository;
 
+  /// Merakit dan mengembalikan instance [GuestCubit] yang siap pakai.
+  GuestCubit createCubit() {
     return GuestCubit(
-      getGuestsUseCase: getGuestsUseCase,
-      deleteGuestUseCase: deleteGuestUseCase,
-      deleteBatchGuestUseCase: deleteBatchGuestUseCase,
-      checkoutGuestUseCase: checkoutGuestUseCase,
-      getGroupMembersUseCase: effectiveGetGroupMembersUseCase,
-      syncStorageService: syncStorage,
+      getGuestsUseCase: GetGuestsUseCase(repository),
+      deleteGuestUseCase: DeleteGuestUseCase(repository),
+      deleteBatchGuestUseCase: DeleteBatchGuestUseCase(repository),
+      checkoutGuestUseCase: CheckoutGuestUseCase(repository),
+      getGroupMembersUseCase: _getGroupMembersUseCase,
+      syncStorageService: _syncStorage,
     );
-  }
-
-  /// Merakit dan mengembalikan instance [DeleteGuestUseCase] yang siap pakai.
-  static DeleteGuestUseCase createDeleteUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final guestLocalDataSource = GuestLocalDataSourceImpl(isar: isar);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: guestLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return DeleteGuestUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance [DeleteBatchGuestUseCase] yang siap
-  /// pakai.
-  static DeleteBatchGuestUseCase createDeleteBatchUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final guestLocalDataSource = GuestLocalDataSourceImpl(isar: isar);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: guestLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return DeleteBatchGuestUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance [CreateGuestUseCase] yang siap pakai.
-  static CreateGuestUseCase createCreateUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final guestLocalDataSource = GuestLocalDataSourceImpl(isar: isar);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: guestLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return CreateGuestUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance [UpdateGuestUseCase] yang siap pakai.
-  static UpdateGuestUseCase createUpdateUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final guestLocalDataSource = GuestLocalDataSourceImpl(isar: isar);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: guestLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return UpdateGuestUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance [CheckoutGuestUseCase] yang siap pakai.
-  static CheckoutGuestUseCase createCheckoutUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final guestLocalDataSource = GuestLocalDataSourceImpl(isar: isar);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: guestLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return CheckoutGuestUseCase(repository);
   }
 
   /// Merakit dan mengembalikan instance [GuestFormCubit] yang siap pakai.
-  static GuestFormCubit createGuestFormCubit({
-    required ApiClient apiClient,
-    Isar? isar,
-    NetworkInfo? networkInfo,
-    GetGroupMembersUseCase? getGroupMembersUseCase,
-    GuestItemEntity? initialItem,
-  }) {
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource = GuestRemoteDataSourceImpl(apiClient: apiClient);
-
-    final repository = GuestRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource:
-          isar != null ? GuestLocalDataSourceImpl(isar: isar) : null,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    final createGuestUseCase = CreateGuestUseCase(repository);
-    final updateGuestUseCase = UpdateGuestUseCase(repository);
-    final getMasterTypesUseCase = GetMasterGuestTypesUseCase(repository);
-    final effectiveGetGroupMembersUseCase = getGroupMembersUseCase ??
-        GroupModule.createGetGroupMembersUseCase(
-          apiClient: apiClient,
-          networkInfo: effectiveNetworkInfo,
-        );
-
+  GuestFormCubit createGuestFormCubit({GuestItemEntity? initialItem}) {
     return GuestFormCubit(
-      createGuestUseCase: createGuestUseCase,
-      updateGuestUseCase: updateGuestUseCase,
-      getMasterGuestTypesUseCase: getMasterTypesUseCase,
-      getGroupMembersUseCase: effectiveGetGroupMembersUseCase,
+      createGuestUseCase: CreateGuestUseCase(repository),
+      updateGuestUseCase: UpdateGuestUseCase(repository),
+      getMasterGuestTypesUseCase: GetMasterGuestTypesUseCase(repository),
+      getGroupMembersUseCase: _getGroupMembersUseCase,
       initialItem: initialItem,
     );
   }

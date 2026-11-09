@@ -25,6 +25,7 @@ import 'package:kawalo_mobile/features/auth/auth_module.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_source.dart';
 import 'package:kawalo_mobile/features/guest/guest_module.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
@@ -75,6 +76,11 @@ class _MyAppState extends State<MyApp> {
   late final CacheWiper _cacheWiper;
   late final JwksService _jwksService;
   late final NetworkInfoImpl _networkInfo;
+  late final GuestModule _guestModule;
+  late final InformationModule _informationModule;
+  late final AttendanceModule _attendanceModule;
+  late final OperationalModule _operationalModule;
+  late final IncidentModule _incidentModule;
   late final AuthBloc _authBloc;
   late final UserSessionCubit _userSessionCubit;
   StreamSubscription<AuthState>? _authSubscription;
@@ -84,8 +90,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _isAppLocked =
-        widget.securityViolation != null || widget.isar == null;
+    _isAppLocked = widget.securityViolation != null || widget.isar == null;
     if (_isAppLocked) {
       return;
     }
@@ -96,6 +101,10 @@ class _MyAppState extends State<MyApp> {
     _apiClient = ApiClient(storage: _storageService);
     _networkInfo = NetworkInfoImpl();
 
+    final syncStorage = SyncStorageService.singleton(
+      storageService: _storageService,
+    );
+
     _cacheWiper = CacheWiper(
       wipeables: [
         InformationLocalDataSourceImpl(isar: isar),
@@ -104,9 +113,44 @@ class _MyAppState extends State<MyApp> {
         OperationalLocalDataSourceImpl(isar: isar),
       ],
       secureStorageService: _storageService,
-      syncStorageService: SyncStorageService.singleton(
-        storageService: _storageService,
-      ),
+      syncStorageService: syncStorage,
+    );
+
+    // Shared dependencies are assembled once here; each module builds its own
+    // repository a single time and every cubit reuses it.
+    final getGroupMembersUseCase = GroupModule.createGetGroupMembersUseCase(
+      apiClient: _apiClient,
+      networkInfo: _networkInfo,
+    );
+    _guestModule = GuestModule(
+      apiClient: _apiClient,
+      isar: isar,
+      networkInfo: _networkInfo,
+      syncStorageService: syncStorage,
+      getGroupMembersUseCase: getGroupMembersUseCase,
+    );
+    _informationModule = InformationModule(
+      apiClient: _apiClient,
+      isar: isar,
+      networkInfo: _networkInfo,
+      syncStorageService: syncStorage,
+      getGroupMembersUseCase: getGroupMembersUseCase,
+    );
+    _attendanceModule = AttendanceModule(
+      apiClient: _apiClient,
+      isar: isar,
+      networkInfo: _networkInfo,
+      syncStorageService: syncStorage,
+    );
+    _operationalModule = OperationalModule(
+      apiClient: _apiClient,
+      isar: isar,
+      networkInfo: _networkInfo,
+      syncStorageService: syncStorage,
+    );
+    _incidentModule = IncidentModule(
+      apiClient: _apiClient,
+      networkInfo: _networkInfo,
     );
 
     _jwksService = JwksService(
@@ -169,8 +213,8 @@ class _MyAppState extends State<MyApp> {
     if (_isAppLocked) {
       return _buildMaterialApp(
         home: AppSecurityBlockedScreen(
-          violationType: widget.securityViolation ??
-              SecurityViolationType.rootOrJailbreak,
+          violationType:
+              widget.securityViolation ?? SecurityViolationType.rootOrJailbreak,
         ),
       );
     }
@@ -184,6 +228,9 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider<SecureStorageService>.value(value: _storageService),
         RepositoryProvider<NetworkInfo>.value(value: _networkInfo),
         RepositoryProvider<Isar>.value(value: isar),
+        RepositoryProvider<GuestModule>.value(value: _guestModule),
+        RepositoryProvider<InformationModule>.value(value: _informationModule),
+        RepositoryProvider<IncidentModule>.value(value: _incidentModule),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -197,37 +244,19 @@ class _MyAppState extends State<MyApp> {
             value: _authBloc,
           ),
           BlocProvider<GuestCubit>(
-            create: (context) => GuestModule.createCubit(
-              apiClient: _apiClient,
-              isar: isar,
-              networkInfo: _networkInfo,
-            ),
+            create: (context) => _guestModule.createCubit(),
           ),
           BlocProvider<OperationalCubit>(
-            create: (context) => OperationalModule.createCubit(
-              apiClient: _apiClient,
-              isar: isar,
-              networkInfo: _networkInfo,
-            ),
+            create: (context) => _operationalModule.createCubit(),
           ),
           BlocProvider<AttendanceCubit>(
-            create: (context) => AttendanceModule.createCubit(
-              apiClient: _apiClient,
-              isar: isar,
-              networkInfo: _networkInfo,
-            ),
+            create: (context) => _attendanceModule.createCubit(),
           ),
           BlocProvider<InformationCubit>(
-            create: (context) => InformationModule.createCubit(
-              apiClient: _apiClient,
-              isar: isar,
-              networkInfo: _networkInfo,
-            ),
+            create: (context) => _informationModule.createCubit(),
           ),
           BlocProvider<IncidentListCubit>(
-            create: (context) => IncidentModule.createIncidentListCubit(
-              apiClient: _apiClient,
-            ),
+            create: (context) => _incidentModule.createIncidentListCubit(),
           ),
           BlocProvider<PttCubit>(
             create: (context) => PttModule.createCubit(

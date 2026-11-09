@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 
 /// Keadaan dasar untuk fitur daftar insiden.
-abstract class IncidentState extends Equatable {
+abstract class IncidentState extends Equatable implements ListFilterState {
   /// Membuat instance [IncidentState].
   const IncidentState();
 
@@ -15,27 +16,34 @@ abstract class IncidentState extends Equatable {
 
   /// Periode filter waktu yang sedang aktif (default:
   /// [AppDateFilterPeriod.today]).
+  @override
   AppDateFilterPeriod get filterPeriod => AppDateFilterPeriod.today;
 
   /// Filter status siklus hidup insiden ('OPEN', 'RESOLVED').
   IncidentStatus? get selectedFilter => null;
 
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get startDate => null;
 
   /// Tanggal akhir rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get endDate => null;
 
   /// Representasi ISO 8601 string tanggal awal yang telah disanitasi.
+  @override
   String? get startDateIso => null;
 
   /// Representasi ISO 8601 string tanggal akhir yang telah disanitasi.
+  @override
   String? get endDateIso => null;
 
   /// Kata kunci pencarian saat ini.
+  @override
   String? get searchQuery => null;
 
   /// Label waktu terakhir pembaruan data yang berhasil.
+  @override
   String get lastSync => '';
 
   /// Apakah terdapat filter tanggal aktif selain default hari ini.
@@ -82,7 +90,7 @@ class IncidentLoading extends IncidentState {
 }
 
 /// Keadaan ketika data insiden berhasil dimuat.
-class IncidentLoaded extends IncidentState {
+class IncidentLoaded extends IncidentState implements ListLoadedState {
   /// Membuat instance [IncidentLoaded].
   const IncidentLoaded({
     required this.incidents,
@@ -109,9 +117,11 @@ class IncidentLoaded extends IncidentState {
   final String lastSync;
 
   /// Apakah masih terdapat data berikutnya di server untuk pagination.
+  @override
   final bool hasMore;
 
   /// Apakah sedang memuat data halaman berikutnya (infinite scroll).
+  @override
   final bool isLoadingMore;
 
   @override
@@ -176,9 +186,8 @@ class IncidentLoaded extends IncidentState {
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       filterPeriod: filterPeriod ?? this.filterPeriod,
-      selectedFilter: clearStatusFilter
-          ? null
-          : (selectedFilter ?? this.selectedFilter),
+      selectedFilter:
+          clearStatusFilter ? null : (selectedFilter ?? this.selectedFilter),
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       startDateIso: startDateIso ?? this.startDateIso,

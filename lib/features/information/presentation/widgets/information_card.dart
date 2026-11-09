@@ -11,13 +11,13 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/extensions/information_item_ui_extension.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
 
 /// Komponen kartu feed informasi (`InformationCard`) yang mengimplementasikan
 /// fondasi kartu resmi Kawalo ([AppCard]), Material 3 Expressive, dan

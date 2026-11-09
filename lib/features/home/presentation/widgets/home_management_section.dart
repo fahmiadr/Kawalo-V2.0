@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_link.dart';
+import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 
 /// Komponen bagian "Manajemen" pada beranda yang menampilkan daftar
 /// kartu modul manajemen dan tombol aksi tambah manajemen.

@@ -1,13 +1,11 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/constants/app_constants.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
-import 'package:kawalo_mobile/core/utils/app_date_format.dart';
-import 'package:kawalo_mobile/core/utils/request_sequence_guard.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/usecases/get_group_members/get_group_members_params.dart';
@@ -23,8 +21,11 @@ import 'package:kawalo_mobile/features/information/domain/value_objects/get_info
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 
 /// Cubit pengelola state dan logika bisnis modul Data Informasi.
-class InformationCubit extends Cubit<InformationState>
-    with RequestSequenceGuard {
+///
+/// The fetch, pagination and greeting skeleton lives in [ListFetchCubit]; this
+/// class only maps the information use cases and state.
+class InformationCubit
+    extends ListFetchCubit<InformationState, InformationItemEntity> {
   /// Membuat instance [InformationCubit].
   InformationCubit({
     required this.getInformationUseCase,
@@ -32,10 +33,9 @@ class InformationCubit extends Cubit<InformationState>
     required this.deleteBatchInformationUseCase,
     this.getGroupMembersUseCase,
     String initialGreeting = '',
-    this.pageSize = AppConstants.defaultPageSize,
-    SyncStorageService? syncStorageService,
-  })  : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
-        super(
+    super.pageSize = AppConstants.defaultPageSize,
+    super.syncStorageService,
+  }) : super(
           InformationInitial(
             lastSync: SyncStorageService.resolveInitialGreeting(
               initialGreeting: initialGreeting,
@@ -43,9 +43,8 @@ class InformationCubit extends Cubit<InformationState>
               storageService: syncStorageService,
             ),
           ),
-        ) {
-    _initGreeting();
-  }
+          syncKey: AppConstants.syncKeyInformation,
+        );
 
   /// Use case untuk mengambil data informasi.
   final GetInformationUseCase getInformationUseCase;
@@ -59,43 +58,18 @@ class InformationCubit extends Cubit<InformationState>
   /// Use case untuk memuat daftar anggota grup on-demand.
   final GetGroupMembersUseCase? getGroupMembersUseCase;
 
-  /// Layanan persistensi waktu sinkronisasi data dengan server.
-  final SyncStorageService _syncStorage;
-
-  /// Ukuran data per halaman untuk paginasi
-  /// (default: [AppConstants.defaultPageSize]).
-  final int pageSize;
-
-  String? _activeFetchKey;
-  Future<AppFetchResult>? _activeFetchFuture;
-
-  void _initGreeting() {
-    if (state.lastSync.isEmpty) {
-      _syncStorage
-          .getLastSync(AppConstants.syncKeyInformation)
-          .then((lastSync) {
-        if (lastSync != null && state.lastSync.isEmpty && !isClosed) {
-          final greeting = AppDateFormat.formatGreeting(lastSync);
-          _updateSyncGreeting(greeting);
-        }
-      });
+  @override
+  InformationState? stateWithLastSync(String greeting) {
+    final current = state;
+    if (current is InformationLoaded) {
+      return current.copyWith(lastSync: greeting);
+    } else if (current is InformationInitial) {
+      return InformationInitial(lastSync: greeting);
+    } else if (current is InformationLoading) {
+      return InformationLoading(lastSync: greeting);
     }
+    return null;
   }
-
-  void _updateSyncGreeting(String greeting) {
-    final currentState = state;
-    if (currentState is InformationLoaded) {
-      emit(currentState.copyWith(lastSync: greeting));
-    } else if (currentState is InformationInitial) {
-      emit(InformationInitial(lastSync: greeting));
-    } else if (currentState is InformationLoading) {
-      emit(InformationLoading(lastSync: greeting));
-    }
-  }
-
-  /// Label waktu greeting klien saat ini berdasarkan Single Source of Truth
-  /// state.
-  String get currentGreeting => state.lastSync;
 
   /// Mengambil data informasi dari repositori (mock atau REST API backend).
   Future<AppFetchResult> fetchInformation({
@@ -122,7 +96,7 @@ class InformationCubit extends Cubit<InformationState>
         isRefresh: false,
       );
 
-  /// Memperbarui data informasi melalui pull-to-refresh tanpa flicker skeleton.
+  /// Memperbarui data informasi secara reaktif melalui tarikan pull-to-refresh.
   Future<AppFetchResult> refreshInformation({
     String? search,
     AppDateFilterPeriod? filterPeriod,
@@ -147,9 +121,6 @@ class InformationCubit extends Cubit<InformationState>
         isRefresh: true,
       );
 
-  /// Implementasi terpusat pemanggilan usecase pengambilan data informasi
-  /// dengan penjagaan urutan request, pembatalan search superseded, dan
-  /// sanitasi rentang tanggal otomatis.
   Future<AppFetchResult> _fetch({
     required bool isRefresh,
     String? search,
@@ -161,315 +132,99 @@ class InformationCubit extends Cubit<InformationState>
     String? authorEmail,
     String? authorName,
     bool clearAuthorFilter = false,
-  }) async {
-    final currentLoaded =
-        state is InformationLoaded ? (state as InformationLoaded) : null;
-    final currentError =
-        state is InformationError ? (state as InformationError) : null;
-    final currentInformation = currentLoaded?.information ??
-        currentError?.cachedInformation ??
-        const <InformationItemEntity>[];
-
-    final effectivePeriod = filterPeriod ?? state.filterPeriod;
-    final effectiveStart = effectivePeriod == AppDateFilterPeriod.custom
-        ? (startDate ?? state.startDate)
-        : null;
-    final effectiveEnd = effectivePeriod == AppDateFilterPeriod.custom
-        ? (endDate ?? state.endDate)
-        : null;
-
-    final effectiveAuthorEmail = clearAuthorFilter
-        ? null
-        : (authorEmail ?? state.filterAuthorEmail);
-    final effectiveAuthorName = clearAuthorFilter
-        ? null
-        : (authorName ?? state.filterAuthorName);
-
-    final String? effectiveSearch;
-    if (search != null) {
-      effectiveSearch = search.isNotEmpty ? search : null;
-    } else {
-      effectiveSearch = state.searchQuery;
-    }
-
-    // Resolusi dan sanitasi rentang tanggal ke format ISO 8601 string
-    // langsung menggunakan logika form AppDateFilterResult.
-    final sanitizedFilter = AppDateFilterResult.sanitize(
-      period: effectivePeriod,
-      startDate: effectiveStart,
-      endDate: effectiveEnd,
-      startDateIso: startDateIso ??
-          (effectivePeriod == AppDateFilterPeriod.custom
-              ? state.startDateIso
-              : null),
-      endDateIso: endDateIso ??
-          (effectivePeriod == AppDateFilterPeriod.custom
-              ? state.endDateIso
-              : null),
+  }) {
+    final effectiveAuthorEmail =
+        clearAuthorFilter ? null : (authorEmail ?? state.filterAuthorEmail);
+    final effectiveAuthorName =
+        clearAuthorFilter ? null : (authorName ?? state.filterAuthorName);
+    final filter = resolveFilter(
+      search: search,
+      filterPeriod: filterPeriod,
+      startDate: startDate,
+      endDate: endDate,
+      startDateIso: startDateIso,
+      endDateIso: endDateIso,
     );
-
-    final effectiveStartIso = sanitizedFilter.startDateIso;
-    final effectiveEndIso = sanitizedFilter.endDateIso;
-
-    final fetchKey = '$effectivePeriod|'
-        '$effectiveStartIso|'
-        '$effectiveEndIso|$effectiveSearch|'
-        '$effectiveAuthorEmail';
-
-    if (isFetching && _activeFetchKey == fetchKey) {
-      if (_activeFetchFuture != null) {
-        return await _activeFetchFuture!;
-      }
-      return AppFetchResult.cancelled;
-    }
-
-    final reqId = nextRequestId();
-    isFetching = true;
-    _activeFetchKey = fetchKey;
-    final cancelToken = renewSearchCancelToken();
-
-    if (!isRefresh && state is! InformationLoaded) {
-      emit(InformationLoading(lastSync: state.lastSync));
-    }
-
-    final isDefaultPeriod = effectivePeriod == AppDateFilterPeriod.today ||
-        effectivePeriod == AppDateFilterPeriod.thisWeek ||
-        effectivePeriod == AppDateFilterPeriod.thisMonth;
-    final effectiveLimit = isDefaultPeriod ? 0 : pageSize;
-
-    final fetchOperation = _executeFetch(
-      reqId: reqId,
-      effectiveSearch: effectiveSearch,
-      effectivePeriod: effectivePeriod,
-      effectiveAuthorEmail: effectiveAuthorEmail,
-      effectiveAuthorName: effectiveAuthorName,
-      effectiveStart: effectiveStart,
-      effectiveEnd: effectiveEnd,
-      effectiveStartIso: effectiveStartIso,
-      effectiveEndIso: effectiveEndIso,
-      effectiveLimit: effectiveLimit,
-      isDefaultPeriod: isDefaultPeriod,
+    return runFetch(
       isRefresh: isRefresh,
-      currentInformation: currentInformation,
-      cancelToken: cancelToken,
-    );
-
-    _activeFetchFuture = fetchOperation;
-
-    try {
-      return await fetchOperation;
-    } finally {
-      if (isLatest(reqId)) {
-        isFetching = false;
-        _activeFetchKey = null;
-        _activeFetchFuture = null;
-      }
-    }
-  }
-
-  Future<AppFetchResult> _executeFetch({
-    required int reqId,
-    required String? effectiveSearch,
-    required AppDateFilterPeriod effectivePeriod,
-    required String? effectiveAuthorEmail,
-    required String? effectiveAuthorName,
-    required DateTime? effectiveStart,
-    required DateTime? effectiveEnd,
-    required String? effectiveStartIso,
-    required String? effectiveEndIso,
-    required int effectiveLimit,
-    required bool isDefaultPeriod,
-    required bool isRefresh,
-    required List<InformationItemEntity> currentInformation,
-    required AppCancellationToken cancelToken,
-  }) async {
-    try {
-      final result = await getInformationUseCase(
+      filter: filter,
+      extraKey: '$effectiveAuthorEmail',
+      currentItems: state.displayedInformation,
+      loading: (lastSync) => InformationLoading(lastSync: lastSync),
+      request: (limit, cancelToken) async => (await getInformationUseCase(
         GetInformationParams(
-          search: effectiveSearch,
-          limit: effectiveLimit,
+          search: filter.search,
+          limit: limit,
           offset: 0,
-          startDate: effectiveStartIso,
-          endDate: effectiveEndIso,
+          startDate: filter.startIso,
+          endDate: filter.endIso,
           createdBy: effectiveAuthorEmail,
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      );
-
-      if (!isLatest(reqId)) {
-        return AppFetchResult.cancelled;
-      }
-
-      return await result.fold(
-        (failure) async {
-          if (failure is RequestCancelledFailure) {
-            return AppFetchResult.cancelled;
-          }
-          final greeting = await _resolveGreeting(isFromCache: true);
-          emit(
-            InformationError(
-              message: failure.message,
-              failure: failure,
-              cachedInformation:
-                  isRefresh ? currentInformation : const [],
-              lastSync: greeting,
-              filterPeriod: effectivePeriod,
-              filterAuthorEmail: effectiveAuthorEmail,
-              filterAuthorName: effectiveAuthorName,
-              startDate: effectiveStart,
-              endDate: effectiveEnd,
-              startDateIso: effectiveStartIso,
-              endDateIso: effectiveEndIso,
-              searchQuery: effectiveSearch,
-            ),
-          );
-          return AppFetchResult.failure;
-        },
-        (informationResult) async {
-          final isFromCache = informationResult.isFromCache;
-          final syncGreeting =
-              await _resolveGreeting(isFromCache: isFromCache);
-
-          final hasMore = !isDefaultPeriod &&
-              !isFromCache &&
-              informationResult.items.length >= pageSize;
-
-          emit(
-            InformationLoaded(
-              information: informationResult.items,
-              isFromCache: isFromCache,
-              lastSync: syncGreeting,
-              hasMore: hasMore,
-              filterPeriod: effectivePeriod,
-              filterAuthorEmail: effectiveAuthorEmail,
-              filterAuthorName: effectiveAuthorName,
-              startDate: effectiveStart,
-              endDate: effectiveEnd,
-              startDateIso: effectiveStartIso,
-              endDateIso: effectiveEndIso,
-              searchQuery: effectiveSearch,
-            ),
-          );
-          return isFromCache
-              ? AppFetchResult.cachedFallback
-              : AppFetchResult.success;
-        },
-      );
-    } on Object catch (e) {
-      if (cancelToken.isCancelled || !isLatest(reqId)) {
-        return AppFetchResult.cancelled;
-      }
-      if (isLatest(reqId)) {
-        final greeting = await _resolveGreeting(isFromCache: true);
-        final failure = switch (e) {
-          final Failure f => f,
-          _ => const ServerFailure(),
-        };
-        emit(
-          InformationError(
-            message: failure.message,
-            failure: failure,
-            cachedInformation:
-                isRefresh ? currentInformation : const [],
-            lastSync: greeting,
-            filterPeriod: effectivePeriod,
-            filterAuthorEmail: effectiveAuthorEmail,
-            filterAuthorName: effectiveAuthorName,
-            startDate: effectiveStart,
-            endDate: effectiveEnd,
-            startDateIso: effectiveStartIso,
-            endDateIso: effectiveEndIso,
-            searchQuery: effectiveSearch,
-          ),
-        );
-      }
-      return AppFetchResult.failure;
-    }
-  }
-
-  Future<String> _resolveGreeting({required bool isFromCache}) async {
-    if (isFromCache) {
-      final lastSync =
-          await _syncStorage.getLastSync(AppConstants.syncKeyInformation);
-      if (lastSync != null) {
-        return AppDateFormat.formatGreeting(lastSync);
-      }
-      return state.lastSync;
-    }
-    return AppDateFormat.formatGreeting(DateTime.now());
-  }
-
-  /// Memuat halaman berikutnya untuk infinite scroll.
-  Future<void> loadMoreInformation() async {
-    if (state is! InformationLoaded) return;
-    final currentState = state as InformationLoaded;
-
-    if (!currentState.hasMore || currentState.isLoadingMore) return;
-
-    final isDefaultPeriod =
-        currentState.filterPeriod == AppDateFilterPeriod.today ||
-            currentState.filterPeriod == AppDateFilterPeriod.thisWeek ||
-            currentState.filterPeriod == AppDateFilterPeriod.thisMonth;
-    if (isDefaultPeriod) return;
-
-    emit(currentState.copyWith(isLoadingMore: true));
-
-    final result = await getInformationUseCase(
-      GetInformationParams(
-        search: currentState.searchQuery,
-        limit: pageSize,
-        offset: currentState.information.length,
-        startDate: currentState.startDateIso,
-        endDate: currentState.endDateIso,
-        createdBy: currentState.filterAuthorEmail,
+      ))
+          .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      loaded: (page, lastSync, {required hasMore}) => InformationLoaded(
+        information: page.items,
+        isFromCache: page.isFromCache,
+        lastSync: lastSync,
+        hasMore: hasMore,
+        filterPeriod: filter.period,
+        filterAuthorEmail: effectiveAuthorEmail,
+        filterAuthorName: effectiveAuthorName,
+        startDate: filter.start,
+        endDate: filter.end,
+        startDateIso: filter.startIso,
+        endDateIso: filter.endIso,
+        searchQuery: filter.search,
+      ),
+      error: (failure, cached, lastSync) => InformationError(
+        message: failure.message,
+        failure: failure,
+        cachedInformation: cached,
+        lastSync: lastSync,
+        filterPeriod: filter.period,
+        filterAuthorEmail: effectiveAuthorEmail,
+        filterAuthorName: effectiveAuthorName,
+        startDate: filter.start,
+        endDate: filter.end,
+        startDateIso: filter.startIso,
+        endDateIso: filter.endIso,
+        searchQuery: filter.search,
       ),
     );
-
-    result.fold(
-      (failure) {
-        emit(currentState.copyWith(isLoadingMore: false));
-      },
-      (informationResult) {
-        final newItems = informationResult.items;
-        final allItems = [...currentState.information, ...newItems];
-        final hasMore =
-            !informationResult.isFromCache && newItems.length >= pageSize;
-        emit(
-          currentState.copyWith(
-            information: allItems,
-            hasMore: hasMore,
-            isLoadingMore: false,
-          ),
-        );
-      },
-    );
   }
+
+  /// Memuat halaman data informasi berikutnya untuk mendukung infinite scroll.
+  Future<void> loadMoreInformation() => runLoadMore<InformationLoaded>(
+        request: (current) async => (await getInformationUseCase(
+          GetInformationParams(
+            search: current.searchQuery,
+            limit: pageSize,
+            offset: current.information.length,
+            startDate: current.startDateIso,
+            endDate: current.endDateIso,
+            createdBy: current.filterAuthorEmail,
+          ),
+        ))
+            .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+        setLoadingMore: (current, {required loadingMore}) =>
+            current.copyWith(isLoadingMore: loadingMore),
+        append: (current, newItems, {required hasMore}) => current.copyWith(
+          information: [...current.information, ...newItems],
+          hasMore: hasMore,
+          isLoadingMore: false,
+        ),
+      );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
   Future<AppFetchResult> setFilter(AppDateFilterResult filterResult) =>
-      fetchInformation(
-        search: state.searchQuery,
-        filterPeriod: filterResult.period,
-        startDate: filterResult.startDate,
-        endDate: filterResult.endDate,
-        startDateIso: filterResult.startDateIso,
-        endDateIso: filterResult.endDateIso,
-      );
+      applyDateFilter(fetchInformation, filterResult);
 
   /// Mereset filter tanggal menjadi default 'Hari ini' tanpa menghapus
   /// kata kunci pencarian maupun filter pembuat.
-  Future<AppFetchResult> resetDateFilter() {
-    final defaultFilter = AppDateFilterResult.defaultFilter();
-    return fetchInformation(
-      search: state.searchQuery,
-      filterPeriod: defaultFilter.period,
-      startDate: defaultFilter.startDate,
-      endDate: defaultFilter.endDate,
-      startDateIso: defaultFilter.startDateIso,
-      endDateIso: defaultFilter.endDateIso,
-    );
-  }
+  Future<AppFetchResult> resetDateFilter() =>
+      resetDateFilterWith(fetchInformation);
 
   /// Mengubah filter pembuat informasi (Author / Creator) oleh ADMIN.
   Future<AppFetchResult> changeAuthorFilter({
@@ -483,18 +238,25 @@ class InformationCubit extends Cubit<InformationState>
       );
 
   /// Mengatur ulang seluruh filter waktu, pencarian, dan pembuat ke default.
-  Future<AppFetchResult> resetFilters() {
-    final defaultFilter = AppDateFilterResult.defaultFilter();
-    return fetchInformation(
-      search: '',
-      filterPeriod: defaultFilter.period,
-      startDate: defaultFilter.startDate,
-      endDate: defaultFilter.endDate,
-      startDateIso: defaultFilter.startDateIso,
-      endDateIso: defaultFilter.endDateIso,
-      clearAuthorFilter: true,
-    );
-  }
+  Future<AppFetchResult> resetFilters() => resetAllFiltersWith(
+        ({
+          search,
+          filterPeriod,
+          startDate,
+          endDate,
+          startDateIso,
+          endDateIso,
+        }) =>
+            fetchInformation(
+          search: search,
+          filterPeriod: filterPeriod,
+          startDate: startDate,
+          endDate: endDate,
+          startDateIso: startDateIso,
+          endDateIso: endDateIso,
+          clearAuthorFilter: true,
+        ),
+      );
 
   /// Memuat daftar anggota grup secara segar on-demand dari remote service.
   ///
@@ -532,9 +294,8 @@ class InformationCubit extends Cubit<InformationState>
       (_) {
         final currentState = state;
         if (currentState is InformationLoaded) {
-          final updated = currentState.information
-              .where((item) => item.id != id)
-              .toList();
+          final updated =
+              currentState.information.where((item) => item.id != id).toList();
           emit(currentState.copyWith(information: updated));
         }
       },
@@ -604,14 +365,5 @@ class InformationCubit extends Cubit<InformationState>
           .toList();
       emit(currentState.copyWith(information: updated));
     }
-  }
-
-  @override
-  Future<void> close() {
-    cancelActiveSearch();
-    invalidateRequests();
-    _activeFetchKey = null;
-    _activeFetchFuture = null;
-    return super.close();
   }
 }

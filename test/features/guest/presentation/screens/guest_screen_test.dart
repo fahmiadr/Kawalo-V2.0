@@ -12,7 +12,6 @@ import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
@@ -26,6 +25,7 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../fixtures/guest_fixtures.dart';
 

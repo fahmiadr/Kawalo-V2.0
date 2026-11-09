@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_file_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_empty_placeholder.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/app_file_tile.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_document_section.dart';
 import 'package:mocktail/mocktail.dart';
 

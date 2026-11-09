@@ -30,12 +30,11 @@ class IncidentModel extends Equatable {
   factory IncidentModel.fromJson(Map<String, dynamic> json) {
     return IncidentModel(
       id: json['id'] as String,
-      groupId: (json['group_id'] ?? json['groupId'] ?? '') as String,
+      groupId: (json['group_id'] ?? '') as String,
       title: (json['title'] ?? '') as String,
       status: (json['status'] ?? 'OPEN') as String,
-      createdBy: (json['created_by'] ?? json['createdBy'] ?? '') as String,
-      createdByName: json['created_by_name'] as String? ??
-          json['createdByName'] as String?,
+      createdBy: (json['created_by'] ?? '') as String,
+      createdByName: json['created_by_name'] as String?,
       description: json['description'] as String?,
       category: json['category'] as String?,
       glat: json['glat'] != null ? (json['glat'] as num).toDouble() : null,
@@ -43,17 +42,13 @@ class IncidentModel extends Equatable {
       photos: json['photos'] != null
           ? (json['photos'] as List<dynamic>).map((e) => e.toString()).toList()
           : const [],
-      resolvedBy:
-          json['resolved_by'] as String? ?? json['resolvedBy'] as String?,
-      resolvedByName: json['resolved_by_name'] as String? ??
-          json['resolvedByName'] as String?,
-      resolvedAt:
-          json['resolved_at'] as String? ?? json['resolvedAt'] as String?,
-      deletedAt: json['deleted_at'] as String? ?? json['deletedAt'] as String?,
-      createdAt: (json['created_at'] ??
-          json['createdAt'] ??
-          DateTime.now().toIso8601String()) as String,
-      updatedAt: json['updated_at'] as String? ?? json['updatedAt'] as String?,
+      resolvedBy: json['resolved_by'] as String?,
+      resolvedByName: json['resolved_by_name'] as String?,
+      resolvedAt: json['resolved_at'] as String?,
+      deletedAt: json['deleted_at'] as String?,
+      createdAt:
+          (json['created_at'] ?? DateTime.now().toIso8601String()) as String,
+      updatedAt: json['updated_at'] as String?,
     );
   }
 

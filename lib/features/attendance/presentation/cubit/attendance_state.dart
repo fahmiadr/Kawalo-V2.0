@@ -1,32 +1,40 @@
 import 'package:equatable/equatable.dart';
+import 'package:kawalo_mobile/core/cubit/list_fetch_cubit.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 
 /// Status state dasar untuk modul Data Absensi.
-abstract class AttendanceState extends Equatable {
+abstract class AttendanceState extends Equatable implements ListFilterState {
   /// Membuat instance [AttendanceState].
   const AttendanceState();
 
   /// Periode filter waktu yang sedang aktif.
+  @override
   AppDateFilterPeriod get filterPeriod => AppDateFilterPeriod.today;
 
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get startDate => null;
 
   /// Tanggal akhir rentang kustom (jika [filterPeriod] adalah custom).
+  @override
   DateTime? get endDate => null;
 
   /// Tanggal awal filter dalam format ISO 8601 string yang telah disanitasi.
+  @override
   String? get startDateIso => null;
 
   /// Tanggal akhir filter dalam format ISO 8601 string yang telah disanitasi.
+  @override
   String? get endDateIso => null;
 
   /// Kata kunci pencarian yang sedang aktif.
+  @override
   String? get searchQuery => null;
 
   /// Label waktu sinkronisasi terakhir data dengan server.
+  @override
   String get lastSync => '';
 
   /// Apakah terdapat filter tanggal aktif selain default hari ini.
@@ -70,7 +78,7 @@ class AttendanceLoading extends AttendanceState {
 }
 
 /// Keadaan ketika data absensi berhasil dimuat.
-class AttendanceLoaded extends AttendanceState {
+class AttendanceLoaded extends AttendanceState implements ListLoadedState {
   /// Membuat instance [AttendanceLoaded].
   const AttendanceLoaded({
     required this.attendances,
@@ -102,9 +110,11 @@ class AttendanceLoaded extends AttendanceState {
   final String lastSync;
 
   /// Apakah masih terdapat data berikutnya di server untuk pagination.
+  @override
   final bool hasMore;
 
   /// Apakah sedang memuat data halaman berikutnya (infinite scroll).
+  @override
   final bool isLoadingMore;
 
   /// Periode filter waktu yang sedang aktif.

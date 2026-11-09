@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_shortcut_card.dart';
+import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_management_section.dart';
 
 void main() {
