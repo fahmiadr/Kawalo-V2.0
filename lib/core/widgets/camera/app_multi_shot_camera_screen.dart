@@ -9,7 +9,6 @@ import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/services/device_orientation_service.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/services/screen_brightness_service.dart';
-import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -22,6 +21,7 @@ import 'package:kawalo_mobile/core/widgets/camera/camera_overlays.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_quota_badge.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_viewfinder.dart';
+import 'package:kawalo_mobile/core/widgets/camera/controllers/camera_system_ui_controller.dart';
 import 'package:kawalo_mobile/core/widgets/camera/controllers/captured_photos_controller.dart';
 
 /// Layar kamera multi-shot standar Material 3 Expressive untuk menangkap
@@ -371,10 +371,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     systemNavigationBarContrastEnforced: false,
   );
 
-  bool _hasRestoredSystemUi = false;
+  final CameraSystemUiController _systemUi = CameraSystemUiController();
   AppLifecycleState? _previousLifecycleState;
   bool _wasInBackground = false;
-  Timer? _autoHideTimer;
   late final ScreenBrightnessService _brightnessService;
   double? _originalBrightness;
 
@@ -424,15 +423,6 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         );
       });
     }
-  }
-
-  void _hideStatusBar() {
-    unawaited(
-      SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom],
-      ),
-    );
   }
 
   Future<void> _restoreBrightness() async {
@@ -589,36 +579,10 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
   // ── FASE 1: Ingress & Hardware Probing ──────────────────────────────────
 
-  void _setupSystemUI() {
-    _hideStatusBar();
-    unawaited(
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
-    );
-    SystemChrome.setSystemUIChangeCallback((systemOverlaysAreVisible) async {
-      if (!mounted || _hasRestoredSystemUi) return;
-      if (systemOverlaysAreVisible) {
-        _autoHideTimer?.cancel();
-        _autoHideTimer = Timer(const Duration(milliseconds: 1500), () {
-          if (!mounted || _hasRestoredSystemUi) return;
-          _hideStatusBar();
-        });
-      }
-    });
-  }
-
-  void _restoreSystemUI() {
-    if (_hasRestoredSystemUi) return;
-    _hasRestoredSystemUi = true;
-    _autoHideTimer?.cancel();
-    _autoHideTimer = null;
-    try {
-      _controller?.unlockCaptureOrientation();
-    } on Object catch (_) {}
-    SystemChrome.setSystemUIChangeCallback(null);
-    unawaited(AppLayout.applyPreferredOrientations());
-    unawaited(_restoreBrightness());
-    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-  }
+  void _restoreSystemUI() => _systemUi.restore(
+    unlockCaptureOrientation: () => _controller?.unlockCaptureOrientation(),
+    restoreBrightness: _restoreBrightness,
+  );
 
   @override
   void initState() {
@@ -626,7 +590,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     WidgetsBinding.instance.addObserver(this);
     _brightnessService =
         widget.brightnessService ?? const DefaultScreenBrightnessService();
-    _setupSystemUI();
+    _systemUi.setup(isMounted: () => mounted);
 
     _deviceOrientation =
         widget.initialDeviceOrientation ??
@@ -780,7 +744,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     }
 
     if (state == AppLifecycleState.resumed) {
-      _hideStatusBar();
+      _systemUi.hideStatusBar();
       _orientationSubscription?.resume();
 
       // Rekonsiliasi state otomatis (Auto-Recovery / Self-Healing):
