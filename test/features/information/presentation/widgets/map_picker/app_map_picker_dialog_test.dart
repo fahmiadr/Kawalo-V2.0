@@ -12,8 +12,8 @@ import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_map_picker_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockReverseGeocodeService extends Mock implements ReverseGeocodeService {}
@@ -1699,20 +1699,16 @@ void main() {
               widget is Text &&
               (widget.data?.startsWith('Koordinat:') ?? false),
         );
-        final manualCoordText =
-            tester.widget<Text>(manualCoordFinder).data;
+        final manualCoordText = tester.widget<Text>(manualCoordFinder).data;
 
         // 4. Aplikasi berpindah ke background dan kembali
         isGpsTurnedOnInSettings = true;
         tester.binding
             .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
         await tester.pump();
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
         tester.binding
             .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
         tester.binding

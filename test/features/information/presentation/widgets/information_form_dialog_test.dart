@@ -9,7 +9,6 @@ import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
-import 'package:kawalo_mobile/core/widgets/app_map_picker_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_params.dart';
@@ -18,6 +17,7 @@ import 'package:kawalo_mobile/features/information/domain/usecases/update_inform
 import 'package:kawalo_mobile/features/information/domain/usecases/update_information/update_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_form_dialog.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCreateInformationUseCase extends Mock

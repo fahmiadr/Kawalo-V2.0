@@ -16,7 +16,6 @@ import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
 import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_map_picker_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/location_actionable_error.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
@@ -32,6 +31,7 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/informat
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_photo_source_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_photos_section.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_publication_section.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 
 /// Formulir publikasi (posting) dan pembaruan (update) informasi/feed
 /// berbasis Material 3 Expressive Fullscreen Dialog.

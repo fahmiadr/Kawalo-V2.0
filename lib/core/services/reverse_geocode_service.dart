@@ -1,6 +1,6 @@
 /// @docImport 'package:dio/dio.dart';
-/// @docImport 'package:kawalo_mobile/core/widgets/app_map_picker_dialog.dart';
 /// @docImport 'package:kawalo_mobile/core/widgets/app_static_map.dart';
+/// @docImport 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 library;
 
 import 'dart:async';
