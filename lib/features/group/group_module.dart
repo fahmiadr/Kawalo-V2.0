@@ -13,20 +13,19 @@ class GroupModule {
   /// Membuat instance [GroupRepository].
   static GroupRepository createRepository({
     required ApiClient apiClient,
-    NetworkInfo? networkInfo,
+    required NetworkInfo networkInfo,
   }) {
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
     final remoteDataSource = GroupRemoteDataSourceImpl(apiClient: apiClient);
     return GroupRepositoryImpl(
       remoteDataSource: remoteDataSource,
-      networkInfo: effectiveNetworkInfo,
+      networkInfo: networkInfo,
     );
   }
 
   /// Membuat instance [GetGroupMembersUseCase] langsung dari [ApiClient].
   static GetGroupMembersUseCase createGetGroupMembersUseCase({
     required ApiClient apiClient,
-    NetworkInfo? networkInfo,
+    required NetworkInfo networkInfo,
   }) {
     final repository = createRepository(
       apiClient: apiClient,

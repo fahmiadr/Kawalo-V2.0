@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:isar_community/isar.dart';
-import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
@@ -231,22 +229,9 @@ class InformationFormDialog extends StatefulWidget {
       return (existing, false);
     } on Object catch (_) {}
 
-    ApiClient? apiClient;
-    try {
-      apiClient = context.read<ApiClient>();
-    } on Object catch (_) {}
-
-    Isar? isar;
-    try {
-      isar = context.read<Isar>();
-    } on Object catch (_) {}
-
-    final client = apiClient ?? ApiClient();
-    final newCubit = InformationModule.createFormCubit(
-      apiClient: client,
-      isar: isar ?? (throw StateError('Isar is required')),
-      initialItem: initialItem,
-    );
+    final newCubit = context
+        .read<InformationModule>()
+        .createFormCubit(initialItem: initialItem);
     return (newCubit, true);
   }
 

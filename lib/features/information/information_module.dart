@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/features/information/data/datasources/information_
 import 'package:kawalo_mobile/features/information/data/datasources/information_remote_data_source.dart';
 import 'package:kawalo_mobile/features/information/data/repositories/information_repository_impl.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
+import 'package:kawalo_mobile/features/information/domain/repositories/information_repository.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_information/delete_information_usecase.dart';
@@ -18,185 +19,52 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 
 /// Feature Composition Root untuk modul Informasi / Feed pada Frontend.
 ///
-/// Bertanggung jawab atas inisialisasi dan perakitan Dependency Injection
-/// (DataSources -> Repository -> UseCases -> Cubit) di tingkat fitur,
-/// selaras dengan pola modular Clean Architecture.
-abstract final class InformationModule {
-  /// Merakit dan mengembalikan instance [InformationCubit] yang siap pakai.
-  static InformationCubit createCubit({
+/// Menerima dependensi bersama (ApiClient, Isar, NetworkInfo,
+/// SyncStorageService) satu kali, membangun [InformationRepository] satu
+/// kali, lalu memakainya ulang untuk semua factory cubit. Didaftarkan lewat
+/// `RepositoryProvider` agar layer presentation tidak merakit dependensi.
+final class InformationModule {
+  /// Membangun modul beserta [repository] tunggalnya.
+  InformationModule({
     required ApiClient apiClient,
     required Isar isar,
+    required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
     GetGroupMembersUseCase? getGroupMembersUseCase,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource =
-        InformationRemoteDataSourceImpl(apiClient: apiClient);
-
-    final informationLocalDataSource = InformationLocalDataSourceImpl(
-      isar: isar,
+  })  : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+        _getGroupMembersUseCase = getGroupMembersUseCase ??
+            GroupModule.createGetGroupMembersUseCase(
+              apiClient: apiClient,
+              networkInfo: networkInfo,
+            ) {
+    repository = InformationRepositoryImpl(
+      remoteDataSource: InformationRemoteDataSourceImpl(apiClient: apiClient),
+      localDataSource: InformationLocalDataSourceImpl(isar: isar),
+      syncStorageService: _syncStorage,
+      networkInfo: networkInfo,
     );
+  }
 
-    final repository = InformationRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: informationLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
+  final SyncStorageService _syncStorage;
+  final GetGroupMembersUseCase _getGroupMembersUseCase;
 
-    final getInformationUseCase = GetInformationUseCase(repository);
-    final deleteUseCase = DeleteInformationUseCase(repository);
-    final deleteBatchUseCase = DeleteBatchInformationUseCase(repository);
-    final effectiveGetGroupMembersUseCase = getGroupMembersUseCase ??
-        GroupModule.createGetGroupMembersUseCase(
-          apiClient: apiClient,
-          networkInfo: effectiveNetworkInfo,
-        );
+  /// Repository informasi tunggal yang dipakai semua factory.
+  late final InformationRepository repository;
 
+  /// Merakit dan mengembalikan instance [InformationCubit] yang siap pakai.
+  InformationCubit createCubit() {
     return InformationCubit(
-      getInformationUseCase: getInformationUseCase,
-      deleteInformationUseCase: deleteUseCase,
-      deleteBatchInformationUseCase: deleteBatchUseCase,
-      getGroupMembersUseCase: effectiveGetGroupMembersUseCase,
-      syncStorageService: syncStorage,
+      getInformationUseCase: GetInformationUseCase(repository),
+      deleteInformationUseCase: DeleteInformationUseCase(repository),
+      deleteBatchInformationUseCase: DeleteBatchInformationUseCase(repository),
+      getGroupMembersUseCase: _getGroupMembersUseCase,
+      syncStorageService: _syncStorage,
     );
-  }
-
-  /// Merakit dan mengembalikan instance [DeleteInformationUseCase] yang siap
-  /// pakai.
-  static DeleteInformationUseCase createDeleteUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource =
-        InformationRemoteDataSourceImpl(apiClient: apiClient);
-
-    final informationLocalDataSource = InformationLocalDataSourceImpl(
-      isar: isar,
-    );
-
-    final repository = InformationRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: informationLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return DeleteInformationUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance
-  /// [DeleteBatchInformationUseCase] yang siap pakai.
-  static DeleteBatchInformationUseCase createDeleteBatchUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource =
-        InformationRemoteDataSourceImpl(apiClient: apiClient);
-
-    final informationLocalDataSource = InformationLocalDataSourceImpl(
-      isar: isar,
-    );
-
-    final repository = InformationRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: informationLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return DeleteBatchInformationUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance [CreateInformationUseCase] yang siap
-  /// pakai.
-  static CreateInformationUseCase createCreateUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource =
-        InformationRemoteDataSourceImpl(apiClient: apiClient);
-
-    final informationLocalDataSource = InformationLocalDataSourceImpl(
-      isar: isar,
-    );
-
-    final repository = InformationRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: informationLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return CreateInformationUseCase(repository);
-  }
-
-  /// Merakit dan mengembalikan instance [UpdateInformationUseCase] yang siap
-  /// pakai.
-  static UpdateInformationUseCase createUpdateUseCase({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource =
-        InformationRemoteDataSourceImpl(apiClient: apiClient);
-
-    final informationLocalDataSource = InformationLocalDataSourceImpl(
-      isar: isar,
-    );
-
-    final repository = InformationRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: informationLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
-    return UpdateInformationUseCase(repository);
   }
 
   /// Merakit dan mengembalikan instance [InformationFormCubit] yang siap
   /// pakai untuk operasi posting (tambah) maupun pembaruan (edit) informasi.
-  static InformationFormCubit createFormCubit({
-    required ApiClient apiClient,
-    required Isar isar,
-    SyncStorageService? syncStorageService,
-    NetworkInfo? networkInfo,
-    InformationItemEntity? initialItem,
-  }) {
-    final syncStorage = syncStorageService ?? SyncStorageService.singleton();
-    final effectiveNetworkInfo = networkInfo ?? NetworkInfoImpl();
-    final remoteDataSource =
-        InformationRemoteDataSourceImpl(apiClient: apiClient);
-
-    final informationLocalDataSource = InformationLocalDataSourceImpl(
-      isar: isar,
-    );
-
-    final repository = InformationRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      localDataSource: informationLocalDataSource,
-      syncStorageService: syncStorage,
-      networkInfo: effectiveNetworkInfo,
-    );
-
+  InformationFormCubit createFormCubit({InformationItemEntity? initialItem}) {
     return InformationFormCubit(
       createInformationUseCase: CreateInformationUseCase(repository),
       updateInformationUseCase: UpdateInformationUseCase(repository),

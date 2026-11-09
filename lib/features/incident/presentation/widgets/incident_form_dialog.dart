@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/network/api_client.dart';
-import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
@@ -127,19 +125,7 @@ class IncidentFormDialog extends StatefulWidget {
       final cubit = context.read<IncidentFormCubit>();
       return (cubit, false);
     } on Object catch (_) {
-      final apiClient = context.read<ApiClient>();
-      NetworkInfo? networkInfo;
-      try {
-        networkInfo = context.read<NetworkInfo?>();
-      } on Object catch (_) {}
-
-      return (
-        IncidentModule.createIncidentFormCubit(
-          apiClient: apiClient,
-          networkInfo: networkInfo,
-        ),
-        true,
-      );
+      return (context.read<IncidentModule>().createIncidentFormCubit(), true);
     }
   }
 

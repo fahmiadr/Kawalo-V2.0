@@ -5,8 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:isar_community/isar.dart';
-import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
@@ -169,14 +167,9 @@ class GuestFormDialog extends StatefulWidget {
       final existing = context.read<GuestFormCubit>();
       return (existing, false);
     } on Object catch (_) {
-      final apiClient = context.read<ApiClient>();
-      final isar = context.read<Isar>();
-
-      final created = GuestModule.createGuestFormCubit(
-        apiClient: apiClient,
-        isar: isar,
-        initialItem: initialItem,
-      );
+      final created = context
+          .read<GuestModule>()
+          .createGuestFormCubit(initialItem: initialItem);
       return (created, true);
     }
   }

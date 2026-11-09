@@ -16,79 +16,49 @@ import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list
 
 /// Feature Composition Root untuk fitur Insiden.
 ///
-/// Bertanggung jawab atas inisialisasi dan perakitan Dependency Injection
-/// (RemoteDataSource -> IncidentRepository -> UseCases -> Cubits)
-/// sehingga mencegah perakitan manual di `main.dart` atau Router.
-abstract final class IncidentModule {
-  /// Membuat instance [IncidentRepository] terkonfigurasi.
-  static IncidentRepository createRepository({
+/// Menerima dependensi bersama satu kali dan membangun [IncidentRepository]
+/// satu kali untuk dipakai ulang oleh semua factory cubit. Didaftarkan lewat
+/// `RepositoryProvider` agar layer presentation tidak merakit dependensi.
+final class IncidentModule {
+  /// Membangun modul beserta [repository] tunggalnya.
+  IncidentModule({
     required ApiClient apiClient,
-    NetworkInfo? networkInfo,
-  }) {
-    final remoteDataSource = IncidentRemoteDataSourceImpl(apiClient: apiClient);
-    return IncidentRepositoryImpl(
-      remoteDataSource: remoteDataSource,
-      networkInfo: networkInfo,
-    );
-  }
-
-  /// Merakit dan mengembalikan instance [IncidentListCubit] yang siap pakai.
-  static IncidentListCubit createIncidentListCubit({
-    required ApiClient apiClient,
-    IncidentRepository? repository,
-    NetworkInfo? networkInfo,
-  }) {
-    final repo = repository ??
-        createRepository(
-          apiClient: apiClient,
+    required NetworkInfo networkInfo,
+  }) : repository = IncidentRepositoryImpl(
+          remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
           networkInfo: networkInfo,
         );
-    final getIncidentsUseCase = GetIncidentsUseCase(repo);
 
+  /// Repository insiden tunggal yang dipakai semua factory.
+  final IncidentRepository repository;
+
+  /// Merakit dan mengembalikan instance [IncidentListCubit] yang siap pakai.
+  IncidentListCubit createIncidentListCubit() {
     return IncidentListCubit(
-      getIncidentsUseCase: getIncidentsUseCase,
+      getIncidentsUseCase: GetIncidentsUseCase(repository),
     );
   }
 
   /// Merakit dan mengembalikan instance [IncidentDetailCubit] untuk layar
   /// detail insiden.
-  static IncidentDetailCubit createIncidentDetailCubit({
-    required ApiClient apiClient,
+  IncidentDetailCubit createIncidentDetailCubit({
     required String incidentId,
-    IncidentRepository? repository,
-    NetworkInfo? networkInfo,
   }) {
-    final repo = repository ??
-        createRepository(
-          apiClient: apiClient,
-          networkInfo: networkInfo,
-        );
-
     return IncidentDetailCubit(
       incidentId: incidentId,
-      getIncidentDetailUseCase: GetIncidentDetailUseCase(repo),
-      watchIncidentRepliesUseCase: WatchIncidentRepliesUseCase(repo),
-      postIncidentReplyUseCase: PostIncidentReplyUseCase(repo),
-      resolveIncidentUseCase: ResolveIncidentUseCase(repo),
-      deleteIncidentUseCase: DeleteIncidentUseCase(repo),
+      getIncidentDetailUseCase: GetIncidentDetailUseCase(repository),
+      watchIncidentRepliesUseCase: WatchIncidentRepliesUseCase(repository),
+      postIncidentReplyUseCase: PostIncidentReplyUseCase(repository),
+      resolveIncidentUseCase: ResolveIncidentUseCase(repository),
+      deleteIncidentUseCase: DeleteIncidentUseCase(repository),
     );
   }
 
   /// Merakit dan mengembalikan instance [IncidentFormCubit] untuk pelaporan
   /// insiden baru.
-  static IncidentFormCubit createIncidentFormCubit({
-    required ApiClient apiClient,
-    IncidentRepository? repository,
-    NetworkInfo? networkInfo,
-  }) {
-    final repo = repository ??
-        createRepository(
-          apiClient: apiClient,
-          networkInfo: networkInfo,
-        );
-
+  IncidentFormCubit createIncidentFormCubit() {
     return IncidentFormCubit(
-      createIncidentUseCase: CreateIncidentUseCase(repo),
+      createIncidentUseCase: CreateIncidentUseCase(repository),
     );
   }
 }
