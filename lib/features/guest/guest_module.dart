@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
@@ -22,7 +23,7 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit
 /// Receives the shared dependencies once and builds a single [GuestRepository]
 /// that every cubit factory reuses. Registered through `RepositoryProvider` so
 /// the presentation layer never assembles dependencies itself.
-final class GuestModule {
+final class GuestModule implements CacheWipeableModule {
   GuestModule({
     required ApiClient apiClient,
     required Isar isar,
@@ -36,9 +37,11 @@ final class GuestModule {
              apiClient: apiClient,
              networkInfo: networkInfo,
            ) {
+    final localDataSource = GuestLocalDataSourceImpl(isar: isar);
+    cacheWipeable = localDataSource;
     repository = GuestRepositoryImpl(
       remoteDataSource: GuestRemoteDataSourceImpl(apiClient: apiClient),
-      localDataSource: GuestLocalDataSourceImpl(isar: isar),
+      localDataSource: localDataSource,
       syncStorageService: _syncStorage,
       networkInfo: networkInfo,
     );
@@ -47,6 +50,9 @@ final class GuestModule {
   final SyncStorageService _syncStorage;
   final GroupRepository _groupRepository;
   late final GuestRepository repository;
+
+  @override
+  late final CacheWipeable cacheWipeable;
 
   /// Merakit dan mengembalikan instance [GuestCubit] yang siap pakai.
   GuestCubit createCubit() {

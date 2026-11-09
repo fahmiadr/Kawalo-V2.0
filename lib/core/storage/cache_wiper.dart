@@ -3,8 +3,20 @@ import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 
 /// Kontrak untuk komponen penyimpanan lokal yang mendukung pembersihan cache.
 abstract interface class CacheWipeable {
+  /// Name of the Isar collection this component clears; must equal the
+  /// `CollectionSchema.name` registered in `isarSchemas`.
+  String get collectionName;
+
   /// Mengosongkan seluruh cache data yang dikelola.
   Future<void> clearCache();
+}
+
+/// A feature module that owns an Isar cache. Every module with a collection in
+/// `isarSchemas` implements this so logout wipes it without a manual,
+/// forgettable registration in `main.dart`.
+abstract interface class CacheWipeableModule {
+  /// The wipeable for this module's Isar collection.
+  CacheWipeable get cacheWipeable;
 }
 
 /// Koordinator pembersihan cache lintas modul untuk data lokal (Isar)

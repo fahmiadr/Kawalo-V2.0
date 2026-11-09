@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
+import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
@@ -23,7 +24,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 /// [InformationRepository] that every cubit factory reuses. Registered through
 /// `RepositoryProvider` so the presentation layer never assembles dependencies
 /// itself.
-final class InformationModule {
+final class InformationModule implements CacheWipeableModule {
   InformationModule({
     required ApiClient apiClient,
     required Isar isar,
@@ -39,9 +40,11 @@ final class InformationModule {
              apiClient: apiClient,
              networkInfo: networkInfo,
            ) {
+    final localDataSource = InformationLocalDataSourceImpl(isar: isar);
+    cacheWipeable = localDataSource;
     repository = InformationRepositoryImpl(
       remoteDataSource: InformationRemoteDataSourceImpl(apiClient: apiClient),
-      localDataSource: InformationLocalDataSourceImpl(isar: isar),
+      localDataSource: localDataSource,
       syncStorageService: _syncStorage,
       networkInfo: networkInfo,
     );
@@ -51,6 +54,9 @@ final class InformationModule {
   final SyncStorageService _syncStorage;
   final GroupRepository _groupRepository;
   late final InformationRepository repository;
+
+  @override
+  late final CacheWipeable cacheWipeable;
 
   /// Merakit dan mengembalikan instance [InformationCubit] yang siap pakai.
   InformationCubit createCubit() {

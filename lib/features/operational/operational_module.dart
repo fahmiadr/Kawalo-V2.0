@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/features/operational/data/datasources/operational_local_data_source.dart';
 import 'package:kawalo_mobile/features/operational/data/datasources/operational_remote_data_source.dart';
@@ -12,16 +13,18 @@ import 'package:kawalo_mobile/features/operational/presentation/cubit/operationa
 ///
 /// Receives the shared dependencies once and builds a single
 /// [OperationalRepository] that every cubit factory reuses.
-final class OperationalModule {
+final class OperationalModule implements CacheWipeableModule {
   OperationalModule({
     required ApiClient apiClient,
     required Isar isar,
     required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
   }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton() {
+    final localDataSource = OperationalLocalDataSourceImpl(isar: isar);
+    cacheWipeable = localDataSource;
     repository = OperationalRepositoryImpl(
       remoteDataSource: OperationalRemoteDataSourceImpl(apiClient: apiClient),
-      localDataSource: OperationalLocalDataSourceImpl(isar: isar),
+      localDataSource: localDataSource,
       syncStorageService: _syncStorage,
       networkInfo: networkInfo,
     );
@@ -29,6 +32,9 @@ final class OperationalModule {
 
   final SyncStorageService _syncStorage;
   late final OperationalRepository repository;
+
+  @override
+  late final CacheWipeable cacheWipeable;
 
   /// Merakit dan mengembalikan instance [OperationalCubit] yang siap pakai.
   OperationalCubit createCubit() {

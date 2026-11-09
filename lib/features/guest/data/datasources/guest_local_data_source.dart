@@ -42,6 +42,9 @@ class GuestLocalDataSourceImpl implements GuestLocalDataSource {
   final Isar isar;
 
   @override
+  String get collectionName => GuestLocalModelSchema.name;
+
+  @override
   Future<void> cacheGuests(List<GuestModel> items) async {
     final collections = GuestLocalMapper.toLocalList(items);
     await isar.writeTxn(() async {

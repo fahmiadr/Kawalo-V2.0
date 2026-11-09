@@ -37,6 +37,9 @@ class AttendanceLocalDataSourceImpl implements AttendanceLocalDataSource {
   final Isar isar;
 
   @override
+  String get collectionName => AttendanceLocalModelSchema.name;
+
+  @override
   Future<void> cacheAttendances(List<AttendanceModel> items) async {
     final collections = AttendanceLocalMapper.toLocalList(items);
     await isar.writeTxn(() async {

@@ -37,6 +37,9 @@ class OperationalLocalDataSourceImpl implements OperationalLocalDataSource {
   final Isar isar;
 
   @override
+  String get collectionName => OperationalLocalModelSchema.name;
+
+  @override
   Future<void> cacheOperationals(List<OperationalModel> items) async {
     final collections = OperationalLocalMapper.toLocalList(items);
     await isar.writeTxn(() async {

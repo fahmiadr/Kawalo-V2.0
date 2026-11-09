@@ -46,6 +46,9 @@ class InformationLocalDataSourceImpl implements InformationLocalDataSource {
   final Isar isar;
 
   @override
+  String get collectionName => InformationLocalModelSchema.name;
+
+  @override
   Future<void> cacheInformation(List<InformationModel> items) async {
     final collections = InformationLocalMapper.toLocalList(items);
     await isar.writeTxn(() async {

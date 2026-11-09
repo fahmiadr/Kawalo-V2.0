@@ -19,22 +19,18 @@ import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
-import 'package:kawalo_mobile/features/attendance/data/datasources/attendance_local_data_source.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
 import 'package:kawalo_mobile/features/auth/auth_module.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
-import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_source.dart';
 import 'package:kawalo_mobile/features/guest/guest_module.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
-import 'package:kawalo_mobile/features/information/data/datasources/information_local_data_source.dart';
 import 'package:kawalo_mobile/features/information/information_module.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
-import 'package:kawalo_mobile/features/operational/data/datasources/operational_local_data_source.dart';
 import 'package:kawalo_mobile/features/operational/operational_module.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
@@ -101,17 +97,6 @@ class _MyAppState extends State<MyApp> {
       storageService: _storageService,
     );
 
-    _cacheWiper = CacheWiper(
-      wipeables: [
-        InformationLocalDataSourceImpl(isar: isar),
-        GuestLocalDataSourceImpl(isar: isar),
-        AttendanceLocalDataSourceImpl(isar: isar),
-        OperationalLocalDataSourceImpl(isar: isar),
-      ],
-      secureStorageService: _storageService,
-      syncStorageService: syncStorage,
-    );
-
     // Shared dependencies are assembled once here; each module builds its own
     // repository a single time and every cubit reuses it.
     final groupRepository = GroupModule.createRepository(
@@ -147,6 +132,20 @@ class _MyAppState extends State<MyApp> {
     _incidentModule = IncidentModule(
       apiClient: _apiClient,
       networkInfo: _networkInfo,
+    );
+
+    _cacheWiper = CacheWiper(
+      wipeables: [
+        for (final module in <CacheWipeableModule>[
+          _guestModule,
+          _informationModule,
+          _attendanceModule,
+          _operationalModule,
+        ])
+          module.cacheWipeable,
+      ],
+      secureStorageService: _storageService,
+      syncStorageService: syncStorage,
     );
 
     _jwksService = JwksService(

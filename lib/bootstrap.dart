@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/config/environment.dart';
 import 'package:kawalo_mobile/core/security/device_integrity_service.dart';
@@ -9,6 +10,16 @@ import 'package:kawalo_mobile/features/guest/data/models/guest_local_model.dart'
 import 'package:kawalo_mobile/features/information/data/models/information_local_model.dart';
 import 'package:kawalo_mobile/features/operational/data/models/operational_local_model.dart';
 import 'package:kawalo_mobile/main.dart';
+
+/// Isar collections opened at startup. Each one needs a matching
+/// `CacheWipeableModule` in `main.dart`; `isar_schemas_wipeable_test.dart`
+/// fails when one is missing.
+final List<CollectionSchema<dynamic>> isarSchemas = [
+  AttendanceLocalModelSchema,
+  OperationalLocalModelSchema,
+  InformationLocalModelSchema,
+  GuestLocalModelSchema,
+];
 
 /// Runner sentral untuk bootstrapping aplikasi Kawalo Mobile lintas
 /// environment.
@@ -32,13 +43,6 @@ Future<void> bootstrap(AppEnvironment env) async {
     return;
   }
 
-  final isar = await IsarDatabase.init(
-    schemas: [
-      AttendanceLocalModelSchema,
-      OperationalLocalModelSchema,
-      InformationLocalModelSchema,
-      GuestLocalModelSchema,
-    ],
-  );
+  final isar = await IsarDatabase.init(schemas: isarSchemas);
   runApp(MyApp(isar: isar));
 }
