@@ -73,6 +73,38 @@ class GuestFormState extends Equatable {
     this.validationAttempt = 0,
   });
 
+  /// State awal formulir: kosong untuk create, terisi dari [initialItem]
+  /// untuk update.
+  factory GuestFormState.initial(GuestItemEntity? initialItem) {
+    if (initialItem == null) {
+      return const GuestFormState(status: GuestFormStatus.ready);
+    }
+
+    InformationFormMediaItem? initialPhotoMedia;
+    final photo = initialItem.guestPhoto;
+    if (photo != null && photo.trim().isNotEmpty) {
+      initialPhotoMedia = InformationFormMediaItem.fromRemoteUrl(photo.trim());
+    }
+
+    return GuestFormState(
+      mode: GuestFormMode.update,
+      status: GuestFormStatus.ready,
+      initialItem: initialItem,
+      name: initialItem.guestName ?? '',
+      destination: initialItem.guestDestination ?? '',
+      guestType: initialItem.guestType ?? '',
+      identityType: initialItem.guestIdentityType,
+      identityNumber: initialItem.guestIdentity ?? '',
+      guestNumber: initialItem.guestNumber ?? '',
+      purpose: initialItem.guestPurpose ?? '',
+      address: initialItem.guestAddress ?? '',
+      hostEmail: initialItem.guestToUserEmail,
+      photoUrl: initialItem.guestPhoto,
+      photoMedia: initialPhotoMedia,
+      category: initialItem.guestCategory ?? '',
+    );
+  }
+
   /// Mode operasi formulir (create / update).
   final GuestFormMode mode;
 

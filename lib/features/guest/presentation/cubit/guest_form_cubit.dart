@@ -4,7 +4,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
-import 'package:kawalo_mobile/core/utils/app_validator.dart';
+import 'package:kawalo_mobile/core/utils/trimmed_or_null.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
@@ -15,6 +15,7 @@ import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
+import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_validators.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 
 /// Cubit pengelola alur logika bisnis dan validasi formulir pendaftaran
@@ -27,7 +28,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     required this.guestRepository,
     required this.groupRepository,
     GuestItemEntity? initialItem,
-  }) : super(_buildInitialState(initialItem)) {
+  }) : super(GuestFormState.initial(initialItem)) {
     loadMasterData();
   }
 
@@ -46,36 +47,6 @@ class GuestFormCubit extends Cubit<GuestFormState> {
   AppCancellationToken? _masterCancelToken;
   AppCancellationToken? _submitCancelToken;
 
-  static GuestFormState _buildInitialState(GuestItemEntity? initialItem) {
-    if (initialItem == null) {
-      return const GuestFormState(status: GuestFormStatus.ready);
-    }
-
-    InformationFormMediaItem? initialPhotoMedia;
-    final photo = initialItem.guestPhoto;
-    if (photo != null && photo.trim().isNotEmpty) {
-      initialPhotoMedia = InformationFormMediaItem.fromRemoteUrl(photo.trim());
-    }
-
-    return GuestFormState(
-      mode: GuestFormMode.update,
-      status: GuestFormStatus.ready,
-      initialItem: initialItem,
-      name: initialItem.guestName ?? '',
-      destination: initialItem.guestDestination ?? '',
-      guestType: initialItem.guestType ?? '',
-      identityType: initialItem.guestIdentityType,
-      identityNumber: initialItem.guestIdentity ?? '',
-      guestNumber: initialItem.guestNumber ?? '',
-      purpose: initialItem.guestPurpose ?? '',
-      address: initialItem.guestAddress ?? '',
-      hostEmail: initialItem.guestToUserEmail,
-      photoUrl: initialItem.guestPhoto,
-      photoMedia: initialPhotoMedia,
-      category: initialItem.guestCategory ?? '',
-    );
-  }
-
   @override
   Future<void> close() {
     _masterCancelToken?.cancel('cubit_closed');
@@ -89,104 +60,28 @@ class GuestFormCubit extends Cubit<GuestFormState> {
         : state.status;
   }
 
-  /// Validasi aturan nama tamu (wajib, max 128 karakter).
-  static String? validateName(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(trimmed, fieldName: 'Nama tamu');
-    }
-    if (value.length > 128) {
-      return 'Nama tamu maksimal 128 karakter.';
-    }
-    return null;
+  void _emitInput(GuestFormState next) {
+    emit(next.copyWith(errorMessage: () => null, status: _statusOnInput()));
   }
 
-  /// Validasi aturan destinasi kunjungan (wajib, max 128 karakter).
-  static String? validateDestination(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        fieldName: 'Destinasi kunjungan',
-      );
-    }
-    if (value.length > 128) {
-      return 'Destinasi kunjungan maksimal 128 karakter.';
-    }
-    return null;
+  /// [next] unless a submit is in flight, which master loading must not
+  /// interrupt.
+  GuestFormStatus _statusUnlessSubmitting(GuestFormStatus next) {
+    return state.status == GuestFormStatus.submitting ? state.status : next;
   }
 
-  /// Validasi aturan tipe tamu (wajib, max 64 karakter).
-  static String? validateGuestType(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        customMessage: 'Tipe tamu wajib dipilih.',
-      );
-    }
-    if (value.length > 64) {
-      return 'Tipe tamu maksimal 64 karakter.';
-    }
-    return null;
-  }
-
-  /// Validasi aturan nomor identitas (wajib jika jenis identitas dipilih,
-  /// max 64 karakter).
-  static String? validateIdentityNumber(
-    String value, {
-    required bool isIdentityRequired,
-  }) {
-    if (!isIdentityRequired) return null;
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        customMessage:
-            'Nomor identitas wajib diisi jika jenis identitas dipilih.',
-      );
-    }
-    if (value.length > 64) {
-      return 'Nomor identitas maksimal 64 karakter.';
-    }
-    return null;
-  }
-
-  /// Validasi aturan nomor tamu / plat kendaraan (opsional, max 32 karakter).
-  static String? validateGuestNumber(String value) {
-    if (value.length > 32) {
-      return 'Nomor tamu maksimal 32 karakter.';
-    }
-    return null;
-  }
-
-  /// Validasi aturan keperluan kunjungan (opsional, max 128 karakter).
-  static String? validatePurpose(String value) {
-    if (value.length > 128) {
-      return 'Keperluan kunjungan maksimal 128 karakter.';
-    }
-    return null;
-  }
-
-  /// Validasi aturan alamat asal (opsional, max 512 karakter).
-  static String? validateAddress(String value) {
-    if (value.length > 512) {
-      return 'Alamat asal maksimal 512 karakter.';
-    }
-    return null;
+  AppCancellationToken _beginMasterLoad() {
+    _masterCancelToken?.cancel('reloading');
+    return _masterCancelToken = DioCancellationToken();
   }
 
   /// Memuat master data (tipe tamu & warga) dari API backend secara simultan.
   Future<void> loadMasterData() async {
-    _masterCancelToken?.cancel('reloading');
-    final cancelToken = DioCancellationToken();
-    _masterCancelToken = cancelToken;
+    final cancelToken = _beginMasterLoad();
 
     emit(
       state.copyWith(
-        status: state.status == GuestFormStatus.submitting
-            ? state.status
-            : GuestFormStatus.loadingMasterTypes,
+        status: _statusUnlessSubmitting(GuestFormStatus.loadingMasterTypes),
         isLoadingMasterTypes: true,
         isLoadingMasterHosts: true,
         masterTypesError: () => null,
@@ -223,9 +118,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
 
     emit(
       state.copyWith(
-        status: state.status == GuestFormStatus.submitting
-            ? state.status
-            : GuestFormStatus.ready,
+        status: _statusUnlessSubmitting(GuestFormStatus.ready),
         isLoadingMasterTypes: false,
         isLoadingMasterHosts: false,
         masterTypes: types,
@@ -239,15 +132,11 @@ class GuestFormCubit extends Cubit<GuestFormState> {
 
   /// Memuat ulang daftar master tipe tamu dari API backend.
   Future<void> loadMasterGuestTypes() async {
-    _masterCancelToken?.cancel('reloading');
-    final cancelToken = DioCancellationToken();
-    _masterCancelToken = cancelToken;
+    final cancelToken = _beginMasterLoad();
 
     emit(
       state.copyWith(
-        status: state.status == GuestFormStatus.submitting
-            ? state.status
-            : GuestFormStatus.loadingMasterTypes,
+        status: _statusUnlessSubmitting(GuestFormStatus.loadingMasterTypes),
         isLoadingMasterTypes: true,
         masterTypesError: () => null,
       ),
@@ -260,37 +149,27 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     if (isClosed) return;
 
     result.fold(
-      (failure) {
-        emit(
-          state.copyWith(
-            status: state.status == GuestFormStatus.submitting
-                ? state.status
-                : GuestFormStatus.ready,
-            isLoadingMasterTypes: false,
-            masterTypesError: () => failure.message,
-          ),
-        );
-      },
-      (data) {
-        emit(
-          state.copyWith(
-            status: state.status == GuestFormStatus.submitting
-                ? state.status
-                : GuestFormStatus.ready,
-            isLoadingMasterTypes: false,
-            masterTypes: data,
-            masterTypesError: () => null,
-          ),
-        );
-      },
+      (failure) => emit(
+        state.copyWith(
+          status: _statusUnlessSubmitting(GuestFormStatus.ready),
+          isLoadingMasterTypes: false,
+          masterTypesError: () => failure.message,
+        ),
+      ),
+      (data) => emit(
+        state.copyWith(
+          status: _statusUnlessSubmitting(GuestFormStatus.ready),
+          isLoadingMasterTypes: false,
+          masterTypes: data,
+          masterTypesError: () => null,
+        ),
+      ),
     );
   }
 
   /// Memuat ulang daftar warga/host dari API backend.
   Future<void> loadMasterHosts() async {
-    _masterCancelToken?.cancel('reloading');
-    final cancelToken = DioCancellationToken();
-    _masterCancelToken = cancelToken;
+    final cancelToken = _beginMasterLoad();
 
     emit(
       state.copyWith(isLoadingMasterHosts: true, masterHostsError: () => null),
@@ -301,205 +180,138 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     if (isClosed) return;
 
     result.fold(
-      (failure) {
-        emit(
-          state.copyWith(
-            isLoadingMasterHosts: false,
-            masterHostsError: () => failure.message,
-          ),
-        );
-      },
-      (data) {
-        emit(
-          state.copyWith(
-            isLoadingMasterHosts: false,
-            masterHosts: data,
-            masterHostsError: () => null,
-          ),
-        );
-      },
+      (failure) => emit(
+        state.copyWith(
+          isLoadingMasterHosts: false,
+          masterHostsError: () => failure.message,
+        ),
+      ),
+      (data) => emit(
+        state.copyWith(
+          isLoadingMasterHosts: false,
+          masterHosts: data,
+          masterHostsError: () => null,
+        ),
+      ),
     );
   }
 
   /// Memperbarui nilai nama tamu dan memvalidasi.
   void onNameChanged(String value) {
-    final error = validateName(value);
-    emit(
-      state.copyWith(
-        name: value,
-        nameError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
+    final error = GuestFormValidators.validateName(value);
+    _emitInput(state.copyWith(name: value, nameError: () => error));
   }
 
   /// Memperbarui destinasi tujuan dan memvalidasi.
   void onDestinationChanged(String value) {
-    final error = validateDestination(value);
-    emit(
-      state.copyWith(
-        destination: value,
-        destinationError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
+    final error = GuestFormValidators.validateDestination(value);
+    _emitInput(
+      state.copyWith(destination: value, destinationError: () => error),
     );
   }
 
   /// Memperbarui tipe tamu yang dipilih.
   void onGuestTypeChanged(String value) {
-    final error = validateGuestType(value);
-    emit(
-      state.copyWith(
-        guestType: value,
-        typeError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
+    final error = GuestFormValidators.validateGuestType(value);
+    _emitInput(state.copyWith(guestType: value, typeError: () => error));
   }
 
   /// Memperbarui jenis kartu identitas (KTP, SIM, Paspor, atau null).
   void onIdentityTypeChanged(String? value) {
-    final trimmed = value?.trim();
-    final normalized = (trimmed == null || trimmed.isEmpty) ? null : trimmed;
-    final isIdentityRequired = normalized != null;
+    final normalized = value.trimmedOrNull;
 
-    if (!isIdentityRequired) {
-      emit(
+    if (normalized == null) {
+      _emitInput(
         state.copyWith(
           identityType: () => null,
           identityNumber: '',
           identityNumberError: () => null,
-          errorMessage: () => null,
-          status: _statusOnInput(),
         ),
       );
       return;
     }
 
-    final error = validateIdentityNumber(
+    final error = GuestFormValidators.validateIdentityNumber(
       state.identityNumber,
       isIdentityRequired: true,
     );
 
-    emit(
+    _emitInput(
       state.copyWith(
         identityType: () => normalized,
         identityNumberError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
       ),
     );
   }
 
   /// Memperbarui nomor identitas tamu.
   void onIdentityNumberChanged(String value) {
-    final isIdentityRequired = state.hasIdentityType;
-    final error = validateIdentityNumber(
+    final error = GuestFormValidators.validateIdentityNumber(
       value,
-      isIdentityRequired: isIdentityRequired,
+      isIdentityRequired: state.hasIdentityType,
     );
 
-    emit(
-      state.copyWith(
-        identityNumber: value,
-        identityNumberError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
+    _emitInput(
+      state.copyWith(identityNumber: value, identityNumberError: () => error),
     );
   }
 
   /// Memperbarui nomor tamu / plat kendaraan.
   void onGuestNumberChanged(String value) {
-    final error = validateGuestNumber(value);
-    emit(
-      state.copyWith(
-        guestNumber: value,
-        guestNumberError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
+    final error = GuestFormValidators.validateGuestNumber(value);
+    _emitInput(
+      state.copyWith(guestNumber: value, guestNumberError: () => error),
     );
   }
 
   /// Memperbarui keperluan kunjungan.
   void onPurposeChanged(String value) {
-    final error = validatePurpose(value);
-    emit(
-      state.copyWith(
-        purpose: value,
-        purposeError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
+    final error = GuestFormValidators.validatePurpose(value);
+    _emitInput(state.copyWith(purpose: value, purposeError: () => error));
   }
 
   /// Memperbarui alamat domisili/asal tamu.
   void onAddressChanged(String value) {
-    final error = validateAddress(value);
-    emit(
-      state.copyWith(
-        address: value,
-        addressError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
+    final error = GuestFormValidators.validateAddress(value);
+    _emitInput(state.copyWith(address: value, addressError: () => error));
   }
 
   /// Memperbarui email warga yang dikunjungi.
   void onHostEmailChanged(String? value) {
-    final trimmed = value?.trim();
-    final normalized = (trimmed == null || trimmed.isEmpty) ? null : trimmed;
-    emit(
+    _emitInput(
       state.copyWith(
-        hostEmail: () => normalized,
+        hostEmail: () => value.trimmedOrNull,
         hostEmailError: () => null,
-        errorMessage: () => null,
-        status: _statusOnInput(),
       ),
     );
   }
 
   /// Memperbarui lampiran media foto tamu.
   void onPhotoMediaChanged(InformationFormMediaItem? media) {
-    emit(
+    _emitInput(
       state.copyWith(
         photoMedia: () => media,
         photoUrl: () => media?.remoteUrl,
         photoError: () => null,
-        errorMessage: () => null,
-        status: _statusOnInput(),
       ),
     );
   }
 
   /// Menghapus lampiran foto tamu.
-  void onRemovePhoto() {
-    emit(
-      state.copyWith(
-        photoMedia: () => null,
-        photoUrl: () => null,
-        photoError: () => null,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
-  }
+  void onRemovePhoto() => onPhotoMediaChanged(null);
 
   /// Memperbarui kategori kunjungan tamu.
   void onCategoryChanged(String value) {
-    emit(
-      state.copyWith(
-        category: value,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
+    _emitInput(state.copyWith(category: value));
+  }
+
+  /// Resolusi URL foto (mendukung berkas remote maupun berkas lokal).
+  String? _resolvePhotoUrl() {
+    final media = state.photoMedia;
+    if (media == null) return state.photoUrl.trimmedOrNull;
+    final remoteUrl = media.remoteUrl;
+    if (remoteUrl != null && remoteUrl.isNotEmpty) return remoteUrl;
+    return 'https://cdn.kawalo.internal/guests/photos/${media.name}';
   }
 
   /// Mengirim formulir pendaftaran atau pembaruan tamu ke server backend.
@@ -512,16 +324,16 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     final idNumberTrimmed = state.identityNumber.trim();
     final isIdentityRequired = state.hasIdentityType;
 
-    final nameErr = validateName(nameTrimmed);
-    final destErr = validateDestination(destTrimmed);
-    final typeErr = validateGuestType(typeTrimmed);
-    final idErr = validateIdentityNumber(
+    final nameErr = GuestFormValidators.validateName(nameTrimmed);
+    final destErr = GuestFormValidators.validateDestination(destTrimmed);
+    final typeErr = GuestFormValidators.validateGuestType(typeTrimmed);
+    final idErr = GuestFormValidators.validateIdentityNumber(
       idNumberTrimmed,
       isIdentityRequired: isIdentityRequired,
     );
-    final numErr = validateGuestNumber(state.guestNumber);
-    final purposeErr = validatePurpose(state.purpose);
-    final addressErr = validateAddress(state.address);
+    final numErr = GuestFormValidators.validateGuestNumber(state.guestNumber);
+    final purposeErr = GuestFormValidators.validatePurpose(state.purpose);
+    final addressErr = GuestFormValidators.validateAddress(state.address);
 
     final hasErrors =
         nameErr != null ||
@@ -560,123 +372,73 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       ),
     );
 
-    // Resolusi URL foto (mendukung berkas remote maupun berkas lokal)
-    String? resolvedPhotoUrl;
-    if (state.photoMedia != null) {
-      if (state.photoMedia!.remoteUrl != null &&
-          state.photoMedia!.remoteUrl!.isNotEmpty) {
-        resolvedPhotoUrl = state.photoMedia!.remoteUrl;
-      } else {
-        resolvedPhotoUrl =
-            'https://cdn.kawalo.internal/guests/photos/${state.photoMedia!.name}';
-      }
-    } else if (state.photoUrl != null && state.photoUrl!.trim().isNotEmpty) {
-      resolvedPhotoUrl = state.photoUrl!.trim();
-    }
-
-    final identityNumberPayload =
-        isIdentityRequired && idNumberTrimmed.isNotEmpty
-        ? idNumberTrimmed
+    final resolvedPhotoUrl = _resolvePhotoUrl();
+    final identityNumberPayload = isIdentityRequired
+        ? idNumberTrimmed.trimmedOrNull
         : null;
+    final identityTypePayload = isIdentityRequired ? state.identityType : null;
+    final guestNumberPayload = state.guestNumber.trimmedOrNull;
+    final purposePayload = state.purpose.trimmedOrNull;
+    final addressPayload = state.address.trimmedOrNull;
+    final hostEmailPayload = state.hostEmail.trimmedOrNull;
 
-    final guestNumberPayload = state.guestNumber.trim().isNotEmpty
-        ? state.guestNumber.trim()
-        : null;
-
-    final purposePayload = state.purpose.trim().isNotEmpty
-        ? state.purpose.trim()
-        : null;
-
-    final addressPayload = state.address.trim().isNotEmpty
-        ? state.address.trim()
-        : null;
-
-    final hostEmailPayload = state.hostEmail?.trim().isNotEmpty == true
-        ? state.hostEmail!.trim()
-        : null;
-
+    final Either<Failure, GuestItemEntity> result;
     if (state.isCreateMode) {
-      final params = CreateGuestParams(
-        guestName: nameTrimmed,
-        guestDestination: destTrimmed,
-        guestType: typeTrimmed,
-        guestIdentity: identityNumberPayload,
-        guestIdentityType: isIdentityRequired ? state.identityType : null,
-        guestNumber: guestNumberPayload,
-        guestPurpose: purposePayload,
-        guestAddress: addressPayload,
-        guestToUserEmail: hostEmailPayload,
-        guestPhoto: resolvedPhotoUrl,
-        session: session,
-        cancelToken: cancelToken,
-      );
-
-      final result = await createGuestUseCase(params);
-
-      if (isClosed) return;
-
-      result.fold(
-        (failure) {
-          emit(
-            state.copyWith(
-              status: GuestFormStatus.failure,
-              errorMessage: () => failure.message,
-            ),
-          );
-        },
-        (guest) {
-          emit(
-            state.copyWith(
-              status: GuestFormStatus.success,
-              createdOrUpdatedItem: guest,
-              errorMessage: () => null,
-            ),
-          );
-        },
+      result = await createGuestUseCase(
+        CreateGuestParams(
+          guestName: nameTrimmed,
+          guestDestination: destTrimmed,
+          guestType: typeTrimmed,
+          guestIdentity: identityNumberPayload,
+          guestIdentityType: identityTypePayload,
+          guestNumber: guestNumberPayload,
+          guestPurpose: purposePayload,
+          guestAddress: addressPayload,
+          guestToUserEmail: hostEmailPayload,
+          guestPhoto: resolvedPhotoUrl,
+          session: session,
+          cancelToken: cancelToken,
+        ),
       );
     } else {
       final initial = state.initialItem!;
-      final params = UpdateGuestParams(
-        id: initial.id,
-        item: initial,
-        guestName: nameTrimmed,
-        guestDestination: destTrimmed,
-        guestType: typeTrimmed,
-        guestIdentity: identityNumberPayload,
-        guestIdentityType: isIdentityRequired ? state.identityType : null,
-        guestNumber: guestNumberPayload,
-        guestPurpose: purposePayload,
-        guestAddress: addressPayload,
-        guestToUserEmail: hostEmailPayload,
-        guestPhoto: resolvedPhotoUrl,
-        includeNulls: true,
-        session: session,
-        cancelToken: cancelToken,
-      );
-
-      final result = await updateGuestUseCase(params);
-
-      if (isClosed) return;
-
-      result.fold(
-        (failure) {
-          emit(
-            state.copyWith(
-              status: GuestFormStatus.failure,
-              errorMessage: () => failure.message,
-            ),
-          );
-        },
-        (guest) {
-          emit(
-            state.copyWith(
-              status: GuestFormStatus.success,
-              createdOrUpdatedItem: guest,
-              errorMessage: () => null,
-            ),
-          );
-        },
+      result = await updateGuestUseCase(
+        UpdateGuestParams(
+          id: initial.id,
+          item: initial,
+          guestName: nameTrimmed,
+          guestDestination: destTrimmed,
+          guestType: typeTrimmed,
+          guestIdentity: identityNumberPayload,
+          guestIdentityType: identityTypePayload,
+          guestNumber: guestNumberPayload,
+          guestPurpose: purposePayload,
+          guestAddress: addressPayload,
+          guestToUserEmail: hostEmailPayload,
+          guestPhoto: resolvedPhotoUrl,
+          includeNulls: true,
+          session: session,
+          cancelToken: cancelToken,
+        ),
       );
     }
+
+    if (isClosed) return;
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: GuestFormStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (guest) => emit(
+        state.copyWith(
+          status: GuestFormStatus.success,
+          createdOrUpdatedItem: guest,
+          errorMessage: () => null,
+        ),
+      ),
+    );
   }
 }
