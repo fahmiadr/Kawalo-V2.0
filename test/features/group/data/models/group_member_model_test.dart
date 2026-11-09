@@ -29,6 +29,13 @@ void main() {
       expect(result.profilePic, isNull);
     });
 
+    test('fromJson throws an Exception when email is missing', () {
+      expect(
+        () => GroupMemberModel.fromJson(const {'name': 'No Email'}),
+        throwsA(isA<Exception>()),
+      );
+    });
+
     test('props equality works as expected', () {
       const modelA = GroupMemberModel(
         email: 'test@kawalo.id',
