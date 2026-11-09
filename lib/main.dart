@@ -10,6 +10,7 @@ import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/auth_interceptor.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
+import 'package:kawalo_mobile/core/routes/app_route_observer.dart';
 import 'package:kawalo_mobile/core/security/jwks_service.dart';
 import 'package:kawalo_mobile/core/security/models/security_violation_type.dart';
 import 'package:kawalo_mobile/core/security/presentation/app_security_blocked_screen.dart';
@@ -45,19 +46,6 @@ class MyApp extends StatefulWidget {
   final Isar? isar;
   final SecurityViolationType? securityViolation;
 
-  /// Memanggil penguncian aplikasi ketat (Strict App Lockdown) dari mana saja.
-  static void triggerLockdown(
-    BuildContext context,
-    SecurityViolationType violation,
-  ) {
-    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute<void>(
-        builder: (_) => AppSecurityBlockedScreen(violationType: violation),
-      ),
-      (route) => false,
-    );
-  }
-
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -76,6 +64,11 @@ class _MyAppState extends State<MyApp> {
   late final AuthBloc _authBloc;
   late final UserSessionCubit _userSessionCubit;
   StreamSubscription<AuthState>? _authSubscription;
+
+  /// Handed to the app so code outside the widget tree (push notification
+  /// handlers) can navigate via `AppRouter(() => _navigatorKey.currentState!)`.
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _routeObserver = AppRouteObserver();
 
   late final bool _isAppLocked;
 
@@ -283,6 +276,8 @@ class _MyAppState extends State<MyApp> {
         }
         return supportedLocales.first;
       },
+      navigatorKey: _navigatorKey,
+      navigatorObservers: [_routeObserver],
       home: home,
     );
   }
