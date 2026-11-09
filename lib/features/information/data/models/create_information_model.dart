@@ -1,10 +1,18 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'create_information_model.g.dart';
 
 /// Pure DTO model untuk payload pembuatan informasi baru
 /// (`CreateInformationDto`).
 ///
 /// Digunakan untuk serialisasi HTTP POST `/v1/information`.
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
+@JsonSerializable(
+  createFactory: false,
+  includeIfNull: false,
+  fieldRename: FieldRename.snake,
+)
 class CreateInformationModel extends Equatable {
   /// Membuat instance [CreateInformationModel].
   const CreateInformationModel({
@@ -43,20 +51,15 @@ class CreateInformationModel extends Equatable {
   final String? glong;
 
   /// Mengonversi DTO ke Map JSON untuk dikirim melalui HTTP POST client.
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      if (text != null) 'text': text,
-      if (feedFile != null) 'feed_file': feedFile,
-      if (photos != null) 'photos': photos,
-      if (feedType != null) 'feed_type': feedType,
-      if (eventLocation != null) 'event_location': eventLocation,
-      if (glat != null) 'glat': glat,
-      if (glong != null) 'glong': glong,
-    };
-  }
+  Map<String, dynamic> toJson() => _$CreateInformationModelToJson(this);
+
+  // Keeps Equatable's own getters out of the generated JSON.
+  @override
+  @JsonKey(includeToJson: false)
+  bool? get stringify => super.stringify;
 
   @override
+  @JsonKey(includeToJson: false)
   List<Object?> get props => [
     title,
     text,

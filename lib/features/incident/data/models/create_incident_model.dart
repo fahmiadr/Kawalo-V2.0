@@ -1,9 +1,17 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'create_incident_model.g.dart';
 
 /// Pure DTO model untuk payload pembuatan laporan insiden baru
 /// (`CreateIncidentDto`).
 ///
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
+@JsonSerializable(
+  createFactory: false,
+  includeIfNull: false,
+  fieldRename: FieldRename.snake,
+)
 class CreateIncidentModel extends Equatable {
   /// Membuat instance [CreateIncidentModel].
   const CreateIncidentModel({
@@ -38,19 +46,15 @@ class CreateIncidentModel extends Equatable {
   final List<String> photos;
 
   /// Mengonversi ke Map JSON untuk dikirimkan via HTTP POST.
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'group_id': groupId,
-      if (description != null) 'description': description,
-      if (category != null) 'category': category,
-      if (glat != null) 'glat': glat,
-      if (glong != null) 'glong': glong,
-      'photos': photos,
-    };
-  }
+  Map<String, dynamic> toJson() => _$CreateIncidentModelToJson(this);
+
+  // Keeps Equatable's own getters out of the generated JSON.
+  @override
+  @JsonKey(includeToJson: false)
+  bool? get stringify => super.stringify;
 
   @override
+  @JsonKey(includeToJson: false)
   List<Object?> get props => [
     title,
     groupId,
