@@ -4,27 +4,26 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
-import 'package:kawalo_mobile/features/operational/domain/usecases/get_operationals/get_operationals_usecase.dart';
+import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/get_operationals_params.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/operational_result.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_state.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetOperationalsUseCase extends Mock
-    implements GetOperationalsUseCase {}
+class MockOperationalRepository extends Mock implements OperationalRepository {}
 
 void main() {
   late OperationalCubit cubit;
-  late MockGetOperationalsUseCase mockUseCase;
+  late MockOperationalRepository mockRepo;
 
   setUpAll(() {
     registerFallbackValue(const GetOperationalsParams());
   });
 
   setUp(() {
-    mockUseCase = MockGetOperationalsUseCase();
-    cubit = OperationalCubit(getOperationalsUseCase: mockUseCase);
+    mockRepo = MockOperationalRepository();
+    cubit = OperationalCubit(repository: mockRepo);
   });
 
   tearDown(() {
@@ -66,7 +65,7 @@ void main() {
 
   test('initial state contains initialGreeting when provided', () {
     final customCubit = OperationalCubit(
-      getOperationalsUseCase: mockUseCase,
+      repository: mockRepo,
       initialGreeting: 'Diperbarui Hari ini, 15.20',
     );
     expect(
@@ -82,7 +81,7 @@ void main() {
       'emits [OperationalLoading, OperationalLoaded] when successful',
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -110,7 +109,7 @@ void main() {
       'when serving cached fallback',
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Right(tCachedResult));
         return cubit;
       },
@@ -127,7 +126,7 @@ void main() {
       'emits [OperationalLoading, OperationalError] when failure occurs',
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
@@ -146,7 +145,7 @@ void main() {
       'retains cachedOperationals when refreshOperationals fails',
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
@@ -174,7 +173,7 @@ void main() {
         lastSync: 'Diperbarui Hari ini, 15.20',
       ),
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
+        when(() => mockRepo.getOperationals(any())).thenAnswer(
           (_) async =>
               const Right(OperationalResult(items: [], isFromCache: true)),
         );
@@ -192,7 +191,7 @@ void main() {
       'clears cachedOperationals when fetchOperationals with new query fails',
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
@@ -220,7 +219,7 @@ void main() {
       ),
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Timeout')));
         return cubit;
       },
@@ -253,14 +252,14 @@ void main() {
       ),
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetFilters(),
       verify: (_) {
         verify(
-          () => mockUseCase(
+          () => mockRepo.getOperationals(
             any(
               that: predicate<GetOperationalsParams>(
                 (p) =>
@@ -291,14 +290,14 @@ void main() {
       ),
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetDateFilter(),
       verify: (_) {
         verify(
-          () => mockUseCase(
+          () => mockRepo.getOperationals(
             any(
               that: predicate<GetOperationalsParams>(
                 (p) =>
@@ -323,7 +322,7 @@ void main() {
       'updates without emitting OperationalLoading',
       build: () {
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -438,7 +437,7 @@ void main() {
       var firstCallCompleted = false;
 
       when(
-        () => mockUseCase(
+        () => mockRepo.getOperationals(
           any(
             that: predicate<GetOperationalsParams>((p) => p.search == 'first'),
           ),
@@ -450,7 +449,7 @@ void main() {
       });
 
       when(
-        () => mockUseCase(
+        () => mockRepo.getOperationals(
           any(
             that: predicate<GetOperationalsParams>((p) => p.search == 'second'),
           ),

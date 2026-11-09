@@ -4,7 +4,7 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
-import 'package:kawalo_mobile/features/operational/domain/usecases/get_operationals/get_operationals_usecase.dart';
+import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/get_operationals_params.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_state.dart';
 
@@ -16,7 +16,7 @@ class OperationalCubit
     extends ListFetchCubit<OperationalState, OperationalItemEntity> {
   /// Membuat instance [OperationalCubit].
   OperationalCubit({
-    required this.getOperationalsUseCase,
+    required this.repository,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
@@ -31,8 +31,8 @@ class OperationalCubit
          syncKey: AppConstants.syncKeyOperational,
        );
 
-  /// Use case untuk mengambil aktifitas operasional.
-  final GetOperationalsUseCase getOperationalsUseCase;
+  /// Repositori aktifitas operasional.
+  final OperationalRepository repository;
 
   @override
   OperationalState? stateWithLastSync(String greeting) {
@@ -105,7 +105,7 @@ class OperationalCubit
       filter: filter,
       currentItems: state.displayedOperationals,
       loading: (lastSync) => OperationalLoading(lastSync: lastSync),
-      request: (limit, cancelToken) async => (await getOperationalsUseCase(
+      request: (limit, cancelToken) async => (await repository.getOperationals(
         GetOperationalsParams(
           search: filter.search,
           limit: limit,
@@ -145,7 +145,7 @@ class OperationalCubit
 
   /// Memuat halaman berikutnya untuk infinite scroll.
   Future<void> loadMoreOperationals() => runLoadMore<OperationalLoaded>(
-    request: (current) async => (await getOperationalsUseCase(
+    request: (current) async => (await repository.getOperationals(
       GetOperationalsParams(
         search: current.searchQuery,
         limit: pageSize,

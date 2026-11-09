@@ -15,7 +15,7 @@ import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
-import 'package:kawalo_mobile/features/operational/domain/usecases/get_operationals/get_operationals_usecase.dart';
+import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/get_operationals_params.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/operational_result.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
@@ -24,8 +24,7 @@ import 'package:kawalo_mobile/features/operational/presentation/screens/operatio
 import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_card.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetOperationalsUseCase extends Mock
-    implements GetOperationalsUseCase {}
+class MockOperationalRepository extends Mock implements OperationalRepository {}
 
 class MockOperationalCubit extends Mock implements OperationalCubit {}
 
@@ -202,8 +201,10 @@ void main() {
       WidgetTester tester,
     ) async {
       registerFallbackValue(const GetOperationalsParams());
-      final mockUseCase = MockGetOperationalsUseCase();
-      when(() => mockUseCase(any())).thenAnswer((invocation) async {
+      final mockRepo = MockOperationalRepository();
+      when(() => mockRepo.getOperationals(any())).thenAnswer((
+        invocation,
+      ) async {
         final params =
             invocation.positionalArguments.first as GetOperationalsParams;
         if (params.search?.toLowerCase() == 'agus') {
@@ -212,7 +213,7 @@ void main() {
         return Right(OperationalResult(items: testWorkers));
       });
 
-      final cubit = OperationalCubit(getOperationalsUseCase: mockUseCase);
+      final cubit = OperationalCubit(repository: mockRepo);
 
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -267,8 +268,10 @@ void main() {
       'no match',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer((invocation) async {
+        final mockRepo = MockOperationalRepository();
+        when(() => mockRepo.getOperationals(any())).thenAnswer((
+          invocation,
+        ) async {
           final params =
               invocation.positionalArguments.first as GetOperationalsParams;
           if (params.search?.toLowerCase() == 'nonexistentworker') {
@@ -277,7 +280,7 @@ void main() {
           return Right(OperationalResult(items: testWorkers));
         });
 
-        final cubit = OperationalCubit(getOperationalsUseCase: mockUseCase);
+        final cubit = OperationalCubit(repository: mockRepo);
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -315,9 +318,9 @@ void main() {
       'online reconnect',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
+        final mockRepo = MockOperationalRepository();
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
         final connectivityCubit = ConnectivityCubit(
@@ -325,9 +328,7 @@ void main() {
           checkConnection: () async => false,
         )..setStatus(ConnectivityStatus.offline);
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+        final operationalCubit = OperationalCubit(repository: mockRepo);
 
         await tester.pumpWidget(
           BlocProvider<ConnectivityCubit>.value(
@@ -376,14 +377,12 @@ void main() {
       WidgetTester tester,
     ) async {
       registerFallbackValue(const GetOperationalsParams());
-      final mockUseCase = MockGetOperationalsUseCase();
+      final mockRepo = MockOperationalRepository();
       when(
-        () => mockUseCase(any()),
+        () => mockRepo.getOperationals(any()),
       ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-      final operationalCubit = OperationalCubit(
-        getOperationalsUseCase: mockUseCase,
-      );
+      final operationalCubit = OperationalCubit(repository: mockRepo);
 
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -394,7 +393,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Initial fetch on mount called once
-      verify(() => mockUseCase(any())).called(1);
+      verify(() => mockRepo.getOperationals(any())).called(1);
 
       // Open search then tap/focus search bar without changing text
       await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
@@ -404,14 +403,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Must NOT trigger another fetchWorkers call
-      verifyNever(() => mockUseCase(any()));
+      verifyNever(() => mockRepo.getOperationals(any()));
 
       // Entering text DOES trigger search after debounce
       await tester.enterText(find.byType(AppSearchBar), 'Agus');
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       verify(
-        () => mockUseCase(
+        () => mockRepo.getOperationals(
           any(
             that: predicate<GetOperationalsParams>((p) => p.search == 'agus'),
           ),
@@ -426,14 +425,12 @@ void main() {
       'once',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
+        final mockRepo = MockOperationalRepository();
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+        final operationalCubit = OperationalCubit(repository: mockRepo);
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -444,10 +441,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initial fetch on mount called once
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockRepo.getOperationals(any())).called(1);
 
         // Mock search returns empty so empty search state is displayed
-        when(() => mockUseCase(any())).thenAnswer(
+        when(() => mockRepo.getOperationals(any())).thenAnswer(
           (_) async =>
               const Right(OperationalResult(items: <OperationalItemEntity>[])),
         );
@@ -461,13 +458,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Search fetch was called once
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockRepo.getOperationals(any())).called(1);
 
         // Verify empty state button is visible
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
 
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
         // Tap "Reset filter & pencarian"
@@ -477,7 +474,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Check if called exactly 1 time
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockRepo.getOperationals(any())).called(1);
 
         await operationalCubit.close();
       },
@@ -487,14 +484,12 @@ void main() {
       'tapping Coba Lagi on error state preserves active search and filter',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockRepo = MockOperationalRepository();
+        when(() => mockRepo.getOperationals(any())).thenAnswer(
           (_) async => const Left(ServerFailure('Koneksi terputus')),
         );
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+        final operationalCubit = OperationalCubit(repository: mockRepo);
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -508,7 +503,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1 initial fetch failed
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockRepo.getOperationals(any())).called(1);
         expect(find.text('Gagal memuat aktifitas operasional'), findsOneWidget);
         expect(find.text('Coba lagi'), findsOneWidget);
 
@@ -525,9 +520,9 @@ void main() {
 
         // When user taps 'Coba lagi', it should retry WITH search 'Agus'
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
-        clearInteractions(mockUseCase);
+        clearInteractions(mockRepo);
 
         await tester.tap(find.text('Coba lagi'));
         await tester.pump();
@@ -535,7 +530,7 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(
-          () => mockUseCase(
+          () => mockRepo.getOperationals(
             any(
               that: predicate<GetOperationalsParams>((p) => p.search == 'Agus'),
             ),
@@ -551,14 +546,12 @@ void main() {
       'with existing cubit state',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
+        final mockRepo = MockOperationalRepository();
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+        final operationalCubit = OperationalCubit(repository: mockRepo);
 
         // Fetch with search 'Agus' and filter 'thisWeek'
         await operationalCubit.fetchOperationals(
@@ -593,15 +586,13 @@ void main() {
       'no results found',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockRepo = MockOperationalRepository();
+        when(() => mockRepo.getOperationals(any())).thenAnswer(
           (_) async =>
               const Right(OperationalResult(items: [], isFromCache: true)),
         );
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+        final operationalCubit = OperationalCubit(repository: mockRepo);
 
         await operationalCubit.fetchOperationals(search: 'NonExistent');
 
@@ -637,14 +628,12 @@ void main() {
       'toggling search bar without query does not trigger fetchOperationals',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
+        final mockRepo = MockOperationalRepository();
         when(
-          () => mockUseCase(any()),
+          () => mockRepo.getOperationals(any()),
         ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+        final operationalCubit = OperationalCubit(repository: mockRepo);
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -655,21 +644,21 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1. Initial postFrameCallback load calls fetchOperationals once
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockRepo.getOperationals(any())).called(1);
 
         // 2. Open search bar
         await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
         await tester.pumpAndSettle();
 
         // Verify no fetch triggered on open
-        verifyNever(() => mockUseCase(any()));
+        verifyNever(() => mockRepo.getOperationals(any()));
 
         // 3. Close search bar without entering text
         await tester.tap(find.bySemanticsLabel('Tutup pencarian'));
         await tester.pumpAndSettle();
 
         // Verify no fetch triggered on close when query was empty
-        verifyNever(() => mockUseCase(any()));
+        verifyNever(() => mockRepo.getOperationals(any()));
 
         await operationalCubit.close();
       },

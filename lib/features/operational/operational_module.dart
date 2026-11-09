@@ -6,7 +6,6 @@ import 'package:kawalo_mobile/features/operational/data/datasources/operational_
 import 'package:kawalo_mobile/features/operational/data/datasources/operational_remote_data_source.dart';
 import 'package:kawalo_mobile/features/operational/data/repositories/operational_repository_impl.dart';
 import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
-import 'package:kawalo_mobile/features/operational/domain/usecases/get_operationals/get_operationals_usecase.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 
 /// Feature Composition Root untuk modul Operasional pada Frontend.
@@ -34,7 +33,7 @@ final class OperationalModule {
   /// Merakit dan mengembalikan instance [OperationalCubit] yang siap pakai.
   OperationalCubit createCubit() {
     return OperationalCubit(
-      getOperationalsUseCase: GetOperationalsUseCase(repository),
+      repository: repository,
       syncStorageService: _syncStorage,
     );
   }
