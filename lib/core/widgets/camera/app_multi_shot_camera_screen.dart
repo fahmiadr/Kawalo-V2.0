@@ -21,6 +21,7 @@ import 'package:kawalo_mobile/core/widgets/camera/camera_overlays.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_quota_badge.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/camera/camera_viewfinder.dart';
+import 'package:kawalo_mobile/core/widgets/camera/controllers/camera_orientation_controller.dart';
 import 'package:kawalo_mobile/core/widgets/camera/controllers/camera_system_ui_controller.dart';
 import 'package:kawalo_mobile/core/widgets/camera/controllers/captured_photos_controller.dart';
 
@@ -336,15 +337,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
   int _initGeneration = 0;
 
   late final AnimationController _shutterFlashController;
-  late final AnimationController _badgeTeleportController;
-  late final Animation<double> _badgeFadeAnimation;
-  late final Animation<double> _badgeScaleAnimation;
-  late DeviceOrientation _activeBadgeOrientation;
-  int _teleportGeneration = 0;
   late final ScrollController _thumbnailScrollController;
   String? _latestCapturedPath;
-
-  static const Duration _teleportHalfDuration = AppDuration.medium1;
 
   final CapturedPhotosController _photos = CapturedPhotosController();
   bool _isDoneSubmitted = false;
@@ -447,135 +441,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     }
   }
 
-  late DeviceOrientation _deviceOrientation;
-  double _orientationTurns = 0;
+  late final CameraOrientationController _orientation;
   double _switchCameraTurns = 0;
-  late final DeviceOrientationSensorService _orientationSensorService;
-  StreamSubscription<DeviceOrientation>? _orientationSubscription;
-
-  void _updateOrientationTurns(DeviceOrientation newOrientation) {
-    if (_deviceOrientation != newOrientation) {
-      final target = newOrientation.turns;
-      var delta = (target - _orientationTurns) % 1.0;
-      if (delta > 0.5) delta -= 1.0;
-      if (delta < -0.5) delta += 1.0;
-      setState(() {
-        _deviceOrientation = newOrientation;
-        _orientationTurns += delta;
-        _latestCapturedPath = null;
-      });
-    }
-    _handleBadgeOrientationTransition(newOrientation);
-  }
-
-  void _handleBadgeOrientationTransition(DeviceOrientation newOrientation) {
-    if (!mounted) return;
-    if (AppMotion.isReducedMotion(context)) {
-      _teleportGeneration++;
-      if (_badgeTeleportController.isAnimating) {
-        _badgeTeleportController.stop();
-      }
-      setState(() {
-        _activeBadgeOrientation = newOrientation;
-        _badgeTeleportController.value = 1;
-      });
-      return;
-    }
-
-    if (_activeBadgeOrientation == newOrientation &&
-        _badgeTeleportController.value == 1) {
-      return;
-    }
-
-    final generation = ++_teleportGeneration;
-    if (_badgeTeleportController.isAnimating) {
-      _badgeTeleportController.stop();
-    }
-    unawaited(_runTeleport(generation));
-  }
-
-  Duration _computeTeleportDuration(double ratio) {
-    final clampedRatio = ratio.clamp(0.0, 1.0);
-    final durationMs = (_teleportHalfDuration.inMilliseconds * clampedRatio)
-        .round();
-    return durationMs > 20
-        ? Duration(milliseconds: durationMs)
-        : const Duration(milliseconds: 20);
-  }
-
-  Future<void> _runTeleport(int generation) async {
-    try {
-      while (mounted && generation == _teleportGeneration) {
-        if (_activeBadgeOrientation != _deviceOrientation) {
-          // Fase 1: Dissolve / Fade-out badge yang aktif di slot lama
-          if (_badgeTeleportController.value > 0) {
-            final fadeOutDuration = _computeTeleportDuration(
-              _badgeTeleportController.value,
-            );
-            try {
-              await _badgeTeleportController.animateTo(
-                0,
-                duration: fadeOutDuration,
-                curve: Curves.easeIn,
-              );
-            } on Object catch (_) {}
-          }
-
-          if (!mounted || generation != _teleportGeneration) return;
-
-          // Fase Hand-off: Ganti slot saat opacity tepat 0.0
-          // Menggunakan orientasi fisik perangkat terkini
-          final currentTarget = _deviceOrientation;
-          setState(() {
-            _activeBadgeOrientation = currentTarget;
-          });
-
-          if (!mounted || generation != _teleportGeneration) return;
-
-          // Fase 2: Materialize / Fade-in badge pada slot tujuan
-          final fadeInDuration = _computeTeleportDuration(
-            1.0 - _badgeTeleportController.value,
-          );
-          try {
-            await _badgeTeleportController.animateTo(
-              1,
-              duration: fadeInDuration,
-            );
-          } on Object catch (_) {}
-        } else if (_badgeTeleportController.value < 1) {
-          // Orientasi fisik sudah sesuai namun animasi fade-in terputus
-          final fadeInDuration = _computeTeleportDuration(
-            1.0 - _badgeTeleportController.value,
-          );
-          try {
-            await _badgeTeleportController.animateTo(
-              1,
-              duration: fadeInDuration,
-            );
-          } on Object catch (_) {}
-        } else {
-          // Orientasi sinkron dan opasitas telah 100% penuh
-          break;
-        }
-      }
-    } finally {
-      if (mounted && generation == _teleportGeneration) {
-        if (_activeBadgeOrientation != _deviceOrientation) {
-          setState(() {
-            _activeBadgeOrientation = _deviceOrientation;
-          });
-        }
-        if (_badgeTeleportController.value != 1) {
-          _badgeTeleportController.value = 1;
-        }
-      }
-    }
-  }
-
-  void _onOrientationChanged(DeviceOrientation newOrientation) {
-    if (!mounted) return;
-    _updateOrientationTurns(newOrientation);
-  }
 
   // ── FASE 1: Ingress & Hardware Probing ──────────────────────────────────
 
@@ -592,7 +459,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         widget.brightnessService ?? const DefaultScreenBrightnessService();
     _systemUi.setup(isMounted: () => mounted);
 
-    _deviceOrientation =
+    final initialOrientation =
         widget.initialDeviceOrientation ??
         widget.orientationSensorService?.currentOrientation ??
         (widget.controller != null
@@ -604,34 +471,15 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                 }
               })()
             : DeviceOrientation.portraitUp);
-    _orientationTurns = _deviceOrientation.turns;
-    _activeBadgeOrientation = _deviceOrientation;
-
-    _badgeTeleportController = AnimationController(
+    _orientation = CameraOrientationController(
       vsync: this,
-      duration: _teleportHalfDuration,
-      value: 1,
+      initialOrientation: initialOrientation,
+      sensorService: widget.orientationSensorService,
+      isMounted: () => mounted,
+      isReducedMotion: () => AppMotion.isReducedMotion(context),
+      update: setState,
+      onDeviceOrientationChanged: () => _latestCapturedPath = null,
     );
-    _badgeFadeAnimation = CurvedAnimation(
-      parent: _badgeTeleportController,
-      curve: Curves.easeOut,
-      reverseCurve: Curves.easeIn,
-    );
-    _badgeScaleAnimation = Tween<double>(begin: 0.88, end: 1).animate(
-      CurvedAnimation(
-        parent: _badgeTeleportController,
-        curve: Curves.easeOutBack,
-        reverseCurve: Curves.easeIn,
-      ),
-    );
-
-    _orientationSensorService =
-        widget.orientationSensorService ??
-        DefaultDeviceOrientationSensorService(
-          initialOrientation: _deviceOrientation,
-        );
-    _orientationSubscription = _orientationSensorService.onOrientationChanged
-        .listen(_onOrientationChanged);
 
     _shutterFlashController = AnimationController(
       vsync: this,
@@ -682,8 +530,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     }
     if (widget.initialDeviceOrientation != null &&
         widget.initialDeviceOrientation != oldWidget.initialDeviceOrientation &&
-        widget.initialDeviceOrientation != _deviceOrientation) {
-      _updateOrientationTurns(widget.initialDeviceOrientation!);
+        widget.initialDeviceOrientation != _orientation.deviceOrientation) {
+      _orientation.updateOrientation(widget.initialDeviceOrientation!);
     }
   }
 
@@ -697,14 +545,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     }
     _restoreSystemUI();
     unawaited(_restoreBrightness());
-    unawaited(_orientationSubscription?.cancel());
-    _orientationSubscription = null;
-    if (widget.orientationSensorService == null) {
-      _orientationSensorService.dispose();
-    }
+    _orientation.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    _teleportGeneration++;
-    _badgeTeleportController.dispose();
     _shutterFlashController.dispose();
     _thumbnailScrollController.dispose();
     _detachControllerListeners(_controller);
@@ -730,7 +572,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         state == AppLifecycleState.hidden) {
       _wasInBackground = true;
       _deactivateScreenFlash();
-      _orientationSubscription?.pause();
+      _orientation.pauseSensor();
       if (widget.controller == null && _controller != null) {
         _initGeneration++;
         final oldController = _controller;
@@ -745,7 +587,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
     if (state == AppLifecycleState.resumed) {
       _systemUi.hideStatusBar();
-      _orientationSubscription?.resume();
+      _orientation.resumeSensor();
 
       // Rekonsiliasi state otomatis (Auto-Recovery / Self-Healing):
       // Hanya dipicu ketika aplikasi kembali dari background penuh
@@ -1044,7 +886,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       // dan kompresi selaras dengan galeri via [ImageCropper] (GoF Strategy / DIP)
       await widget.imageCropper.cropFileTo9x16(
         xFile.path,
-        orientation: _deviceOrientation,
+        orientation: _orientation.deviceOrientation,
         maxWidth: widget.maxWidth,
         maxHeight: widget.maxHeight,
         quality: widget.imageQuality,
@@ -1182,9 +1024,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       child: IgnorePointer(
         child: Center(
           child: FadeTransition(
-            opacity: _badgeFadeAnimation,
+            opacity: _orientation.badgeFadeAnimation,
             child: ScaleTransition(
-              scale: _badgeScaleAnimation,
+              scale: _orientation.badgeScaleAnimation,
               child: RotatedBox(
                 quarterTurns: isLandscapeLeft ? 1 : 3,
                 child: CameraQuotaBadge(
@@ -1246,11 +1088,12 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                       totalPhotos: _totalSelected,
                       maxPhotos: widget.maxPhotos,
                       flashMode: _flashMode,
-                      deviceOrientation: _deviceOrientation,
-                      orientationTurns: _orientationTurns,
-                      activeBadgeOrientation: _activeBadgeOrientation,
-                      badgeFadeAnimation: _badgeFadeAnimation,
-                      badgeScaleAnimation: _badgeScaleAnimation,
+                      deviceOrientation: _orientation.deviceOrientation,
+                      orientationTurns: _orientation.turns,
+                      activeBadgeOrientation:
+                          _orientation.activeBadgeOrientation,
+                      badgeFadeAnimation: _orientation.badgeFadeAnimation,
+                      badgeScaleAnimation: _orientation.badgeScaleAnimation,
                       hasError: _actionableError != null,
                       onToggleFlash: _canInteract ? _toggleFlash : null,
                       isFlashSupported: _isFlashSupported,
@@ -1347,9 +1190,12 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                 // IgnorePointer menjamin badge tidak memblokir
                                 // gestur touch-to-focus pada viewfinder kamera.
                                 if (_actionableError == null &&
-                                    _activeBadgeOrientation.isLandscape)
+                                    _orientation
+                                        .activeBadgeOrientation
+                                        .isLandscape)
                                   _buildLandscapeQuotaBadge(
-                                    orientation: _activeBadgeOrientation,
+                                    orientation:
+                                        _orientation.activeBadgeOrientation,
                                     colorScheme: colorScheme,
                                     emphasizedTypeScale: emphasizedTypeScale,
                                   ),
@@ -1374,7 +1220,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                           _isCurrentCameraFront,
                                       hasMultipleCameras:
                                           _availableCameras.length > 1,
-                                      orientationTurns: _orientationTurns,
+                                      orientationTurns: _orientation.turns,
                                       switchCameraTurns: _switchCameraTurns,
                                       onSwitchCamera: _isCapturing
                                           ? null
