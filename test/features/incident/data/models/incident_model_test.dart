@@ -47,4 +47,40 @@ void main() {
     expect(model.senderRole, 'guard');
     expect(model.createdAt, '2026-11-04T10:00:00.000Z');
   });
+
+  test('IncidentModel.fromJson memakai default untuk kunci hilang', () {
+    final model = IncidentModel.fromJson(const {
+      'id': 'inc_2',
+      'status': null,
+      'photos': null,
+      'glat': -6,
+      'glong': 106.5,
+    });
+
+    expect(model.status, 'OPEN');
+    expect(model.groupId, '');
+    expect(model.title, '');
+    expect(model.createdBy, '');
+    expect(model.photos, isEmpty);
+    expect(model.glat, -6.0);
+    expect(model.glong, 106.5);
+    expect(DateTime.tryParse(model.createdAt), isNotNull);
+  });
+
+  test('IncidentModel.toJson tidak menyertakan field opsional null', () {
+    final json = IncidentModel.fromJson(const {'id': 'inc_3'}).toJson();
+
+    expect(json.containsKey('description'), isFalse);
+    expect(json.containsKey('glat'), isFalse);
+    expect(json['photos'], isEmpty);
+    expect(json['status'], 'OPEN');
+  });
+
+  test('IncidentReplyModel.fromJson memakai default saat kunci hilang', () {
+    final model = IncidentReplyModel.fromJson(const {'id': 'r1'});
+
+    expect(model.message, '');
+    expect(model.photos, isEmpty);
+    expect(DateTime.tryParse(model.createdAt), isNotNull);
+  });
 }

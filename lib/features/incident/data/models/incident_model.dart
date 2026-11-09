@@ -1,11 +1,18 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'incident_model.g.dart';
+
+/// Server may omit `created_at`; fall back to the moment of parsing.
+String _createdAtOrNow(Object? value) =>
+    (value as String?) ?? DateTime.now().toIso8601String();
 
 /// Pure DTO model untuk pertukaran data JSON laporan insiden dengan API
 /// (`IncidentDto`).
 ///
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class IncidentModel extends Equatable {
-  /// Membuat instance [IncidentModel].
   const IncidentModel({
     required this.id,
     required this.groupId,
@@ -26,39 +33,18 @@ class IncidentModel extends Equatable {
     this.updatedAt,
   });
 
-  /// Mengonversi JSON Map dari backend menjadi objek [IncidentModel].
-  factory IncidentModel.fromJson(Map<String, dynamic> json) {
-    return IncidentModel(
-      id: json['id'] as String,
-      groupId: (json['group_id'] ?? '') as String,
-      title: (json['title'] ?? '') as String,
-      status: (json['status'] ?? 'OPEN') as String,
-      createdBy: (json['created_by'] ?? '') as String,
-      createdByName: json['created_by_name'] as String?,
-      description: json['description'] as String?,
-      category: json['category'] as String?,
-      glat: json['glat'] != null ? (json['glat'] as num).toDouble() : null,
-      glong: json['glong'] != null ? (json['glong'] as num).toDouble() : null,
-      photos: json['photos'] != null
-          ? (json['photos'] as List<dynamic>).map((e) => e.toString()).toList()
-          : const [],
-      resolvedBy: json['resolved_by'] as String?,
-      resolvedByName: json['resolved_by_name'] as String?,
-      resolvedAt: json['resolved_at'] as String?,
-      deletedAt: json['deleted_at'] as String?,
-      createdAt:
-          (json['created_at'] ?? DateTime.now().toIso8601String()) as String,
-      updatedAt: json['updated_at'] as String?,
-    );
-  }
+  factory IncidentModel.fromJson(Map<String, dynamic> json) =>
+      _$IncidentModelFromJson(json);
 
   /// ID unik insiden.
   final String id;
 
   /// ID grup insiden.
+  @JsonKey(defaultValue: '')
   final String groupId;
 
   /// Judul laporan insiden.
+  @JsonKey(defaultValue: '')
   final String title;
 
   /// Penjelasan detail insiden.
@@ -74,12 +60,15 @@ class IncidentModel extends Equatable {
   final double? glong;
 
   /// Daftar URL foto bukti.
+  @JsonKey(defaultValue: <String>[])
   final List<String> photos;
 
   /// Status siklus hidup insiden ('OPEN', 'RESOLVED').
+  @JsonKey(defaultValue: 'OPEN')
   final String status;
 
   /// ID pengguna pelapor.
+  @JsonKey(defaultValue: '')
   final String createdBy;
 
   /// Nama pengguna pelapor.
@@ -98,12 +87,12 @@ class IncidentModel extends Equatable {
   final String? deletedAt;
 
   /// ISO 8601 timestamp pembuatan laporan insiden.
+  @JsonKey(fromJson: _createdAtOrNow)
   final String createdAt;
 
   /// ISO 8601 timestamp pembaruan data insiden terakhir.
   final String? updatedAt;
 
-  /// Mengonversi objek ke Map JSON.
   Map<String, dynamic> toJson() {
     return {
       'id': id,

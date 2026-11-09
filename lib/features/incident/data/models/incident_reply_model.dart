@@ -1,10 +1,17 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'incident_reply_model.g.dart';
+
+/// Server may omit `created_at`; fall back to the moment of parsing.
+String _createdAtOrNow(Object? value) =>
+    (value as String?) ?? DateTime.now().toIso8601String();
 
 /// Pure DTO model untuk pesan balasan thread insiden (`IncidentReplyDto`).
 ///
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
+@JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
 class IncidentReplyModel extends Equatable {
-  /// Membuat instance [IncidentReplyModel].
   const IncidentReplyModel({
     required this.id,
     required this.incidentId,
@@ -16,48 +23,40 @@ class IncidentReplyModel extends Equatable {
     this.photos = const [],
   });
 
-  /// Mengonversi JSON Map dari backend menjadi objek [IncidentReplyModel].
-  factory IncidentReplyModel.fromJson(Map<String, dynamic> json) {
-    return IncidentReplyModel(
-      id: json['id'] as String,
-      incidentId: (json['incident_id'] ?? '') as String,
-      senderId: (json['sender_id'] ?? '') as String,
-      senderName: (json['sender_name'] ?? '') as String,
-      senderRole: (json['sender_role'] ?? '') as String,
-      message: (json['message'] ?? '') as String,
-      photos: json['photos'] != null
-          ? (json['photos'] as List<dynamic>).map((e) => e.toString()).toList()
-          : const [],
-      createdAt:
-          (json['created_at'] ?? DateTime.now().toIso8601String()) as String,
-    );
-  }
+  factory IncidentReplyModel.fromJson(Map<String, dynamic> json) =>
+      _$IncidentReplyModelFromJson(json);
 
   /// ID unik balasan.
   final String id;
 
   /// ID insiden terkait.
+  @JsonKey(defaultValue: '')
   final String incidentId;
 
   /// ID pengguna pengirim.
+  @JsonKey(defaultValue: '')
   final String senderId;
 
   /// Nama lengkap pengirim.
+  @JsonKey(defaultValue: '')
   final String senderName;
 
   /// Role pengirim ('admin', 'guard').
+  @JsonKey(defaultValue: '')
   final String senderRole;
 
   /// Pesan teks.
+  @JsonKey(defaultValue: '')
   final String message;
 
   /// Daftar URL foto lampiran balasan.
+  @JsonKey(defaultValue: <String>[])
   final List<String> photos;
 
   /// ISO 8601 timestamp saat balasan dikirimkan.
+  @JsonKey(fromJson: _createdAtOrNow)
   final String createdAt;
 
-  /// Mengonversi objek ke Map JSON.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
