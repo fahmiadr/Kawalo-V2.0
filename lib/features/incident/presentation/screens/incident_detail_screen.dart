@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -39,6 +40,10 @@ class IncidentDetailScreen extends StatefulWidget {
   /// Factory rute navigasi standar [IncidentDetailScreen].
   static Route<dynamic> route({required String incidentId}) {
     return AppPageRoute.forwardBackward<dynamic>(
+      settings: RouteSettings(
+        name: AppRouteNames.incidentDetail,
+        arguments: incidentId,
+      ),
       builder: (context) {
         final module = context.read<IncidentModule>();
         return BlocProvider<IncidentDetailCubit>(

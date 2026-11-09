@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
@@ -31,6 +33,11 @@ class AttendanceScreen extends StatefulWidget {
 
   /// Instance [AttendanceCubit] opsional untuk injeksi pengujian.
   final AttendanceCubit? cubit;
+
+  static Route<void> route() => AppPageRoute.slideFade<void>(
+    settings: const RouteSettings(name: AppRouteNames.attendance),
+    builder: (_) => const AttendanceScreen(),
+  );
 
   @override
   State<AttendanceScreen> createState() => _AttendanceScreenState();

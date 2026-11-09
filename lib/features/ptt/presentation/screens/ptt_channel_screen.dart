@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
@@ -8,6 +10,13 @@ import 'package:kawalo_mobile/features/ptt/presentation/widgets/tactical_ptt_but
 
 class PttChannelScreen extends StatefulWidget {
   const PttChannelScreen({super.key});
+
+  static Route<void> route(PttCubit cubit) =>
+      AppPageRoute.forwardBackward<void>(
+        settings: const RouteSettings(name: AppRouteNames.ptt),
+        builder: (_) =>
+            BlocProvider.value(value: cubit, child: const PttChannelScreen()),
+      );
 
   @override
   State<PttChannelScreen> createState() => _PttChannelScreenState();

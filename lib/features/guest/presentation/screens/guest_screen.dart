@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -49,6 +51,11 @@ class GuestScreen extends StatefulWidget {
 
   /// Instance [GuestCubit] opsional untuk injeksi pengujian.
   final GuestCubit? cubit;
+
+  static Route<void> route() => AppPageRoute.slideFade<void>(
+    settings: const RouteSettings(name: AppRouteNames.guests),
+    builder: (_) => const GuestScreen(),
+  );
 
   @override
   State<GuestScreen> createState() => _GuestScreenState();

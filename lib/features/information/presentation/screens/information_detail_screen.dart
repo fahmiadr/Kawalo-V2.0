@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
@@ -50,6 +51,7 @@ Future<void> navigateToInformationDetailScreen(
 
   return Navigator.of(context).push<void>(
     AppPageRoute.forwardBackward<void>(
+      settings: const RouteSettings(name: AppRouteNames.informationDetail),
       builder: (_) => resolvedCubit != null
           ? BlocProvider.value(value: resolvedCubit, child: screen)
           : screen,

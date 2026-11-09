@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
@@ -28,6 +29,7 @@ class CreateIncidentScreen extends StatelessWidget {
     MediaPickerService? mediaPickerService,
   }) {
     return AppPageRoute.forwardBackward<IncidentEntity?>(
+      settings: const RouteSettings(name: AppRouteNames.incidentCreate),
       builder: (context) {
         if (cubit != null) {
           return IncidentFormDialog(
