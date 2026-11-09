@@ -4,7 +4,6 @@ import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
@@ -12,11 +11,12 @@ import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
+import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/features/incident/presentation/screens/incident_screen.dart';
 import 'package:kawalo_mobile/features/operational/presentation/screens/operational_screen.dart';
 
-export 'package:kawalo_mobile/core/widgets/app_shortcut_card.dart';
 export 'package:kawalo_mobile/core/widgets/app_text_link.dart';
+export 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 
 /// Komponen bagian "Pintasan" pada Beranda yang memuat header
 /// dan daftar kartu pintasan.

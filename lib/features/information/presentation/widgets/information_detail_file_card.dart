@@ -5,12 +5,12 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
-import 'package:kawalo_mobile/core/widgets/app_file_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/extensions/information_item_ui_extension.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/app_file_tile.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Seksi kartu penampil berkas lampiran resmi untuk layar detail informasi

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_detail_post_card.dart';
 
 void main() {

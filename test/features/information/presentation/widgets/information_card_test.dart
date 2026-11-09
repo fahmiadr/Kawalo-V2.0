@@ -4,11 +4,11 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_card.dart';
 
 Widget _buildCardTestApp(InformationItemEntity item, {VoidCallback? onTap}) {
@@ -31,8 +31,8 @@ Widget _buildCardTestApp(InformationItemEntity item, {VoidCallback? onTap}) {
 void main() {
   group('InformationCard Tests', () {
     testWidgets(
-      'renders basic information metadata without collage when no photos',
-      (tester) async {
+        'renders basic information metadata without collage when no photos',
+        (tester) async {
       const item = InformationItemEntity(
         id: 'info-1',
         title: 'Pengumuman Penting',
@@ -68,8 +68,8 @@ void main() {
     });
 
     testWidgets(
-      'renders AppImageCollage when photos exist and opens AppImageViewer',
-      (tester) async {
+        'renders AppImageCollage when photos exist and opens AppImageViewer',
+        (tester) async {
       final handle = tester.ensureSemantics();
       const item = InformationItemEntity(
         id: 'info-3',
@@ -136,31 +136,30 @@ void main() {
     });
 
     testWidgets(
-      'renders disabled locked state with 38% opacity '
-      'when isSelectable is false',
-      (tester) async {
-        const item = InformationItemEntity(
-          id: 'info-5',
-          title: 'Laporan Petugas Lain',
-          feedType: 'GENERAL',
-          photos: [],
-        );
+        'renders disabled locked state with 38% opacity '
+        'when isSelectable is false', (tester) async {
+      const item = InformationItemEntity(
+        id: 'info-5',
+        title: 'Laporan Petugas Lain',
+        feedType: 'GENERAL',
+        photos: [],
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
-            home: const Scaffold(
-              body: InformationCard(
-                item: item,
-                isSelectionMode: true,
-                isSelectable: false,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => M3ETheme(
+            data: AppTheme.m3eLight(),
+            child: child!,
+          ),
+          home: const Scaffold(
+            body: InformationCard(
+              item: item,
+              isSelectionMode: true,
+              isSelectable: false,
             ),
           ),
-        );
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(Opacity), findsOneWidget);
