@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
@@ -21,12 +21,10 @@ import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/auth/presentation/cubit/saved_email_cubit.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/group_selection_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/auth_header_widget.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/privacy_policy_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/terms_and_privacy_widget.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/terms_of_service_bottom_sheet.dart';
-import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
 
 /// Clean & Responsive Login Screen refactored from Figma specifications.
 class LoginScreen extends StatefulWidget {
@@ -158,19 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is AuthFailure) {
             AppSnackbar.show(context, message: state.message);
           } else if (state is Authenticated) {
-            Navigator.of(context).pushAndRemoveUntil<void>(
-              AppPageRoute.fade<void>(
-                builder: (_) => const MainNavigationScreen(),
-              ),
-              (route) => false,
-            );
+            unawaited(AppRouter.of(context).toMain());
           } else if (state is GroupSelectionRequired) {
-            Navigator.of(context).pushAndRemoveUntil<void>(
-              AppPageRoute.fade<void>(
-                builder: (_) => GroupSelectionScreen(user: state.user),
-              ),
-              (route) => false,
-            );
+            unawaited(AppRouter.of(context).toGroupSelection(state.user));
           }
         },
         builder: (context, state) {

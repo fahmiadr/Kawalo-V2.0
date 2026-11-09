@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
@@ -11,10 +11,6 @@ import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/group_selection_screen.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
-import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
-import 'package:kawalo_mobile/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:kawalo_mobile/features/splash/presentation/cubit/splash_cubit.dart';
 import 'package:kawalo_mobile/features/splash/presentation/widgets/background_glow_widget.dart';
 import 'package:kawalo_mobile/features/splash/presentation/widgets/brand_logo_widget.dart';
@@ -167,20 +163,16 @@ class _SplashScreenState extends State<SplashScreen>
 
       final splash = _splashCubit.state;
       final user = splash.user;
-      Widget nextScreen;
+      final router = AppRouter.of(context);
       if (!persistenceEnabled || !splash.isOnboardingCompleted) {
-        nextScreen = const OnboardingScreen();
+        unawaited(router.toOnboarding());
       } else if (splash.isGroupSelectionRequired && user != null) {
-        nextScreen = GroupSelectionScreen(user: user);
+        unawaited(router.toGroupSelection(user));
       } else if (splash.isAuthenticated) {
-        nextScreen = const MainNavigationScreen();
+        unawaited(router.toMain());
       } else {
-        nextScreen = const LoginScreen();
+        unawaited(router.toLogin());
       }
-
-      Navigator.of(context).pushReplacement<void, void>(
-        AppPageRoute.fade<void>(builder: (_) => nextScreen),
-      );
     }
   }
 

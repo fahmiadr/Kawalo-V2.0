@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
@@ -9,7 +11,6 @@ import 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/features/incident/presentation/screens/incident_screen.dart';
@@ -63,9 +64,7 @@ class HomeShortcutsSection extends StatelessWidget {
         title: 'Data Tamu',
         iconPath: KawaloColorVectors.guestValidation,
         onTap: () {
-          Navigator.of(context).push(
-            AppPageRoute.slideFade<void>(builder: (_) => const GuestScreen()),
-          );
+          Navigator.of(context).push(GuestScreen.route());
         },
       ),
       AppShortcutItem(
@@ -73,11 +72,7 @@ class HomeShortcutsSection extends StatelessWidget {
         subtitle: 'Check-in/Check-out',
         iconPath: KawaloColorVectors.checklist2,
         onTap: () {
-          Navigator.of(context).push(
-            AppPageRoute.slideFade<void>(
-              builder: (_) => const AttendanceScreen(),
-            ),
-          );
+          Navigator.of(context).push(AttendanceScreen.route());
         },
       ),
       AppShortcutItem(
@@ -92,11 +87,7 @@ class HomeShortcutsSection extends StatelessWidget {
         title: 'Aktifitas Operasional',
         iconPath: KawaloColorVectors.patrol2,
         onTap: () {
-          Navigator.of(context).push(
-            AppPageRoute.slideFade<void>(
-              builder: (_) => const OperationalScreen(),
-            ),
-          );
+          Navigator.of(context).push(OperationalScreen.route());
         },
       ),
       AppShortcutItem(
@@ -128,12 +119,7 @@ class HomeShortcutsSection extends StatelessWidget {
                 try {
                   context.read<AuthBloc>().add(const LogoutRequested());
                 } on Object catch (_) {
-                  Navigator.of(context).pushAndRemoveUntil<void>(
-                    AppPageRoute.fade<void>(
-                      builder: (_) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
+                  unawaited(AppRouter.of(context).toLogin());
                 }
               }
             },

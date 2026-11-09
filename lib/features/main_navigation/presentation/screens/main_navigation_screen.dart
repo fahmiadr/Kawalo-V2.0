@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
@@ -16,7 +16,6 @@ import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:kawalo_mobile/features/home/presentation/utils/home_greeting_helper.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_dashboard_view.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
@@ -183,11 +182,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           try {
             unawaited(context.read<PttCubit?>()?.leaveChannel());
           } on Object catch (_) {}
-          Navigator.of(context).pushAndRemoveUntil<void>(
-            AppPageRoute.fade<void>(
-              builder: (_) => LoginScreen(sessionExpiredMessage: state.message),
-            ),
-            (route) => false,
+          unawaited(
+            AppRouter.of(context).toLogin(sessionExpiredMessage: state.message),
           );
         }
       },

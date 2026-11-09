@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -15,12 +17,10 @@ import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_card.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_selection_action_bar.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_selection_header.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_variant_mapper.dart';
-import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
 
 /// Screen for users belonging to multiple groups to choose their active group.
 /// Follows Material 3 Expressive standards, accessible touch targets, and
@@ -126,18 +126,10 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
         if (state is AuthFailure) {
           AppSnackbar.show(context, message: state.message);
         } else if (state is Authenticated) {
-          Navigator.of(context).pushAndRemoveUntil<void>(
-            AppPageRoute.fade<void>(
-              builder: (_) => const MainNavigationScreen(),
-            ),
-            (route) => false,
-          );
+          unawaited(AppRouter.of(context).toMain());
         } else if (state is Unauthenticated) {
-          Navigator.of(context).pushAndRemoveUntil<void>(
-            AppPageRoute.fade<void>(
-              builder: (_) => LoginScreen(sessionExpiredMessage: state.message),
-            ),
-            (route) => false,
+          unawaited(
+            AppRouter.of(context).toLogin(sessionExpiredMessage: state.message),
           );
         }
       },

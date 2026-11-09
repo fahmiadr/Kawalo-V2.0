@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
@@ -58,15 +57,7 @@ class HomePttFloatingCard extends StatelessWidget {
       hint: 'Ketuk untuk membuka kontrol saluran PTT penuh',
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            AppPageRoute.forwardBackward<void>(
-              builder: (_) => BlocProvider.value(
-                value: pttCubit,
-                child: const PttChannelScreen(),
-              ),
-            ),
-          );
+          Navigator.of(context).push(PttChannelScreen.route(pttCubit));
         },
         borderRadius: BorderRadius.circular(16),
         child: Ink(

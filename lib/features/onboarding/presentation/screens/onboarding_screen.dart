@@ -1,12 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:kawalo_mobile/features/onboarding/presentation/widgets/onboarding_content_text.dart';
 import 'package:kawalo_mobile/features/onboarding/presentation/widgets/onboarding_hero_image.dart';
 import 'package:kawalo_mobile/features/onboarding/presentation/widgets/onboarding_progress_bar.dart';
@@ -281,9 +282,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   void _navigateToNextScreen(BuildContext context) {
     _animController.stop();
-    Navigator.of(context).pushReplacement(
-      AppPageRoute.fade<void>(builder: (context) => const LoginScreen()),
-    );
+    unawaited(AppRouter.of(context).toLogin());
   }
 
   @override
