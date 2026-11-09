@@ -10,11 +10,11 @@ import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
+import 'package:kawalo_mobile/features/information/domain/repositories/information_repository.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_information/delete_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_information/delete_information_usecase.dart';
-import 'package:kawalo_mobile/features/information/domain/usecases/get_information/get_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/delete_batch_result.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/get_information_params.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
@@ -27,7 +27,7 @@ class InformationCubit
     extends ListFetchCubit<InformationState, InformationItemEntity> {
   /// Membuat instance [InformationCubit].
   InformationCubit({
-    required this.getInformationUseCase,
+    required this.informationRepository,
     required this.deleteInformationUseCase,
     required this.deleteBatchInformationUseCase,
     this.groupRepository,
@@ -45,8 +45,8 @@ class InformationCubit
          syncKey: AppConstants.syncKeyInformation,
        );
 
-  /// Use case untuk mengambil data informasi.
-  final GetInformationUseCase getInformationUseCase;
+  /// Repositori data informasi.
+  final InformationRepository informationRepository;
 
   /// Use case untuk menghapus data informasi tunggal.
   final DeleteInformationUseCase deleteInformationUseCase;
@@ -150,18 +150,19 @@ class InformationCubit
       extraKey: '$effectiveAuthorEmail',
       currentItems: state.displayedInformation,
       loading: (lastSync) => InformationLoading(lastSync: lastSync),
-      request: (limit, cancelToken) async => (await getInformationUseCase(
-        GetInformationParams(
-          search: filter.search,
-          limit: limit,
-          offset: 0,
-          startDate: filter.startIso,
-          endDate: filter.endIso,
-          createdBy: effectiveAuthorEmail,
-          cancelToken: cancelToken,
-          isRefresh: isRefresh,
-        ),
-      )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      request: (limit, cancelToken) async =>
+          (await informationRepository.getInformation(
+            GetInformationParams(
+              search: filter.search,
+              limit: limit,
+              offset: 0,
+              startDate: filter.startIso,
+              endDate: filter.endIso,
+              createdBy: effectiveAuthorEmail,
+              cancelToken: cancelToken,
+              isRefresh: isRefresh,
+            ),
+          )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
       loaded: (page, lastSync, {required hasMore}) => InformationLoaded(
         information: page.items,
         isFromCache: page.isFromCache,
@@ -195,7 +196,7 @@ class InformationCubit
 
   /// Memuat halaman data informasi berikutnya untuk mendukung infinite scroll.
   Future<void> loadMoreInformation() => runLoadMore<InformationLoaded>(
-    request: (current) async => (await getInformationUseCase(
+    request: (current) async => (await informationRepository.getInformation(
       GetInformationParams(
         search: current.searchQuery,
         limit: pageSize,

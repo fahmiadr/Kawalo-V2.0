@@ -7,11 +7,11 @@ import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
+import 'package:kawalo_mobile/features/information/domain/repositories/information_repository.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_information/delete_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_information/delete_information_usecase.dart';
-import 'package:kawalo_mobile/features/information/domain/usecases/get_information/get_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/delete_batch_result.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/get_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/information_result.dart';
@@ -19,7 +19,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetInformationUseCase extends Mock implements GetInformationUseCase {}
+class MockInformationRepository extends Mock implements InformationRepository {}
 
 class MockDeleteInformationUseCase extends Mock
     implements DeleteInformationUseCase {}
@@ -31,7 +31,7 @@ class MockGroupRepository extends Mock implements GroupRepository {}
 
 void main() {
   late InformationCubit cubit;
-  late MockGetInformationUseCase mockGetInformationUseCase;
+  late MockInformationRepository mockInformationRepository;
   late MockDeleteInformationUseCase mockDeleteInformationUseCase;
   late MockDeleteBatchInformationUseCase mockDeleteBatchInformationUseCase;
 
@@ -64,11 +64,11 @@ void main() {
   });
 
   setUp(() {
-    mockGetInformationUseCase = MockGetInformationUseCase();
+    mockInformationRepository = MockInformationRepository();
     mockDeleteInformationUseCase = MockDeleteInformationUseCase();
     mockDeleteBatchInformationUseCase = MockDeleteBatchInformationUseCase();
     cubit = InformationCubit(
-      getInformationUseCase: mockGetInformationUseCase,
+      informationRepository: mockInformationRepository,
       deleteInformationUseCase: mockDeleteInformationUseCase,
       deleteBatchInformationUseCase: mockDeleteBatchInformationUseCase,
     );
@@ -113,7 +113,7 @@ void main() {
       'emits [InformationLoading, InformationLoaded] when successful',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -137,7 +137,7 @@ void main() {
       'when serving cached fallback',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tCachedResult));
         return cubit;
       },
@@ -154,7 +154,7 @@ void main() {
       'emits [InformationLoading, InformationError] on failure',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('API Error')));
         return cubit;
       },
@@ -173,14 +173,14 @@ void main() {
       'normalizes empty search to null and sets searchQuery to null',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.fetchInformation(search: ''),
       verify: (_) {
         verify(
-          () => mockGetInformationUseCase(
+          () => mockInformationRepository.getInformation(
             any(
               that: isA<GetInformationParams>().having(
                 (p) => p.search,
@@ -201,7 +201,7 @@ void main() {
       'updates without emitting InformationLoading',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -227,7 +227,7 @@ void main() {
         lastSync: 'Diperbarui Hari ini, 15.20',
       ),
       build: () {
-        when(() => mockGetInformationUseCase(any())).thenAnswer(
+        when(() => mockInformationRepository.getInformation(any())).thenAnswer(
           (_) async =>
               const Right(InformationResult(items: [], isFromCache: true)),
         );
@@ -248,7 +248,7 @@ void main() {
         lastSync: 'Diperbarui Hari ini, 15.20',
       ),
       build: () {
-        when(() => mockGetInformationUseCase(any())).thenAnswer(
+        when(() => mockInformationRepository.getInformation(any())).thenAnswer(
           (_) async => const Left(ServerFailure('Koneksi terputus')),
         );
         return cubit;
@@ -270,7 +270,7 @@ void main() {
       'clears cachedInformation when fetchInformation with new query fails',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
@@ -298,14 +298,14 @@ void main() {
       ),
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetFilters(),
       verify: (_) {
         verify(
-          () => mockGetInformationUseCase(
+          () => mockInformationRepository.getInformation(
             any(
               that: isA<GetInformationParams>()
                   .having((p) => p.search, 'search', isNull)
@@ -332,14 +332,14 @@ void main() {
       ),
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetDateFilter(),
       verify: (_) {
         verify(
-          () => mockGetInformationUseCase(
+          () => mockInformationRepository.getInformation(
             any(
               that: isA<GetInformationParams>()
                   .having((p) => p.search, 'search', 'laporan')
@@ -362,7 +362,7 @@ void main() {
       'triggers fetchInformation with new filter period',
       build: () {
         when(
-          () => mockGetInformationUseCase(any()),
+          () => mockInformationRepository.getInformation(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -469,7 +469,7 @@ void main() {
     test(
       'changes author filter and fetches server-filtered information',
       () async {
-        when(() => mockGetInformationUseCase(any())).thenAnswer((
+        when(() => mockInformationRepository.getInformation(any())).thenAnswer((
           invocation,
         ) async {
           final params =
@@ -502,7 +502,7 @@ void main() {
         expect(mineLoaded.displayedInformation.length, 1);
         expect(mineLoaded.displayedInformation.first.id, '1');
         verify(
-          () => mockGetInformationUseCase(
+          () => mockInformationRepository.getInformation(
             any(
               that: isA<GetInformationParams>().having(
                 (p) => p.createdBy,
@@ -521,7 +521,7 @@ void main() {
         expect(allLoaded.hasActiveAuthorFilter, isFalse);
         expect(allLoaded.displayedInformation.length, 2);
         verify(
-          () => mockGetInformationUseCase(
+          () => mockInformationRepository.getInformation(
             any(
               that: isA<GetInformationParams>().having(
                 (p) => p.createdBy,
@@ -554,7 +554,7 @@ void main() {
         ).thenAnswer((_) async => const Right(tMembers));
 
         final cubitWithMembers = InformationCubit(
-          getInformationUseCase: mockGetInformationUseCase,
+          informationRepository: mockInformationRepository,
           deleteInformationUseCase: mockDeleteInformationUseCase,
           deleteBatchInformationUseCase: mockDeleteBatchInformationUseCase,
           groupRepository: mockGroupRepository,
@@ -580,7 +580,7 @@ void main() {
         ).thenAnswer((_) async => const Left(tFailure));
 
         final cubitWithMembers = InformationCubit(
-          getInformationUseCase: mockGetInformationUseCase,
+          informationRepository: mockInformationRepository,
           deleteInformationUseCase: mockDeleteInformationUseCase,
           deleteBatchInformationUseCase: mockDeleteBatchInformationUseCase,
           groupRepository: mockGroupRepository,

@@ -12,7 +12,6 @@ import 'package:kawalo_mobile/features/information/domain/repositories/informati
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_batch_information/delete_batch_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/delete_information/delete_information_usecase.dart';
-import 'package:kawalo_mobile/features/information/domain/usecases/get_information/get_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/update_information/update_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_cubit.dart';
@@ -52,7 +51,7 @@ final class InformationModule {
   /// Merakit dan mengembalikan instance [InformationCubit] yang siap pakai.
   InformationCubit createCubit() {
     return InformationCubit(
-      getInformationUseCase: GetInformationUseCase(repository),
+      informationRepository: repository,
       deleteInformationUseCase: DeleteInformationUseCase(repository),
       deleteBatchInformationUseCase: DeleteBatchInformationUseCase(repository),
       groupRepository: _groupRepository,
