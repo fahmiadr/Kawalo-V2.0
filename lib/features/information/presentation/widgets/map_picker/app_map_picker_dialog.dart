@@ -5,14 +5,14 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:kawalo_mobile/core/network/cancellation_token.dart';
-import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/location_actionable_error.dart';
+import 'package:kawalo_mobile/features/information/presentation/cubit/map_picker_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/map_center_pin_marker.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/map_picker_bottom_overlay.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/map_picker_canvas.dart';
@@ -156,18 +156,13 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
   static const LatLng _defaultCoordinate = LatLng(-6.2088, 106.8456);
 
   late final MapController _mapController;
-  late final ReverseGeocodeService _geocodeService;
+  late final MapPickerCubit _cubit;
   late final ValueNotifier<LatLng> _centerNotifier;
-  late final ValueNotifier<MapPickerOverlayState> _overlayStateNotifier;
   late final ValueNotifier<bool> _isMovingNotifier;
   late final AppLifecycleListener _lifecycleListener;
 
-  int _geocodeRequestId = 0;
-  int _gpsGeneration = 0;
   bool _isMapReady = false;
   bool _isErrorSheetVisible = false;
-  Timer? _debounceTimer;
-  AppCancellationToken? _geocodeCancelToken;
 
   bool get _hasInitialCoordinates =>
       widget.initialLatitude != null && widget.initialLongitude != null;
@@ -176,8 +171,6 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
   void initState() {
     super.initState();
     _mapController = MapController();
-    _geocodeService =
-        widget.reverseGeocodeService ?? ReverseGeocodeService.instance;
 
     final initialCenter = _hasInitialCoordinates
         ? LatLng(widget.initialLatitude!, widget.initialLongitude!)
@@ -191,14 +184,19 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
         (widget.initialAddress == null ||
             widget.initialAddress!.trim().isEmpty);
 
-    _overlayStateNotifier = ValueNotifier<MapPickerOverlayState>(
-      MapPickerOverlayState(
+    _cubit = MapPickerCubit(
+      widget.reverseGeocodeService ?? ReverseGeocodeService.instance,
+      widget.locationService,
+      initialState: MapPickerOverlayState(
         hasConfirmedFix: _hasInitialCoordinates,
         resolvedAddress: _hasInitialCoordinates && !shouldGeocodeInitial
             ? widget.initialAddress
             : null,
         isResolvingAddress: shouldGeocodeInitial,
       ),
+      locationProvider: widget.locationProvider,
+      lastKnownLocationProvider: widget.lastKnownLocationProvider,
+      onGeocodeStart: () => _isMovingNotifier.value = false,
     );
 
     // Layer 2: Lifecycle-Driven Auto-Recovery (Self-Healing)
@@ -206,7 +204,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
 
     if (_hasInitialCoordinates) {
       if (shouldGeocodeInitial) {
-        _scheduleGeocode(initialCenter, immediate: true);
+        _cubit.scheduleGeocode(initialCenter, immediate: true);
       }
     } else {
       _applyLastKnownViewportHint();
@@ -223,10 +221,8 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
   @override
   void dispose() {
     _lifecycleListener.dispose();
-    _debounceTimer?.cancel();
-    _geocodeCancelToken?.cancel();
+    unawaited(_cubit.close());
     _isMovingNotifier.dispose();
-    _overlayStateNotifier.dispose();
     _centerNotifier.dispose();
     _mapController.dispose();
     super.dispose();
@@ -237,7 +233,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
   /// Quick Settings dan kembali ke app).
   void _handleAppResume() {
     if (!mounted) return;
-    final state = _overlayStateNotifier.value;
+    final state = _cubit.state;
 
     // Self-Healing Auto-Recovery reaktif HANYA dipicu jika error bottom sheet
     // sedang aktif tampil di layar (_isErrorSheetVisible) saat aplikasi
@@ -252,150 +248,35 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
     }
   }
 
-  void _scheduleGeocode(LatLng target, {bool immediate = false}) {
-    _debounceTimer?.cancel();
-    _geocodeCancelToken?.cancel();
-    _geocodeCancelToken = null;
-    if (immediate) {
-      _startGeocode(target);
-      return;
-    }
-
-    _debounceTimer = Timer(const Duration(milliseconds: 650), () {
-      _startGeocode(target);
-    });
-  }
-
-  void _startGeocode(LatLng target) {
-    if (!mounted) return;
-    _isMovingNotifier.value = false;
-    _overlayStateNotifier.value = _overlayStateNotifier.value.copyWith(
-      isResolvingAddress: true,
-      hasGeocodeError: false,
-    );
-    unawaited(_executeGeocode(target));
-  }
-
-  Future<void> _executeGeocode(LatLng target) async {
-    _geocodeCancelToken?.cancel();
-    final cancelToken = DioCancellationToken();
-    _geocodeCancelToken = cancelToken;
-    final currentRequestId = ++_geocodeRequestId;
-    try {
-      final result = await _geocodeService.reverseGeocode(
-        latitude: target.latitude,
-        longitude: target.longitude,
-        cancelToken: cancelToken,
-      );
-      if (!mounted || currentRequestId != _geocodeRequestId) return;
-
-      if (result.isCancelled) return;
-
-      final (resolvedAddress, hasError) = switch (result.address?.trim()) {
-        final text? when text.isNotEmpty => (text, false),
-        _ => (null, true),
-      };
-
-      _overlayStateNotifier.value = _overlayStateNotifier.value.copyWith(
-        resolvedAddress: resolvedAddress,
-        isResolvingAddress: false,
-        hasGeocodeError: hasError,
-      );
-    } on Object catch (_) {
-      if (!mounted || currentRequestId != _geocodeRequestId) return;
-      _overlayStateNotifier.value = _overlayStateNotifier.value.copyWith(
-        resolvedAddress: null,
-        isResolvingAddress: false,
-        hasGeocodeError: true,
-      );
-    }
-  }
-
-  void _handleRetryGeocode() {
-    final state = _overlayStateNotifier.value;
-    if (state.isResolvingAddress || state.isLocatingUser) return;
-    _scheduleGeocode(_centerNotifier.value, immediate: true);
-  }
+  void _handleRetryGeocode() => _cubit.retryGeocode(_centerNotifier.value);
 
   Future<void> _applyLastKnownViewportHint() async {
-    try {
-      final fetchLastKnown =
-          widget.lastKnownLocationProvider ??
-          widget.locationService.getLastKnownPosition;
-      final lastKnown = await fetchLastKnown();
-      final state = _overlayStateNotifier.value;
-      if (!mounted ||
-          state.hasConfirmedFix ||
-          state.hasUserInteracted ||
-          lastKnown == null) {
-        return;
-      }
+    final lastKnown = await _cubit.fetchViewportHint();
+    if (!mounted || lastKnown == null) return;
 
-      final hintCenter = LatLng(lastKnown.latitude, lastKnown.longitude);
-      _centerNotifier.value = hintCenter;
-      if (_isMapReady) {
-        _mapController.move(hintCenter, 17);
-      }
-    } on Object catch (_) {
-      // Abaikan kegagalan cache, kamera tetap pada posisi awal default.
+    final hintCenter = LatLng(lastKnown.latitude, lastKnown.longitude);
+    _centerNotifier.value = hintCenter;
+    if (_isMapReady) {
+      _mapController.move(hintCenter, 17);
     }
   }
 
-  Future<void> _handleGoToCurrentLocation({bool isAutoRecovery = false}) async {
-    final state = _overlayStateNotifier.value;
-    if (state.isLocatingUser) return;
-
-    final generation = ++_gpsGeneration;
-    _overlayStateNotifier.value = state.copyWith(isLocatingUser: true);
-
-    try {
-      final fetchPosition =
-          widget.locationProvider ?? widget.locationService.getCurrentPosition;
-      final result = await fetchPosition();
-      if (!mounted || generation != _gpsGeneration) return;
-
-      if (result.isSuccess && result.coordinates != null) {
-        _dismissErrorSheetIfVisible();
-
-        // Lindungi koordinat pilihan manual jika pengguna sempat menggeser
-        // peta saat auto-recovery sedang memproses asinkron di background.
-        if (isAutoRecovery && _overlayStateNotifier.value.hasUserInteracted) {
-          return;
-        }
-
-        final (lat, lng) = result.coordinates!;
-        final newCenter = LatLng(lat, lng);
+  Future<void> _handleGoToCurrentLocation({bool isAutoRecovery = false}) {
+    return _cubit.goToCurrentLocation(
+      isAutoRecovery: isAutoRecovery,
+      onFixFound: _dismissErrorSheetIfVisible,
+      onLocated: (newCenter) {
         if (_isMapReady) {
           _mapController.move(newCenter, 18);
         }
         _centerNotifier.value = newCenter;
-        _overlayStateNotifier.value = _overlayStateNotifier.value.copyWith(
-          hasConfirmedFix: true,
-          hasGeocodeError: false,
-        );
-        _scheduleGeocode(newCenter, immediate: true);
-      } else {
-        if (!mounted || generation != _gpsGeneration) return;
+      },
+      onFailure: (result) {
         if (!_isErrorSheetVisible) {
           _presentLocationFeedback(result);
         }
-      }
-    } on Object catch (_) {
-      if (!mounted || generation != _gpsGeneration) return;
-      if (!_isErrorSheetVisible) {
-        _presentLocationFeedback(
-          const LocationResult.error(
-            'Gagal mendeteksi lokasi GPS perangkat Anda.',
-          ),
-        );
-      }
-    } finally {
-      if (mounted && generation == _gpsGeneration) {
-        _overlayStateNotifier.value = _overlayStateNotifier.value.copyWith(
-          isLocatingUser: false,
-        );
-      }
-    }
+      },
+    );
   }
 
   void _dismissErrorSheetIfVisible() {
@@ -445,7 +326,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
       AppMapPickerResult(
         latitude: currentCenter.latitude,
         longitude: currentCenter.longitude,
-        address: _overlayStateNotifier.value.resolvedAddress,
+        address: _cubit.state.resolvedAddress,
       ),
     );
   }
@@ -477,7 +358,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
             onMapReady: () {
               _isMapReady = true;
               final center = _centerNotifier.value;
-              final state = _overlayStateNotifier.value;
+              final state = _cubit.state;
               if (!_hasInitialCoordinates &&
                   !state.hasUserInteracted &&
                   center != _defaultCoordinate) {
@@ -490,14 +371,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
                 if (!_isMovingNotifier.value) {
                   _isMovingNotifier.value = true;
                 }
-                final current = _overlayStateNotifier.value;
-                if (!current.hasUserInteracted || current.hasGeocodeError) {
-                  _overlayStateNotifier.value = current.copyWith(
-                    hasUserInteracted: true,
-                    hasGeocodeError: false,
-                  );
-                }
-                _scheduleGeocode(camera.center);
+                _cubit.handleUserGesture(camera.center);
               }
             },
           ),
@@ -506,9 +380,9 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
           MapCenterPinMarker(isMovingListenable: _isMovingNotifier),
 
           // ── Kontrol Melayang Bawah & Kartu Konfirmasi (Targeted Rebuild) ──
-          ValueListenableBuilder<MapPickerOverlayState>(
-            valueListenable: _overlayStateNotifier,
-            builder: (context, overlayState, _) {
+          BlocBuilder<MapPickerCubit, MapPickerOverlayState>(
+            bloc: _cubit,
+            builder: (context, overlayState) {
               return MapPickerBottomOverlay(
                 state: overlayState,
                 centerListenable: _centerNotifier,
