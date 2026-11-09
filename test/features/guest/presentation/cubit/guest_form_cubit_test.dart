@@ -6,10 +6,9 @@ import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_master_guest_types/get_master_guest_types_params.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_master_guest_types/get_master_guest_types_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
@@ -20,15 +19,14 @@ class MockCreateGuestUseCase extends Mock implements CreateGuestUseCase {}
 
 class MockUpdateGuestUseCase extends Mock implements UpdateGuestUseCase {}
 
-class MockGetMasterGuestTypesUseCase extends Mock
-    implements GetMasterGuestTypesUseCase {}
+class MockGuestRepository extends Mock implements GuestRepository {}
 
 class MockGroupRepository extends Mock implements GroupRepository {}
 
 void main() {
   late MockCreateGuestUseCase mockCreateGuestUseCase;
   late MockUpdateGuestUseCase mockUpdateGuestUseCase;
-  late MockGetMasterGuestTypesUseCase mockGetMasterTypesUseCase;
+  late MockGuestRepository mockGuestRepository;
   late MockGroupRepository mockGroupRepository;
 
   const dummySession = AuthSessionEntity(
@@ -73,17 +71,18 @@ void main() {
       ),
     );
     registerFallbackValue(const UpdateGuestParams(id: '123'));
-    registerFallbackValue(const GetMasterGuestTypesParams());
   });
 
   setUp(() {
     mockCreateGuestUseCase = MockCreateGuestUseCase();
     mockUpdateGuestUseCase = MockUpdateGuestUseCase();
-    mockGetMasterTypesUseCase = MockGetMasterGuestTypesUseCase();
+    mockGuestRepository = MockGuestRepository();
     mockGroupRepository = MockGroupRepository();
 
     when(
-      () => mockGetMasterTypesUseCase(any()),
+      () => mockGuestRepository.getMasterGuestTypes(
+        cancelToken: any(named: 'cancelToken'),
+      ),
     ).thenAnswer((_) async => const Right(sampleMasterTypes));
     when(
       () => mockGroupRepository.getMembers(
@@ -96,7 +95,7 @@ void main() {
     return GuestFormCubit(
       createGuestUseCase: mockCreateGuestUseCase,
       updateGuestUseCase: mockUpdateGuestUseCase,
-      getMasterGuestTypesUseCase: mockGetMasterTypesUseCase,
+      guestRepository: mockGuestRepository,
       groupRepository: mockGroupRepository,
       initialItem: initialItem,
     );

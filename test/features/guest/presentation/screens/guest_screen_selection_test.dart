@@ -12,10 +12,10 @@ import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_guests/get_guests_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/delete_batch_result.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/guest_result.dart';
@@ -24,7 +24,7 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetGuestsUseCase extends Mock implements GetGuestsUseCase {}
+class MockGuestRepository extends Mock implements GuestRepository {}
 
 class MockDeleteGuestUseCase extends Mock implements DeleteGuestUseCase {}
 
@@ -306,11 +306,11 @@ void main() {
           tester.view.resetDevicePixelRatio();
         });
 
-        final mockGetGuestsUseCase = MockGetGuestsUseCase();
+        final mockGuestRepository = MockGuestRepository();
         final mockDeleteGuestUseCase = MockDeleteGuestUseCase();
         final mockDeleteBatchUseCase = MockDeleteBatchGuestUseCase();
 
-        when(() => mockGetGuestsUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async =>
               const Right(GuestResult(items: [guest1, guest2, guest3])),
         );
@@ -319,7 +319,7 @@ void main() {
         );
 
         final cubit = GuestCubit(
-          getGuestsUseCase: mockGetGuestsUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchUseCase,
         );

@@ -16,9 +16,9 @@ import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_guests/get_guests_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/guest_result.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
@@ -30,7 +30,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/guest_fixtures.dart';
 
-class MockGetGuestsUseCase extends Mock implements GetGuestsUseCase {}
+class MockGuestRepository extends Mock implements GuestRepository {}
 
 class MockDeleteGuestUseCase extends Mock implements DeleteGuestUseCase {}
 
@@ -197,8 +197,10 @@ void main() {
       });
 
       registerFallbackValue(const GetGuestsParams());
-      final mockUseCase = MockGetGuestsUseCase();
-      when(() => mockUseCase(any())).thenAnswer((invocation) async {
+      final mockGuestRepository = MockGuestRepository();
+      when(() => mockGuestRepository.getGuests(any())).thenAnswer((
+        invocation,
+      ) async {
         final params = invocation.positionalArguments.first as GetGuestsParams;
         final search = params.search?.toLowerCase();
         if (search == null || search.isEmpty) {
@@ -217,7 +219,7 @@ void main() {
       });
 
       final cubit = GuestCubit(
-        getGuestsUseCase: mockUseCase,
+        guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
       );
@@ -379,8 +381,10 @@ void main() {
       'no match',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer((invocation) async {
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer((
+          invocation,
+        ) async {
           final params =
               invocation.positionalArguments.first as GetGuestsParams;
           if (params.search?.toLowerCase() == 'nonexistentguestxyz') {
@@ -392,7 +396,7 @@ void main() {
         });
 
         final cubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
@@ -431,8 +435,8 @@ void main() {
       'online reconnect',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(
             GuestResult(items: GuestFixtures.defaultGuestEntities),
           ),
@@ -444,7 +448,7 @@ void main() {
         )..setStatus(ConnectivityStatus.offline);
 
         final guestCubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
@@ -496,14 +500,14 @@ void main() {
       WidgetTester tester,
     ) async {
       registerFallbackValue(const GetGuestsParams());
-      final mockUseCase = MockGetGuestsUseCase();
-      when(() => mockUseCase(any())).thenAnswer(
+      final mockGuestRepository = MockGuestRepository();
+      when(() => mockGuestRepository.getGuests(any())).thenAnswer(
         (_) async =>
             const Right(GuestResult(items: GuestFixtures.defaultGuestEntities)),
       );
 
       final guestCubit = GuestCubit(
-        getGuestsUseCase: mockUseCase,
+        guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
       );
@@ -517,7 +521,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Initial fetch on mount called once
-      verify(() => mockUseCase(any())).called(1);
+      verify(() => mockGuestRepository.getGuests(any())).called(1);
 
       // Open and tap/focus search bar without changing text
       await tester.tap(find.bySemanticsLabel('Cari data tamu'));
@@ -527,14 +531,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Must NOT trigger another fetchGuests call
-      verifyNever(() => mockUseCase(any()));
+      verifyNever(() => mockGuestRepository.getGuests(any()));
 
       // Entering text DOES trigger search after debounce
       await tester.enterText(find.byType(AppSearchBar), 'Bambang');
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       verify(
-        () => mockUseCase(
+        () => mockGuestRepository.getGuests(
           any(that: predicate<GetGuestsParams>((p) => p.search == 'bambang')),
         ),
       ).called(1);
@@ -547,15 +551,15 @@ void main() {
       'once',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(
             GuestResult(items: GuestFixtures.defaultGuestEntities),
           ),
         );
 
         final guestCubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
@@ -569,10 +573,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initial fetch on mount called once
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockGuestRepository.getGuests(any())).called(1);
 
         // Mock search returns empty so empty search state is displayed
-        when(() => mockUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(GuestResult(items: <GuestItemEntity>[])),
         );
 
@@ -585,12 +589,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Search fetch was called once
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockGuestRepository.getGuests(any())).called(1);
 
         // Verify empty state button is visible
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
 
-        when(() => mockUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(
             GuestResult(items: GuestFixtures.defaultGuestEntities),
           ),
@@ -603,7 +607,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Check if called exactly 1 time
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockGuestRepository.getGuests(any())).called(1);
 
         await guestCubit.close();
       },
@@ -613,13 +617,13 @@ void main() {
       'tapping Coba lagi on error state preserves active search and filter',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Left(ServerFailure('Koneksi terputus')),
         );
 
         final guestCubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
@@ -636,7 +640,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1 initial fetch failed
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockGuestRepository.getGuests(any())).called(1);
         expect(find.text('Gagal memuat data tamu'), findsOneWidget);
         expect(find.text('Coba lagi'), findsOneWidget);
 
@@ -652,12 +656,12 @@ void main() {
         expect(find.text('Coba lagi'), findsOneWidget);
 
         // When user taps 'Coba lagi', it should retry WITH search 'Bambang'
-        when(() => mockUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(
             GuestResult(items: GuestFixtures.defaultGuestEntities),
           ),
         );
-        clearInteractions(mockUseCase);
+        clearInteractions(mockGuestRepository);
 
         await tester.tap(find.text('Coba lagi'));
         await tester.pump();
@@ -665,7 +669,7 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(
-          () => mockUseCase(
+          () => mockGuestRepository.getGuests(
             any(that: predicate<GetGuestsParams>((p) => p.search == 'Bambang')),
           ),
         ).called(1);
@@ -679,15 +683,15 @@ void main() {
       'existing cubit state',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(
             GuestResult(items: GuestFixtures.defaultGuestEntities),
           ),
         );
 
         final guestCubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
@@ -723,15 +727,15 @@ void main() {
       'toggling search bar without query does not trigger fetchGuests',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(
             GuestResult(items: GuestFixtures.defaultGuestEntities),
           ),
         );
 
         final guestCubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
@@ -745,21 +749,21 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1. Initial postFrameCallback load calls fetchGuests once
-        verify(() => mockUseCase(any())).called(1);
+        verify(() => mockGuestRepository.getGuests(any())).called(1);
 
         // 2. Open search bar
         await tester.tap(find.bySemanticsLabel('Cari data tamu'));
         await tester.pumpAndSettle();
 
         // Verify no fetch triggered on open
-        verifyNever(() => mockUseCase(any()));
+        verifyNever(() => mockGuestRepository.getGuests(any()));
 
         // 3. Close search bar without entering text
         await tester.tap(find.bySemanticsLabel('Tutup pencarian'));
         await tester.pumpAndSettle();
 
         // Verify no fetch triggered on close when query was empty
-        verifyNever(() => mockUseCase(any()));
+        verifyNever(() => mockGuestRepository.getGuests(any()));
 
         await guestCubit.close();
       },

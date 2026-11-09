@@ -10,13 +10,13 @@ import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_guests/get_guests_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/delete_batch_result.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_params.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
@@ -28,7 +28,7 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart
 class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
   /// Membuat instance [GuestCubit].
   GuestCubit({
-    required this.getGuestsUseCase,
+    required this.guestRepository,
     required this.deleteGuestUseCase,
     required this.deleteBatchGuestUseCase,
     this.checkoutGuestUseCase,
@@ -47,8 +47,8 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
          syncKey: AppConstants.syncKeyGuest,
        );
 
-  /// Use case untuk mengambil data tamu.
-  final GetGuestsUseCase getGuestsUseCase;
+  /// Repositori data tamu.
+  final GuestRepository guestRepository;
 
   /// Use case untuk menghapus data tamu tunggal.
   final DeleteGuestUseCase deleteGuestUseCase;
@@ -155,7 +155,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
       extraKey: '$effectiveCreatorEmail',
       currentItems: state.displayedGuests,
       loading: (lastSync) => GuestLoading(lastSync: lastSync),
-      request: (limit, cancelToken) async => (await getGuestsUseCase(
+      request: (limit, cancelToken) async => (await guestRepository.getGuests(
         GetGuestsParams(
           search: filter.search,
           limit: limit,
@@ -200,7 +200,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
 
   /// Memuat halaman data tamu berikutnya untuk mendukung infinite scroll.
   Future<void> loadMoreGuests() => runLoadMore<GuestLoaded>(
-    request: (current) async => (await getGuestsUseCase(
+    request: (current) async => (await guestRepository.getGuests(
       GetGuestsParams(
         search: current.searchQuery,
         limit: pageSize,

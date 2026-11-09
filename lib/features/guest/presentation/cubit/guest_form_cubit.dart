@@ -9,10 +9,9 @@ import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_master_guest_types/get_master_guest_types_params.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_master_guest_types/get_master_guest_types_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
@@ -25,7 +24,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
   GuestFormCubit({
     required this.createGuestUseCase,
     required this.updateGuestUseCase,
-    required this.getMasterGuestTypesUseCase,
+    required this.guestRepository,
     required this.groupRepository,
     GuestItemEntity? initialItem,
   }) : super(_buildInitialState(initialItem)) {
@@ -38,8 +37,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
   /// Use case untuk memperbarui data tamu yang sudah ada.
   final UpdateGuestUseCase updateGuestUseCase;
 
-  /// Use case untuk memuat master tipe tamu.
-  final GetMasterGuestTypesUseCase getMasterGuestTypesUseCase;
+  /// Repositori data tamu untuk memuat master tipe tamu.
+  final GuestRepository guestRepository;
 
   /// Repositori grup untuk memuat daftar anggota (host warga).
   final GroupRepository groupRepository;
@@ -197,9 +196,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     );
 
     final results = await Future.wait([
-      getMasterGuestTypesUseCase(
-        GetMasterGuestTypesParams(cancelToken: cancelToken),
-      ),
+      guestRepository.getMasterGuestTypes(cancelToken: cancelToken),
       groupRepository.getMembers(cancelToken: cancelToken),
     ]);
 
@@ -256,8 +253,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       ),
     );
 
-    final result = await getMasterGuestTypesUseCase(
-      GetMasterGuestTypesParams(cancelToken: cancelToken),
+    final result = await guestRepository.getMasterGuestTypes(
+      cancelToken: cancelToken,
     );
 
     if (isClosed) return;

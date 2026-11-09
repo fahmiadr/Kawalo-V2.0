@@ -13,8 +13,6 @@ import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/chec
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_guests/get_guests_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_master_guest_types/get_master_guest_types_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
@@ -53,7 +51,7 @@ final class GuestModule {
   /// Merakit dan mengembalikan instance [GuestCubit] yang siap pakai.
   GuestCubit createCubit() {
     return GuestCubit(
-      getGuestsUseCase: GetGuestsUseCase(repository),
+      guestRepository: repository,
       deleteGuestUseCase: DeleteGuestUseCase(repository),
       deleteBatchGuestUseCase: DeleteBatchGuestUseCase(repository),
       checkoutGuestUseCase: CheckoutGuestUseCase(repository),
@@ -67,7 +65,7 @@ final class GuestModule {
     return GuestFormCubit(
       createGuestUseCase: CreateGuestUseCase(repository),
       updateGuestUseCase: UpdateGuestUseCase(repository),
-      getMasterGuestTypesUseCase: GetMasterGuestTypesUseCase(repository),
+      guestRepository: repository,
       groupRepository: _groupRepository,
       initialItem: initialItem,
     );

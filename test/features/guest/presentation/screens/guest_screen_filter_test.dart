@@ -6,9 +6,9 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_guests/get_guests_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/guest_result.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
@@ -19,7 +19,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/guest_fixtures.dart';
 
-class MockGetGuestsUseCase extends Mock implements GetGuestsUseCase {}
+class MockGuestRepository extends Mock implements GuestRepository {}
 
 class MockDeleteGuestUseCase extends Mock implements DeleteGuestUseCase {}
 
@@ -98,8 +98,10 @@ void main() {
       });
 
       registerFallbackValue(const GetGuestsParams());
-      final mockUseCase = MockGetGuestsUseCase();
-      when(() => mockUseCase(any())).thenAnswer((invocation) async {
+      final mockGuestRepository = MockGuestRepository();
+      when(() => mockGuestRepository.getGuests(any())).thenAnswer((
+        invocation,
+      ) async {
         final params = invocation.positionalArguments.first as GetGuestsParams;
         if (params.search?.toLowerCase() == 'tidakadanamaini') {
           return const Right(GuestResult(items: []));
@@ -110,7 +112,7 @@ void main() {
       });
 
       final cubit = GuestCubit(
-        getGuestsUseCase: mockUseCase,
+        guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
       );
@@ -157,14 +159,14 @@ void main() {
       });
 
       registerFallbackValue(const GetGuestsParams());
-      final mockUseCase = MockGetGuestsUseCase();
-      when(() => mockUseCase(any())).thenAnswer(
+      final mockGuestRepository = MockGuestRepository();
+      when(() => mockGuestRepository.getGuests(any())).thenAnswer(
         (_) async =>
             const Right(GuestResult(items: GuestFixtures.defaultGuestEntities)),
       );
 
       final cubit = GuestCubit(
-        getGuestsUseCase: mockUseCase,
+        guestRepository: mockGuestRepository,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
       );
@@ -211,8 +213,10 @@ void main() {
         });
 
         registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer((invocation) async {
+        final mockGuestRepository = MockGuestRepository();
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer((
+          invocation,
+        ) async {
           final params =
               invocation.positionalArguments.first as GetGuestsParams;
           if (params.startDate != null) {
@@ -231,7 +235,7 @@ void main() {
         });
 
         final cubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: MockDeleteGuestUseCase(),
           deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );

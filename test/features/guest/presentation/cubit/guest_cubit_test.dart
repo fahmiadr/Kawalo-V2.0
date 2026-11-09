@@ -7,13 +7,13 @@ import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_guest/delete_guest_usecase.dart';
-import 'package:kawalo_mobile/features/guest/domain/usecases/get_guests/get_guests_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/delete_batch_result.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/guest_result.dart';
@@ -21,7 +21,7 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetGuestsUseCase extends Mock implements GetGuestsUseCase {}
+class MockGuestRepository extends Mock implements GuestRepository {}
 
 class MockDeleteGuestUseCase extends Mock implements DeleteGuestUseCase {}
 
@@ -34,7 +34,7 @@ class MockGroupRepository extends Mock implements GroupRepository {}
 
 void main() {
   late GuestCubit cubit;
-  late MockGetGuestsUseCase mockGetGuestsUseCase;
+  late MockGuestRepository mockGuestRepository;
   late MockDeleteGuestUseCase mockDeleteGuestUseCase;
   late MockDeleteBatchGuestUseCase mockDeleteBatchGuestUseCase;
 
@@ -70,11 +70,11 @@ void main() {
   });
 
   setUp(() {
-    mockGetGuestsUseCase = MockGetGuestsUseCase();
+    mockGuestRepository = MockGuestRepository();
     mockDeleteGuestUseCase = MockDeleteGuestUseCase();
     mockDeleteBatchGuestUseCase = MockDeleteBatchGuestUseCase();
     cubit = GuestCubit(
-      getGuestsUseCase: mockGetGuestsUseCase,
+      guestRepository: mockGuestRepository,
       deleteGuestUseCase: mockDeleteGuestUseCase,
       deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
     );
@@ -113,7 +113,7 @@ void main() {
 
   test('initial state contains initialGreeting when provided', () {
     final customCubit = GuestCubit(
-      getGuestsUseCase: mockGetGuestsUseCase,
+      guestRepository: mockGuestRepository,
       deleteGuestUseCase: mockDeleteGuestUseCase,
       deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
       initialGreeting: 'Diperbarui Hari ini, 15.20',
@@ -131,7 +131,7 @@ void main() {
       'emits [GuestLoading, GuestLoaded] when successful',
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -148,7 +148,7 @@ void main() {
             .having((s) => s.isFromCache, 'isFromCache', false),
       ],
       verify: (_) {
-        verify(() => mockGetGuestsUseCase(any())).called(1);
+        verify(() => mockGuestRepository.getGuests(any())).called(1);
       },
     );
 
@@ -157,7 +157,7 @@ void main() {
       'serving cache',
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Right(tCachedResult));
         return cubit;
       },
@@ -173,7 +173,7 @@ void main() {
     blocTest<GuestCubit, GuestState>(
       'emits [GuestLoading, GuestError] when call fails',
       build: () {
-        when(() => mockGetGuestsUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Left(ServerFailure('Gagal memuat data tamu')),
         );
         return cubit;
@@ -195,7 +195,7 @@ void main() {
       'emits [GuestLoaded] with updated lastSync on pull to refresh',
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
@@ -219,7 +219,7 @@ void main() {
         lastSync: 'Diperbarui Hari ini, 15.20',
       ),
       build: () {
-        when(() => mockGetGuestsUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Right(GuestResult(items: [], isFromCache: true)),
         );
         return cubit;
@@ -239,7 +239,7 @@ void main() {
         lastSync: 'Diperbarui Hari ini, 15.20',
       ),
       build: () {
-        when(() => mockGetGuestsUseCase(any())).thenAnswer(
+        when(() => mockGuestRepository.getGuests(any())).thenAnswer(
           (_) async => const Left(NetworkFailure('Koneksi terputus')),
         );
         return cubit;
@@ -261,7 +261,7 @@ void main() {
       'clears cachedGuests when fetchGuests with new query fails',
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
@@ -288,7 +288,7 @@ void main() {
       ),
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Left(ServerFailure('Timeout')));
         return cubit;
       },
@@ -323,14 +323,14 @@ void main() {
       ),
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetFilters(),
       verify: (_) {
         verify(
-          () => mockGetGuestsUseCase(
+          () => mockGuestRepository.getGuests(
             any(
               that: isA<GetGuestsParams>()
                   .having((p) => p.search, 'search', isNull)
@@ -360,14 +360,14 @@ void main() {
       ),
       build: () {
         when(
-          () => mockGetGuestsUseCase(any()),
+          () => mockGuestRepository.getGuests(any()),
         ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetDateFilter(),
       verify: (_) {
         verify(
-          () => mockGetGuestsUseCase(
+          () => mockGuestRepository.getGuests(
             any(
               that: isA<GetGuestsParams>()
                   .having((p) => p.search, 'search', 'cari')
@@ -460,7 +460,7 @@ void main() {
       var firstCallCompleted = false;
 
       when(
-        () => mockGetGuestsUseCase(
+        () => mockGuestRepository.getGuests(
           any(that: predicate<GetGuestsParams>((p) => p.search == 'first')),
         ),
       ).thenAnswer((_) async {
@@ -470,7 +470,7 @@ void main() {
       });
 
       when(
-        () => mockGetGuestsUseCase(
+        () => mockGuestRepository.getGuests(
           any(that: predicate<GetGuestsParams>((p) => p.search == 'second')),
         ),
       ).thenAnswer((_) async {
@@ -574,7 +574,9 @@ void main() {
     );
 
     test('changes creator filter and fetches server-filtered guests', () async {
-      when(() => mockGetGuestsUseCase(any())).thenAnswer((invocation) async {
+      when(() => mockGuestRepository.getGuests(any())).thenAnswer((
+        invocation,
+      ) async {
         final params = invocation.positionalArguments.first as GetGuestsParams;
         if (params.createdBy == 'satpam@kawalo.id') {
           return const Right(GuestResult(items: [tGuest]));
@@ -601,7 +603,7 @@ void main() {
       expect(mineLoaded.displayedGuests.length, 1);
       expect(mineLoaded.displayedGuests.first.id, 'guest_1');
       verify(
-        () => mockGetGuestsUseCase(
+        () => mockGuestRepository.getGuests(
           any(
             that: isA<GetGuestsParams>().having(
               (p) => p.createdBy,
@@ -620,7 +622,7 @@ void main() {
       expect(allLoaded.hasActiveCreatorFilter, isFalse);
       expect(allLoaded.displayedGuests.length, 2);
       verify(
-        () => mockGetGuestsUseCase(
+        () => mockGuestRepository.getGuests(
           any(
             that: isA<GetGuestsParams>().having(
               (p) => p.createdBy,
@@ -652,7 +654,7 @@ void main() {
         ).thenAnswer((_) async => const Right(tMembers));
 
         final cubitWithMembers = GuestCubit(
-          getGuestsUseCase: mockGetGuestsUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
           groupRepository: mockGroupRepository,
@@ -678,7 +680,7 @@ void main() {
         ).thenAnswer((_) async => const Left(tFailure));
 
         final cubitWithMembers = GuestCubit(
-          getGuestsUseCase: mockGetGuestsUseCase,
+          guestRepository: mockGuestRepository,
           deleteGuestUseCase: mockDeleteGuestUseCase,
           deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
           groupRepository: mockGroupRepository,
@@ -748,7 +750,7 @@ void main() {
 
         final cubitWithCheckout =
             GuestCubit(
-              getGuestsUseCase: mockGetGuestsUseCase,
+              guestRepository: mockGuestRepository,
               deleteGuestUseCase: mockDeleteGuestUseCase,
               deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
               checkoutGuestUseCase: mockCheckoutGuestUseCase,
@@ -793,7 +795,7 @@ void main() {
 
         final cubitWithCheckout =
             GuestCubit(
-              getGuestsUseCase: mockGetGuestsUseCase,
+              guestRepository: mockGuestRepository,
               deleteGuestUseCase: mockDeleteGuestUseCase,
               deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
               checkoutGuestUseCase: mockCheckoutGuestUseCase,
