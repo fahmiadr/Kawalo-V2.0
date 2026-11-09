@@ -35,36 +35,33 @@ void main() {
   }
 
   group('TacticalPttButton Widget Tests', () {
-    testWidgets('renders properly in Idle state with min touch target >= 48dp',
-        (tester) async {
-      when(() => mockPttCubit.state).thenReturn(
-        const PttIdle(
-          channel: PttChannelEntity(groupUid: 'grp_01'),
-          floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
-        ),
-      );
+    testWidgets(
+      'renders properly in Idle state with min touch target >= 48dp',
+      (tester) async {
+        when(() => mockPttCubit.state).thenReturn(
+          const PttIdle(
+            channel: PttChannelEntity(groupUid: 'grp_01'),
+            floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
+          ),
+        );
 
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      final buttonFinder = find.byType(TacticalPttButton);
-      expect(buttonFinder, findsOneWidget);
+        final buttonFinder = find.byType(TacticalPttButton);
+        expect(buttonFinder, findsOneWidget);
 
-      final renderBox = tester.renderObject<RenderBox>(buttonFinder);
-      expect(
-        renderBox.size.width >= AppStateLayer.minTouchTarget,
-        isTrue,
-      );
-      expect(
-        renderBox.size.height >= AppStateLayer.minTouchTarget,
-        isTrue,
-      );
+        final renderBox = tester.renderObject<RenderBox>(buttonFinder);
+        expect(renderBox.size.width >= AppStateLayer.minTouchTarget, isTrue);
+        expect(renderBox.size.height >= AppStateLayer.minTouchTarget, isTrue);
 
-      expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
-    });
+        expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
+      },
+    );
 
-    testWidgets('renders active mic icon when state is PttTransmitting',
-        (tester) async {
+    testWidgets('renders active mic icon when state is PttTransmitting', (
+      tester,
+    ) async {
       when(() => mockPttCubit.state).thenReturn(
         const PttTransmitting(
           channel: PttChannelEntity(groupUid: 'grp_01'),
@@ -78,8 +75,9 @@ void main() {
       expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
     });
 
-    testWidgets('renders volume icon when state is PttListening',
-        (tester) async {
+    testWidgets('renders volume icon when state is PttListening', (
+      tester,
+    ) async {
       when(() => mockPttCubit.state).thenReturn(
         const PttListening(
           channel: PttChannelEntity(groupUid: 'grp_01'),
@@ -100,8 +98,9 @@ void main() {
       expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
     });
 
-    testWidgets('dispatches pressPttButton on pointer down and release on up',
-        (tester) async {
+    testWidgets('dispatches pressPttButton on pointer down and release on up', (
+      tester,
+    ) async {
       when(() => mockPttCubit.state).thenReturn(
         const PttIdle(
           channel: PttChannelEntity(groupUid: 'grp_01'),

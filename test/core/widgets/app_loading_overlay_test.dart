@@ -8,23 +8,20 @@ void main() {
   Widget wrapWithTheme(Widget child) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: child,
-      ),
+      home: Scaffold(body: child),
     );
   }
 
   group('AppLoadingOverlay Tests', () {
-    testWidgets('renders in Stack with default medium contained indicator',
-        (tester) async {
+    testWidgets('renders in Stack with default medium contained indicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrapWithTheme(
           const Stack(
             children: [
               SizedBox.expand(child: Text('Background Content')),
-              AppLoadingOverlay(
-                semanticLabel: 'Memverifikasi akun',
-              ),
+              AppLoadingOverlay(semanticLabel: 'Memverifikasi akun'),
             ],
           ),
         ),
@@ -51,8 +48,9 @@ void main() {
       expect(indicator.semanticLabel, 'Memverifikasi akun');
     });
 
-    testWidgets('renders optional message text inside card when provided',
-        (tester) async {
+    testWidgets('renders optional message text inside card when provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrapWithTheme(
           const Stack(
@@ -71,8 +69,9 @@ void main() {
       expect(find.byType(Material), findsWidgets);
     });
 
-    testWidgets('renders child wrapper with overlay when isLoading is true',
-        (tester) async {
+    testWidgets('renders child wrapper with overlay when isLoading is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrapWithTheme(
           const AppLoadingOverlay(
@@ -99,8 +98,9 @@ void main() {
       );
     });
 
-    testWidgets('child wrapper hides overlay when isLoading is false',
-        (tester) async {
+    testWidgets('child wrapper hides overlay when isLoading is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrapWithTheme(
           const AppLoadingOverlay(
@@ -131,50 +131,53 @@ void main() {
     testWidgets(
       'returns SizedBox.shrink when standalone and isLoading is false',
       (tester) async {
-      await tester.pumpWidget(
-        wrapWithTheme(
-          const Stack(
-            children: [
-              SizedBox.expand(child: Text('Background Content')),
-              AppLoadingOverlay(
-                isLoading: false,
-                semanticLabel: 'Tidak aktif',
-              ),
-            ],
-          ),
-        ),
-      );
-
-      expect(
-        find.descendant(
-          of: find.byType(AppLoadingOverlay),
-          matching: find.byType(AppLoadingIndicator),
-        ),
-        findsNothing,
-      );
-    });
-
-    testWidgets('supports non-positioned rendering when isPositioned is false',
-        (tester) async {
-      await tester.pumpWidget(
-        wrapWithTheme(
-          const Center(
-            child: AppLoadingOverlay(
-              isPositioned: false,
-              semanticLabel: 'Dialog loading',
+        await tester.pumpWidget(
+          wrapWithTheme(
+            const Stack(
+              children: [
+                SizedBox.expand(child: Text('Background Content')),
+                AppLoadingOverlay(
+                  isLoading: false,
+                  semanticLabel: 'Tidak aktif',
+                ),
+              ],
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.byType(AppLoadingOverlay), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(AppLoadingOverlay),
-          matching: find.byType(AppLoadingIndicator),
-        ),
-        findsOneWidget,
-      );
-    });
+        expect(
+          find.descendant(
+            of: find.byType(AppLoadingOverlay),
+            matching: find.byType(AppLoadingIndicator),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'supports non-positioned rendering when isPositioned is false',
+      (tester) async {
+        await tester.pumpWidget(
+          wrapWithTheme(
+            const Center(
+              child: AppLoadingOverlay(
+                isPositioned: false,
+                semanticLabel: 'Dialog loading',
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byType(AppLoadingOverlay), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AppLoadingOverlay),
+            matching: find.byType(AppLoadingIndicator),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }

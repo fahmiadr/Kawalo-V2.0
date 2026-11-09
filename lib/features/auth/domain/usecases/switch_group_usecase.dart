@@ -22,12 +22,9 @@ class SwitchGroupUseCase implements UseCase<UserEntity, SwitchGroupParams> {
   @override
   Future<Either<Failure, UserEntity>> call(SwitchGroupParams params) async {
     final result = await repository.switchGroup(groupUid: params.groupUid);
-    return await result.fold(
-      (failure) async => Left(failure),
-      (user) async {
-        await cacheWiper?.wipeAll();
-        return Right(user);
-      },
-    );
+    return await result.fold((failure) async => Left(failure), (user) async {
+      await cacheWiper?.wipeAll();
+      return Right(user);
+    });
   }
 }

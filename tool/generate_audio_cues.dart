@@ -55,8 +55,10 @@ void generateWav(
     final t = i / sampleRate;
     final progress = i / numSamples;
     final freq = freqStart + (freqEnd - freqStart) * progress;
-    final sample =
-        (sin(2 * pi * freq * t) * 16000).round().clamp(-32768, 32767);
+    final sample = (sin(2 * pi * freq * t) * 16000).round().clamp(
+      -32768,
+      32767,
+    );
     buffer.setInt16(offset, sample, Endian.little);
     offset += 2;
   }

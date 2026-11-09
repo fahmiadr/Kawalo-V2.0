@@ -47,18 +47,11 @@ class AppSecurityBlockedScreen extends StatelessWidget {
       primaryActionLabel: 'Tutup aplikasi',
       onPrimaryAction: _handleExit,
       primaryButtonDecoration: AppButtonDecoration(
-        backgroundColor: WidgetStatePropertyAll(
-          colorScheme.error,
-        ),
-        foregroundColor: WidgetStatePropertyAll(
-          colorScheme.onError,
-        ),
+        backgroundColor: WidgetStatePropertyAll(colorScheme.error),
+        foregroundColor: WidgetStatePropertyAll(colorScheme.onError),
       ),
     );
 
-    return AppActionableErrorFullScreen(
-      data: errorData,
-      isBlocking: true,
-    );
+    return AppActionableErrorFullScreen(data: errorData, isBlocking: true);
   }
 }

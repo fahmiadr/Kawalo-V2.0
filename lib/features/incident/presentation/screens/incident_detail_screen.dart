@@ -46,10 +46,7 @@ import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_th
 /// fitur Guest.
 class IncidentDetailScreen extends StatefulWidget {
   /// Membuat instance [IncidentDetailScreen].
-  const IncidentDetailScreen({
-    required this.incidentId,
-    super.key,
-  });
+  const IncidentDetailScreen({required this.incidentId, super.key});
 
   /// ID insiden yang ditampilkan.
   final String incidentId;
@@ -60,9 +57,8 @@ class IncidentDetailScreen extends StatefulWidget {
       builder: (context) {
         final module = context.read<IncidentModule>();
         return BlocProvider<IncidentDetailCubit>(
-          create: (context) => module.createIncidentDetailCubit(
-            incidentId: incidentId,
-          ),
+          create: (context) =>
+              module.createIncidentDetailCubit(incidentId: incidentId),
           child: IncidentDetailScreen(incidentId: incidentId),
         );
       },
@@ -152,7 +148,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
     final confirmed = await showAppConfirmationDialog(
       context: context,
       title: 'Selesaikan Insiden?',
-      message: 'Setelah ditandai selesai, thread diskusi ini akan dikunci dan '
+      message:
+          'Setelah ditandai selesai, thread diskusi ini akan dikunci dan '
           'beralih ke mode baca saja.',
       confirmText: 'Ya, Selesaikan',
       isDestructive: false,
@@ -199,7 +196,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
         if (state.isTerminated) {
           AppSnackbar.show(
             context,
-            message: state.errorMessage ??
+            message:
+                state.errorMessage ??
                 'Insiden telah dihapus oleh Administrator.',
           );
           Navigator.of(context).pop(widget.incidentId);
@@ -207,26 +205,17 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
         }
 
         if (state.conflictNotice != null) {
-          AppSnackbar.show(
-            context,
-            message: state.conflictNotice!,
-          );
+          AppSnackbar.show(context, message: state.conflictNotice!);
           context.read<IncidentDetailCubit>().clearNotices();
         }
 
         if (state.infoNotice != null) {
-          AppSnackbar.show(
-            context,
-            message: state.infoNotice!,
-          );
+          AppSnackbar.show(context, message: state.infoNotice!);
           context.read<IncidentDetailCubit>().clearNotices();
         }
 
         if (state.errorMessage != null && state.incident != null) {
-          AppSnackbar.show(
-            context,
-            message: state.errorMessage!,
-          );
+          AppSnackbar.show(context, message: state.errorMessage!);
           context.read<IncidentDetailCubit>().clearNotices();
         }
 
@@ -235,7 +224,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
       },
       builder: (context, state) {
         final incident = state.incident;
-        final canResolve = incident != null &&
+        final canResolve =
+            incident != null &&
             incident.canBeResolvedBySession(session) &&
             !state.isReadOnly;
         final canDelete =
@@ -257,10 +247,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
                     height: 16,
                     child: AppLoadingIndicator(),
                   )
-                : Text(
-                    'Selesaikan',
-                    style: typeScale.labelLarge,
-                  ),
+                : Text('Selesaikan', style: typeScale.labelLarge),
           );
         } else if (canDelete) {
           trailingWidget = AppIconButton(
@@ -295,9 +282,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
               onBackPressed: () => Navigator.of(context).pop(incident),
               trailing: trailingWidget,
             ),
-            bottomNavigationBar: AppBottomOfflineBanner(
-              isOffline: isOffline,
-            ),
+            bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
             body: SafeArea(
               top: false,
               bottom: false,
@@ -335,9 +320,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
                     ),
 
                   // Area Konten Detail & Percakapan
-                  Expanded(
-                    child: _buildBodyContent(context, state, session),
-                  ),
+                  Expanded(child: _buildBodyContent(context, state, session)),
 
                   // Area Bawah: Composer Bar (aktif) atau Resolved Lock Banner
                   // (read-only)
@@ -385,7 +368,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
         state.incident == null) {
       return AppEmptyState.error(
         title: 'Gagal Memuat Insiden',
-        description: state.errorMessage ??
+        description:
+            state.errorMessage ??
             'Tidak dapat terhubung ke server untuk mengambil data insiden.',
         retryLabel: 'Coba lagi',
         onRetry: () =>
@@ -400,9 +384,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
 
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppLayout.contentMaxWidth,
-        ),
+        constraints: const BoxConstraints(maxWidth: AppLayout.contentMaxWidth),
         child: ListView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.only(
@@ -428,10 +410,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
             final isMe =
                 currentUserId != null && reply.senderId == currentUserId;
 
-            return IncidentThreadBubble(
-              reply: reply,
-              isMe: isMe,
-            );
+            return IncidentThreadBubble(reply: reply, isMe: isMe);
           },
         ),
       ),
@@ -582,10 +561,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
               children: [
                 Row(
                   children: [
-                    const AppSvgIcon(
-                      KawaloVectors.camera01,
-                      size: 24,
-                    ),
+                    const AppSvgIcon(KawaloVectors.camera01, size: 24),
                     AppSpacing.hGapSm,
                     Expanded(
                       child: Text(
@@ -618,12 +594,12 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
                           width: 88,
                           height: 88,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => const SizedBox(
+                          placeholder: (_, _) => const SizedBox(
                             width: 88,
                             height: 88,
                             child: AppImagePlaceholder(),
                           ),
-                          errorWidget: (_, __, ___) => Container(
+                          errorWidget: (_, _, _) => Container(
                             width: 88,
                             height: 88,
                             color: colorScheme.surfaceContainerHighest,
@@ -644,10 +620,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
         // ── Header Seksi Diskusi & Koordinasi ─────────────────────────
         Row(
           children: [
-            const AppSvgIcon.color(
-              KawaloColorVectors.log1,
-              size: 24,
-            ),
+            const AppSvgIcon.color(KawaloColorVectors.log1, size: 24),
             AppSpacing.hGapSm,
             Expanded(
               child: Text(

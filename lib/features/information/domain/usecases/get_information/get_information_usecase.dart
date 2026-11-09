@@ -15,9 +15,7 @@ class GetInformationUseCase
   final InformationRepository repository;
 
   @override
-  Future<Either<Failure, InformationResult>> call(
-    GetInformationParams params,
-  ) {
+  Future<Either<Failure, InformationResult>> call(GetInformationParams params) {
     return repository.getInformation(params);
   }
 }

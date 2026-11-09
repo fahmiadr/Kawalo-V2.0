@@ -20,8 +20,8 @@ class ApiClient {
     Dio? customDio,
     Dio? customTokenDio,
     JwksService? jwksService,
-  })  : storageService = storage ?? SecureStorageService(),
-        _jwksService = jwksService {
+  }) : storageService = storage ?? SecureStorageService(),
+       _jwksService = jwksService {
     final effectiveBaseUrl = baseUrl ?? EnvConfig.apiBaseUrl;
     final baseOptions = BaseOptions(
       baseUrl: effectiveBaseUrl,
@@ -68,9 +68,7 @@ class ApiClient {
     dio.interceptors.add(authInterceptor);
 
     if (kDebugMode) {
-      dio.interceptors.add(
-        _StreamSafeLogInterceptor(),
-      );
+      dio.interceptors.add(_StreamSafeLogInterceptor());
     }
   }
 
@@ -134,14 +132,12 @@ class ApiClient {
       <String, Future<Map<String, dynamic>>>{};
 
   /// Membangun representasi kunci deterministik untuk in-flight request.
-  String _buildInFlightKey(
-    String path,
-    Map<String, dynamic>? queryParameters,
-  ) {
+  String _buildInFlightKey(String path, Map<String, dynamic>? queryParameters) {
     if (queryParameters == null || queryParameters.isEmpty) return path;
     final sortedKeys = queryParameters.keys.toList()..sort();
-    final queryParts =
-        sortedKeys.map((k) => '$k=${queryParameters[k]}').join('&');
+    final queryParts = sortedKeys
+        .map((k) => '$k=${queryParameters[k]}')
+        .join('&');
     final separator = path.contains('?') ? '&' : '?';
     return '$path$separator$queryParts';
   }
@@ -157,16 +153,12 @@ class ApiClient {
 
       // Validasi envelope backend jika terdapat key 'success' bernilai false.
       if (data['success'] == false) {
-        final message = data['message']?.toString() ??
+        final message =
+            data['message']?.toString() ??
             'Terjadi kendala pada sistem. Silakan coba beberapa saat lagi.';
         final errorCode = data['error_code']?.toString();
         final details = data['details'];
-        throw ServerException(
-          message,
-          response.statusCode,
-          errorCode,
-          details,
-        );
+        throw ServerException(message, response.statusCode, errorCode, details);
       }
 
       return data;
@@ -232,16 +224,15 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) =>
-      _safeRequest(
-        () => dio.post<Map<String, dynamic>>(
-          path,
-          data: body,
-          queryParameters: queryParameters,
-          options: options,
-          cancelToken: cancelToken,
-        ),
-      );
+  }) => _safeRequest(
+    () => dio.post<Map<String, dynamic>>(
+      path,
+      data: body,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    ),
+  );
 
   Future<Map<String, dynamic>> put(
     String path, {
@@ -249,16 +240,15 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) =>
-      _safeRequest(
-        () => dio.put<Map<String, dynamic>>(
-          path,
-          data: body,
-          queryParameters: queryParameters,
-          options: options,
-          cancelToken: cancelToken,
-        ),
-      );
+  }) => _safeRequest(
+    () => dio.put<Map<String, dynamic>>(
+      path,
+      data: body,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    ),
+  );
 
   Future<Map<String, dynamic>> patch(
     String path, {
@@ -266,16 +256,15 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) =>
-      _safeRequest(
-        () => dio.patch<Map<String, dynamic>>(
-          path,
-          data: body,
-          queryParameters: queryParameters,
-          options: options,
-          cancelToken: cancelToken,
-        ),
-      );
+  }) => _safeRequest(
+    () => dio.patch<Map<String, dynamic>>(
+      path,
+      data: body,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    ),
+  );
 
   Future<Map<String, dynamic>> delete(
     String path, {
@@ -283,16 +272,15 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) =>
-      _safeRequest(
-        () => dio.delete<Map<String, dynamic>>(
-          path,
-          data: body,
-          queryParameters: queryParameters,
-          options: options,
-          cancelToken: cancelToken,
-        ),
-      );
+  }) => _safeRequest(
+    () => dio.delete<Map<String, dynamic>>(
+      path,
+      data: body,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    ),
+  );
 
   /// Melakukan HTTP GET request khusus streaming (SSE / Binary Stream).
   ///
@@ -333,11 +321,7 @@ class ApiClient {
 /// request bertipe [ResponseType.stream], mencegah akumulasi memori.
 class _StreamSafeLogInterceptor extends LogInterceptor {
   _StreamSafeLogInterceptor()
-      : super(
-          requestBody: true,
-          responseBody: true,
-          responseHeader: false,
-        );
+    : super(requestBody: true, responseBody: true, responseHeader: false);
 
   @override
   void onResponse(

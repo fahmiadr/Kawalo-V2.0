@@ -37,11 +37,9 @@ void main() {
       expect(controller.isLatest(req), isFalse);
     });
 
-    test(
-      'dua instance controller memiliki counter request terisolasi secara '
-      'mandiri',
-      () {
-        final controller2 = TestController();
+    test('dua instance controller memiliki counter request terisolasi secara '
+        'mandiri', () {
+      final controller2 = TestController();
 
       final reqA = controller.nextRequestId();
       final reqB = controller2.nextRequestId();

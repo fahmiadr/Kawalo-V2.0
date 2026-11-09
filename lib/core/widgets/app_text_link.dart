@@ -52,7 +52,8 @@ class AppTextLink extends StatelessWidget {
 
     final isLinkEnabled = onPressed != null;
 
-    final effectiveTitleStyle = titleStyle ??
+    final effectiveTitleStyle =
+        titleStyle ??
         emphasizedTypeScale.titleLarge.copyWith(
           fontWeight: FontWeight.w600,
           color: colorScheme.onSurface,
@@ -64,17 +65,20 @@ class AppTextLink extends StatelessWidget {
         ? linkColor
         : linkColor.withValues(alpha: AppStateLayer.disabledOpacity);
 
-    final effectiveLinkStyle = (linkStyle ??
-            emphasizedTypeScale.titleMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ))
-        .copyWith(color: effectiveLinkColor);
+    final effectiveLinkStyle =
+        (linkStyle ??
+                emphasizedTypeScale.titleMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ))
+            .copyWith(color: effectiveLinkColor);
 
-    final effectiveUnderlineColor = underlineColor ??
+    final effectiveUnderlineColor =
+        underlineColor ??
         (isLinkEnabled
             ? colorScheme.primary
-            : colorScheme.primary
-                .withValues(alpha: AppStateLayer.disabledOpacity));
+            : colorScheme.primary.withValues(
+                alpha: AppStateLayer.disabledOpacity,
+              ));
 
     final hasLink = linkText != null && linkText!.isNotEmpty;
 
@@ -82,12 +86,7 @@ class AppTextLink extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // ── Judul di Sisi Kiri ─────────────────────────────────────────────
-        Expanded(
-          child: Text(
-            title,
-            style: effectiveTitleStyle,
-          ),
-        ),
+        Expanded(child: Text(title, style: effectiveTitleStyle)),
 
         if (hasLink) ...[
           AppSpacing.hGap200,
@@ -101,8 +100,9 @@ class AppTextLink extends StatelessWidget {
             semanticLabel: semanticLabel ?? '$linkText $title',
             decoration: AppButtonDecoration(
               padding: AppSpacing.paddingAll50,
-              foregroundColor:
-                  WidgetStateProperty.resolveWith<Color?>((states) {
+              foregroundColor: WidgetStateProperty.resolveWith<Color?>((
+                states,
+              ) {
                 if (states.contains(WidgetState.disabled)) {
                   return effectiveLinkColor;
                 }

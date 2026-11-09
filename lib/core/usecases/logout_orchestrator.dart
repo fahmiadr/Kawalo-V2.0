@@ -32,9 +32,7 @@ class LogoutOrchestrator implements UseCase<void, NoParams> {
     try {
       return await authLogoutUseCase(params);
     } on Object catch (e) {
-      return Left(
-        e is Failure ? e : ServerFailure(e.toString()),
-      );
+      return Left(e is Failure ? e : ServerFailure(e.toString()));
     } finally {
       // Menjamin pembersihan seluruh cache fitur lokal selalu dieksekusi
       // baik proses logout berhasil, gagal, maupun melempar exception.

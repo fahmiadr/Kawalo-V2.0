@@ -86,11 +86,11 @@ final class ReverseGeocodeResult extends Equatable {
     required double longitude,
     required String address,
   }) : this(
-          status: ReverseGeocodeStatus.success,
-          latitude: latitude,
-          longitude: longitude,
-          address: address,
-        );
+         status: ReverseGeocodeStatus.success,
+         latitude: latitude,
+         longitude: longitude,
+         address: address,
+       );
 
   /// Membuat instans [ReverseGeocodeResult] ketika koordinat tidak berpenghuni.
   ///
@@ -100,10 +100,10 @@ final class ReverseGeocodeResult extends Equatable {
     required double latitude,
     required double longitude,
   }) : this(
-          status: ReverseGeocodeStatus.noResult,
-          latitude: latitude,
-          longitude: longitude,
-        );
+         status: ReverseGeocodeStatus.noResult,
+         latitude: latitude,
+         longitude: longitude,
+       );
 
   /// Membuat instans [ReverseGeocodeResult] ketika operasi dibatalkan.
   ///
@@ -113,10 +113,10 @@ final class ReverseGeocodeResult extends Equatable {
     required double latitude,
     required double longitude,
   }) : this(
-          status: ReverseGeocodeStatus.cancelled,
-          latitude: latitude,
-          longitude: longitude,
-        );
+         status: ReverseGeocodeStatus.cancelled,
+         latitude: latitude,
+         longitude: longitude,
+       );
 
   /// Membuat instans [ReverseGeocodeResult] ketika terjadi kegagalan jaringan.
   ///
@@ -128,11 +128,11 @@ final class ReverseGeocodeResult extends Equatable {
     required ReverseGeocodeStatus status,
     String? errorMessage,
   }) : this(
-          status: status,
-          latitude: latitude,
-          longitude: longitude,
-          errorMessage: errorMessage,
-        );
+         status: status,
+         latitude: latitude,
+         longitude: longitude,
+         errorMessage: errorMessage,
+       );
 
   /// Status eksekusi reverse geocoding.
   final ReverseGeocodeStatus status;
@@ -189,12 +189,12 @@ final class ReverseGeocodeResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        latitude,
-        longitude,
-        address,
-        errorMessage,
-      ];
+    status,
+    latitude,
+    longitude,
+    address,
+    errorMessage,
+  ];
 
   static const Object _sentinel = Object();
 }
@@ -262,17 +262,16 @@ final class OsmNominatimReverseGeocodeService implements ReverseGeocodeService {
   OsmNominatimReverseGeocodeService({
     Dio? dio,
     int maxCacheEntries = defaultMaxCacheEntries,
-  })  : _maxCacheEntries = maxCacheEntries,
-        _dio = dio ??
-            Dio(
-              BaseOptions(
-                connectTimeout: defaultTimeout,
-                receiveTimeout: defaultTimeout,
-                headers: const <String, String>{
-                  'User-Agent': userAgent,
-                },
-              ),
-            );
+  }) : _maxCacheEntries = maxCacheEntries,
+       _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               connectTimeout: defaultTimeout,
+               receiveTimeout: defaultTimeout,
+               headers: const <String, String>{'User-Agent': userAgent},
+             ),
+           );
 
   /// Batas waktu default untuk koneksi dan respons HTTP (5 detik).
   static const Duration defaultTimeout = Duration(seconds: 5);
@@ -445,22 +444,28 @@ final class OsmNominatimReverseGeocodeService implements ReverseGeocodeService {
     if (address != null) {
       final parts = <String>[];
 
-      final road = _firstNonEmpty(
-        address,
-        const ['road', 'pedestrian', 'footway', 'street'],
-      );
+      final road = _firstNonEmpty(address, const [
+        'road',
+        'pedestrian',
+        'footway',
+        'street',
+      ]);
       if (road != null) parts.add(road);
 
-      final suburb = _firstNonEmpty(
-        address,
-        const ['suburb', 'village', 'neighbourhood', 'quarter'],
-      );
+      final suburb = _firstNonEmpty(address, const [
+        'suburb',
+        'village',
+        'neighbourhood',
+        'quarter',
+      ]);
       if (suburb != null) parts.add(suburb);
 
-      final city = _firstNonEmpty(
-        address,
-        const ['city', 'town', 'city_district', 'municipality'],
-      );
+      final city = _firstNonEmpty(address, const [
+        'city',
+        'town',
+        'city_district',
+        'municipality',
+      ]);
       if (city != null) parts.add(city);
 
       final state = _firstNonEmpty(address, const ['state']);

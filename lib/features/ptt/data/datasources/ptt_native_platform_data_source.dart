@@ -27,9 +27,9 @@ class PttNativePlatformDataSourceImpl implements PttNativePlatformDataSource {
   PttNativePlatformDataSourceImpl({
     MethodChannel? methodChannel,
     EventChannel? eventChannel,
-  })  : _methodChannel =
-            methodChannel ?? const MethodChannel('kawalo/ptt_control'),
-        _eventChannel = eventChannel ?? const EventChannel('kawalo/ptt_events');
+  }) : _methodChannel =
+           methodChannel ?? const MethodChannel('kawalo/ptt_control'),
+       _eventChannel = eventChannel ?? const EventChannel('kawalo/ptt_events');
 
   final MethodChannel _methodChannel;
   final EventChannel _eventChannel;
@@ -73,15 +73,17 @@ class PttNativePlatformDataSourceImpl implements PttNativePlatformDataSource {
 
   @override
   Future<bool> hasRecordAudioPermission() async {
-    final result =
-        await _methodChannel.invokeMethod<bool>('hasRecordAudioPermission');
+    final result = await _methodChannel.invokeMethod<bool>(
+      'hasRecordAudioPermission',
+    );
     return result ?? false;
   }
 
   @override
   Future<bool> requestRecordAudioPermission() async {
-    final result =
-        await _methodChannel.invokeMethod<bool>('requestRecordAudioPermission');
+    final result = await _methodChannel.invokeMethod<bool>(
+      'requestRecordAudioPermission',
+    );
     return result ?? false;
   }
 

@@ -84,14 +84,15 @@ class ListPage<I> {
 }
 
 /// Feature fetch function that accepts the shared filter parameters.
-typedef ListFetchFn = Future<AppFetchResult> Function({
-  String? search,
-  AppDateFilterPeriod? filterPeriod,
-  DateTime? startDate,
-  DateTime? endDate,
-  String? startDateIso,
-  String? endDateIso,
-});
+typedef ListFetchFn =
+    Future<AppFetchResult> Function({
+      String? search,
+      AppDateFilterPeriod? filterPeriod,
+      DateTime? startDate,
+      DateTime? endDate,
+      String? startDateIso,
+      String? endDateIso,
+    });
 
 /// Base cubit for paginated lists with period/search filters.
 ///
@@ -132,8 +133,9 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     if (state.lastSync.isEmpty) {
       _syncStorage.getLastSync(syncKey).then((lastSync) {
         if (lastSync != null && state.lastSync.isEmpty && !isClosed) {
-          final next =
-              stateWithLastSync(AppDateFormat.formatGreeting(lastSync));
+          final next = stateWithLastSync(
+            AppDateFormat.formatGreeting(lastSync),
+          );
           if (next != null) emit(next);
         }
       });
@@ -217,20 +219,20 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     required Future<Either<Failure, ListPage<I>>> Function(
       int limit,
       AppCancellationToken cancelToken,
-    ) request,
+    )
+    request,
     required S Function(
       ListPage<I> page,
       String lastSync, {
       required bool hasMore,
-    }) loaded,
-    required S Function(
-      Failure failure,
-      List<I> cachedItems,
-      String lastSync,
-    ) error,
+    })
+    loaded,
+    required S Function(Failure failure, List<I> cachedItems, String lastSync)
+    error,
     String extraKey = '',
   }) async {
-    final fetchKey = '${filter.period}|${filter.startIso}|${filter.endIso}|'
+    final fetchKey =
+        '${filter.period}|${filter.startIso}|${filter.endIso}|'
         '${filter.search}|$extraKey';
 
     if (isFetching && _activeFetchKey == fetchKey) {
@@ -284,20 +286,20 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     required Future<Either<Failure, ListPage<I>>> Function(
       int limit,
       AppCancellationToken cancelToken,
-    ) request,
+    )
+    request,
     required S Function(
       ListPage<I> page,
       String lastSync, {
       required bool hasMore,
-    }) loaded,
+    })
+    loaded,
     required S Function(Failure failure, List<I> cachedItems, String lastSync)
-        error,
+    error,
   }) async {
     Future<AppFetchResult> fail(Failure failure) async {
       final greeting = await resolveGreeting(isFromCache: true);
-      emit(
-        error(failure, isRefresh ? currentItems : const [], greeting),
-      );
+      emit(error(failure, isRefresh ? currentItems : const [], greeting));
       return AppFetchResult.failure;
     }
 
@@ -319,9 +321,11 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
           return await fail(failure);
         },
         (page) async {
-          final syncGreeting =
-              await resolveGreeting(isFromCache: page.isFromCache);
-          final hasMore = !filter.isDefaultPeriod &&
+          final syncGreeting = await resolveGreeting(
+            isFromCache: page.isFromCache,
+          );
+          final hasMore =
+              !filter.isDefaultPeriod &&
               !page.isFromCache &&
               page.items.length >= pageSize;
           emit(loaded(page, syncGreeting, hasMore: hasMore));
@@ -334,12 +338,10 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
       if (cancelToken.isCancelled || !isLatest(reqId)) {
         return AppFetchResult.cancelled;
       }
-      return await fail(
-        switch (e) {
-          final Failure f => f,
-          _ => const ServerFailure(),
-        },
-      );
+      return await fail(switch (e) {
+        final Failure f => f,
+        _ => const ServerFailure(),
+      });
     }
   }
 
@@ -350,7 +352,7 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
     required Future<Either<Failure, ListPage<I>>> Function(L current) request,
     required S Function(L current, {required bool loadingMore}) setLoadingMore,
     required S Function(L current, List<I> newItems, {required bool hasMore})
-        append,
+    append,
   }) async {
     final current = state;
     if (current is! L) return;
@@ -378,15 +380,14 @@ abstract class ListFetchCubit<S extends ListFilterState, I> extends Cubit<S>
   Future<AppFetchResult> applyDateFilter(
     ListFetchFn fetch,
     AppDateFilterResult filterResult,
-  ) =>
-      fetch(
-        search: state.searchQuery,
-        filterPeriod: filterResult.period,
-        startDate: filterResult.startDate,
-        endDate: filterResult.endDate,
-        startDateIso: filterResult.startDateIso,
-        endDateIso: filterResult.endDateIso,
-      );
+  ) => fetch(
+    search: state.searchQuery,
+    filterPeriod: filterResult.period,
+    startDate: filterResult.startDate,
+    endDate: filterResult.endDate,
+    startDateIso: filterResult.startDateIso,
+    endDateIso: filterResult.endDateIso,
+  );
 
   /// Resets the date filter to the "today" default via [fetch] without clearing
   /// the search keyword.

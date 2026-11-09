@@ -28,13 +28,9 @@ import 'package:mocktail/mocktail.dart';
 
 Widget _buildTestApp(Widget child) {
   return MaterialApp(
-    builder: (context, child) => M3ETheme(
-      data: AppTheme.m3eLight(),
-      child: child!,
-    ),
-    home: Scaffold(
-      body: child,
-    ),
+    builder: (context, child) =>
+        M3ETheme(data: AppTheme.m3eLight(), child: child!),
+    home: Scaffold(body: child),
   );
 }
 
@@ -45,14 +41,16 @@ void main() {
     registerFallbackValue(DeviceOrientation.portraitUp);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('dev.fluttercommunity.plus/sensors/method'),
-      (call) async => null,
-    );
+          const MethodChannel('dev.fluttercommunity.plus/sensors/method'),
+          (call) async => null,
+        );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('dev.fluttercommunity.plus/sensors/accelerometer'),
-      (call) async => null,
-    );
+          const MethodChannel(
+            'dev.fluttercommunity.plus/sensors/accelerometer',
+          ),
+          (call) async => null,
+        );
   });
 
   void configureTestView(WidgetTester tester) {
@@ -77,11 +75,7 @@ void main() {
       configureTestView(tester);
 
       await tester.pumpWidget(
-        _buildTestApp(
-          const AppMultiShotCameraScreen(
-            cameras: [],
-          ),
-        ),
+        _buildTestApp(const AppMultiShotCameraScreen(cameras: [])),
       );
       await tester.pumpAndSettle();
 
@@ -94,8 +88,9 @@ void main() {
       expect(find.text('Coba lagi'), findsOneWidget);
     });
 
-    testWidgets('renders top bar counter and shutter controls correctly',
-        (tester) async {
+    testWidgets('renders top bar counter and shutter controls correctly', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       final mockController = MockCameraController();
@@ -106,10 +101,7 @@ void main() {
             lensDirection: CameraLensDirection.back,
             sensorOrientation: 90,
           ),
-        ).copyWith(
-          isInitialized: true,
-          previewSize: const Size(1920, 1080),
-        ),
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
       );
       when(() => mockController.cameraId).thenReturn(1);
       when(mockController.buildPreview).thenReturn(const SizedBox());
@@ -126,10 +118,7 @@ void main() {
 
       // Top bar quota badge
       expect(find.text('1 / 4 foto'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('1 dari 4 foto dipilih'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('1 dari 4 foto dipilih'), findsOneWidget);
 
       // Close and flash buttons exist in top bar
       expect(
@@ -183,62 +172,63 @@ void main() {
     });
 
     testWidgets(
-        'renders camera_switch_button on shutter row when multiple cameras '
-        'exist', (tester) async {
-      configureTestView(tester);
+      'renders camera_switch_button on shutter row when multiple cameras '
+      'exist',
+      (tester) async {
+        configureTestView(tester);
 
-      const cam1 = CameraDescription(
-        name: '0',
-        lensDirection: CameraLensDirection.back,
-        sensorOrientation: 90,
-      );
-      const cam2 = CameraDescription(
-        name: '1',
-        lensDirection: CameraLensDirection.front,
-        sensorOrientation: 270,
-      );
+        const cam1 = CameraDescription(
+          name: '0',
+          lensDirection: CameraLensDirection.back,
+          sensorOrientation: 90,
+        );
+        const cam2 = CameraDescription(
+          name: '1',
+          lensDirection: CameraLensDirection.front,
+          sensorOrientation: 270,
+        );
 
-      final mockController = MockCameraController();
-      when(() => mockController.value).thenReturn(
-        const CameraValue.uninitialized(cam1).copyWith(
-          isInitialized: true,
-          previewSize: const Size(1920, 1080),
-        ),
-      );
-      when(() => mockController.cameraId).thenReturn(1);
-      when(mockController.buildPreview).thenReturn(const SizedBox());
+        final mockController = MockCameraController();
+        when(() => mockController.value).thenReturn(
+          const CameraValue.uninitialized(
+            cam1,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+        );
+        when(() => mockController.cameraId).thenReturn(1);
+        when(mockController.buildPreview).thenReturn(const SizedBox());
 
-      await tester.pumpWidget(
-        _buildTestApp(
-          AppMultiShotCameraScreen(
-            cameras: const [cam1, cam2],
-            controller: mockController,
+        await tester.pumpWidget(
+          _buildTestApp(
+            AppMultiShotCameraScreen(
+              cameras: const [cam1, cam2],
+              controller: mockController,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(
-        find.byKey(const ValueKey<String>('camera_switch_button')),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel('Beralih ke kamera depan'),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('camera_switch_placeholder')),
-        findsNothing,
-      );
+        expect(
+          find.byKey(const ValueKey<String>('camera_switch_button')),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel('Beralih ke kamera depan'),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey<String>('camera_switch_placeholder')),
+          findsNothing,
+        );
 
-      // Verify camera viewfinder is constrained to 9:16 aspect ratio
-      final aspectRatioFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget is AspectRatio &&
-            (widget.aspectRatio - ImageCropUtils.aspect9x16).abs() < 0.001,
-      );
-      expect(aspectRatioFinder, findsAtLeastNWidgets(1));
-    });
+        // Verify camera viewfinder is constrained to 9:16 aspect ratio
+        final aspectRatioFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is AspectRatio &&
+              (widget.aspectRatio - ImageCropUtils.aspect9x16).abs() < 0.001,
+        );
+        expect(aspectRatioFinder, findsAtLeastNWidgets(1));
+      },
+    );
 
     testWidgets(
       'keeps shutter enabled when selection quota reached and reflects '
@@ -254,10 +244,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
@@ -273,63 +260,52 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('4 / 4 foto'), findsOneWidget);
-        expect(
-          find.bySemanticsLabel('Ambil foto'),
-          findsOneWidget,
-        );
+        expect(find.bySemanticsLabel('Ambil foto'), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'when actionable error exists, hides floating camera controls, '
-      'flash button, and quota badge',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('when actionable error exists, hides floating camera controls, '
+        'flash button, and quota badge', (tester) async {
+      configureTestView(tester);
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            const AppMultiShotCameraScreen(
-              cameras: [],
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(const AppMultiShotCameraScreen(cameras: [])),
+      );
+      await tester.pumpAndSettle();
 
-        expect(
-          find.byKey(const ValueKey<String>('camera_actionable_error_view')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey<String>('camera_close_button')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey<String>('camera_shutter_button')),
-          findsNothing,
-        );
-        expect(
-          find.byKey(const ValueKey<String>('camera_flash_button')),
-          findsNothing,
-        );
-        expect(
-          find.byKey(const ValueKey<String>('camera_quota_badge')),
-          findsNothing,
-        );
-      },
-    );
+      expect(
+        find.byKey(const ValueKey<String>('camera_actionable_error_view')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('camera_close_button')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('camera_shutter_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('camera_flash_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('camera_quota_badge')),
+        findsNothing,
+      );
+    });
 
-    testWidgets('tapping close button dismisses screen and returns result',
-        (tester) async {
+    testWidgets('tapping close button dismisses screen and returns result', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       dynamic returnedResult;
 
       await tester.pumpWidget(
         MaterialApp(
-          builder: (context, child) => M3ETheme(
-            data: AppTheme.m3eLight(),
-            child: child!,
-          ),
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
           home: Builder(
             builder: (context) {
               return ElevatedButton(
@@ -379,10 +355,8 @@ void main() {
           MaterialApp(
             home: Builder(
               builder: (context) => ElevatedButton(
-                onPressed: () => AppMultiShotCameraScreen.show(
-                  context,
-                  cameras: const [],
-                ),
+                onPressed: () =>
+                    AppMultiShotCameraScreen.show(context, cameras: const []),
                 child: const Text('Open'),
               ),
             ),
@@ -470,24 +444,20 @@ void main() {
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
         expect(
-          find.byKey(
-            const ValueKey<String>('camera_preview_gesture_detector'),
-          ),
+          find.byKey(const ValueKey<String>('camera_preview_gesture_detector')),
           findsOneWidget,
         );
         expect(
@@ -497,9 +467,7 @@ void main() {
 
         // Tap on preview to focus
         await tester.tap(
-          find.byKey(
-            const ValueKey<String>('camera_preview_gesture_detector'),
-          ),
+          find.byKey(const ValueKey<String>('camera_preview_gesture_detector')),
         );
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
@@ -520,75 +488,68 @@ void main() {
       },
     );
 
-    testWidgets(
-      'touch to focus rapid re-tap interrupts existing focus and '
-      'relocates reticle',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('touch to focus rapid re-tap interrupts existing focus and '
+        'relocates reticle', (tester) async {
+      configureTestView(tester);
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '0',
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-            focusPointSupported: true,
-            exposurePointSupported: true,
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
+            name: '0',
+            lensDirection: CameraLensDirection.back,
+            sensorOrientation: 90,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(1);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        ).copyWith(
+          isInitialized: true,
+          previewSize: const Size(1920, 1080),
+          focusPointSupported: true,
+          exposurePointSupported: true,
+        ),
+      );
+      when(() => mockController.cameraId).thenReturn(1);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
+      when(() => mockController.setFocusPoint(any())).thenAnswer((_) async {});
+      when(
+        () => mockController.setExposurePoint(any()),
+      ).thenAnswer((_) async {});
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
+      );
+      await tester.pumpAndSettle();
 
-        // Ketuk titik fokus pertama (koordinat 250, 400)
-        await tester.tapAt(const Offset(250, 400));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 50));
+      // Ketuk titik fokus pertama (koordinat 250, 400)
+      await tester.tapAt(const Offset(250, 400));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
-        final firstRect = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_focus_reticle')),
-        );
-        expect((firstRect.center.dx - 250).abs() < 1.0, isTrue);
-        expect((firstRect.center.dy - 400).abs() < 1.0, isTrue);
+      final firstRect = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_focus_reticle')),
+      );
+      expect((firstRect.center.dx - 250).abs() < 1.0, isTrue);
+      expect((firstRect.center.dy - 400).abs() < 1.0, isTrue);
 
-        // Majukan 800ms saat masih bertengger lalu ketuk titik kedua (550, 600)
-        await tester.pump(const Duration(milliseconds: 800));
-        await tester.tapAt(const Offset(550, 600));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 50));
+      // Majukan 800ms saat masih bertengger lalu ketuk titik kedua (550, 600)
+      await tester.pump(const Duration(milliseconds: 800));
+      await tester.tapAt(const Offset(550, 600));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
-        final secondRect = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_focus_reticle')),
-        );
-        expect((secondRect.center.dx - 550).abs() < 1.0, isTrue);
-        expect((secondRect.center.dy - 600).abs() < 1.0, isTrue);
-        verify(() => mockController.setFocusPoint(any())).called(2);
+      final secondRect = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_focus_reticle')),
+      );
+      expect((secondRect.center.dx - 550).abs() < 1.0, isTrue);
+      expect((secondRect.center.dy - 600).abs() < 1.0, isTrue);
+      verify(() => mockController.setFocusPoint(any())).called(2);
 
-        // Majukan hingga timer selesai
-        await tester.pump(const Duration(milliseconds: 1600));
-        expect(
-          find.byKey(const ValueKey<String>('camera_focus_reticle')),
-          findsNothing,
-        );
-      },
-    );
+      // Majukan hingga timer selesai
+      await tester.pump(const Duration(milliseconds: 1600));
+      expect(
+        find.byKey(const ValueKey<String>('camera_focus_reticle')),
+        findsNothing,
+      );
+    });
 
     testWidgets(
       'touch to focus ignores tap when neither focus nor exposure point is '
@@ -615,19 +576,13 @@ void main() {
         when(mockController.buildPreview).thenReturn(const SizedBox());
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
         // Ketuk preview kamera
         await tester.tap(
-          find.byKey(
-            const ValueKey<String>('camera_preview_gesture_detector'),
-          ),
+          find.byKey(const ValueKey<String>('camera_preview_gesture_detector')),
         );
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
@@ -665,23 +620,18 @@ void main() {
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
         // Ketuk preview kamera
         await tester.tap(
-          find.byKey(
-            const ValueKey<String>('camera_preview_gesture_detector'),
-          ),
+          find.byKey(const ValueKey<String>('camera_preview_gesture_detector')),
         );
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
@@ -719,26 +669,21 @@ void main() {
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setFocusPoint(any())).thenThrow(
-          CameraException('setFocusPointFailed', 'Hardware error'),
-        );
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenThrow(CameraException('setFocusPointFailed', 'Hardware error'));
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
         // Tap preview
         await tester.tap(
-          find.byKey(
-            const ValueKey<String>('camera_preview_gesture_detector'),
-          ),
+          find.byKey(const ValueKey<String>('camera_preview_gesture_detector')),
         );
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
@@ -757,9 +702,7 @@ void main() {
         // Second tap does not call setFocusPoint again because it was marked
         // unsupported on device
         await tester.tap(
-          find.byKey(
-            const ValueKey<String>('camera_preview_gesture_detector'),
-          ),
+          find.byKey(const ValueKey<String>('camera_preview_gesture_detector')),
         );
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
@@ -781,11 +724,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
@@ -814,11 +753,7 @@ void main() {
         configureTestView(tester);
 
         await tester.pumpWidget(
-          _buildTestApp(
-            const AppMultiShotCameraScreen(
-              cameras: [],
-            ),
-          ),
+          _buildTestApp(const AppMultiShotCameraScreen(cameras: [])),
         );
         await tester.pumpAndSettle();
 
@@ -831,9 +766,7 @@ void main() {
         );
 
         // Transition app to paused (user switched to another camera app)
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
         await tester.pump();
 
         // Transition app back to resumed (user returns to this app)
@@ -865,10 +798,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         final tempDir = Directory.systemTemp.createTempSync('camera_test_');
         final tempFile = File('${tempDir.path}/sample.jpg');
@@ -887,16 +817,12 @@ void main() {
 
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
@@ -907,8 +833,9 @@ void main() {
         );
 
         // Verify shutter button is enabled and trigger its onTap
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         expect(tappable.enabled, isTrue);
         await tester.runAsync(() async {
@@ -941,72 +868,62 @@ void main() {
       },
     );
 
-    testWidgets(
-      'verifies top bar is separated above camera view and controls '
-      'are constrained inside 9:16 frame',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('verifies top bar is separated above camera view and controls '
+        'are constrained inside 9:16 frame', (tester) async {
+      configureTestView(tester);
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '0',
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
+            name: '0',
+            lensDirection: CameraLensDirection.back,
+            sensorOrientation: 90,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(1);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+      );
+      when(() => mockController.cameraId).thenReturn(1);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. AspectRatio 9:16 bounding rect
-        final viewfinderFinder = find.byKey(
-          const ValueKey<String>('camera_viewfinder_container'),
-        );
-        expect(viewfinderFinder, findsOneWidget);
-        final viewfinderRect = tester.getRect(viewfinderFinder);
+      // 1. AspectRatio 9:16 bounding rect
+      final viewfinderFinder = find.byKey(
+        const ValueKey<String>('camera_viewfinder_container'),
+      );
+      expect(viewfinderFinder, findsOneWidget);
+      final viewfinderRect = tester.getRect(viewfinderFinder);
 
-        // 2. Rect tombol top bar
-        final closeRect = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_close_button')),
-        );
-        final badgeRect = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_quota_badge')),
-        );
-        final flashRect = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_flash_button')),
-        );
+      // 2. Rect tombol top bar
+      final closeRect = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_close_button')),
+      );
+      final badgeRect = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_quota_badge')),
+      );
+      final flashRect = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_flash_button')),
+      );
 
-        // Verifikasi baris top bar terpisah di atas bidang view kamera
-        expect(closeRect.bottom <= viewfinderRect.top, isTrue);
-        expect(badgeRect.bottom <= viewfinderRect.top, isTrue);
-        expect(flashRect.bottom <= viewfinderRect.top, isTrue);
+      // Verifikasi baris top bar terpisah di atas bidang view kamera
+      expect(closeRect.bottom <= viewfinderRect.top, isTrue);
+      expect(badgeRect.bottom <= viewfinderRect.top, isTrue);
+      expect(flashRect.bottom <= viewfinderRect.top, isTrue);
 
-        // 3. Rect tombol shutter
-        final shutterRect = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_shutter_button')),
-        );
+      // 3. Rect tombol shutter
+      final shutterRect = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_shutter_button')),
+      );
 
-        // Verifikasi tombol shutter ter-constraint di dalam view kamera 9:16
-        expect(shutterRect.top >= viewfinderRect.top, isTrue);
-        expect(shutterRect.bottom <= viewfinderRect.bottom, isTrue);
-        expect(shutterRect.left >= viewfinderRect.left, isTrue);
-        expect(shutterRect.right <= viewfinderRect.right, isTrue);
-      },
-    );
+      // Verifikasi tombol shutter ter-constraint di dalam view kamera 9:16
+      expect(shutterRect.top >= viewfinderRect.top, isTrue);
+      expect(shutterRect.bottom <= viewfinderRect.bottom, isTrue);
+      expect(shutterRect.left >= viewfinderRect.left, isTrue);
+      expect(shutterRect.right <= viewfinderRect.right, isTrue);
+    });
 
     testWidgets(
       'triggers shutter flash curtain immediately upon camera capture',
@@ -1021,10 +938,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         final tempDir = Directory.systemTemp.createTempSync('flash_test_');
         final tempFile = File('${tempDir.path}/sample.jpg');
@@ -1041,16 +955,12 @@ void main() {
 
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
@@ -1072,8 +982,9 @@ void main() {
         expect(initialContainerFinder, findsNothing);
 
         // 2. Trigger shutter
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         await tester.runAsync(() async {
           tappable.onTap!();
@@ -1107,59 +1018,49 @@ void main() {
       },
     );
 
-    testWidgets(
-      'respects reduced motion by disabling shutter flash',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('respects reduced motion by disabling shutter flash', (
+      tester,
+    ) async {
+      configureTestView(tester);
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '0',
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
+            name: '0',
+            lensDirection: CameraLensDirection.back,
+            sensorOrientation: 90,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(1);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+      );
+      when(() => mockController.cameraId).thenReturn(1);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                disableAnimations: true,
-              ),
-              child: M3ETheme(
-                data: AppTheme.m3eLight(),
-                child: child!,
-              ),
-            ),
-            home: Scaffold(
-              body: AppMultiShotCameraScreen(
-                controller: mockController,
-              ),
-            ),
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: M3ETheme(data: AppTheme.m3eLight(), child: child!),
           ),
-        );
-        await tester.pumpAndSettle();
+          home: Scaffold(
+            body: AppMultiShotCameraScreen(controller: mockController),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final flashFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_flash'));
-        expect(flashFinder, findsOneWidget);
+      final flashFinder = find.byKey(
+        const ValueKey<String>('camera_shutter_flash'),
+      );
+      expect(flashFinder, findsOneWidget);
 
-        // With reduced motion, CameraShutterFlash returns SizedBox.shrink()
-        final sizedBoxFinder = find.descendant(
-          of: flashFinder,
-          matching: find.byType(SizedBox),
-        );
-        expect(sizedBoxFinder, findsOneWidget);
-      },
-    );
+      // With reduced motion, CameraShutterFlash returns SizedBox.shrink()
+      final sizedBoxFinder = find.descendant(
+        of: flashFinder,
+        matching: find.byType(SizedBox),
+      );
+      expect(sizedBoxFinder, findsOneWidget);
+    });
 
     testWidgets(
       'toggling photo selection updates counter, sequence badge, and done '
@@ -1175,10 +1076,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         final tempDir = Directory.systemTemp.createTempSync('toggle_sel_test_');
         final tempFile = File('${tempDir.path}/sample.jpg');
@@ -1195,22 +1093,19 @@ void main() {
 
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
         // Ambil 1 foto
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         await tester.runAsync(() async {
           tappable.onTap!();
@@ -1226,8 +1121,9 @@ void main() {
 
         // Foto otomatis terpilih saat kuota tersedia (urutan 1)
         expect(find.text('1 / 4 foto'), findsOneWidget);
-        final thumbFinder =
-            find.byKey(ValueKey<String>('captured_thumbnail_${tempFile.path}'));
+        final thumbFinder = find.byKey(
+          ValueKey<String>('captured_thumbnail_${tempFile.path}'),
+        );
         final deleteBtnFinder = find.byKey(
           ValueKey<String>('remove_captured_photo_${tempFile.path}'),
         );
@@ -1237,10 +1133,7 @@ void main() {
         );
         expect(thumbFinder, findsOneWidget);
         expect(
-          find.descendant(
-            of: thumbFinder,
-            matching: find.text('1'),
-          ),
+          find.descendant(of: thumbFinder, matching: find.text('1')),
           findsOneWidget,
         );
 
@@ -1251,8 +1144,9 @@ void main() {
           matching: find.byType(AnimatedContainer),
         );
         expect(selectedScrimFinder, findsOneWidget);
-        final selectedContainer =
-            tester.widget<AnimatedContainer>(selectedScrimFinder);
+        final selectedContainer = tester.widget<AnimatedContainer>(
+          selectedScrimFinder,
+        );
         final selectedDecoration =
             selectedContainer.decoration as BoxDecoration?;
         expect(
@@ -1278,10 +1172,7 @@ void main() {
         // Kuota terpilih menjadi 0, nomor urut '1' di thumbnail hilang
         expect(find.text('0 / 4 foto'), findsOneWidget);
         expect(
-          find.descendant(
-            of: thumbFinder,
-            matching: find.text('1'),
-          ),
+          find.descendant(of: thumbFinder, matching: find.text('1')),
           findsNothing,
         );
 
@@ -1291,8 +1182,9 @@ void main() {
           matching: find.byType(AnimatedContainer),
         );
         expect(unselectedScrimFinder, findsOneWidget);
-        final unselectedContainer =
-            tester.widget<AnimatedContainer>(unselectedScrimFinder);
+        final unselectedContainer = tester.widget<AnimatedContainer>(
+          unselectedScrimFinder,
+        );
         final unselectedDecoration =
             unselectedContainer.decoration as BoxDecoration?;
         expect(unselectedDecoration?.color, equals(Colors.transparent));
@@ -1313,8 +1205,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('1 / 4 foto'), findsOneWidget);
-        final doneBtnFinder =
-            find.byKey(const ValueKey<String>('camera_done_button'));
+        final doneBtnFinder = find.byKey(
+          const ValueKey<String>('camera_done_button'),
+        );
         expect(doneBtnFinder, findsOneWidget);
         final doneBtnWidget = tester.widget<AppIconButton>(doneBtnFinder);
         expect(
@@ -1326,10 +1219,7 @@ void main() {
           equals(AppTheme.m3eLight().colorScheme.onSurface),
         );
         expect(
-          find.descendant(
-            of: thumbFinder,
-            matching: find.text('1'),
-          ),
+          find.descendant(of: thumbFinder, matching: find.text('1')),
           findsOneWidget,
         );
 
@@ -1365,10 +1255,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         final tempDir = Directory.systemTemp.createTempSync('unlimited_cap_');
         final file1 = File('${tempDir.path}/pic1.jpg');
@@ -1407,8 +1294,9 @@ void main() {
 
         expect(find.text('3 / 4 foto'), findsOneWidget);
 
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         var tappable = tester.widget<AppTappable>(shutterFinder);
 
         // Jepret foto 1
@@ -1484,10 +1372,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
@@ -1497,21 +1382,18 @@ void main() {
         final rawImg = img.Image(width: 90, height: 160);
         img.fill(rawImg, color: img.ColorRgba8(255, 0, 0, 255));
         tempFile.writeAsBytesSync(img.encodeJpg(rawImg));
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         await tester.runAsync(() async {
           tappable.onTap!();
@@ -1544,122 +1426,113 @@ void main() {
       },
     );
 
-    testWidgets(
-      'animates newest thumbnail expansion and smoothly pushes '
-      'existing thumbnails without void gap',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('animates newest thumbnail expansion and smoothly pushes '
+        'existing thumbnails without void gap', (tester) async {
+      configureTestView(tester);
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '0',
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
+            name: '0',
+            lensDirection: CameraLensDirection.back,
+            sensorOrientation: 90,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(1);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+      );
+      when(() => mockController.cameraId).thenReturn(1);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
 
-        final tempDir = Directory.systemTemp.createTempSync();
-        final file1 = File('${tempDir.path}/test_thumb_1.jpg');
-        final file2 = File('${tempDir.path}/test_thumb_2.jpg');
-        final rawImg = img.Image(width: 90, height: 160);
-        img.fill(rawImg, color: img.ColorRgba8(255, 0, 0, 255));
-        file1.writeAsBytesSync(img.encodeJpg(rawImg));
-        file2.writeAsBytesSync(img.encodeJpg(rawImg));
+      final tempDir = Directory.systemTemp.createTempSync();
+      final file1 = File('${tempDir.path}/test_thumb_1.jpg');
+      final file2 = File('${tempDir.path}/test_thumb_2.jpg');
+      final rawImg = img.Image(width: 90, height: 160);
+      img.fill(rawImg, color: img.ColorRgba8(255, 0, 0, 255));
+      file1.writeAsBytesSync(img.encodeJpg(rawImg));
+      file2.writeAsBytesSync(img.encodeJpg(rawImg));
 
-        var captureCount = 0;
-        when(mockController.takePicture).thenAnswer((_) async {
-          captureCount++;
-          return XFile(captureCount == 1 ? file1.path : file2.path);
-        });
+      var captureCount = 0;
+      when(mockController.takePicture).thenAnswer((_) async {
+        captureCount++;
+        return XFile(captureCount == 1 ? file1.path : file2.path);
+      });
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. Ambil foto pertama
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
-        var tappable = tester.widget<AppTappable>(shutterFinder);
-        await tester.runAsync(() async {
-          tappable.onTap!();
-          for (var i = 0; i < 80; i++) {
-            await Future<void>.delayed(const Duration(milliseconds: 50));
-            final bytes = file1.readAsBytesSync();
-            final decoded = img.decodeImage(bytes);
-            if (decoded != null && decoded.width == 90) break;
-          }
-          await Future<void>.delayed(const Duration(milliseconds: 300));
-        });
-        await tester.pumpAndSettle();
+      // 1. Ambil foto pertama
+      final shutterFinder = find.byKey(
+        const ValueKey<String>('camera_shutter_button'),
+      );
+      var tappable = tester.widget<AppTappable>(shutterFinder);
+      await tester.runAsync(() async {
+        tappable.onTap!();
+        for (var i = 0; i < 80; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          final bytes = file1.readAsBytesSync();
+          final decoded = img.decodeImage(bytes);
+          if (decoded != null && decoded.width == 90) break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
 
-        // Thumbnail pertama terpasang di posisi awal
-        final initialThumb0Rect = tester.getRect(
-          find.byKey(ValueKey<String>('captured_thumbnail_${file1.path}')),
-        );
-        expect(initialThumb0Rect.width, 72.0);
+      // Thumbnail pertama terpasang di posisi awal
+      final initialThumb0Rect = tester.getRect(
+        find.byKey(ValueKey<String>('captured_thumbnail_${file1.path}')),
+      );
+      expect(initialThumb0Rect.width, 72.0);
 
-        // 2. Ambil foto kedua
-        tappable = tester.widget<AppTappable>(shutterFinder);
-        await tester.runAsync(() async {
-          tappable.onTap!();
-          for (var i = 0; i < 80; i++) {
-            await Future<void>.delayed(const Duration(milliseconds: 50));
-            final bytes = file2.readAsBytesSync();
-            final decoded = img.decodeImage(bytes);
-            if (decoded != null && decoded.width == 90) break;
-          }
-          await Future<void>.delayed(const Duration(milliseconds: 300));
-        });
+      // 2. Ambil foto kedua
+      tappable = tester.widget<AppTappable>(shutterFinder);
+      await tester.runAsync(() async {
+        tappable.onTap!();
+        for (var i = 0; i < 80; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          final bytes = file2.readAsBytesSync();
+          final decoded = img.decodeImage(bytes);
+          if (decoded != null && decoded.width == 90) break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
 
-        // Pompa 1 frame awal untuk memulai animasi ekspansi lebar
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 60));
+      // Pompa 1 frame awal untuk memulai animasi ekspansi lebar
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
 
-        // Verifikasi TweenAnimationBuilder aktif untuk thumbnail baru dan celah
-        expect(
-          find.byKey(ValueKey<String>('tray_newest_${file2.path}')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(ValueKey<String>('tray_sep_${file2.path}')),
-          findsOneWidget,
-        );
+      // Verifikasi TweenAnimationBuilder aktif untuk thumbnail baru dan celah
+      expect(
+        find.byKey(ValueKey<String>('tray_newest_${file2.path}')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey<String>('tray_sep_${file2.path}')),
+        findsOneWidget,
+      );
 
-        // Thumbnail lama (sekarang index 1) telah bergeser ke kanan
-        final shiftingThumb1Rect = tester.getRect(
-          find.byKey(ValueKey<String>('captured_thumbnail_${file1.path}')),
-        );
-        expect(shiftingThumb1Rect.left > initialThumb0Rect.left, isTrue);
+      // Thumbnail lama (sekarang index 1) telah bergeser ke kanan
+      final shiftingThumb1Rect = tester.getRect(
+        find.byKey(ValueKey<String>('captured_thumbnail_${file1.path}')),
+      );
+      expect(shiftingThumb1Rect.left > initialThumb0Rect.left, isTrue);
 
-        // Selesaikan sisa animasi hingga kondisi tenang (settle)
-        await tester.pumpAndSettle();
+      // Selesaikan sisa animasi hingga kondisi tenang (settle)
+      await tester.pumpAndSettle();
 
-        // Verifikasi kedua thumbnail berada di posisi akhir yang stabil
-        final finalThumb0Rect = tester.getRect(
-          find.byKey(ValueKey<String>('captured_thumbnail_${file2.path}')),
-        );
-        final finalThumb1Rect = tester.getRect(
-          find.byKey(ValueKey<String>('captured_thumbnail_${file1.path}')),
-        );
-        expect(finalThumb0Rect.width, 72.0);
-        expect(finalThumb1Rect.width, 72.0);
-        expect(finalThumb0Rect.left, equals(initialThumb0Rect.left));
-        expect(finalThumb1Rect.left > finalThumb0Rect.right, isTrue);
-      },
-    );
+      // Verifikasi kedua thumbnail berada di posisi akhir yang stabil
+      final finalThumb0Rect = tester.getRect(
+        find.byKey(ValueKey<String>('captured_thumbnail_${file2.path}')),
+      );
+      final finalThumb1Rect = tester.getRect(
+        find.byKey(ValueKey<String>('captured_thumbnail_${file1.path}')),
+      );
+      expect(finalThumb0Rect.width, 72.0);
+      expect(finalThumb1Rect.width, 72.0);
+      expect(finalThumb0Rect.left, equals(initialThumb0Rect.left));
+      expect(finalThumb1Rect.left > finalThumb0Rect.right, isTrue);
+    });
 
     testWidgets(
       'cycles through flash modes off -> auto -> always -> torch -> off '
@@ -1675,26 +1548,20 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
         when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         expect(flashBtnFinder, findsOneWidget);
 
         // 1. Awal: FlashMode.off (KawaloVectors.flashOff)
@@ -1817,22 +1684,21 @@ void main() {
         when(() => mockController.cameraId).thenReturn(0);
         when(mockController.buildPreview).thenReturn(const SizedBox());
         when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtn = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         // Ketuk untuk rotasi: off -> auto -> always
         await tester.tap(flashBtn);
         await tester.pumpAndSettle();
@@ -1887,22 +1753,21 @@ void main() {
         when(() => mockController.cameraId).thenReturn(0);
         when(mockController.buildPreview).thenReturn(const SizedBox());
         when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtn = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         // Ketuk sekali: off -> auto
         await tester.tap(flashBtn);
         await tester.pumpAndSettle();
@@ -1956,17 +1821,15 @@ void main() {
         when(() => mockController.cameraId).thenReturn(0);
         when(mockController.buildPreview).thenReturn(const SizedBox());
         when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
@@ -1984,235 +1847,213 @@ void main() {
       },
     );
 
-    testWidgets(
-      'touch to focus maintains torch mode without resetting when '
-      'flashMode is torch',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('touch to focus maintains torch mode without resetting when '
+        'flashMode is torch', (tester) async {
+      configureTestView(tester);
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '0',
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-            focusPointSupported: true,
-            exposurePointSupported: true,
-          ),
-        );
-        when(() => mockController.description).thenReturn(
-          const CameraDescription(
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
             name: '0',
             lensDirection: CameraLensDirection.back,
             sensorOrientation: 90,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(0);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        ).copyWith(
+          isInitialized: true,
+          previewSize: const Size(1920, 1080),
+          focusPointSupported: true,
+          exposurePointSupported: true,
+        ),
+      );
+      when(() => mockController.description).thenReturn(
+        const CameraDescription(
+          name: '0',
+          lensDirection: CameraLensDirection.back,
+          sensorOrientation: 90,
+        ),
+      );
+      when(() => mockController.cameraId).thenReturn(0);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
+      when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
+      when(() => mockController.setFocusPoint(any())).thenAnswer((_) async {});
+      when(
+        () => mockController.setExposurePoint(any()),
+      ).thenAnswer((_) async {});
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
+      );
+      await tester.pumpAndSettle();
 
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
-        // off -> auto -> always -> torch
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
+      final flashBtn = find.byKey(
+        const ValueKey<String>('camera_flash_button'),
+      );
+      // off -> auto -> always -> torch
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
 
-        // Ketuk preview untuk fokus
-        final previewFinder = find.byKey(
-          const ValueKey<String>('camera_preview_gesture_detector'),
-        );
-        await tester.tap(previewFinder);
-        await tester.pump();
+      // Ketuk preview untuk fokus
+      final previewFinder = find.byKey(
+        const ValueKey<String>('camera_preview_gesture_detector'),
+      );
+      await tester.tap(previewFinder);
+      await tester.pump();
 
-        // Majukan timer melampaui batas auto-hide reticle
-        await tester.pump(const Duration(milliseconds: 1500));
+      // Majukan timer melampaui batas auto-hide reticle
+      await tester.pump(const Duration(milliseconds: 1500));
 
-        // Pastikan tidak ada pemanggilan setFlashMode(FlashMode.off) yang
-        // mematikan senter saat reticle fokus selesai
-        verifyNever(() => mockController.setFlashMode(FlashMode.off));
-      },
-    );
+      // Pastikan tidak ada pemanggilan setFlashMode(FlashMode.off) yang
+      // mematikan senter saat reticle fokus selesai
+      verifyNever(() => mockController.setFlashMode(FlashMode.off));
+    });
 
-    testWidgets(
-      'shutter capture on front camera triggers screen flash overlay '
-      'when flash is always',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('shutter capture on front camera triggers screen flash overlay '
+        'when flash is always', (tester) async {
+      configureTestView(tester);
 
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/test_front.jpg');
-        final rawImage = img.Image(width: 90, height: 160);
-        img.fill(rawImage, color: img.ColorRgb8(200, 200, 200));
-        tempFile.writeAsBytesSync(img.encodeJpg(rawImage));
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/test_front.jpg');
+      final rawImage = img.Image(width: 90, height: 160);
+      img.fill(rawImage, color: img.ColorRgb8(200, 200, 200));
+      tempFile.writeAsBytesSync(img.encodeJpg(rawImage));
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '1',
-              lensDirection: CameraLensDirection.front,
-              sensorOrientation: 270,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
-        );
-        when(() => mockController.description).thenReturn(
-          const CameraDescription(
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
             name: '1',
             lensDirection: CameraLensDirection.front,
             sensorOrientation: 270,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(1);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(mockController.takePicture).thenAnswer((_) async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-          return XFile(tempFile.path);
-        });
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+      );
+      when(() => mockController.description).thenReturn(
+        const CameraDescription(
+          name: '1',
+          lensDirection: CameraLensDirection.front,
+          sensorOrientation: 270,
+        ),
+      );
+      when(() => mockController.cameraId).thenReturn(1);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
+      when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
+      when(mockController.takePicture).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return XFile(tempFile.path);
+      });
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
+      );
+      await tester.pumpAndSettle();
 
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
-        // off -> always (pada kamera depan, mode disederhanakan off dan always)
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
+      final flashBtn = find.byKey(
+        const ValueKey<String>('camera_flash_button'),
+      );
+      // off -> always (pada kamera depan, mode disederhanakan off dan always)
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
 
-        // Tekan tombol rana
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
-        final tappable = tester.widget<AppTappable>(shutterFinder);
-        await tester.runAsync(() async {
-          tappable.onTap!();
-          // Jeda jeda pra-shutter screen flash (180ms)
-          await Future<void>.delayed(const Duration(milliseconds: 100));
-        });
-        await tester.pump();
+      // Tekan tombol rana
+      final shutterFinder = find.byKey(
+        const ValueKey<String>('camera_shutter_button'),
+      );
+      final tappable = tester.widget<AppTappable>(shutterFinder);
+      await tester.runAsync(() async {
+        tappable.onTap!();
+        // Jeda jeda pra-shutter screen flash (180ms)
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pump();
 
-        // Verifikasi overlay screen flash putih muncul
-        expect(
-          find.byKey(const ValueKey<String>('camera_screen_flash_overlay')),
-          findsOneWidget,
-        );
+      // Verifikasi overlay screen flash putih muncul
+      expect(
+        find.byKey(const ValueKey<String>('camera_screen_flash_overlay')),
+        findsOneWidget,
+      );
 
-        // Biarkan proses pengambilan foto selesai
-        await tester.runAsync(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 300));
-        });
-        await tester.pumpAndSettle();
+      // Biarkan proses pengambilan foto selesai
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
 
-        // Verifikasi overlay screen flash telah menghilang pasca-capture
-        expect(
-          find.byKey(const ValueKey<String>('camera_screen_flash_overlay')),
-          findsNothing,
-        );
-      },
-    );
+      // Verifikasi overlay screen flash telah menghilang pasca-capture
+      expect(
+        find.byKey(const ValueKey<String>('camera_screen_flash_overlay')),
+        findsNothing,
+      );
+    });
 
-    testWidgets(
-      'shutter capture preserves torch mode after capture when '
-      'flashMode is torch',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('shutter capture preserves torch mode after capture when '
+        'flashMode is torch', (tester) async {
+      configureTestView(tester);
 
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/test_torch.jpg');
-        final rawImage = img.Image(width: 90, height: 160);
-        img.fill(rawImage, color: img.ColorRgb8(100, 100, 100));
-        tempFile.writeAsBytesSync(img.encodeJpg(rawImage));
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/test_torch.jpg');
+      final rawImage = img.Image(width: 90, height: 160);
+      img.fill(rawImage, color: img.ColorRgb8(100, 100, 100));
+      tempFile.writeAsBytesSync(img.encodeJpg(rawImage));
 
-        final mockController = MockCameraController();
-        when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(
-            CameraDescription(
-              name: '0',
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90,
-            ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
-        );
-        when(() => mockController.description).thenReturn(
-          const CameraDescription(
+      final mockController = MockCameraController();
+      when(() => mockController.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
             name: '0',
             lensDirection: CameraLensDirection.back,
             sensorOrientation: 90,
           ),
-        );
-        when(() => mockController.cameraId).thenReturn(0);
-        when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(mockController.takePicture).thenAnswer((_) async {
-          return XFile(tempFile.path);
-        });
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+      );
+      when(() => mockController.description).thenReturn(
+        const CameraDescription(
+          name: '0',
+          lensDirection: CameraLensDirection.back,
+          sensorOrientation: 90,
+        ),
+      );
+      when(() => mockController.cameraId).thenReturn(0);
+      when(mockController.buildPreview).thenReturn(const SizedBox());
+      when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
+      when(mockController.takePicture).thenAnswer((_) async {
+        return XFile(tempFile.path);
+      });
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
+      );
+      await tester.pumpAndSettle();
 
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
-        // off -> auto -> always -> torch
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
-        await tester.tap(flashBtn);
-        await tester.pumpAndSettle();
+      final flashBtn = find.byKey(
+        const ValueKey<String>('camera_flash_button'),
+      );
+      // off -> auto -> always -> torch
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(flashBtn);
+      await tester.pumpAndSettle();
 
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
-        final tappable = tester.widget<AppTappable>(shutterFinder);
-        await tester.runAsync(() async {
-          tappable.onTap!();
-          await Future<void>.delayed(const Duration(milliseconds: 300));
-        });
-        await tester.pumpAndSettle();
+      final shutterFinder = find.byKey(
+        const ValueKey<String>('camera_shutter_button'),
+      );
+      final tappable = tester.widget<AppTappable>(shutterFinder);
+      await tester.runAsync(() async {
+        tappable.onTap!();
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
 
-        // Verifikasi setFlashMode(FlashMode.torch) dipanggil lagi pasca-capture
-        // (1x saat tombol ditekan ke torch + 1x pasca-jepret guardrail = 2)
-        verify(() => mockController.setFlashMode(FlashMode.torch)).called(2);
-      },
-    );
+      // Verifikasi setFlashMode(FlashMode.torch) dipanggil lagi pasca-capture
+      // (1x saat tombol ditekan ke torch + 1x pasca-jepret guardrail = 2)
+      verify(() => mockController.setFlashMode(FlashMode.torch)).called(2);
+    });
 
     testWidgets(
       'front camera flash cycle simplifies to 2 modes: off and always for '
@@ -2228,10 +2069,7 @@ void main() {
               lensDirection: CameraLensDirection.front,
               sensorOrientation: 270,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(
           const CameraDescription(
@@ -2243,21 +2081,18 @@ void main() {
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
         // Simulasikan kamera depan throw exception saat setFlashMode
-        when(() => mockController.setFlashMode(any())).thenThrow(
-          Exception('Flash not supported on front camera'),
-        );
+        when(
+          () => mockController.setFlashMode(any()),
+        ).thenThrow(Exception('Flash not supported on front camera'));
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
 
         // 1. Awal: FlashMode.off
         expect(
@@ -2297,10 +2132,7 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(
           const CameraDescription(
@@ -2333,8 +2165,9 @@ void main() {
           find.byKey(const ValueKey<String>('camera_close_button')),
           findsOneWidget,
         );
-        final quotaFinder =
-            find.byKey(const ValueKey<String>('camera_quota_badge'));
+        final quotaFinder = find.byKey(
+          const ValueKey<String>('camera_quota_badge'),
+        );
         expect(quotaFinder, findsOneWidget);
 
         // 3. Verifikasi badge kuota tetap berada di tengah layar
@@ -2381,10 +2214,12 @@ void main() {
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
         when(() => mockController.setFlashMode(any())).thenAnswer((_) async {});
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
         when(mockController.takePicture).thenAnswer((_) async {
           return XFile(tempFile.path);
         });
@@ -2399,8 +2234,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         expect(flashBtnFinder, findsOneWidget);
 
         // Siklus penuh 4 mode: off -> auto -> always
@@ -2422,8 +2258,9 @@ void main() {
         verify(() => mockController.setFlashMode(FlashMode.torch)).called(1);
 
         // Tekan shutter dan verifikasi Screen Flash TIDAK muncul
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         tappable.onTap!();
         await tester.pump();
@@ -2453,10 +2290,9 @@ void main() {
 
         final mockController = MockCameraController();
         when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(cam1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          const CameraValue.uninitialized(
+            cam1,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(cam1);
         when(() => mockController.cameraId).thenReturn(1);
@@ -2474,8 +2310,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
 
         // Siklus ke FlashMode.torch (off -> auto -> always -> torch)
         await tester.tap(flashBtnFinder);
@@ -2491,8 +2328,9 @@ void main() {
         );
 
         // Tekan tombol switch kamera
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
         expect(switchBtnFinder, findsOneWidget);
         await tester.tap(switchBtnFinder);
         await tester.pump();
@@ -2522,19 +2360,18 @@ void main() {
 
         final mockController = MockCameraController();
         when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(cam1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          const CameraValue.uninitialized(
+            cam1,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(cam1);
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
 
         final captureCompleter = Completer<XFile>();
-        when(mockController.takePicture).thenAnswer(
-          (_) => captureCompleter.future,
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) => captureCompleter.future);
 
         await tester.pumpWidget(
           _buildTestApp(
@@ -2546,10 +2383,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
 
         // 1. Verifikasi state awal (Enabled): icon berwarna putih solid
         expect(
@@ -2578,8 +2417,9 @@ void main() {
         expect(switchIconEnabled.color, equals(Colors.white));
 
         // 2. Trigger shutter capture (masuk ke state capturing)
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         tappable.onTap!();
         await tester.pump();
@@ -2598,9 +2438,7 @@ void main() {
         );
         expect(
           flashIconDisabled.color,
-          equals(
-            Colors.white.withValues(alpha: AppStateLayer.disabledOpacity),
-          ),
+          equals(Colors.white.withValues(alpha: AppStateLayer.disabledOpacity)),
         );
 
         final switchIconDisabled = tester.widget<AppSvgIcon>(
@@ -2611,30 +2449,26 @@ void main() {
         );
         expect(
           switchIconDisabled.color,
-          equals(
-            Colors.white.withValues(alpha: AppStateLayer.disabledOpacity),
-          ),
+          equals(Colors.white.withValues(alpha: AppStateLayer.disabledOpacity)),
         );
 
         // Foreground color decoration pada state disabled juga terkonfigurasi
         final flashBtn = tester.widget<AppIconButton>(flashBtnFinder);
-        final flashFg = flashBtn.decoration?.foregroundColor
-            ?.resolve({WidgetState.disabled});
+        final flashFg = flashBtn.decoration?.foregroundColor?.resolve({
+          WidgetState.disabled,
+        });
         expect(
           flashFg,
-          equals(
-            Colors.white.withValues(alpha: AppStateLayer.disabledOpacity),
-          ),
+          equals(Colors.white.withValues(alpha: AppStateLayer.disabledOpacity)),
         );
 
         final switchBtn = tester.widget<AppIconButton>(switchBtnFinder);
-        final switchFg = switchBtn.decoration?.foregroundColor
-            ?.resolve({WidgetState.disabled});
+        final switchFg = switchBtn.decoration?.foregroundColor?.resolve({
+          WidgetState.disabled,
+        });
         expect(
           switchFg,
-          equals(
-            Colors.white.withValues(alpha: AppStateLayer.disabledOpacity),
-          ),
+          equals(Colors.white.withValues(alpha: AppStateLayer.disabledOpacity)),
         );
 
         // 4. Selesaikan capture dan verifikasi kembali ke state enabled
@@ -2675,12 +2509,15 @@ void main() {
         configureTestView(tester);
 
         final mockBrightnessService = MockScreenBrightnessService();
-        when(() => mockBrightnessService.currentBrightness)
-            .thenAnswer((_) async => 0.45);
-        when(() => mockBrightnessService.setBrightness(any()))
-            .thenAnswer((_) async => true);
-        when(mockBrightnessService.resetBrightness)
-            .thenAnswer((_) async => true);
+        when(
+          () => mockBrightnessService.currentBrightness,
+        ).thenAnswer((_) async => 0.45);
+        when(
+          () => mockBrightnessService.setBrightness(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          mockBrightnessService.resetBrightness,
+        ).thenAnswer((_) async => true);
 
         const frontCamera = CameraDescription(
           name: '1',
@@ -2695,10 +2532,9 @@ void main() {
 
         final mockController = MockCameraController();
         when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(frontCamera).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          const CameraValue.uninitialized(
+            frontCamera,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(frontCamera);
         when(() => mockController.cameraId).thenReturn(1);
@@ -2735,15 +2571,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtn = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         // Aktifkan mode always untuk screen flash kamera depan
         await tester.tap(flashBtn);
         await tester.pumpAndSettle();
 
         // Tekan tombol shutter
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         await tester.runAsync(() async {
           tappable.onTap!();
@@ -2755,13 +2593,15 @@ void main() {
         verify(() => mockBrightnessService.setBrightness(1)).called(1);
 
         // 2. Verifikasi overlay illuminated frame muncul
-        final overlayFinder =
-            find.byKey(const ValueKey<String>('camera_screen_flash_overlay'));
+        final overlayFinder = find.byKey(
+          const ValueKey<String>('camera_screen_flash_overlay'),
+        );
         expect(overlayFinder, findsOneWidget);
 
         // 3. Verifikasi tombol switch kamera terinversi ke warna hitam
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
         expect(switchBtnFinder, findsOneWidget);
         final switchIcon = tester.widget<AppSvgIcon>(
           find.descendant(
@@ -2771,9 +2611,7 @@ void main() {
         );
         expect(
           switchIcon.color,
-          equals(
-            Colors.black.withValues(alpha: AppStateLayer.disabledOpacity),
-          ),
+          equals(Colors.black.withValues(alpha: AppStateLayer.disabledOpacity)),
         );
 
         // 4. Biarkan proses capture selesai
@@ -2818,10 +2656,9 @@ void main() {
 
         final mockController = MockCameraController();
         when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(frontCamera).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          const CameraValue.uninitialized(
+            frontCamera,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(frontCamera);
         when(() => mockController.cameraId).thenReturn(1);
@@ -2846,8 +2683,9 @@ void main() {
           findsOneWidget,
         );
 
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
         expect(switchBtnFinder, findsOneWidget);
 
         // 2. Ketuk tombol switch kamera
@@ -2884,10 +2722,9 @@ void main() {
 
         final mockController = MockCameraController();
         when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(back1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          const CameraValue.uninitialized(
+            back1,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(back1);
         when(() => mockController.cameraId).thenReturn(1);
@@ -2912,8 +2749,9 @@ void main() {
           findsOneWidget,
         );
 
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
         await tester.tap(switchBtnFinder);
         await tester.pump();
 
@@ -2940,10 +2778,9 @@ void main() {
 
         final mockController = MockCameraController();
         when(() => mockController.value).thenReturn(
-          const CameraValue.uninitialized(cam1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          const CameraValue.uninitialized(
+            cam1,
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.description).thenReturn(cam1);
         when(() => mockController.cameraId).thenReturn(1);
@@ -2963,8 +2800,9 @@ void main() {
 
         // 1. Verifikasi tombol flash dibungkus AnimatedRotation untuk mengikuti
         // orientasi perangkat
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         expect(
           find.descendant(
             of: flashBtnFinder,
@@ -2982,8 +2820,9 @@ void main() {
 
         // 2. Verifikasi tombol switch dibungkus AnimatedRotation untuk
         // mengikuti orientasi perangkat
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
         expect(
           find.descendant(
             of: switchBtnFinder,
@@ -3011,259 +2850,237 @@ void main() {
       },
     );
 
-    test(
-      'DeviceOrientationTurns extension and continuous shortest-arc '
-      'calculation',
-      () {
-        // 1. Nilai target putaran dasar
-        expect(
-          DeviceOrientation.portraitUp.turns,
-          0,
-        );
-        expect(
-          DeviceOrientation.landscapeLeft.turns,
-          0.25,
-        );
-        expect(
-          DeviceOrientation.portraitDown.turns,
-          0.50,
-        );
-        expect(
-          DeviceOrientation.landscapeRight.turns,
-          0.75,
-        );
+    test('DeviceOrientationTurns extension and continuous shortest-arc '
+        'calculation', () {
+      // 1. Nilai target putaran dasar
+      expect(DeviceOrientation.portraitUp.turns, 0);
+      expect(DeviceOrientation.landscapeLeft.turns, 0.25);
+      expect(DeviceOrientation.portraitDown.turns, 0.50);
+      expect(DeviceOrientation.landscapeRight.turns, 0.75);
 
-        // 2. Transisi busur terpendek (shortest-arc delta)
-        double calcDelta(
-          double currentTurns,
-          DeviceOrientation targetOrientation,
-        ) {
-          final target = targetOrientation.turns;
-          var delta = (target - currentTurns) % 1.0;
-          if (delta > 0.5) delta -= 1.0;
-          if (delta < -0.5) delta += 1.0;
-          return delta;
-        }
+      // 2. Transisi busur terpendek (shortest-arc delta)
+      double calcDelta(
+        double currentTurns,
+        DeviceOrientation targetOrientation,
+      ) {
+        final target = targetOrientation.turns;
+        var delta = (target - currentTurns) % 1.0;
+        if (delta > 0.5) delta -= 1.0;
+        if (delta < -0.5) delta += 1.0;
+        return delta;
+      }
 
-        // Dari portraitUp (0.0) ke landscapeRight: shortest arc adalah -0.25,
-        // bukan berputar 270° (+0.75)
-        expect(calcDelta(0, DeviceOrientation.landscapeRight), -0.25);
+      // Dari portraitUp (0.0) ke landscapeRight: shortest arc adalah -0.25,
+      // bukan berputar 270° (+0.75)
+      expect(calcDelta(0, DeviceOrientation.landscapeRight), -0.25);
 
-        // Dari landscapeRight (-0.25) ke portraitUp: +0.25 (+90° CW)
-        expect(calcDelta(-0.25, DeviceOrientation.portraitUp), 0.25);
+      // Dari landscapeRight (-0.25) ke portraitUp: +0.25 (+90° CW)
+      expect(calcDelta(-0.25, DeviceOrientation.portraitUp), 0.25);
 
-        // Dari portraitUp (0.0) ke landscapeLeft: +0.25 (+90° CW)
-        expect(calcDelta(0, DeviceOrientation.landscapeLeft), 0.25);
+      // Dari portraitUp (0.0) ke landscapeLeft: +0.25 (+90° CW)
+      expect(calcDelta(0, DeviceOrientation.landscapeLeft), 0.25);
 
-        // Dari portraitUp (0.0) ke portraitDown: +0.50 (180°)
-        expect(calcDelta(0, DeviceOrientation.portraitDown), 0.50);
+      // Dari portraitUp (0.0) ke portraitDown: +0.50 (180°)
+      expect(calcDelta(0, DeviceOrientation.portraitDown), 0.50);
 
-        // Dari portraitDown (0.50) ke landscapeRight: +0.25 (+90° CW)
-        expect(calcDelta(0.50, DeviceOrientation.landscapeRight), 0.25);
+      // Dari portraitDown (0.50) ke landscapeRight: +0.25 (+90° CW)
+      expect(calcDelta(0.50, DeviceOrientation.landscapeRight), 0.25);
 
-        // Dari landscapeRight (0.75) ke portraitDown: -0.25 (-90° CCW)
-        expect(calcDelta(0.75, DeviceOrientation.portraitDown), -0.25);
-      },
-    );
+      // Dari landscapeRight (0.75) ke portraitDown: -0.25 (-90° CCW)
+      expect(calcDelta(0.75, DeviceOrientation.portraitDown), -0.25);
+    });
 
-    testWidgets(
-      'repositions quota badge according to device orientation with '
-      'zero layout shift in top bar',
-      (tester) async {
-        final mockController = _createConfiguredMockController();
+    testWidgets('repositions quota badge according to device orientation with '
+        'zero layout shift in top bar', (tester) async {
+      final mockController = _createConfiguredMockController();
 
-        // ── 1. PORTRAIT UP ────────────────────────────────────────────────
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              cameras: const [testCamera1],
-              controller: mockController,
-              initialDeviceOrientation: DeviceOrientation.portraitUp,
-            ),
+      // ── 1. PORTRAIT UP ────────────────────────────────────────────────
+      await tester.pumpWidget(
+        _buildTestApp(
+          AppMultiShotCameraScreen(
+            cameras: const [testCamera1],
+            controller: mockController,
+            initialDeviceOrientation: DeviceOrientation.portraitUp,
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Top bar badge terlihat di tengah
-        final topBadgeFinder =
-            find.byKey(const ValueKey<String>('camera_quota_badge'));
-        expect(topBadgeFinder, findsOneWidget);
+      // Top bar badge terlihat di tengah
+      final topBadgeFinder = find.byKey(
+        const ValueKey<String>('camera_quota_badge'),
+      );
+      expect(topBadgeFinder, findsOneWidget);
 
-        final topOpacityPortraitUp =
-            tester.widget<FadeTransition>(topBadgeFinder).opacity.value;
-        expect(topOpacityPortraitUp, 1);
+      final topOpacityPortraitUp = tester
+          .widget<FadeTransition>(topBadgeFinder)
+          .opacity
+          .value;
+      expect(topOpacityPortraitUp, 1);
 
-        // Posisi tombol di top bar dicatat
-        final closeRectPortraitUp = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_close_button')),
-        );
-        final topBadgeRectPortraitUp = tester.getRect(topBadgeFinder);
-        final flashRectPortraitUp = tester.getRect(
-          find.byKey(const ValueKey<String>('camera_flash_button')),
-        );
+      // Posisi tombol di top bar dicatat
+      final closeRectPortraitUp = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_close_button')),
+      );
+      final topBadgeRectPortraitUp = tester.getRect(topBadgeFinder);
+      final flashRectPortraitUp = tester.getRect(
+        find.byKey(const ValueKey<String>('camera_flash_button')),
+      );
 
-        // Viewfinder landscape badges berupa slot kosong yang belum ditempati
-        expect(
-          find.byKey(
-            const ValueKey<String>('camera_quota_badge_landscape_left'),
-          ),
-          findsNothing,
-        );
-        expect(
-          find.byKey(
-            const ValueKey<String>('camera_quota_badge_landscape_right'),
-          ),
-          findsNothing,
-        );
-
-        // ── 2. PORTRAIT DOWN (UPSIDE DOWN) ────────────────────────────────
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              cameras: const [testCamera1],
-              controller: mockController,
-              initialDeviceOrientation: DeviceOrientation.portraitDown,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Top bar badge tetap di posisinya (opacity 1.0) dengan rotasi 180°
-        final topOpacityPortraitDown =
-            tester.widget<FadeTransition>(topBadgeFinder).opacity.value;
-        expect(topOpacityPortraitDown, 1);
-
-        final topBadgeRotatedBox = tester.widget<RotatedBox>(
-          find.descendant(
-            of: topBadgeFinder,
-            matching: find.byType(RotatedBox),
-          ),
-        );
-        expect(topBadgeRotatedBox.quarterTurns, 2);
-
-        // Verifikasi ZERO LAYOUT SHIFT di top bar
-        expect(
-          tester.getRect(
-            find.byKey(const ValueKey<String>('camera_close_button')),
-          ),
-          closeRectPortraitUp,
-        );
-        expect(
-          tester.getRect(topBadgeFinder),
-          topBadgeRectPortraitUp,
-        );
-        expect(
-          tester.getRect(
-            find.byKey(const ValueKey<String>('camera_flash_button')),
-          ),
-          flashRectPortraitUp,
-        );
-
-        // ── 3. LANDSCAPE LEFT ─────────────────────────────────────────────
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              cameras: const [testCamera1],
-              controller: mockController,
-              initialDeviceOrientation: DeviceOrientation.landscapeLeft,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Top bar badge memudar menjadi transparan (opacity 0.0) namun
-        // mempertahankan ruang
-        final topOpacityLandscapeLeft =
-            tester.widget<FadeTransition>(topBadgeFinder).opacity.value;
-        expect(topOpacityLandscapeLeft, 0);
-
-        // Verifikasi ZERO LAYOUT SHIFT (Close & Flash tidak bergeser sama
-        // sekali)
-        expect(
-          tester.getRect(
-            find.byKey(const ValueKey<String>('camera_close_button')),
-          ),
-          closeRectPortraitUp,
-        );
-        expect(
-          tester.getRect(topBadgeFinder),
-          topBadgeRectPortraitUp,
-        );
-        expect(
-          tester.getRect(
-            find.byKey(const ValueKey<String>('camera_flash_button')),
-          ),
-          flashRectPortraitUp,
-        );
-
-        // Viewfinder memunculkan floating badge untuk Landscape Left di
-        // sisi kanan viewfinder (> 400 pada lebar 800)
-        final leftBadgeFinder = find.byKey(
-          const ValueKey<String>('camera_quota_badge_landscape_left'),
-        );
-        expect(leftBadgeFinder, findsOneWidget);
-        expect(
-          find.byKey(
-            const ValueKey<String>('camera_quota_badge_landscape_right'),
-          ),
-          findsNothing,
-        );
-
-        // Verifikasi posisi Atas-Tengah Landscape Left: berada di sisi kanan
-        // viewfinder (> 400 pada lebar 800)
-        final leftBadgeCenter = tester.getCenter(leftBadgeFinder);
-        expect(leftBadgeCenter.dx > 400.0, isTrue);
-
-        // ── 4. LANDSCAPE RIGHT ────────────────────────────────────────────
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              cameras: const [testCamera1],
-              controller: mockController,
-              initialDeviceOrientation: DeviceOrientation.landscapeRight,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Top bar badge memudar menjadi transparan (opacity 0.0)
-        final topOpacityLandscapeRight =
-            tester.widget<FadeTransition>(topBadgeFinder).opacity.value;
-        expect(topOpacityLandscapeRight, 0);
-
-        // Verifikasi ZERO LAYOUT SHIFT
-        expect(
-          tester.getRect(
-            find.byKey(const ValueKey<String>('camera_close_button')),
-          ),
-          closeRectPortraitUp,
-        );
-        expect(
-          tester.getRect(
-            find.byKey(const ValueKey<String>('camera_flash_button')),
-          ),
-          flashRectPortraitUp,
-        );
-
-        // Viewfinder memunculkan floating badge untuk Landscape Right di
-        // sisi kiri viewfinder (< 400 pada lebar 800)
-        final rightBadgeFinder = find.byKey(
+      // Viewfinder landscape badges berupa slot kosong yang belum ditempati
+      expect(
+        find.byKey(const ValueKey<String>('camera_quota_badge_landscape_left')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
           const ValueKey<String>('camera_quota_badge_landscape_right'),
-        );
-        expect(rightBadgeFinder, findsOneWidget);
-        expect(
-          find.byKey(
-            const ValueKey<String>('camera_quota_badge_landscape_left'),
-          ),
-          findsNothing,
-        );
+        ),
+        findsNothing,
+      );
 
-        // Verifikasi posisi Atas-Tengah Landscape Right: berada di sisi kiri
-        // viewfinder (< 400 pada lebar 800)
-        final rightBadgeCenter = tester.getCenter(rightBadgeFinder);
-        expect(rightBadgeCenter.dx < 400.0, isTrue);
-      },
-    );
+      // ── 2. PORTRAIT DOWN (UPSIDE DOWN) ────────────────────────────────
+      await tester.pumpWidget(
+        _buildTestApp(
+          AppMultiShotCameraScreen(
+            cameras: const [testCamera1],
+            controller: mockController,
+            initialDeviceOrientation: DeviceOrientation.portraitDown,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Top bar badge tetap di posisinya (opacity 1.0) dengan rotasi 180°
+      final topOpacityPortraitDown = tester
+          .widget<FadeTransition>(topBadgeFinder)
+          .opacity
+          .value;
+      expect(topOpacityPortraitDown, 1);
+
+      final topBadgeRotatedBox = tester.widget<RotatedBox>(
+        find.descendant(of: topBadgeFinder, matching: find.byType(RotatedBox)),
+      );
+      expect(topBadgeRotatedBox.quarterTurns, 2);
+
+      // Verifikasi ZERO LAYOUT SHIFT di top bar
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey<String>('camera_close_button')),
+        ),
+        closeRectPortraitUp,
+      );
+      expect(tester.getRect(topBadgeFinder), topBadgeRectPortraitUp);
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey<String>('camera_flash_button')),
+        ),
+        flashRectPortraitUp,
+      );
+
+      // ── 3. LANDSCAPE LEFT ─────────────────────────────────────────────
+      await tester.pumpWidget(
+        _buildTestApp(
+          AppMultiShotCameraScreen(
+            cameras: const [testCamera1],
+            controller: mockController,
+            initialDeviceOrientation: DeviceOrientation.landscapeLeft,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Top bar badge memudar menjadi transparan (opacity 0.0) namun
+      // mempertahankan ruang
+      final topOpacityLandscapeLeft = tester
+          .widget<FadeTransition>(topBadgeFinder)
+          .opacity
+          .value;
+      expect(topOpacityLandscapeLeft, 0);
+
+      // Verifikasi ZERO LAYOUT SHIFT (Close & Flash tidak bergeser sama
+      // sekali)
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey<String>('camera_close_button')),
+        ),
+        closeRectPortraitUp,
+      );
+      expect(tester.getRect(topBadgeFinder), topBadgeRectPortraitUp);
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey<String>('camera_flash_button')),
+        ),
+        flashRectPortraitUp,
+      );
+
+      // Viewfinder memunculkan floating badge untuk Landscape Left di
+      // sisi kanan viewfinder (> 400 pada lebar 800)
+      final leftBadgeFinder = find.byKey(
+        const ValueKey<String>('camera_quota_badge_landscape_left'),
+      );
+      expect(leftBadgeFinder, findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey<String>('camera_quota_badge_landscape_right'),
+        ),
+        findsNothing,
+      );
+
+      // Verifikasi posisi Atas-Tengah Landscape Left: berada di sisi kanan
+      // viewfinder (> 400 pada lebar 800)
+      final leftBadgeCenter = tester.getCenter(leftBadgeFinder);
+      expect(leftBadgeCenter.dx > 400.0, isTrue);
+
+      // ── 4. LANDSCAPE RIGHT ────────────────────────────────────────────
+      await tester.pumpWidget(
+        _buildTestApp(
+          AppMultiShotCameraScreen(
+            cameras: const [testCamera1],
+            controller: mockController,
+            initialDeviceOrientation: DeviceOrientation.landscapeRight,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Top bar badge memudar menjadi transparan (opacity 0.0)
+      final topOpacityLandscapeRight = tester
+          .widget<FadeTransition>(topBadgeFinder)
+          .opacity
+          .value;
+      expect(topOpacityLandscapeRight, 0);
+
+      // Verifikasi ZERO LAYOUT SHIFT
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey<String>('camera_close_button')),
+        ),
+        closeRectPortraitUp,
+      );
+      expect(
+        tester.getRect(
+          find.byKey(const ValueKey<String>('camera_flash_button')),
+        ),
+        flashRectPortraitUp,
+      );
+
+      // Viewfinder memunculkan floating badge untuk Landscape Right di
+      // sisi kiri viewfinder (< 400 pada lebar 800)
+      final rightBadgeFinder = find.byKey(
+        const ValueKey<String>('camera_quota_badge_landscape_right'),
+      );
+      expect(rightBadgeFinder, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('camera_quota_badge_landscape_left')),
+        findsNothing,
+      );
+
+      // Verifikasi posisi Atas-Tengah Landscape Right: berada di sisi kiri
+      // viewfinder (< 400 pada lebar 800)
+      final rightBadgeCenter = tester.getCenter(rightBadgeFinder);
+      expect(rightBadgeCenter.dx < 400.0, isTrue);
+    });
 
     testWidgets(
       'rotates secondary controls to match orientation while close and '
@@ -3283,8 +3100,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1. Tombol flash memutar ikonnya 0.25 turns (+90° CW)
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         final flashRotation = tester.widget<AnimatedRotation>(
           find.descendant(
             of: flashBtnFinder,
@@ -3294,8 +3112,9 @@ void main() {
         expect(flashRotation.turns, 0.25);
 
         // 2. Tombol switch memutar ikonnya 0.25 turns (+90° CW)
-        final switchBtnFinder =
-            find.byKey(const ValueKey<String>('camera_switch_button'));
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
+        );
         final switchRotation = tester.widget<AnimatedRotation>(
           find.descendant(
             of: switchBtnFinder,
@@ -3306,8 +3125,9 @@ void main() {
 
         // 3. Tombol close dan shutter posisinya tetap dan TIDAK memiliki
         // AnimatedRotation
-        final closeBtnFinder =
-            find.byKey(const ValueKey<String>('camera_close_button'));
+        final closeBtnFinder = find.byKey(
+          const ValueKey<String>('camera_close_button'),
+        );
         expect(
           find.descendant(
             of: closeBtnFinder,
@@ -3316,8 +3136,9 @@ void main() {
           findsNothing,
         );
 
-        final shutterBtnFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterBtnFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         expect(
           find.descendant(
             of: shutterBtnFinder,
@@ -3356,9 +3177,9 @@ void main() {
           } on FileSystemException catch (_) {}
         });
 
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         await tester.pumpWidget(
           _buildTestApp(
@@ -3372,8 +3193,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1. Initial portraitUp: flash turns = 0
-        final flashBtnFinder =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtnFinder = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         var flashRotation = tester.widget<AnimatedRotation>(
           find.descendant(
             of: flashBtnFinder,
@@ -3402,24 +3224,19 @@ void main() {
         );
         expect(leftBadgeFinder, findsOneWidget);
         final leftRotatedBox = tester.widget<RotatedBox>(
-          find.ancestor(
-            of: leftBadgeFinder,
-            matching: find.byType(RotatedBox),
-          ),
+          find.ancestor(of: leftBadgeFinder, matching: find.byType(RotatedBox)),
         );
         expect(leftRotatedBox.quarterTurns, 1);
         final leftPositioned = tester.widget<Positioned>(
-          find.ancestor(
-            of: leftBadgeFinder,
-            matching: find.byType(Positioned),
-          ),
+          find.ancestor(of: leftBadgeFinder, matching: find.byType(Positioned)),
         );
         expect(leftPositioned.right, AppSpacing.space200);
 
         // 3. Take picture in landscapeLeft -> verify lockCaptureOrientation was
         // called with landscapeLeft
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         await tester.runAsync(() async {
           tester.widget<AppTappable>(shutterFinder).onTap!();
           await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -3541,8 +3358,9 @@ void main() {
         expect(flashRotation.turns, 0.5);
 
         // Top bar badge is flipped with RotatedBox (quarterTurns: 2)
-        final topBadgeFinder =
-            find.byKey(const ValueKey<String>('camera_quota_badge'));
+        final topBadgeFinder = find.byKey(
+          const ValueKey<String>('camera_quota_badge'),
+        );
         final topBadgeRotatedBox = tester.widget<RotatedBox>(
           find.descendant(
             of: topBadgeFinder,
@@ -3583,10 +3401,12 @@ void main() {
             exposurePointSupported: true,
           ),
         );
-        when(() => mockController.setFocusPoint(any()))
-            .thenAnswer((_) async {});
-        when(() => mockController.setExposurePoint(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockController.setFocusPoint(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockController.setExposurePoint(any()),
+        ).thenAnswer((_) async {});
 
         final orientationStreamController =
             StreamController<DeviceOrientation>.broadcast();
@@ -3697,8 +3517,9 @@ void main() {
 
         // Verifikasi badge pada top bar untuk portraitUp tetap ada dan opasitas
         // penuh (1.0).
-        final topBadgeFinder =
-            find.byKey(const ValueKey<String>('camera_quota_badge'));
+        final topBadgeFinder = find.byKey(
+          const ValueKey<String>('camera_quota_badge'),
+        );
         expect(topBadgeFinder, findsOneWidget);
 
         final fadeTransition = tester.widget<FadeTransition>(topBadgeFinder);
@@ -3727,8 +3548,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Badge kembali utuh, tidak freezed, dan opasitas penuh
-        final settledFadeTransition =
-            tester.widget<FadeTransition>(topBadgeFinder);
+        final settledFadeTransition = tester.widget<FadeTransition>(
+          topBadgeFinder,
+        );
         expect(settledFadeTransition.opacity.value, 1.0);
 
         // 3. Simulasikan rentetan perubahan orientasi sangat cepat
@@ -3868,8 +3690,9 @@ void main() {
         expect(landscapeLeftRect, equals(initialRect));
 
         // Ambil foto dalam mode landscapeLeft
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         await tester.runAsync(() async {
           tester.widget<AppTappable>(shutterFinder).onTap!();
           for (var i = 0; i < 80; i++) {
@@ -3961,18 +3784,16 @@ void main() {
           } on FileSystemException catch (_) {}
         });
 
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         List<AppMediaFile>? returnedResult;
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: Builder(
               builder: (context) {
                 return ElevatedButton(
@@ -3997,8 +3818,9 @@ void main() {
         expect(find.byType(AppMultiShotCameraScreen), findsOneWidget);
 
         // 2. Ambil 1 foto (otomatis terpilih)
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutterFinder = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutterFinder);
         await tester.runAsync(() async {
           tappable.onTap!();
@@ -4013,13 +3835,15 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verifikasi tombol Done muncul karena ada foto yang terpilih
-        final doneButtonFinder =
-            find.byKey(const ValueKey<String>('camera_done_button'));
+        final doneButtonFinder = find.byKey(
+          const ValueKey<String>('camera_done_button'),
+        );
         expect(doneButtonFinder, findsOneWidget);
 
         // 3. Tekan tombol close di top bar ketika foto terpilih
-        final closeButtonFinder =
-            find.byKey(const ValueKey<String>('camera_close_button'));
+        final closeButtonFinder = find.byKey(
+          const ValueKey<String>('camera_close_button'),
+        );
         await tester.tap(closeButtonFinder);
         await tester.pumpAndSettle();
 
@@ -4037,183 +3861,178 @@ void main() {
       },
     );
 
-    testWidgets(
-      'PopScope / escape deselects photos first, then dismisses '
-      'without data on second pop',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('PopScope / escape deselects photos first, then dismisses '
+        'without data on second pop', (tester) async {
+      configureTestView(tester);
 
-        final mockController = _createConfiguredMockController();
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/test_thumb_escape.jpg');
-        final rawImg = img.Image(width: 90, height: 160);
-        img.fill(rawImg, color: img.ColorRgba8(0, 255, 0, 255));
-        tempFile.writeAsBytesSync(img.encodeJpg(rawImg));
-        addTearDown(() {
-          PaintingBinding.instance.imageCache.clear();
-          PaintingBinding.instance.imageCache.clearLiveImages();
-          try {
-            tempDir.deleteSync(recursive: true);
-          } on FileSystemException catch (_) {}
-        });
+      final mockController = _createConfiguredMockController();
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/test_thumb_escape.jpg');
+      final rawImg = img.Image(width: 90, height: 160);
+      img.fill(rawImg, color: img.ColorRgba8(0, 255, 0, 255));
+      tempFile.writeAsBytesSync(img.encodeJpg(rawImg));
+      addTearDown(() {
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+        try {
+          tempDir.deleteSync(recursive: true);
+        } on FileSystemException catch (_) {}
+      });
 
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+      when(
+        mockController.takePicture,
+      ).thenAnswer((_) async => XFile(tempFile.path));
 
-        List<AppMediaFile>? returnedResult;
+      List<AppMediaFile>? returnedResult;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
-            home: Builder(
-              builder: (context) {
-                return ElevatedButton(
-                  onPressed: () async {
-                    returnedResult = await AppMultiShotCameraScreen.show(
-                      context,
-                      controller: mockController,
-                    );
-                  },
-                  child: const Text('Buka Kamera'),
-                );
-              },
-            ),
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
+          home: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  returnedResult = await AppMultiShotCameraScreen.show(
+                    context,
+                    controller: mockController,
+                  );
+                },
+                child: const Text('Buka Kamera'),
+              );
+            },
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. Buka screen
-        await tester.tap(find.text('Buka Kamera'));
-        await tester.pumpAndSettle();
+      // 1. Buka screen
+      await tester.tap(find.text('Buka Kamera'));
+      await tester.pumpAndSettle();
 
-        // 2. Ambil foto (otomatis terpilih)
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
-        final tappable = tester.widget<AppTappable>(shutterFinder);
-        await tester.runAsync(() async {
-          tappable.onTap!();
-          for (var i = 0; i < 80; i++) {
-            await Future<void>.delayed(const Duration(milliseconds: 50));
-            final bytes = tempFile.readAsBytesSync();
-            final decoded = img.decodeImage(bytes);
-            if (decoded != null && decoded.width == 90) break;
-          }
-          await Future<void>.delayed(const Duration(milliseconds: 300));
-        });
-        await tester.pumpAndSettle();
+      // 2. Ambil foto (otomatis terpilih)
+      final shutterFinder = find.byKey(
+        const ValueKey<String>('camera_shutter_button'),
+      );
+      final tappable = tester.widget<AppTappable>(shutterFinder);
+      await tester.runAsync(() async {
+        tappable.onTap!();
+        for (var i = 0; i < 80; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          final bytes = tempFile.readAsBytesSync();
+          final decoded = img.decodeImage(bytes);
+          if (decoded != null && decoded.width == 90) break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
 
-        expect(
-          find.byKey(const ValueKey<String>('camera_done_button')),
-          findsOneWidget,
-        );
+      expect(
+        find.byKey(const ValueKey<String>('camera_done_button')),
+        findsOneWidget,
+      );
 
-        // 3. Simulasikan pop route (gesture back/escape) saat foto terpilih
-        await tester.binding.handlePopRoute();
-        await tester.pumpAndSettle();
+      // 3. Simulasikan pop route (gesture back/escape) saat foto terpilih
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
 
-        // Screen TIDAK boleh tertutup, foto di-deselect
-        expect(find.byType(AppMultiShotCameraScreen), findsOneWidget);
-        expect(
-          find.byKey(const ValueKey<String>('camera_done_button')),
-          findsNothing,
-        );
+      // Screen TIDAK boleh tertutup, foto di-deselect
+      expect(find.byType(AppMultiShotCameraScreen), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('camera_done_button')),
+        findsNothing,
+      );
 
-        // 4. Simulasikan pop route saat tidak ada foto terpilih
-        await tester.binding.handlePopRoute();
-        await tester.pumpAndSettle();
+      // 4. Simulasikan pop route saat tidak ada foto terpilih
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
 
-        // Screen tertutup dan data foto TIDAK diteruskan
-        expect(find.byType(AppMultiShotCameraScreen), findsNothing);
-        expect(returnedResult, isEmpty);
-      },
-    );
+      // Screen tertutup dan data foto TIDAK diteruskan
+      expect(find.byType(AppMultiShotCameraScreen), findsNothing);
+      expect(returnedResult, isEmpty);
+    });
 
-    testWidgets(
-      'done button returns selected photos successfully',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('done button returns selected photos successfully', (
+      tester,
+    ) async {
+      configureTestView(tester);
 
-        final mockController = _createConfiguredMockController();
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/test_thumb_done.jpg');
-        final rawImg = img.Image(width: 90, height: 160);
-        img.fill(rawImg, color: img.ColorRgba8(0, 0, 255, 255));
-        tempFile.writeAsBytesSync(img.encodeJpg(rawImg));
-        addTearDown(() {
-          PaintingBinding.instance.imageCache.clear();
-          PaintingBinding.instance.imageCache.clearLiveImages();
-          try {
-            tempDir.deleteSync(recursive: true);
-          } on FileSystemException catch (_) {}
-        });
+      final mockController = _createConfiguredMockController();
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/test_thumb_done.jpg');
+      final rawImg = img.Image(width: 90, height: 160);
+      img.fill(rawImg, color: img.ColorRgba8(0, 0, 255, 255));
+      tempFile.writeAsBytesSync(img.encodeJpg(rawImg));
+      addTearDown(() {
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+        try {
+          tempDir.deleteSync(recursive: true);
+        } on FileSystemException catch (_) {}
+      });
 
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+      when(
+        mockController.takePicture,
+      ).thenAnswer((_) async => XFile(tempFile.path));
 
-        List<AppMediaFile>? returnedResult;
+      List<AppMediaFile>? returnedResult;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
-            home: Builder(
-              builder: (context) {
-                return ElevatedButton(
-                  onPressed: () async {
-                    returnedResult = await AppMultiShotCameraScreen.show(
-                      context,
-                      controller: mockController,
-                    );
-                  },
-                  child: const Text('Buka Kamera'),
-                );
-              },
-            ),
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
+          home: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  returnedResult = await AppMultiShotCameraScreen.show(
+                    context,
+                    controller: mockController,
+                  );
+                },
+                child: const Text('Buka Kamera'),
+              );
+            },
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. Buka screen
-        await tester.tap(find.text('Buka Kamera'));
-        await tester.pumpAndSettle();
+      // 1. Buka screen
+      await tester.tap(find.text('Buka Kamera'));
+      await tester.pumpAndSettle();
 
-        // 2. Ambil foto
-        final shutterFinder =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
-        final tappable = tester.widget<AppTappable>(shutterFinder);
-        await tester.runAsync(() async {
-          tappable.onTap!();
-          for (var i = 0; i < 80; i++) {
-            await Future<void>.delayed(const Duration(milliseconds: 50));
-            final bytes = tempFile.readAsBytesSync();
-            final decoded = img.decodeImage(bytes);
-            if (decoded != null && decoded.width == 90) break;
-          }
-          await Future<void>.delayed(const Duration(milliseconds: 300));
-        });
-        await tester.pumpAndSettle();
+      // 2. Ambil foto
+      final shutterFinder = find.byKey(
+        const ValueKey<String>('camera_shutter_button'),
+      );
+      final tappable = tester.widget<AppTappable>(shutterFinder);
+      await tester.runAsync(() async {
+        tappable.onTap!();
+        for (var i = 0; i < 80; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          final bytes = tempFile.readAsBytesSync();
+          final decoded = img.decodeImage(bytes);
+          if (decoded != null && decoded.width == 90) break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await tester.pumpAndSettle();
 
-        // 3. Tekan tombol done
-        final doneButtonFinder =
-            find.byKey(const ValueKey<String>('camera_done_button'));
-        expect(doneButtonFinder, findsOneWidget);
-        await tester.tap(doneButtonFinder);
-        await tester.pumpAndSettle();
+      // 3. Tekan tombol done
+      final doneButtonFinder = find.byKey(
+        const ValueKey<String>('camera_done_button'),
+      );
+      expect(doneButtonFinder, findsOneWidget);
+      await tester.tap(doneButtonFinder);
+      await tester.pumpAndSettle();
 
-        // Screen tertutup dan foto terpilih berhasil dikembalikan
-        expect(find.byType(AppMultiShotCameraScreen), findsNothing);
-        expect(returnedResult, isNotNull);
-        expect(returnedResult!.length, 1);
-        expect(returnedResult!.first.path, tempFile.path);
-      },
-    );
+      // Screen tertutup dan foto terpilih berhasil dikembalikan
+      expect(find.byType(AppMultiShotCameraScreen), findsNothing);
+      expect(returnedResult, isNotNull);
+      expect(returnedResult!.length, 1);
+      expect(returnedResult!.first.path, tempFile.path);
+    });
 
     testWidgets(
       'pauses sensor subscription when paused and resumes upon resumed',
@@ -4237,9 +4056,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 1. App di-pause (pengguna switch app atau minimize)
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
         await tester.pump();
 
         // 2. App di-resume kembali
@@ -4259,12 +4076,15 @@ void main() {
         configureTestView(tester);
 
         final mockBrightnessService = MockScreenBrightnessService();
-        when(() => mockBrightnessService.currentBrightness)
-            .thenAnswer((_) async => 0.5);
-        when(() => mockBrightnessService.setBrightness(any()))
-            .thenAnswer((_) async => true);
-        when(mockBrightnessService.resetBrightness)
-            .thenAnswer((_) async => true);
+        when(
+          () => mockBrightnessService.currentBrightness,
+        ).thenAnswer((_) async => 0.5);
+        when(
+          () => mockBrightnessService.setBrightness(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          mockBrightnessService.resetBrightness,
+        ).thenAnswer((_) async => true);
 
         final mockController = _createConfiguredMockController(testCamera2);
         when(mockController.takePicture).thenAnswer((_) async {
@@ -4284,28 +4104,28 @@ void main() {
         await tester.pumpAndSettle();
 
         // Set mode flash ke always pada kamera depan
-        final flashBtn =
-            find.byKey(const ValueKey<String>('camera_flash_button'));
+        final flashBtn = find.byKey(
+          const ValueKey<String>('camera_flash_button'),
+        );
         await tester.tap(flashBtn);
         await tester.pumpAndSettle();
 
         // Picu shutter
-        final shutter =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutter = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         await tester.tap(shutter);
         await tester.pump(const Duration(milliseconds: 100));
 
         // Interupsi aplikasi dengan backgrounding saat screen flash berlangsung
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
         // Pompa 200ms untuk menyelesaikan sisa timer delay screen flash
         await tester.pump(const Duration(milliseconds: 200));
 
         // Verifikasi setBrightness dipanggil untuk memulihkan kecerahan awal
-        verify(() => mockBrightnessService.setBrightness(0.5)).called(
-          greaterThanOrEqualTo(1),
-        );
+        verify(
+          () => mockBrightnessService.setBrightness(0.5),
+        ).called(greaterThanOrEqualTo(1));
       },
     );
 
@@ -4329,21 +4149,13 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppActionableErrorView(data: errorData),
-          ),
+          _buildTestApp(AppActionableErrorView(data: errorData)),
         );
         await tester.pumpAndSettle();
 
         expect(find.text('Izin kamera dinonaktifkan'), findsOneWidget);
-        expect(
-          find.text('Cara mengatasi:'),
-          findsOneWidget,
-        );
-        expect(
-          find.text('Aktifkan izin Kamera.'),
-          findsOneWidget,
-        );
+        expect(find.text('Cara mengatasi:'), findsOneWidget);
+        expect(find.text('Aktifkan izin Kamera.'), findsOneWidget);
 
         final settingsBtn = find.widgetWithText(AppButton, 'Buka pengaturan');
         expect(settingsBtn, findsOneWidget);
@@ -4419,28 +4231,22 @@ void main() {
               lensDirection: CameraLensDirection.back,
               sensorOrientation: 90,
             ),
-          ).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-          ),
+          ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
         );
         when(() => mockController.cameraId).thenReturn(1);
         when(mockController.buildPreview).thenReturn(const SizedBox());
-        when(mockController.takePicture).thenThrow(
-          Exception('Disk full or memory allocation failed'),
-        );
+        when(
+          mockController.takePicture,
+        ).thenThrow(Exception('Disk full or memory allocation failed'));
 
         await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              controller: mockController,
-            ),
-          ),
+          _buildTestApp(AppMultiShotCameraScreen(controller: mockController)),
         );
         await tester.pumpAndSettle();
 
-        final shutter =
-            find.byKey(const ValueKey<String>('camera_shutter_button'));
+        final shutter = find.byKey(
+          const ValueKey<String>('camera_shutter_button'),
+        );
         final tappable = tester.widget<AppTappable>(shutter);
         await tester.runAsync(() async {
           tappable.onTap!();
@@ -4465,61 +4271,54 @@ void main() {
       },
     );
 
-    testWidgets(
-      'auto-recovery from OS Settings: resumes camera and dismisses '
-      'actionable error (paused -> resumed)',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('auto-recovery from OS Settings: resumes camera and dismisses '
+        'actionable error (paused -> resumed)', (tester) async {
+      configureTestView(tester);
 
-        var hasPermission = false;
-        final mockController = _createConfiguredMockController();
-        when(mockController.initialize).thenAnswer((_) async {});
+      var hasPermission = false;
+      final mockController = _createConfiguredMockController();
+      when(mockController.initialize).thenAnswer((_) async {});
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            AppMultiShotCameraScreen(
-              cameras: const [testCamera1],
-              controllerFactory: (desc) {
-                if (!hasPermission) {
-                  throw CameraException(
-                    'CameraAccessDenied',
-                    'Camera permission denied',
-                  );
-                }
-                return mockController;
-              },
-            ),
+      await tester.pumpWidget(
+        _buildTestApp(
+          AppMultiShotCameraScreen(
+            cameras: const [testCamera1],
+            controllerFactory: (desc) {
+              if (!hasPermission) {
+                throw CameraException(
+                  'CameraAccessDenied',
+                  'Camera permission denied',
+                );
+              }
+              return mockController;
+            },
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. Kondisi awal: error izin kamera tampil dengan tombol aksi
-        //    Buka pengaturan.
-        expect(find.byType(AppActionableErrorView), findsOneWidget);
-        expect(find.text('Izin kamera dinonaktifkan'), findsOneWidget);
-        expect(find.text('Buka pengaturan'), findsOneWidget);
+      // 1. Kondisi awal: error izin kamera tampil dengan tombol aksi
+      //    Buka pengaturan.
+      expect(find.byType(AppActionableErrorView), findsOneWidget);
+      expect(find.text('Izin kamera dinonaktifkan'), findsOneWidget);
+      expect(find.text('Buka pengaturan'), findsOneWidget);
 
-        // 2. Simulasi pengguna menyalakan izin di OS Settings
-        hasPermission = true;
+      // 2. Simulasi pengguna menyalakan izin di OS Settings
+      hasPermission = true;
 
-        // 3. Simulasi perpindahan siklus hidup saat kembali dari OS Settings:
-        //    paused -> resumed
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
-        await tester.pump();
+      // 3. Simulasi perpindahan siklus hidup saat kembali dari OS Settings:
+      //    paused -> resumed
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
 
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.resumed,
-        );
-        await tester.pumpAndSettle();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
 
-        // 4. Verifikasi: Actionable Error otomatis hilang, viewfinder live
-        expect(find.byType(AppActionableErrorView), findsNothing);
-        expect(find.text('Izin kamera dinonaktifkan'), findsNothing);
-        verify(mockController.initialize).called(1);
-      },
-    );
+      // 4. Verifikasi: Actionable Error otomatis hilang, viewfinder live
+      expect(find.byType(AppActionableErrorView), findsNothing);
+      expect(find.text('Izin kamera dinonaktifkan'), findsNothing);
+      verify(mockController.initialize).called(1);
+    });
 
     testWidgets(
       'transient window focus change (inactive -> resumed) does not re-trigger '
@@ -4599,9 +4398,7 @@ void main() {
         expect(initCount, equals(1));
 
         // 1. Pengguna membuka pengaturan (app paused)
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
         await tester.pump();
 
         // 2. Pengguna kembali tanpa memberikan izin (app resumed)
@@ -4666,9 +4463,7 @@ void main() {
 
         // Simulasi transisi OS Android/iOS nyata saat kembali:
         // paused -> inactive -> resumed
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.paused,
-        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
         await tester.pump();
 
         tester.binding.handleAppLifecycleStateChanged(
@@ -4755,10 +4550,7 @@ void main() {
               cameras: const [testCamera1],
               controllerFactory: (desc) {
                 if (isCameraInUse) {
-                  throw CameraException(
-                    'CameraInUse',
-                    'Camera in use',
-                  );
+                  throw CameraException('CameraInUse', 'Camera in use');
                 }
                 return mockController;
               },
@@ -4785,49 +4577,48 @@ void main() {
     );
 
     group('Camera Runtime Error Listener and Anti-Blackscreen Protection', () {
-      testWidgets(
-        'runtime error on active camera controller triggers '
-        'AppActionableErrorView',
-        (tester) async {
-          configureTestView(tester);
+      testWidgets('runtime error on active camera controller triggers '
+          'AppActionableErrorView', (tester) async {
+        configureTestView(tester);
 
-          final listeners = <VoidCallback>[];
-          final mockController =
-              _createConfiguredMockController(testCamera1, listeners);
+        final listeners = <VoidCallback>[];
+        final mockController = _createConfiguredMockController(
+          testCamera1,
+          listeners,
+        );
 
-          await tester.pumpWidget(
-            _buildTestApp(
-              AppMultiShotCameraScreen(
-                cameras: const [testCamera1],
-                controller: mockController,
-              ),
+        await tester.pumpWidget(
+          _buildTestApp(
+            AppMultiShotCameraScreen(
+              cameras: const [testCamera1],
+              controller: mockController,
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          // Kondisi awal: viewfinder live aktif tanpa galat
-          expect(find.byType(AppActionableErrorView), findsNothing);
+        // Kondisi awal: viewfinder live aktif tanpa galat
+        expect(find.byType(AppActionableErrorView), findsNothing);
 
-          // Simulasi runtime error pada controller aktif (misal driver crash)
-          final errorValue =
-              const CameraValue.uninitialized(testCamera1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-            errorDescription: 'Camera device encountered an unexpected error',
-          );
-          when(() => mockController.value).thenReturn(errorValue);
+        // Simulasi runtime error pada controller aktif (misal driver crash)
+        final errorValue = const CameraValue.uninitialized(testCamera1)
+            .copyWith(
+              isInitialized: true,
+              previewSize: const Size(1920, 1080),
+              errorDescription: 'Camera device encountered an unexpected error',
+            );
+        when(() => mockController.value).thenReturn(errorValue);
 
-          // Panggil seluruh listener yang didaftarkan pada controller
-          for (final listener in List<VoidCallback>.of(listeners)) {
-            listener();
-          }
-          await tester.pumpAndSettle();
+        // Panggil seluruh listener yang didaftarkan pada controller
+        for (final listener in List<VoidCallback>.of(listeners)) {
+          listener();
+        }
+        await tester.pumpAndSettle();
 
-          // Verifikasi: Tampilan galat actionable muncul di layar
-          expect(find.byType(AppActionableErrorView), findsOneWidget);
-          expect(find.text('Coba lagi'), findsOneWidget);
-        },
-      );
+        // Verifikasi: Tampilan galat actionable muncul di layar
+        expect(find.byType(AppActionableErrorView), findsOneWidget);
+        expect(find.text('Coba lagi'), findsOneWidget);
+      });
 
       testWidgets(
         'tapping Coba lagi after runtime error recovers and re-initializes '
@@ -4837,8 +4628,10 @@ void main() {
 
           final listeners = <VoidCallback>[];
           var initCount = 0;
-          final mockController =
-              _createConfiguredMockController(testCamera1, listeners);
+          final mockController = _createConfiguredMockController(
+            testCamera1,
+            listeners,
+          );
           final recoveredController = _createConfiguredMockController();
 
           await tester.pumpWidget(
@@ -4858,12 +4651,12 @@ void main() {
           await tester.pumpAndSettle();
 
           // Pemicuan runtime error
-          final errorValue =
-              const CameraValue.uninitialized(testCamera1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-            errorDescription: 'Hardware disconnected',
-          );
+          final errorValue = const CameraValue.uninitialized(testCamera1)
+              .copyWith(
+                isInitialized: true,
+                previewSize: const Size(1920, 1080),
+                errorDescription: 'Hardware disconnected',
+              );
           when(() => mockController.value).thenReturn(errorValue);
 
           for (final listener in List<VoidCallback>.of(listeners)) {
@@ -4890,9 +4683,9 @@ void main() {
           configureTestView(tester);
 
           final uninitializedMock = MockCameraController();
-          when(() => uninitializedMock.value).thenReturn(
-            const CameraValue.uninitialized(testCamera1),
-          );
+          when(
+            () => uninitializedMock.value,
+          ).thenReturn(const CameraValue.uninitialized(testCamera1));
           when(() => uninitializedMock.description).thenReturn(testCamera1);
           when(() => uninitializedMock.cameraId).thenReturn(1);
           when(uninitializedMock.buildPreview).thenReturn(const SizedBox());
@@ -4921,12 +4714,12 @@ void main() {
         (tester) async {
           configureTestView(tester);
 
-          final errorValue =
-              const CameraValue.uninitialized(testCamera1).copyWith(
-            isInitialized: true,
-            previewSize: const Size(1920, 1080),
-            errorDescription: 'Sensor failure',
-          );
+          final errorValue = const CameraValue.uninitialized(testCamera1)
+              .copyWith(
+                isInitialized: true,
+                previewSize: const Size(1920, 1080),
+                errorDescription: 'Sensor failure',
+              );
           final errorController = _createConfiguredMockController();
           when(() => errorController.value).thenReturn(errorValue);
 
@@ -4948,774 +4741,748 @@ void main() {
     });
 
     group('Camera UX Writing and Accessibility Semantics', () {
+      test('CameraActionableError uses standard Indonesian without jargon', () {
+        final genericError = CameraActionableError.fromCameraException(
+          CameraException('generic_error', 'some error'),
+          onRetry: () {},
+          onExit: () {},
+        );
+        expect(
+          genericError.message,
+          equals('Modul kamera mengalami kendala saat dihubungkan ke sistem.'),
+        );
+        expect(
+          genericError.troubleshootingTips,
+          contains('Ketuk Coba lagi untuk memuat ulang kamera.'),
+        );
+        expect(
+          genericError.troubleshootingTips,
+          contains(
+            'Tutup aplikasi dari daftar aplikasi terkini, lalu buka kembali.',
+          ),
+        );
+        expect(
+          genericError.troubleshootingTips.any(
+            (tip) => tip.contains('Recent Apps'),
+          ),
+          isFalse,
+        );
+
+        final inUseError = CameraActionableError.fromCameraException(
+          CameraException('CameraInUse', 'Camera in use'),
+          onRetry: () {},
+          onExit: () {},
+        );
+        expect(
+          inUseError.troubleshootingTips,
+          contains(
+            'Tutup panggilan video atau aplikasi kamera lain yang sedang '
+            'aktif.',
+          ),
+        );
+        expect(
+          inUseError.troubleshootingTips,
+          contains('Ketuk Coba lagi untuk menghubungkan ulang kamera.'),
+        );
+        expect(
+          inUseError.troubleshootingTips.any(
+            (tip) =>
+                tip.contains('WhatsApp') ||
+                tip.contains('Zoom') ||
+                tip.contains('Meet'),
+          ),
+          isFalse,
+        );
+
+        final noCamError = CameraActionableError.noCamerasAvailable(
+          onRetry: () {},
+          onExit: () {},
+        );
+        expect(
+          noCamError.message,
+          equals(
+            'Sistem tidak menemukan modul kamera aktif pada perangkat ini.',
+          ),
+        );
+        expect(
+          noCamError.troubleshootingTips,
+          contains('Periksa apakah kebijakan keamanan membatasi akses kamera.'),
+        );
+        expect(
+          noCamError.troubleshootingTips,
+          contains('Ketuk Coba lagi setelah memastikan kamera tersedia.'),
+        );
+        expect(
+          noCamError.troubleshootingTips.any((tip) => tip.contains('MDM')),
+          isFalse,
+        );
+
+        final permissionError = CameraActionableError.fromCameraException(
+          CameraException('CameraAccessDenied', 'Permission denied'),
+          onRetry: () {},
+          onExit: () {},
+        );
+        expect(
+          permissionError.message,
+          equals('Izin kamera diperlukan untuk mengambil foto.'),
+        );
+        expect(
+          permissionError.troubleshootingTips,
+          contains('Aktifkan izin Kamera.'),
+        );
+        expect(
+          permissionError.troubleshootingTips,
+          contains('Ketuk Buka pengaturan di bawah.'),
+        );
+        expect(
+          permissionError.troubleshootingTips.any(
+            (tip) => tip.contains('sakelar') || tip.contains('tombol'),
+          ),
+          isFalse,
+        );
+
+        final captureError = CameraActionableError.captureFailure(
+          Exception('Storage write error'),
+        );
+        expect(captureError.primaryActionLabel, equals('Mengerti'));
+        expect(
+          captureError.troubleshootingTips,
+          contains('Coba ambil foto kembali.'),
+        );
+        expect(
+          captureError.troubleshootingTips.any(
+            (tip) => tip.contains('pencahayaan') || tip.contains('beberapa'),
+          ),
+          isFalse,
+        );
+
+        final unexpectedError = CameraActionableError.unexpected(
+          Exception('Unexpected pipeline error'),
+          onRetry: () {},
+          onExit: () {},
+        );
+        expect(
+          unexpectedError.troubleshootingTips,
+          contains('Mulai ulang perangkat jika kendala masih berlanjut.'),
+        );
+        expect(
+          unexpectedError.troubleshootingTips.any(
+            (tip) => tip.contains('ponsel'),
+          ),
+          isFalse,
+        );
+      });
+    });
+
+    group('CameraActionableError Production Token Sanitization '
+        '(GoF Strategy & Pure DI)', () {
       test(
-        'CameraActionableError uses standard Indonesian without jargon',
+        'sanitizes captureFailure in production without leaking file paths',
         () {
-          final genericError = CameraActionableError.fromCameraException(
-            CameraException('generic_error', 'some error'),
-            onRetry: () {},
-            onExit: () {},
-          );
-          expect(
-            genericError.message,
-            equals(
-              'Modul kamera mengalami kendala saat dihubungkan ke sistem.',
-            ),
-          );
-          expect(
-            genericError.troubleshootingTips,
-            contains('Ketuk Coba lagi untuk memuat ulang kamera.'),
-          );
-          expect(
-            genericError.troubleshootingTips,
-            contains(
-              'Tutup aplikasi dari daftar aplikasi terkini, lalu buka kembali.',
-            ),
-          );
-          expect(
-            genericError.troubleshootingTips.any(
-              (tip) => tip.contains('Recent Apps'),
-            ),
-            isFalse,
+          const sensitivePath =
+              '/data/user/0/id.kawalo.app/cache/camera/photo.jpg';
+          const ioError = FileSystemException(
+            'Cannot write',
+            sensitivePath,
+            OSError('Disk full', 28),
           );
 
-          final inUseError = CameraActionableError.fromCameraException(
-            CameraException('CameraInUse', 'Camera in use'),
-            onRetry: () {},
-            onExit: () {},
-          );
-          expect(
-            inUseError.troubleshootingTips,
-            contains(
-              'Tutup panggilan video atau aplikasi kamera lain yang sedang '
-              'aktif.',
-            ),
-          );
-          expect(
-            inUseError.troubleshootingTips,
-            contains('Ketuk Coba lagi untuk menghubungkan ulang kamera.'),
-          );
-          expect(
-            inUseError.troubleshootingTips.any(
-              (tip) =>
-                  tip.contains('WhatsApp') ||
-                  tip.contains('Zoom') ||
-                  tip.contains('Meet'),
-            ),
-            isFalse,
+          final prodData = CameraActionableError.captureFailure(
+            ioError,
+            isProduction: true,
           );
 
-          final noCamError = CameraActionableError.noCamerasAvailable(
-            onRetry: () {},
-            onExit: () {},
-          );
           expect(
-            noCamError.message,
-            equals(
-              'Sistem tidak menemukan modul kamera aktif pada perangkat ini.',
-            ),
+            prodData.technicalDetails,
+            equals('Kode: STORAGE_IO_ERROR [28] (Disk full)'),
           );
-          expect(
-            noCamError.troubleshootingTips,
-            contains(
-              'Periksa apakah kebijakan keamanan membatasi akses kamera.',
-            ),
-          );
-          expect(
-            noCamError.troubleshootingTips,
-            contains('Ketuk Coba lagi setelah memastikan kamera tersedia.'),
-          );
-          expect(
-            noCamError.troubleshootingTips.any((tip) => tip.contains('MDM')),
-            isFalse,
+          expect(prodData.technicalDetails!.contains(sensitivePath), isFalse);
+          expect(prodData.technicalDetails!.contains('/data/user/0'), isFalse);
+        },
+      );
+
+      test('normalizes CameraException in production to uppercase token', () {
+        final prodData = CameraActionableError.fromCameraException(
+          CameraException(
+            'cameraStreamingFailed',
+            'Native vendor HAL rejected access',
+          ),
+          onRetry: () {},
+          onExit: () {},
+          isProduction: true,
+        );
+
+        expect(prodData.technicalDetails, equals('Kode: CAM_STREAMING_FAILED'));
+        expect(prodData.technicalDetails!.contains('vendor HAL'), isFalse);
+      });
+
+      test('sanitizes unexpected error in production to safe type name', () {
+        final prodData = CameraActionableError.unexpected(
+          StateError('Internal pipeline failed at address 0xdeadbeef'),
+          onRetry: () {},
+          onExit: () {},
+          isProduction: true,
+        );
+
+        expect(
+          prodData.technicalDetails,
+          equals('Kode: CAM_UNEXPECTED (StateError)'),
+        );
+        expect(prodData.technicalDetails!.contains('0xdeadbeef'), isFalse);
+      });
+
+      test(
+        'supports custom GoF DiagnosticErrorFormatter strategy via Pure DI',
+        () {
+          const customFormatter = _TestCameraErrorFormatter();
+          final customData = CameraActionableError.captureFailure(
+            Exception('Any error'),
+            errorFormatter: customFormatter,
           );
 
-          final permissionError = CameraActionableError.fromCameraException(
-            CameraException('CameraAccessDenied', 'Permission denied'),
-            onRetry: () {},
-            onExit: () {},
-          );
-          expect(
-            permissionError.message,
-            equals('Izin kamera diperlukan untuk mengambil foto.'),
-          );
-          expect(
-            permissionError.troubleshootingTips,
-            contains('Aktifkan izin Kamera.'),
-          );
-          expect(
-            permissionError.troubleshootingTips,
-            contains('Ketuk Buka pengaturan di bawah.'),
-          );
-          expect(
-            permissionError.troubleshootingTips.any(
-              (tip) => tip.contains('sakelar') || tip.contains('tombol'),
-            ),
-            isFalse,
-          );
-
-          final captureError = CameraActionableError.captureFailure(
-            Exception('Storage write error'),
-          );
-          expect(captureError.primaryActionLabel, equals('Mengerti'));
-          expect(
-            captureError.troubleshootingTips,
-            contains('Coba ambil foto kembali.'),
-          );
-          expect(
-            captureError.troubleshootingTips.any(
-              (tip) => tip.contains('pencahayaan') || tip.contains('beberapa'),
-            ),
-            isFalse,
-          );
-
-          final unexpectedError = CameraActionableError.unexpected(
-            Exception('Unexpected pipeline error'),
-            onRetry: () {},
-            onExit: () {},
-          );
-          expect(
-            unexpectedError.troubleshootingTips,
-            contains('Mulai ulang perangkat jika kendala masih berlanjut.'),
-          );
-          expect(
-            unexpectedError.troubleshootingTips.any(
-              (tip) => tip.contains('ponsel'),
-            ),
-            isFalse,
-          );
+          expect(customData.technicalDetails, equals('CUSTOM_CAM_TOKEN'));
         },
       );
     });
 
-    group(
-      'CameraActionableError Production Token Sanitization '
-      '(GoF Strategy & Pure DI)',
-      () {
-        test(
-          'sanitizes captureFailure in production without leaking file paths',
-          () {
-            const sensitivePath =
-                '/data/user/0/id.kawalo.app/cache/camera/photo.jpg';
-            const ioError = FileSystemException(
-              'Cannot write',
-              sensitivePath,
-              OSError('Disk full', 28),
-            );
+    group('Camera Switch Button Rotation Animation '
+        '(Continuous Unidirectional & Orientation Composition)', () {
+      testWidgets(
+        'single switch camera tap rotates button by -0.5 turns (180 deg CCW)',
+        (tester) async {
+          configureTestView(tester);
 
-            final prodData = CameraActionableError.captureFailure(
-              ioError,
-              isProduction: true,
-            );
+          final initialMock = _createConfiguredMockController();
+          final nextMock = _createConfiguredMockController(testCamera2);
 
-            expect(
-              prodData.technicalDetails,
-              equals('Kode: STORAGE_IO_ERROR [28] (Disk full)'),
-            );
-            expect(prodData.technicalDetails!.contains(sensitivePath), isFalse);
-            expect(
-              prodData.technicalDetails!.contains('/data/user/0'),
-              isFalse,
-            );
-          },
-        );
-
-        test(
-          'normalizes CameraException in production to uppercase token',
-          () {
-            final prodData = CameraActionableError.fromCameraException(
-              CameraException(
-                'cameraStreamingFailed',
-                'Native vendor HAL rejected access',
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: initialMock,
+                controllerFactory: (_) => nextMock,
               ),
-              onRetry: () {},
-              onExit: () {},
-              isProduction: true,
-            );
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            expect(
-              prodData.technicalDetails,
-              equals('Kode: CAM_STREAMING_FAILED'),
-            );
-            expect(prodData.technicalDetails!.contains('vendor HAL'), isFalse);
-          },
+          final switchBtnFinder = find.byKey(
+            const ValueKey<String>('camera_switch_button'),
+          );
+          expect(switchBtnFinder, findsOneWidget);
+
+          // 1. Awalnya di posisi tegak normal (turns 0.0)
+          var rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(0.0));
+          expect(
+            rotationWidget.duration,
+            equals(AppMultiShotCameraScreen.rotationDuration),
+          );
+          expect(
+            rotationWidget.curve,
+            equals(AppMultiShotCameraScreen.rotationCurve),
+          );
+
+          // 2. Ketuk tombol switch kamera
+          await tester.tap(switchBtnFinder);
+          await tester.pump();
+
+          // 3. Langsung berotasi ke -0.5 turn (180 derajat counter-clockwise)
+          rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(-0.5));
+
+          await tester.pumpAndSettle();
+        },
+      );
+
+      testWidgets('sequential camera switches accumulate turns monotonically '
+          '(0 -> -0.5 -> -1.0)', (tester) async {
+        configureTestView(tester);
+
+        final initialMock = _createConfiguredMockController();
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            AppMultiShotCameraScreen(
+              cameras: const [testCamera1, testCamera2],
+              controller: initialMock,
+              controllerFactory: _createConfiguredMockController,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final switchBtnFinder = find.byKey(
+          const ValueKey<String>('camera_switch_button'),
         );
 
-        test(
-          'sanitizes unexpected error in production to safe type name',
-          () {
-            final prodData = CameraActionableError.unexpected(
-              StateError('Internal pipeline failed at address 0xdeadbeef'),
-              onRetry: () {},
-              onExit: () {},
-              isProduction: true,
-            );
+        // Ketukan ke-1: Belakang -> Depan
+        await tester.tap(switchBtnFinder);
+        await tester.pump();
 
-            expect(
-              prodData.technicalDetails,
-              equals('Kode: CAM_UNEXPECTED (StateError)'),
-            );
-            expect(
-              prodData.technicalDetails!.contains('0xdeadbeef'),
-              isFalse,
-            );
-          },
+        var rotationWidget = tester.widget<AnimatedRotation>(
+          find.descendant(
+            of: switchBtnFinder,
+            matching: find.byType(AnimatedRotation),
+          ),
         );
+        expect(rotationWidget.turns, equals(-0.5));
 
-        test(
-          'supports custom GoF DiagnosticErrorFormatter strategy via Pure DI',
-          () {
-            const customFormatter = _TestCameraErrorFormatter();
-            final customData = CameraActionableError.captureFailure(
-              Exception('Any error'),
-              errorFormatter: customFormatter,
-            );
+        await tester.pumpAndSettle();
 
-            expect(customData.technicalDetails, equals('CUSTOM_CAM_TOKEN'));
-          },
+        // Ketukan ke-2: Depan -> Belakang
+        await tester.tap(switchBtnFinder);
+        await tester.pump();
+
+        rotationWidget = tester.widget<AnimatedRotation>(
+          find.descendant(
+            of: switchBtnFinder,
+            matching: find.byType(AnimatedRotation),
+          ),
         );
-      },
-    );
+        expect(rotationWidget.turns, equals(-1.0));
 
-    group(
-      'Camera Switch Button Rotation Animation '
-      '(Continuous Unidirectional & Orientation Composition)',
-      () {
-        testWidgets(
-          'single switch camera tap rotates button by -0.5 turns (180 deg CCW)',
-          (tester) async {
-            configureTestView(tester);
+        await tester.pumpAndSettle();
+      });
 
-            final initialMock = _createConfiguredMockController();
-            final nextMock = _createConfiguredMockController(testCamera2);
+      testWidgets(
+        'composes switch camera rotation additively with device orientation',
+        (tester) async {
+          configureTestView(tester);
 
-            await tester.pumpWidget(
-              _buildTestApp(
-                AppMultiShotCameraScreen(
-                  cameras: const [testCamera1, testCamera2],
-                  controller: initialMock,
-                  controllerFactory: (_) => nextMock,
-                ),
+          final initialMock = _createConfiguredMockController();
+
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: initialMock,
+                initialDeviceOrientation: DeviceOrientation.landscapeLeft,
+                controllerFactory: _createConfiguredMockController,
               ),
-            );
-            await tester.pumpAndSettle();
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            final switchBtnFinder =
-                find.byKey(const ValueKey<String>('camera_switch_button'));
-            expect(switchBtnFinder, findsOneWidget);
+          final switchBtnFinder = find.byKey(
+            const ValueKey<String>('camera_switch_button'),
+          );
 
-            // 1. Awalnya di posisi tegak normal (turns 0.0)
-            var rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
+          // Orientasi lanskap kiri = 0.25 turn (90 derajat searah jarum jam)
+          var rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(0.25));
+
+          // Ketuk switch camera saat di mode lanskap:
+          // 0.25 (orientasi) + (-0.5 switch) = -0.25 turns
+          await tester.tap(switchBtnFinder);
+          await tester.pump();
+
+          rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(-0.25));
+
+          await tester.pumpAndSettle();
+        },
+      );
+
+      testWidgets(
+        'interrupted rotation: rotating device while camera switch is '
+        'animating updates target smoothly',
+        (tester) async {
+          configureTestView(tester);
+
+          final orientationController =
+              StreamController<DeviceOrientation>.broadcast();
+          addTearDown(orientationController.close);
+
+          final fakeSensorService = FakeDeviceOrientationSensorService(
+            stream: orientationController.stream,
+          );
+
+          final initialMock = _createConfiguredMockController();
+
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: initialMock,
+                orientationSensorService: fakeSensorService,
+                controllerFactory: _createConfiguredMockController,
               ),
-            );
-            expect(rotationWidget.turns, equals(0.0));
-            expect(
-              rotationWidget.duration,
-              equals(AppMultiShotCameraScreen.rotationDuration),
-            );
-            expect(
-              rotationWidget.curve,
-              equals(AppMultiShotCameraScreen.rotationCurve),
-            );
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            // 2. Ketuk tombol switch kamera
-            await tester.tap(switchBtnFinder);
-            await tester.pump();
+          final switchBtnFinder = find.byKey(
+            const ValueKey<String>('camera_switch_button'),
+          );
 
-            // 3. Langsung berotasi ke -0.5 turn (180 derajat counter-clockwise)
-            rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(-0.5));
+          // Mulai switch camera (target menjadi -0.5)
+          await tester.tap(switchBtnFinder);
+          await tester.pump();
 
-            await tester.pumpAndSettle();
-          },
-        );
+          var rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(-0.5));
 
-        testWidgets(
-          'sequential camera switches accumulate turns monotonically '
-          '(0 -> -0.5 -> -1.0)',
-          (tester) async {
-            configureTestView(tester);
+          // Di tengah-tengah animasi, sensor perangkat mendeteksi putaran ke
+          // landscapeLeft (0.25)
+          await tester.pump(const Duration(milliseconds: 100));
+          orientationController.add(DeviceOrientation.landscapeLeft);
+          await tester.pump();
 
-            final initialMock = _createConfiguredMockController();
+          // Target turns seketika menjadi 0.25 + (-0.5) = -0.25
+          rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(-0.25));
 
-            await tester.pumpWidget(
-              _buildTestApp(
+          await tester.pumpAndSettle();
+        },
+      );
+
+      testWidgets(
+        'respects reduced motion by using Duration.zero for instant switch '
+        'rotation',
+        (tester) async {
+          configureTestView(tester);
+
+          final initialMock = _createConfiguredMockController();
+
+          await tester.pumpWidget(
+            MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: _buildTestApp(
                 AppMultiShotCameraScreen(
                   cameras: const [testCamera1, testCamera2],
                   controller: initialMock,
                   controllerFactory: _createConfiguredMockController,
                 ),
               ),
-            );
-            await tester.pumpAndSettle();
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            final switchBtnFinder =
-                find.byKey(const ValueKey<String>('camera_switch_button'));
+          final switchBtnFinder = find.byKey(
+            const ValueKey<String>('camera_switch_button'),
+          );
 
-            // Ketukan ke-1: Belakang -> Depan
-            await tester.tap(switchBtnFinder);
-            await tester.pump();
+          var rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.duration, equals(Duration.zero));
 
-            var rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
+          await tester.tap(switchBtnFinder);
+          await tester.pump();
+
+          rotationWidget = tester.widget<AnimatedRotation>(
+            find.descendant(
+              of: switchBtnFinder,
+              matching: find.byType(AnimatedRotation),
+            ),
+          );
+          expect(rotationWidget.turns, equals(-0.5));
+          expect(rotationWidget.duration, equals(Duration.zero));
+
+          await tester.pumpAndSettle();
+        },
+      );
+    });
+
+    group('Camera Flash Button Transition Animation '
+        '(Vertical Slide Reel & Amber Accent)', () {
+      testWidgets(
+        'flash button wraps icon in AnimatedSwitcher with M3 Expressive '
+        'curves and duration',
+        (tester) async {
+          configureTestView(tester);
+
+          final mock = _createConfiguredMockController();
+
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: mock,
               ),
-            );
-            expect(rotationWidget.turns, equals(-0.5));
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            await tester.pumpAndSettle();
+          final flashBtnFinder = find.byKey(
+            const ValueKey<String>('camera_flash_button'),
+          );
+          expect(flashBtnFinder, findsOneWidget);
 
-            // Ketukan ke-2: Depan -> Belakang
-            await tester.tap(switchBtnFinder);
-            await tester.pump();
+          final switcherFinder = find.descendant(
+            of: flashBtnFinder,
+            matching: find.byKey(
+              const ValueKey<String>('camera_flash_switcher'),
+            ),
+          );
+          expect(switcherFinder, findsOneWidget);
 
-            rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(-1.0));
-
-            await tester.pumpAndSettle();
-          },
-        );
-
-        testWidgets(
-          'composes switch camera rotation additively with device orientation',
-          (tester) async {
-            configureTestView(tester);
-
-            final initialMock = _createConfiguredMockController();
-
-            await tester.pumpWidget(
-              _buildTestApp(
-                AppMultiShotCameraScreen(
-                  cameras: const [testCamera1, testCamera2],
-                  controller: initialMock,
-                  initialDeviceOrientation: DeviceOrientation.landscapeLeft,
-                  controllerFactory: _createConfiguredMockController,
-                ),
-              ),
-            );
-            await tester.pumpAndSettle();
-
-            final switchBtnFinder =
-                find.byKey(const ValueKey<String>('camera_switch_button'));
-
-            // Orientasi lanskap kiri = 0.25 turn (90 derajat searah jarum jam)
-            var rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(0.25));
-
-            // Ketuk switch camera saat di mode lanskap:
-            // 0.25 (orientasi) + (-0.5 switch) = -0.25 turns
-            await tester.tap(switchBtnFinder);
-            await tester.pump();
-
-            rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(-0.25));
-
-            await tester.pumpAndSettle();
-          },
-        );
-
-        testWidgets(
-          'interrupted rotation: rotating device while camera switch is '
-          'animating updates target smoothly',
-          (tester) async {
-            configureTestView(tester);
-
-            final orientationController =
-                StreamController<DeviceOrientation>.broadcast();
-            addTearDown(orientationController.close);
-
-            final fakeSensorService = FakeDeviceOrientationSensorService(
-              stream: orientationController.stream,
-            );
-
-            final initialMock = _createConfiguredMockController();
-
-            await tester.pumpWidget(
-              _buildTestApp(
-                AppMultiShotCameraScreen(
-                  cameras: const [testCamera1, testCamera2],
-                  controller: initialMock,
-                  orientationSensorService: fakeSensorService,
-                  controllerFactory: _createConfiguredMockController,
-                ),
-              ),
-            );
-            await tester.pumpAndSettle();
-
-            final switchBtnFinder =
-                find.byKey(const ValueKey<String>('camera_switch_button'));
-
-            // Mulai switch camera (target menjadi -0.5)
-            await tester.tap(switchBtnFinder);
-            await tester.pump();
-
-            var rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(-0.5));
-
-            // Di tengah-tengah animasi, sensor perangkat mendeteksi putaran ke
-            // landscapeLeft (0.25)
-            await tester.pump(const Duration(milliseconds: 100));
-            orientationController.add(DeviceOrientation.landscapeLeft);
-            await tester.pump();
-
-            // Target turns seketika menjadi 0.25 + (-0.5) = -0.25
-            rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(-0.25));
-
-            await tester.pumpAndSettle();
-          },
-        );
-
-        testWidgets(
-          'respects reduced motion by using Duration.zero for instant switch '
-          'rotation',
-          (tester) async {
-            configureTestView(tester);
-
-            final initialMock = _createConfiguredMockController();
-
-            await tester.pumpWidget(
-              MediaQuery(
-                data: const MediaQueryData(disableAnimations: true),
-                child: _buildTestApp(
-                  AppMultiShotCameraScreen(
-                    cameras: const [testCamera1, testCamera2],
-                    controller: initialMock,
-                    controllerFactory: _createConfiguredMockController,
-                  ),
-                ),
-              ),
-            );
-            await tester.pumpAndSettle();
-
-            final switchBtnFinder =
-                find.byKey(const ValueKey<String>('camera_switch_button'));
-
-            var rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.duration, equals(Duration.zero));
-
-            await tester.tap(switchBtnFinder);
-            await tester.pump();
-
-            rotationWidget = tester.widget<AnimatedRotation>(
-              find.descendant(
-                of: switchBtnFinder,
-                matching: find.byType(AnimatedRotation),
-              ),
-            );
-            expect(rotationWidget.turns, equals(-0.5));
-            expect(rotationWidget.duration, equals(Duration.zero));
-
-            await tester.pumpAndSettle();
-          },
-        );
-      },
-    );
-
-    group(
-      'Camera Flash Button Transition Animation '
-      '(Vertical Slide Reel & Amber Accent)',
-      () {
-        testWidgets(
-          'flash button wraps icon in AnimatedSwitcher with M3 Expressive '
-          'curves and duration',
-          (tester) async {
-            configureTestView(tester);
-
-            final mock = _createConfiguredMockController();
-
-            await tester.pumpWidget(
-              _buildTestApp(
-                AppMultiShotCameraScreen(
-                  cameras: const [testCamera1, testCamera2],
-                  controller: mock,
-                ),
-              ),
-            );
-            await tester.pumpAndSettle();
-
-            final flashBtnFinder =
-                find.byKey(const ValueKey<String>('camera_flash_button'));
-            expect(flashBtnFinder, findsOneWidget);
-
-            final switcherFinder = find.descendant(
-              of: flashBtnFinder,
-              matching: find.byKey(
-                const ValueKey<String>('camera_flash_switcher'),
-              ),
-            );
-            expect(switcherFinder, findsOneWidget);
-
-            final switcher = tester.widget<AnimatedSwitcher>(switcherFinder);
-            expect(switcher.duration, equals(AppDuration.medium2));
-            expect(
-              switcher.switchInCurve,
+          final switcher = tester.widget<AnimatedSwitcher>(switcherFinder);
+          expect(switcher.duration, equals(AppDuration.medium2));
+          expect(switcher.switchInCurve, equals(Curves.easeInOutCubic));
+          expect(
+            switcher.switchOutCurve,
+            isA<FlippedCurve>().having(
+              (c) => c.curve,
+              'curve',
               equals(Curves.easeInOutCubic),
-            );
-            expect(
-              switcher.switchOutCurve,
-              isA<FlippedCurve>().having(
-                (c) => c.curve,
-                'curve',
-                equals(Curves.easeInOutCubic),
+            ),
+          );
+          expect(
+            find.descendant(
+              of: flashBtnFinder,
+              matching: find.byType(ClipRect),
+            ),
+            findsWidgets,
+          );
+        },
+      );
+
+      testWidgets(
+        'toggling flash triggers AnimatedSwitcher with SlideTransition '
+        'and FadeTransition',
+        (tester) async {
+          configureTestView(tester);
+
+          final mock = _createConfiguredMockController();
+
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: mock,
               ),
-            );
-            expect(
-              find.descendant(
-                of: flashBtnFinder,
-                matching: find.byType(ClipRect),
-              ),
-              findsWidgets,
-            );
-          },
-        );
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        testWidgets(
-          'toggling flash triggers AnimatedSwitcher with SlideTransition '
-          'and FadeTransition',
-          (tester) async {
-            configureTestView(tester);
+          final flashBtnFinder = find.byKey(
+            const ValueKey<String>('camera_flash_button'),
+          );
 
-            final mock = _createConfiguredMockController();
+          // Ketuk tombol flash untuk beralih mode (off -> auto)
+          await tester.tap(flashBtnFinder);
+          await tester.pump(); // frame pertama transisi
 
-            await tester.pumpWidget(
-              _buildTestApp(
+          // Di tengah animasi transisi, terdapat FadeTransition dan
+          // SlideTransition aktif
+          final fadeFinder = find.descendant(
+            of: flashBtnFinder,
+            matching: find.byType(FadeTransition),
+          );
+          expect(fadeFinder, findsWidgets);
+
+          final slideFinder = find.descendant(
+            of: flashBtnFinder,
+            matching: find.byType(SlideTransition),
+          );
+          expect(slideFinder, findsWidgets);
+
+          await tester.pumpAndSettle();
+
+          // Pasca transisi selesai, hanya tersisa 1 AppSvgIcon aktif
+          expect(
+            find.descendant(
+              of: flashBtnFinder,
+              matching: find.byType(AppSvgIcon),
+            ),
+            findsOneWidget,
+          );
+        },
+      );
+
+      testWidgets(
+        'respects reduced motion by using Duration.zero for flash switcher',
+        (tester) async {
+          configureTestView(tester);
+
+          final mock = _createConfiguredMockController();
+
+          await tester.pumpWidget(
+            MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: _buildTestApp(
                 AppMultiShotCameraScreen(
                   cameras: const [testCamera1, testCamera2],
                   controller: mock,
                 ),
               ),
-            );
-            await tester.pumpAndSettle();
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            final flashBtnFinder =
-                find.byKey(const ValueKey<String>('camera_flash_button'));
+          final flashBtnFinder = find.byKey(
+            const ValueKey<String>('camera_flash_button'),
+          );
+          final switcherFinder = find.descendant(
+            of: flashBtnFinder,
+            matching: find.byKey(
+              const ValueKey<String>('camera_flash_switcher'),
+            ),
+          );
+          expect(switcherFinder, findsOneWidget);
 
-            // Ketuk tombol flash untuk beralih mode (off -> auto)
-            await tester.tap(flashBtnFinder);
-            await tester.pump(); // frame pertama transisi
+          final switcher = tester.widget<AnimatedSwitcher>(switcherFinder);
+          expect(switcher.duration, equals(Duration.zero));
+        },
+      );
 
-            // Di tengah animasi transisi, terdapat FadeTransition dan
-            // SlideTransition aktif
-            final fadeFinder = find.descendant(
-              of: flashBtnFinder,
-              matching: find.byType(FadeTransition),
-            );
-            expect(fadeFinder, findsWidgets);
+      testWidgets(
+        'active flash modes always and torch render amber accent while '
+        'off and auto render white',
+        (tester) async {
+          configureTestView(tester);
 
-            final slideFinder = find.descendant(
-              of: flashBtnFinder,
-              matching: find.byType(SlideTransition),
-            );
-            expect(slideFinder, findsWidgets);
+          final mock = _createConfiguredMockController();
 
-            await tester.pumpAndSettle();
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: mock,
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            // Pasca transisi selesai, hanya tersisa 1 AppSvgIcon aktif
-            expect(
+          final flashBtnFinder = find.byKey(
+            const ValueKey<String>('camera_flash_button'),
+          );
+
+          AppSvgIcon getFlashIcon() {
+            return tester.widget<AppSvgIcon>(
               find.descendant(
                 of: flashBtnFinder,
                 matching: find.byType(AppSvgIcon),
               ),
-              findsOneWidget,
             );
-          },
-        );
+          }
 
-        testWidgets(
-          'respects reduced motion by using Duration.zero for flash switcher',
-          (tester) async {
-            configureTestView(tester);
+          // 1. Awal: off -> putih
+          expect(getFlashIcon().color, equals(Colors.white));
 
-            final mock = _createConfiguredMockController();
+          // 2. Ketuk 1: off -> auto -> putih
+          await tester.tap(flashBtnFinder);
+          await tester.pumpAndSettle();
+          expect(getFlashIcon().color, equals(Colors.white));
 
-            await tester.pumpWidget(
-              MediaQuery(
-                data: const MediaQueryData(disableAnimations: true),
-                child: _buildTestApp(
-                  AppMultiShotCameraScreen(
-                    cameras: const [testCamera1, testCamera2],
-                    controller: mock,
-                  ),
-                ),
+          // 3. Ketuk 2: auto -> always -> amber (#FFD54F)
+          await tester.tap(flashBtnFinder);
+          await tester.pumpAndSettle();
+          expect(getFlashIcon().color, equals(const Color(0xFFFFD54F)));
+
+          // 4. Ketuk 3: always -> torch -> amber (#FFD54F)
+          await tester.tap(flashBtnFinder);
+          await tester.pumpAndSettle();
+          expect(getFlashIcon().color, equals(const Color(0xFFFFD54F)));
+
+          // 5. Ketuk 4: torch -> off -> putih
+          await tester.tap(flashBtnFinder);
+          await tester.pumpAndSettle();
+          expect(getFlashIcon().color, equals(Colors.white));
+        },
+      );
+
+      testWidgets(
+        'optimistic UI update triggers icon transition on tap and rolls back '
+        'on exception',
+        (tester) async {
+          configureTestView(tester);
+
+          final mock = _createConfiguredMockController();
+          final completer = Completer<void>();
+          // Simulasi latensi hardware platform channel:
+          // setFlashMode menunggu completer
+          when(
+            () => mock.setFlashMode(FlashMode.auto),
+          ).thenAnswer((_) => completer.future);
+
+          await tester.pumpWidget(
+            _buildTestApp(
+              AppMultiShotCameraScreen(
+                cameras: const [testCamera1, testCamera2],
+                controller: mock,
               ),
-            );
-            await tester.pumpAndSettle();
+            ),
+          );
+          await tester.pumpAndSettle();
 
-            final flashBtnFinder =
-                find.byKey(const ValueKey<String>('camera_flash_button'));
-            final switcherFinder = find.descendant(
+          final flashBtnFinder = find.byKey(
+            const ValueKey<String>('camera_flash_button'),
+          );
+
+          // Kondisi awal: off
+          expect(
+            find.descendant(
               of: flashBtnFinder,
-              matching: find.byKey(
-                const ValueKey<String>('camera_flash_switcher'),
-              ),
-            );
-            expect(switcherFinder, findsOneWidget);
+              matching: find.byKey(const ValueKey<FlashMode>(FlashMode.off)),
+            ),
+            findsOneWidget,
+          );
 
-            final switcher = tester.widget<AnimatedSwitcher>(switcherFinder);
-            expect(switcher.duration, equals(Duration.zero));
-          },
-        );
+          // Ketuk tombol flash
+          await tester.tap(flashBtnFinder);
+          await tester.pump();
 
-        testWidgets(
-          'active flash modes always and torch render amber accent while '
-          'off and auto render white',
-          (tester) async {
-            configureTestView(tester);
+          // Optimistic update: flash mode langsung berganti ke auto pada
+          // frame 0 meskipun panggilan hardware kamera masih tertahan
+          expect(
+            find.descendant(
+              of: flashBtnFinder,
+              matching: find.byKey(const ValueKey<FlashMode>(FlashMode.auto)),
+            ),
+            findsOneWidget,
+          );
 
-            final mock = _createConfiguredMockController();
+          // Hardware melempar error / kegagalan
+          completer.completeError(Exception('Hardware reject flashMode'));
+          await tester.pumpAndSettle();
 
-            await tester.pumpWidget(
-              _buildTestApp(
-                AppMultiShotCameraScreen(
-                  cameras: const [testCamera1, testCamera2],
-                  controller: mock,
-                ),
-              ),
-            );
-            await tester.pumpAndSettle();
-
-            final flashBtnFinder =
-                find.byKey(const ValueKey<String>('camera_flash_button'));
-
-            AppSvgIcon getFlashIcon() {
-              return tester.widget<AppSvgIcon>(
-                find.descendant(
-                  of: flashBtnFinder,
-                  matching: find.byType(AppSvgIcon),
-                ),
-              );
-            }
-
-            // 1. Awal: off -> putih
-            expect(getFlashIcon().color, equals(Colors.white));
-
-            // 2. Ketuk 1: off -> auto -> putih
-            await tester.tap(flashBtnFinder);
-            await tester.pumpAndSettle();
-            expect(getFlashIcon().color, equals(Colors.white));
-
-            // 3. Ketuk 2: auto -> always -> amber (#FFD54F)
-            await tester.tap(flashBtnFinder);
-            await tester.pumpAndSettle();
-            expect(getFlashIcon().color, equals(const Color(0xFFFFD54F)));
-
-            // 4. Ketuk 3: always -> torch -> amber (#FFD54F)
-            await tester.tap(flashBtnFinder);
-            await tester.pumpAndSettle();
-            expect(getFlashIcon().color, equals(const Color(0xFFFFD54F)));
-
-            // 5. Ketuk 4: torch -> off -> putih
-            await tester.tap(flashBtnFinder);
-            await tester.pumpAndSettle();
-            expect(getFlashIcon().color, equals(Colors.white));
-          },
-        );
-
-        testWidgets(
-          'optimistic UI update triggers icon transition on tap and rolls back '
-          'on exception',
-          (tester) async {
-            configureTestView(tester);
-
-            final mock = _createConfiguredMockController();
-            final completer = Completer<void>();
-            // Simulasi latensi hardware platform channel:
-            // setFlashMode menunggu completer
-            when(() => mock.setFlashMode(FlashMode.auto))
-                .thenAnswer((_) => completer.future);
-
-            await tester.pumpWidget(
-              _buildTestApp(
-                AppMultiShotCameraScreen(
-                  cameras: const [testCamera1, testCamera2],
-                  controller: mock,
-                ),
-              ),
-            );
-            await tester.pumpAndSettle();
-
-            final flashBtnFinder =
-                find.byKey(const ValueKey<String>('camera_flash_button'));
-
-            // Kondisi awal: off
-            expect(
-              find.descendant(
-                of: flashBtnFinder,
-                matching: find.byKey(const ValueKey<FlashMode>(FlashMode.off)),
-              ),
-              findsOneWidget,
-            );
-
-            // Ketuk tombol flash
-            await tester.tap(flashBtnFinder);
-            await tester.pump();
-
-            // Optimistic update: flash mode langsung berganti ke auto pada
-            // frame 0 meskipun panggilan hardware kamera masih tertahan
-            expect(
-              find.descendant(
-                of: flashBtnFinder,
-                matching: find.byKey(const ValueKey<FlashMode>(FlashMode.auto)),
-              ),
-              findsOneWidget,
-            );
-
-            // Hardware melempar error / kegagalan
-            completer.completeError(Exception('Hardware reject flashMode'));
-            await tester.pumpAndSettle();
-
-            // Rollback secara anggun ke state off
-            expect(
-              find.descendant(
-                of: flashBtnFinder,
-                matching: find.byKey(const ValueKey<FlashMode>(FlashMode.off)),
-              ),
-              findsOneWidget,
-            );
-          },
-        );
-      },
-    );
+          // Rollback secara anggun ke state off
+          expect(
+            find.descendant(
+              of: flashBtnFinder,
+              matching: find.byKey(const ValueKey<FlashMode>(FlashMode.off)),
+            ),
+            findsOneWidget,
+          );
+        },
+      );
+    });
 
     testWidgets(
       'supports custom ImageCropper via Pure DI during photo capture',
@@ -5726,9 +5493,9 @@ void main() {
         final tempFile = File('${tempDir.path}/test_custom_crop.jpg')
           ..writeAsBytesSync([1, 2, 3]);
 
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         var customCropCalled = false;
         final fakeCropper = _FakeImageCropper(
@@ -5774,9 +5541,9 @@ void main() {
         final tempFile = File('${tempDir.path}/test_front_crop.jpg')
           ..writeAsBytesSync([1, 2, 3]);
 
-        when(mockController.takePicture).thenAnswer(
-          (_) async => XFile(tempFile.path),
-        );
+        when(
+          mockController.takePicture,
+        ).thenAnswer((_) async => XFile(tempFile.path));
 
         final fakeCropper = _FakeImageCropper();
 
@@ -5855,10 +5622,9 @@ MockCameraController _createConfiguredMockController([
   final mock = MockCameraController();
   final listenerList = listeners ?? <VoidCallback>[];
   when(() => mock.value).thenReturn(
-    CameraValue.uninitialized(camera).copyWith(
-      isInitialized: true,
-      previewSize: const Size(1920, 1080),
-    ),
+    CameraValue.uninitialized(
+      camera,
+    ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
   );
   when(() => mock.description).thenReturn(camera);
   when(() => mock.cameraId).thenReturn(1);

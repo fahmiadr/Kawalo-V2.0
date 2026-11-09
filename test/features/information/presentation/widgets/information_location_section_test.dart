@@ -33,10 +33,8 @@ Widget _buildLocationSectionTestApp({
   ReverseGeocodeService? reverseGeocodeService,
 }) {
   return MaterialApp(
-    builder: (context, child) => M3ETheme(
-      data: AppTheme.m3eLight(),
-      child: child!,
-    ),
+    builder: (context, child) =>
+        M3ETheme(data: AppTheme.m3eLight(), child: child!),
     home: Scaffold(
       body: SingleChildScrollView(
         child: BlocProvider.value(
@@ -102,44 +100,44 @@ void main() {
 
   group('InformationLocationSection Decoupled Mutation Tests', () {
     testWidgets(
-        'renders empty placeholder when hasLocation is false, triggers pick',
-        (tester) async {
-      configureTestView(tester);
+      'renders empty placeholder when hasLocation is false, triggers pick',
+      (tester) async {
+        configureTestView(tester);
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      );
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        );
 
-      var pickCalled = false;
+        var pickCalled = false;
 
-      await tester.pumpWidget(
-        _buildLocationSectionTestApp(
-          cubit: cubit,
-          controller: locationController,
-          focusNode: locationFocusNode,
-          onLocationNameChanged: cubit.onEventLocationChanged,
-          onPickLocation: () => pickCalled = true,
-          onClearLocation: cubit.onClearLocationCoordinates,
-          reverseGeocodeService: mockReverseGeocodeService,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildLocationSectionTestApp(
+            cubit: cubit,
+            controller: locationController,
+            focusNode: locationFocusNode,
+            onLocationNameChanged: cubit.onEventLocationChanged,
+            onPickLocation: () => pickCalled = true,
+            onClearLocation: cubit.onClearLocationCoordinates,
+            reverseGeocodeService: mockReverseGeocodeService,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppFormEmptyPlaceholder), findsOneWidget);
-      expect(find.text('Belum ada titik lokasi'), findsOneWidget);
-      expect(find.byType(AppStaticMap), findsNothing);
+        expect(find.byType(AppFormEmptyPlaceholder), findsOneWidget);
+        expect(find.text('Belum ada titik lokasi'), findsOneWidget);
+        expect(find.byType(AppStaticMap), findsNothing);
 
-      await tester.tap(find.byType(AppFormEmptyPlaceholder));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(AppFormEmptyPlaceholder));
+        await tester.pumpAndSettle();
 
-      expect(pickCalled, isTrue);
+        expect(pickCalled, isTrue);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
-    testWidgets(
-        'typing into AppTextField updates cubit and DOES NOT mutate '
+    testWidgets('typing into AppTextField updates cubit and DOES NOT mutate '
         'AppStaticMap address', (tester) async {
       configureTestView(tester);
 
@@ -164,8 +162,9 @@ void main() {
       // Verifikasi AppStaticMap ada dengan address == null (bukan dari input)
       final staticMapFinder = find.byType(AppStaticMap);
       expect(staticMapFinder, findsOneWidget);
-      final staticMapWidgetBefore =
-          tester.widget<AppStaticMap>(staticMapFinder);
+      final staticMapWidgetBefore = tester.widget<AppStaticMap>(
+        staticMapFinder,
+      );
       expect(staticMapWidgetBefore.address, isNull);
       expect(staticMapWidgetBefore.latitude, -6.2088);
       expect(staticMapWidgetBefore.longitude, 106.8456);
@@ -184,102 +183,106 @@ void main() {
     });
 
     testWidgets(
-        'setting coordinates does NOT mutate eventLocation or controller',
-        (tester) async {
-      configureTestView(tester);
+      'setting coordinates does NOT mutate eventLocation or controller',
+      (tester) async {
+        configureTestView(tester);
 
-      locationController.text = 'Ruang Rapat Utama';
+        locationController.text = 'Ruang Rapat Utama';
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      )..onEventLocationChanged('Ruang Rapat Utama');
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        )..onEventLocationChanged('Ruang Rapat Utama');
 
-      var clearCalled = false;
+        var clearCalled = false;
 
-      await tester.pumpWidget(
-        _buildLocationSectionTestApp(
-          cubit: cubit,
-          controller: locationController,
-          focusNode: locationFocusNode,
-          onLocationNameChanged: cubit.onEventLocationChanged,
-          onPickLocation: () {},
-          onClearLocation: () {
-            clearCalled = true;
-            cubit.onClearLocationCoordinates();
-          },
-          reverseGeocodeService: mockReverseGeocodeService,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildLocationSectionTestApp(
+            cubit: cubit,
+            controller: locationController,
+            focusNode: locationFocusNode,
+            onLocationNameChanged: cubit.onEventLocationChanged,
+            onPickLocation: () {},
+            onClearLocation: () {
+              clearCalled = true;
+              cubit.onClearLocationCoordinates();
+            },
+            reverseGeocodeService: mockReverseGeocodeService,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Awalnya belum ada koordinat
-      expect(find.byType(AppStaticMap), findsNothing);
+        // Awalnya belum ada koordinat
+        expect(find.byType(AppStaticMap), findsNothing);
 
-      // Set koordinat
-      cubit.onSetLocationCoordinates(lat: -6.9175, lng: 107.6191);
-      await tester.pumpAndSettle();
+        // Set koordinat
+        cubit.onSetLocationCoordinates(lat: -6.9175, lng: 107.6191);
+        await tester.pumpAndSettle();
 
-      // AppStaticMap muncul, teks controller tetap 'Ruang Rapat Utama'
-      expect(find.byType(AppStaticMap), findsOneWidget);
-      expect(locationController.text, 'Ruang Rapat Utama');
-      expect(cubit.state.eventLocation, 'Ruang Rapat Utama');
+        // AppStaticMap muncul, teks controller tetap 'Ruang Rapat Utama'
+        expect(find.byType(AppStaticMap), findsOneWidget);
+        expect(locationController.text, 'Ruang Rapat Utama');
+        expect(cubit.state.eventLocation, 'Ruang Rapat Utama');
 
-      // Tekan tombol Hapus titik
-      final deleteBtn = find.widgetWithText(AppButton, 'Hapus titik');
-      expect(deleteBtn, findsOneWidget);
-      await tester.tap(deleteBtn);
-      await tester.pumpAndSettle();
+        // Tekan tombol Hapus titik
+        final deleteBtn = find.widgetWithText(AppButton, 'Hapus titik');
+        expect(deleteBtn, findsOneWidget);
+        await tester.tap(deleteBtn);
+        await tester.pumpAndSettle();
 
-      expect(clearCalled, isTrue);
-      expect(find.byType(AppStaticMap), findsNothing);
-      expect(find.byType(AppFormEmptyPlaceholder), findsOneWidget);
+        expect(clearCalled, isTrue);
+        expect(find.byType(AppStaticMap), findsNothing);
+        expect(find.byType(AppFormEmptyPlaceholder), findsOneWidget);
 
-      // Nama lokasi di controller dan cubit tetap utuh
-      expect(locationController.text, 'Ruang Rapat Utama');
-      expect(cubit.state.eventLocation, 'Ruang Rapat Utama');
+        // Nama lokasi di controller dan cubit tetap utuh
+        expect(locationController.text, 'Ruang Rapat Utama');
+        expect(cubit.state.eventLocation, 'Ruang Rapat Utama');
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     testWidgets(
-        'disables textfield and action buttons when isSubmitting is true',
-        (tester) async {
-      configureTestView(tester);
+      'disables textfield and action buttons when isSubmitting is true',
+      (tester) async {
+        configureTestView(tester);
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      )..onSetLocationCoordinates(lat: -6.2088, lng: 106.8456);
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        )..onSetLocationCoordinates(lat: -6.2088, lng: 106.8456);
 
-      await tester.pumpWidget(
-        _buildLocationSectionTestApp(
-          cubit: cubit,
-          controller: locationController,
-          focusNode: locationFocusNode,
-          onLocationNameChanged: cubit.onEventLocationChanged,
-          onPickLocation: () {},
-          onClearLocation: cubit.onClearLocationCoordinates,
-          isSubmitting: true,
-          reverseGeocodeService: mockReverseGeocodeService,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildLocationSectionTestApp(
+            cubit: cubit,
+            controller: locationController,
+            focusNode: locationFocusNode,
+            onLocationNameChanged: cubit.onEventLocationChanged,
+            onPickLocation: () {},
+            onClearLocation: cubit.onClearLocationCoordinates,
+            isSubmitting: true,
+            reverseGeocodeService: mockReverseGeocodeService,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      final textField = tester.widget<AppTextField>(find.byType(AppTextField));
-      expect(textField.enabled, isFalse);
+        final textField = tester.widget<AppTextField>(
+          find.byType(AppTextField),
+        );
+        expect(textField.enabled, isFalse);
 
-      final editBtn = tester.widget<AppButton>(
-        find.widgetWithText(AppButton, 'Ubah lokasi'),
-      );
-      expect(editBtn.onPressed, isNull);
+        final editBtn = tester.widget<AppButton>(
+          find.widgetWithText(AppButton, 'Ubah lokasi'),
+        );
+        expect(editBtn.onPressed, isNull);
 
-      final deleteBtn = tester.widget<AppButton>(
-        find.widgetWithText(AppButton, 'Hapus titik'),
-      );
-      expect(deleteBtn.onPressed, isNull);
+        final deleteBtn = tester.widget<AppButton>(
+          find.widgetWithText(AppButton, 'Hapus titik'),
+        );
+        expect(deleteBtn.onPressed, isNull);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
   });
 }

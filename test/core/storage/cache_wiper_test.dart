@@ -24,47 +24,41 @@ void main() {
       mockSecureStorage = MockSecureStorageService();
     });
 
-    test(
-      'wipeAll executes clearCache on all registered wipeables and sync '
-      'storage',
-      () async {
-        when(() => mockWipeable1.clearCache()).thenAnswer((_) async {});
-        when(() => mockWipeable2.clearCache()).thenAnswer((_) async {});
-        when(() => mockSyncStorage.clearAll()).thenAnswer((_) async {});
+    test('wipeAll executes clearCache on all registered wipeables and sync '
+        'storage', () async {
+      when(() => mockWipeable1.clearCache()).thenAnswer((_) async {});
+      when(() => mockWipeable2.clearCache()).thenAnswer((_) async {});
+      when(() => mockSyncStorage.clearAll()).thenAnswer((_) async {});
 
-        final wiper = CacheWiper(
-          wipeables: [mockWipeable1, mockWipeable2],
-          syncStorageService: mockSyncStorage,
-        );
+      final wiper = CacheWiper(
+        wipeables: [mockWipeable1, mockWipeable2],
+        syncStorageService: mockSyncStorage,
+      );
 
-        await wiper.wipeAll();
+      await wiper.wipeAll();
 
-        verify(() => mockWipeable1.clearCache()).called(1);
-        verify(() => mockWipeable2.clearCache()).called(1);
-        verify(() => mockSyncStorage.clearAll()).called(1);
-      },
-    );
+      verify(() => mockWipeable1.clearCache()).called(1);
+      verify(() => mockWipeable2.clearCache()).called(1);
+      verify(() => mockSyncStorage.clearAll()).called(1);
+    });
 
-    test(
-      'wipeAll delegates to secureStorageService when syncStorageService is '
-      'null',
-      () async {
-        when(() => mockWipeable1.clearCache()).thenAnswer((_) async {});
-        when(
-          () => mockSecureStorage.clearAllSyncTimestamps(),
-        ).thenAnswer((_) async {});
+    test('wipeAll delegates to secureStorageService when syncStorageService is '
+        'null', () async {
+      when(() => mockWipeable1.clearCache()).thenAnswer((_) async {});
+      when(
+        () => mockSecureStorage.clearAllSyncTimestamps(),
+      ).thenAnswer((_) async {});
 
-        final wiper = CacheWiper(
-          wipeables: [mockWipeable1],
-          secureStorageService: mockSecureStorage,
-        );
+      final wiper = CacheWiper(
+        wipeables: [mockWipeable1],
+        secureStorageService: mockSecureStorage,
+      );
 
-        await wiper.wipeAll();
+      await wiper.wipeAll();
 
-        verify(() => mockWipeable1.clearCache()).called(1);
-        verify(() => mockSecureStorage.clearAllSyncTimestamps()).called(1);
-      },
-    );
+      verify(() => mockWipeable1.clearCache()).called(1);
+      verify(() => mockSecureStorage.clearAllSyncTimestamps()).called(1);
+    });
 
     test(
       'wipeAll is resilient (best-effort) when one wipeable throws exception',

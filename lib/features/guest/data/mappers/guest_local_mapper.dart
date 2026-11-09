@@ -30,10 +30,12 @@ abstract final class GuestLocalMapper {
       ..qrUid = AppSanitizer.cleanString(model.qrUid)
       ..guestAddress = AppSanitizer.cleanString(model.guestAddress)
       ..guestType = AppSanitizer.cleanString(model.guestType)
-      ..guestCheckoutByEmail =
-          AppSanitizer.cleanEmail(model.guestCheckoutByEmail)
-      ..guestCheckoutByName =
-          AppSanitizer.cleanString(model.guestCheckoutByName);
+      ..guestCheckoutByEmail = AppSanitizer.cleanEmail(
+        model.guestCheckoutByEmail,
+      )
+      ..guestCheckoutByName = AppSanitizer.cleanString(
+        model.guestCheckoutByName,
+      );
   }
 
   /// Mengonversi satu instance [GuestLocalModel] dari Isar database menjadi
@@ -60,10 +62,8 @@ abstract final class GuestLocalMapper {
       qrUid: AppSanitizer.cleanString(local.qrUid),
       guestAddress: AppSanitizer.cleanString(local.guestAddress),
       guestType: AppSanitizer.cleanString(local.guestType),
-      guestCheckoutByEmail:
-          AppSanitizer.cleanEmail(local.guestCheckoutByEmail),
-      guestCheckoutByName:
-          AppSanitizer.cleanString(local.guestCheckoutByName),
+      guestCheckoutByEmail: AppSanitizer.cleanEmail(local.guestCheckoutByEmail),
+      guestCheckoutByName: AppSanitizer.cleanString(local.guestCheckoutByName),
     );
   }
 

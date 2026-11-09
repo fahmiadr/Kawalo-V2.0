@@ -40,10 +40,7 @@ enum AppDateFilterPeriod {
 extension AppDateFilterPeriodDisplayX on AppDateFilterPeriod {
   /// Menghasilkan label teks untuk tampilan chip filter berdasarkan periode
   /// dan rentang tanggal kustom (jika ada).
-  String resolveDisplayLabel({
-    DateTime? startDate,
-    DateTime? endDate,
-  }) {
+  String resolveDisplayLabel({DateTime? startDate, DateTime? endDate}) {
     if (this == AppDateFilterPeriod.custom &&
         startDate != null &&
         endDate != null) {
@@ -317,13 +314,13 @@ class AppDateFilterResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        period,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        customFilters,
-      ];
+    period,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    customFilters,
+  ];
 }
 
 /// Tampilan dalam [AppDateFilterBottomSheet] untuk transisi tanpa
@@ -423,7 +420,8 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
     final now = DateTime.now();
     _selectedPeriod = widget.initialPeriod;
     _startDate = widget.initialStartDate ?? now;
-    _endDate = widget.initialEndDate ??
+    _endDate =
+        widget.initialEndDate ??
         (widget.scope == AppDateFilterScope.pastOnly
             ? now
             : now.add(const Duration(days: 2)));
@@ -442,7 +440,8 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
       _selectedPeriod = AppDateFilterPeriod.today;
       final now = DateTime.now();
       _startDate = widget.initialStartDate ?? now;
-      _endDate = widget.initialEndDate ??
+      _endDate =
+          widget.initialEndDate ??
           (widget.scope == AppDateFilterScope.pastOnly
               ? now
               : now.add(const Duration(days: 2)));
@@ -466,7 +465,8 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
       // Inisialisasi draf dari nilai terpasang, bukan menimpa nilai terpasang.
       // Periode baru terpasang setelah tombol Pasang ditekan.
       _draftStartDate = _startDate ?? widget.initialStartDate ?? now;
-      _draftEndDate = _endDate ??
+      _draftEndDate =
+          _endDate ??
           widget.initialEndDate ??
           (widget.scope == AppDateFilterScope.pastOnly
               ? now
@@ -488,14 +488,14 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
   }
 
   DateTime get _effectiveFirstDate => widget.scope.resolveFirstDate(
-        DateTime.now(),
-        customFirstDate: widget.firstDate,
-      );
+    DateTime.now(),
+    customFirstDate: widget.firstDate,
+  );
 
   DateTime get _effectiveLastDate => widget.scope.resolveLastDate(
-        DateTime.now(),
-        customLastDate: widget.lastDate,
-      );
+    DateTime.now(),
+    customLastDate: widget.lastDate,
+  );
 
   Future<void> _pickStartDate() async {
     final now = DateTime.now();
@@ -615,11 +615,7 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
   }
 
   String _formatDateRange(DateTime start, DateTime end) {
-    return AppDateFormat.formatDateRange(
-      start,
-      end,
-      useLeadingZero: true,
-    );
+    return AppDateFormat.formatDateRange(start, end, useLeadingZero: true);
   }
 
   String? _resolvePeriodDateRange(AppDateFilterPeriod period) {
@@ -636,11 +632,7 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
           startOfWeek.month,
           startOfWeek.day,
         );
-        final end = DateTime(
-          endOfWeek.year,
-          endOfWeek.month,
-          endOfWeek.day,
-        );
+        final end = DateTime(endOfWeek.year, endOfWeek.month, endOfWeek.day);
         return _formatDateRange(start, end);
       case AppDateFilterPeriod.thisMonth:
         final start = DateTime(now.year, now.month);
@@ -712,8 +704,9 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
             ...AppDateFilterPeriod.values.map((period) {
               final isSelected = _selectedPeriod == period;
               final isCustom = period == AppDateFilterPeriod.custom;
-              final dateRangeText =
-                  isSelected ? _resolvePeriodDateRange(period) : null;
+              final dateRangeText = isSelected
+                  ? _resolvePeriodDateRange(period)
+                  : null;
               final periodSemanticLabel = dateRangeText != null
                   ? 'Pilih ${period.label}, $dateRangeText'
                   : 'Pilih ${period.label}';
@@ -799,10 +792,7 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
             child: Row(
               children: [
                 AppIconButton(
-                  icon: const AppSvgIcon(
-                    KawaloVectors.arrowLeft02,
-                    size: 28,
-                  ),
+                  icon: const AppSvgIcon(KawaloVectors.arrowLeft02, size: 28),
                   onPressed: _switchToOptions,
                   semanticLabel: 'Kembali ke opsi rentang waktu',
                 ),
@@ -898,8 +888,9 @@ class _AppDateFilterBottomSheetState extends State<AppDateFilterBottomSheet> {
     required M3ETypeScale emphasized,
   }) {
     final hasValue = date != null;
-    final displayText =
-        hasValue ? AppDateFormat.formatDateOnly(date) : 'Pilih tanggal';
+    final displayText = hasValue
+        ? AppDateFormat.formatDateOnly(date)
+        : 'Pilih tanggal';
 
     return AppCard(
       variant: AppCardVariant.filled,

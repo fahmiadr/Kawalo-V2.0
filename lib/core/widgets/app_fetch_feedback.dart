@@ -33,13 +33,13 @@ abstract final class AppFetchFeedback {
     }
 
     if (result == AppFetchResult.cachedFallback) {
-      final isOffline =
-          context.read<ConnectivityCubit?>()?.isOffline ?? false;
+      final isOffline = context.read<ConnectivityCubit?>()?.isOffline ?? false;
 
       if (isOffline) {
         AppSnackbar.show(
           context,
-          message: offlineSuccessMessage ??
+          message:
+              offlineSuccessMessage ??
               (hasData
                   ? 'Tidak ada koneksi internet. Menampilkan data tersimpan.'
                   : 'Tidak ada koneksi internet. Belum ada data tersimpan.'),

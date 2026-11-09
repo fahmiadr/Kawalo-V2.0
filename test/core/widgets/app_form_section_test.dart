@@ -6,8 +6,9 @@ import 'package:kawalo_mobile/core/widgets/app_form_section.dart';
 
 void main() {
   group('AppFormSection Tests', () {
-    testWidgets('renders title, subtitle, and child inside AppCard',
-        (tester) async {
+    testWidgets('renders title, subtitle, and child inside AppCard', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3ETheme(
           data: AppTheme.m3eLight(),

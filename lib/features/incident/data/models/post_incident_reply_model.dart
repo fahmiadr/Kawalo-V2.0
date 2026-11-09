@@ -6,10 +6,7 @@ import 'package:equatable/equatable.dart';
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
 class PostIncidentReplyModel extends Equatable {
   /// Membuat instance [PostIncidentReplyModel].
-  const PostIncidentReplyModel({
-    required this.message,
-    this.photos = const [],
-  });
+  const PostIncidentReplyModel({required this.message, this.photos = const []});
 
   /// Pesan balasan teks.
   final String message;
@@ -19,10 +16,7 @@ class PostIncidentReplyModel extends Equatable {
 
   /// Mengonversi ke Map JSON untuk dikirim via HTTP POST.
   Map<String, dynamic> toJson() {
-    return {
-      'message': message,
-      'photos': photos,
-    };
+    return {'message': message, 'photos': photos};
   }
 
   @override

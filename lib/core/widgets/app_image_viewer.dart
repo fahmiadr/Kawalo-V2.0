@@ -38,10 +38,7 @@ class AppImageViewer extends StatefulWidget {
     super.key,
     this.initialIndex = 0,
     this.heroTagPrefix,
-  }) : assert(
-          imageUrls.length > 0,
-          'imageUrls tidak boleh kosong',
-        );
+  }) : assert(imageUrls.length > 0, 'imageUrls tidak boleh kosong');
 
   /// Daftar URL gambar yang ditampilkan.
   final List<String> imageUrls;
@@ -66,7 +63,7 @@ class AppImageViewer extends StatefulWidget {
         opaque: false,
         transitionDuration: AppDuration.medium3,
         reverseTransitionDuration: AppDuration.medium1,
-        pageBuilder: (_, __, ___) => AppImageViewer(
+        pageBuilder: (_, _, _) => AppImageViewer(
           imageUrls: imageUrls,
           initialIndex: initialIndex.clamp(0, imageUrls.length - 1),
           heroTagPrefix: heroTagPrefix,
@@ -185,16 +182,15 @@ class _AppImageViewerState extends State<AppImageViewer>
       curve: AppEasing.emphasizedDecelerate,
     );
 
-    _dismissController = AnimationController(
-      vsync: this,
-      duration: AppDuration.short3,
-    )..addListener(_handleDismissAnimation)
-     ..addStatusListener((status) {
-       if (status == AnimationStatus.completed && mounted) {
-         _restoreSystemUI();
-         Navigator.of(context).pop();
-       }
-     });
+    _dismissController =
+        AnimationController(vsync: this, duration: AppDuration.short3)
+          ..addListener(_handleDismissAnimation)
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed && mounted) {
+              _restoreSystemUI();
+              Navigator.of(context).pop();
+            }
+          });
 
     _dismissCurve = CurvedAnimation(
       parent: _dismissController,
@@ -244,9 +240,7 @@ class _AppImageViewerState extends State<AppImageViewer>
   void _restoreSystemUI() {
     if (_hasRestoredSystemUi) return;
     _hasRestoredSystemUi = true;
-    unawaited(
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
-    );
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
   }
 
   @override
@@ -313,11 +307,7 @@ class _AppImageViewerState extends State<AppImageViewer>
 
   /// Membatasi pergeseran matriks transformasi agar foto tidak pernah keluar
   /// dari area penglihatan, baik secara horizontal maupun vertikal.
-  Matrix4 _clampMatrix(
-    Matrix4 matrix,
-    Size? imageSize,
-    Size viewportSize,
-  ) {
+  Matrix4 _clampMatrix(Matrix4 matrix, Size? imageSize, Size viewportSize) {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) return matrix;
 
     final scale = matrix.getMaxScaleOnAxis();
@@ -326,8 +316,11 @@ class _AppImageViewerState extends State<AppImageViewer>
     }
 
     final resolvedImageSize = imageSize ?? viewportSize;
-    final fittedSizes =
-        applyBoxFit(BoxFit.contain, resolvedImageSize, viewportSize);
+    final fittedSizes = applyBoxFit(
+      BoxFit.contain,
+      resolvedImageSize,
+      viewportSize,
+    );
     final destSize = fittedSizes.destination;
 
     final unscaledLeft = (viewportSize.width - destSize.width) / 2;
@@ -377,7 +370,8 @@ class _AppImageViewerState extends State<AppImageViewer>
         _singleTapTimer = null;
       });
     } else {
-      final isNear = _lastTapPosition != null &&
+      final isNear =
+          _lastTapPosition != null &&
           (position - _lastTapPosition!).distance < 40;
       _singleTapTimer?.cancel();
       _singleTapTimer = null;
@@ -400,11 +394,7 @@ class _AppImageViewerState extends State<AppImageViewer>
       final matrix = Matrix4.identity()
         ..translateByDouble(tx, ty, 0, 1)
         ..scaleByDouble(2.5, 2.5, 1, 1);
-      controller.value = _clampMatrix(
-        matrix,
-        _imageSizes[index],
-        viewportSize,
-      );
+      controller.value = _clampMatrix(matrix, _imageSizes[index], viewportSize);
     }
     _syncZoomState(index);
   }
@@ -534,149 +524,153 @@ class _AppImageViewerState extends State<AppImageViewer>
           focusNode: _focusNode,
           onKeyEvent: _handleKeyEvent,
           child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final viewportSize =
-                  Size(constraints.maxWidth, constraints.maxHeight);
+            backgroundColor: Colors.transparent,
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                final viewportSize = Size(
+                  constraints.maxWidth,
+                  constraints.maxHeight,
+                );
 
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  // ── 1. Backdrop Scrim Dinamis ───────────────────────────
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: _toggleChrome,
-                      child: ColoredBox(
-                        color: colorScheme.scrim.withValues(
-                          alpha: 0.96 * _effectiveBackdropOpacity,
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // ── 1. Backdrop Scrim Dinamis ───────────────────────────
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: _toggleChrome,
+                        child: ColoredBox(
+                          color: colorScheme.scrim.withValues(
+                            alpha: 0.96 * _effectiveBackdropOpacity,
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // ── 2. Kanvas Gambar Utama (PageView + InteractiveViewer) ──
-                  Positioned.fill(
-                    child: Listener(
-                      onPointerDown: _handlePointerDown,
-                      onPointerUp: (e) => _handlePointerRemove(e.pointer),
-                      onPointerCancel: (e) => _handlePointerRemove(e.pointer),
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onVerticalDragStart:
-                            _isPagingDisabled ? null : _onVerticalDragStart,
-                        onVerticalDragUpdate:
-                            _isPagingDisabled ? null : _onVerticalDragUpdate,
-                        onVerticalDragEnd:
-                            _isPagingDisabled ? null : _onVerticalDragEnd,
-                        onVerticalDragCancel:
-                            _isPagingDisabled ? null : _onVerticalDragCancel,
-                        child: Transform.translate(
-                          offset: Offset(0, _effectiveDragOffsetY),
-                          child: Transform.scale(
-                            scale: _effectiveScaleFraction,
-                            child: PageView.builder(
-                              controller: _pageController,
-                              physics: _isPagingDisabled
-                                  ? const NeverScrollableScrollPhysics()
-                                  : const BouncingScrollPhysics(),
-                              itemCount: totalImages,
-                              onPageChanged: (index) {
-                                final prevController =
-                                    _transformControllers[_currentIndex];
-                                if (prevController != null &&
-                                    prevController.value !=
-                                        Matrix4.identity()) {
-                                  prevController.value = Matrix4.identity();
-                                }
-                                setState(() {
-                                  _currentIndex = index;
-                                  _isCurrentPageZoomed = _isZoomed(index);
-                                });
-                                _announcePage(index);
-                              },
-                              itemBuilder: (context, index) => _buildImageItem(
-                                context,
-                                index,
-                                viewportSize,
+                    // ── 2. Kanvas Gambar Utama (PageView + InteractiveViewer) ──
+                    Positioned.fill(
+                      child: Listener(
+                        onPointerDown: _handlePointerDown,
+                        onPointerUp: (e) => _handlePointerRemove(e.pointer),
+                        onPointerCancel: (e) => _handlePointerRemove(e.pointer),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onVerticalDragStart: _isPagingDisabled
+                              ? null
+                              : _onVerticalDragStart,
+                          onVerticalDragUpdate: _isPagingDisabled
+                              ? null
+                              : _onVerticalDragUpdate,
+                          onVerticalDragEnd: _isPagingDisabled
+                              ? null
+                              : _onVerticalDragEnd,
+                          onVerticalDragCancel: _isPagingDisabled
+                              ? null
+                              : _onVerticalDragCancel,
+                          child: Transform.translate(
+                            offset: Offset(0, _effectiveDragOffsetY),
+                            child: Transform.scale(
+                              scale: _effectiveScaleFraction,
+                              child: PageView.builder(
+                                controller: _pageController,
+                                physics: _isPagingDisabled
+                                    ? const NeverScrollableScrollPhysics()
+                                    : const BouncingScrollPhysics(),
+                                itemCount: totalImages,
+                                onPageChanged: (index) {
+                                  final prevController =
+                                      _transformControllers[_currentIndex];
+                                  if (prevController != null &&
+                                      prevController.value !=
+                                          Matrix4.identity()) {
+                                    prevController.value = Matrix4.identity();
+                                  }
+                                  setState(() {
+                                    _currentIndex = index;
+                                    _isCurrentPageZoomed = _isZoomed(index);
+                                  });
+                                  _announcePage(index);
+                                },
+                                itemBuilder: (context, index) =>
+                                    _buildImageItem(
+                                      context,
+                                      index,
+                                      viewportSize,
+                                    ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // ── 3. Chrome Atas (Floating Counter & Close Button) ────
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Opacity(
-                      opacity: _effectiveChromeOpacity,
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: _showChromeNotifier,
-                        builder: (context, showChrome, child) {
-                          return AnimatedSlide(
-                            duration: AppDuration.short4,
-                            curve: AppMotion.standard,
-                            offset:
-                                showChrome ? Offset.zero : const Offset(0, -1),
-                            child: AnimatedOpacity(
+                    // ── 3. Chrome Atas (Floating Counter & Close Button) ────
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Opacity(
+                        opacity: _effectiveChromeOpacity,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _showChromeNotifier,
+                          builder: (context, showChrome, child) {
+                            return AnimatedSlide(
                               duration: AppDuration.short4,
                               curve: AppMotion.standard,
-                              opacity: showChrome ? 1.0 : 0.0,
-                              child: IgnorePointer(
-                                ignoring: !showChrome || _dragOffsetY > 0,
-                                child: child,
+                              offset: showChrome
+                                  ? Offset.zero
+                                  : const Offset(0, -1),
+                              child: AnimatedOpacity(
+                                duration: AppDuration.short4,
+                                curve: AppMotion.standard,
+                                opacity: showChrome ? 1.0 : 0.0,
+                                child: IgnorePointer(
+                                  ignoring: !showChrome || _dragOffsetY > 0,
+                                  child: child,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        child: SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.space200,
-                              vertical: AppSpacing.space100,
-                            ),
-                            child: Row(
-                              children: [
-                                // Sisi Kiri Penyeimbang
-                                const SizedBox(
-                                  width: AppStateLayer.minTouchTarget,
-                                ),
-
-                                // Tengah: Pill Counter Indeks
-                                Expanded(
-                                  child: Center(
-                                    child: _buildIndexCounter(context),
+                            );
+                          },
+                          child: SafeArea(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.space200,
+                                vertical: AppSpacing.space100,
+                              ),
+                              child: Row(
+                                children: [
+                                  // Sisi Kiri Penyeimbang
+                                  const SizedBox(
+                                    width: AppStateLayer.minTouchTarget,
                                   ),
-                                ),
 
-                                // Kanan Atas: Tombol Tutup
-                                _buildCloseButton(context),
-                              ],
+                                  // Tengah: Pill Counter Indeks
+                                  Expanded(
+                                    child: Center(
+                                      child: _buildIndexCounter(context),
+                                    ),
+                                  ),
+
+                                  // Kanan Atas: Tombol Tutup
+                                  _buildCloseButton(context),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
-  Widget _buildImageItem(
-    BuildContext context,
-    int index,
-    Size viewportSize,
-  ) {
+  Widget _buildImageItem(BuildContext context, int index, Size viewportSize) {
     final imageUrl = widget.imageUrls[index];
     final heroTag = widget.heroTagPrefix != null
         ? '${widget.heroTagPrefix}_$index'
@@ -732,11 +726,7 @@ class _AppImageViewerState extends State<AppImageViewer>
     stream.addListener(listener);
   }
 
-  Widget _buildImageContent(
-    BuildContext context,
-    int index,
-    String imageUrl,
-  ) {
+  Widget _buildImageContent(BuildContext context, int index, String imageUrl) {
     final isNetwork =
         imageUrl.startsWith('http://') || imageUrl.startsWith('https://');
 
@@ -748,24 +738,13 @@ class _AppImageViewerState extends State<AppImageViewer>
         fadeOutDuration: Duration.zero,
         imageBuilder: (context, imageProvider) {
           _registerImageSize(index, imageProvider);
-          return Image(
-            image: imageProvider,
-            fit: BoxFit.contain,
-          );
+          return Image(image: imageProvider, fit: BoxFit.contain);
         },
-        placeholder: (_, __) => const Center(
-          child: AppImagePlaceholder(
-            width: 120,
-            height: 120,
-            iconSize: 48,
-          ),
+        placeholder: (_, _) => const Center(
+          child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
         ),
-        errorWidget: (_, __, ___) => const Center(
-          child: AppImagePlaceholder(
-            width: 120,
-            height: 120,
-            iconSize: 48,
-          ),
+        errorWidget: (_, _, _) => const Center(
+          child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
         ),
       );
     }
@@ -776,22 +755,14 @@ class _AppImageViewerState extends State<AppImageViewer>
       return Image(
         image: fileImage,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => const Center(
-          child: AppImagePlaceholder(
-            width: 120,
-            height: 120,
-            iconSize: 48,
-          ),
+        errorBuilder: (_, _, _) => const Center(
+          child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
         ),
       );
     }
 
     return const Center(
-      child: AppImagePlaceholder(
-        width: 120,
-        height: 120,
-        iconSize: 48,
-      ),
+      child: AppImagePlaceholder(width: 120, height: 120, iconSize: 48),
     );
   }
 
@@ -809,15 +780,11 @@ class _AppImageViewerState extends State<AppImageViewer>
       decoration: BoxDecoration(
         color: colorScheme.scrim.withValues(alpha: 0.60),
         borderRadius: AppRadius.borderFull,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.30),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.30)),
       ),
       child: Text(
         '${_currentIndex + 1} / $total',
-        style: emphasizedTypeScale.labelLarge.copyWith(
-          color: Colors.white,
-        ),
+        style: emphasizedTypeScale.labelLarge.copyWith(color: Colors.white),
       ),
     );
   }
@@ -826,21 +793,14 @@ class _AppImageViewerState extends State<AppImageViewer>
     final colorScheme = AppTheme.colorSchemeOf(context);
 
     return AppIconButton(
-      icon: const AppSvgIcon(
-        KawaloVectors.cancel01,
-        color: Colors.white,
-      ),
+      icon: const AppSvgIcon(KawaloVectors.cancel01, color: Colors.white),
       decoration: M3EIconButtonDecoration(
         backgroundColor: WidgetStatePropertyAll(
           colorScheme.scrim.withValues(alpha: 0.60),
         ),
-        foregroundColor: const WidgetStatePropertyAll(
-          Colors.white,
-        ),
+        foregroundColor: const WidgetStatePropertyAll(Colors.white),
         side: WidgetStatePropertyAll(
-          BorderSide(
-            color: Colors.white.withValues(alpha: 0.30),
-          ),
+          BorderSide(color: Colors.white.withValues(alpha: 0.30)),
         ),
       ),
       tooltip: 'Tutup penampil gambar',

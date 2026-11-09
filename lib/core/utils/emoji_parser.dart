@@ -3,11 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 /// Segment resulting from parsing text into plain text chunks and emoji chunks
 class EmojiSegment {
-  const EmojiSegment({
-    required this.text,
-    this.isEmoji = false,
-    this.hexCode,
-  });
+  const EmojiSegment({required this.text, this.isEmoji = false, this.hexCode});
 
   final String text;
   final bool isEmoji;
@@ -53,13 +49,7 @@ abstract class EmojiParser {
           currentText.clear();
         }
         final hex = emojiToHex(char);
-        segments.add(
-          EmojiSegment(
-            text: char,
-            isEmoji: true,
-            hexCode: hex,
-          ),
-        );
+        segments.add(EmojiSegment(text: char, isEmoji: true, hexCode: hex));
       } else {
         currentText.write(char);
       }

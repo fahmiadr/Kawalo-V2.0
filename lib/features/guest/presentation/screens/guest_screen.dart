@@ -54,10 +54,7 @@ import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form_dia
 /// - Extended FAB "Tambah tamu" untuk pembuatan data tamu baru.
 class GuestScreen extends StatefulWidget {
   /// Membuat instance [GuestScreen].
-  const GuestScreen({
-    super.key,
-    this.cubit,
-  });
+  const GuestScreen({super.key, this.cubit});
 
   /// Instance [GuestCubit] opsional untuk injeksi pengujian.
   final GuestCubit? cubit;
@@ -195,10 +192,7 @@ class _GuestScreenState extends State<GuestScreen> {
     );
   }
 
-  bool _canSelectOrDelete(
-    GuestItemEntity item,
-    AuthSessionEntity? session,
-  ) {
+  bool _canSelectOrDelete(GuestItemEntity item, AuthSessionEntity? session) {
     return item.canBeDeletedBySession(session);
   }
 
@@ -243,10 +237,7 @@ class _GuestScreenState extends State<GuestScreen> {
   Future<void> _onOpenCreateForm() async {
     if (_selectionController.isSelectionMode) return;
     final cubit = _resolveCubit(context);
-    await GuestFormDialog.showCreate(
-      context,
-      guestCubit: cubit,
-    );
+    await GuestFormDialog.showCreate(context, guestCubit: cubit);
   }
 
   void _onSelectAllToggled({
@@ -323,10 +314,7 @@ class _GuestScreenState extends State<GuestScreen> {
 
     result.fold(
       (failure) {
-        AppSnackbar.show(
-          context,
-          message: failure.message,
-        );
+        AppSnackbar.show(context, message: failure.message);
       },
       (_) {
         AppSnackbar.show(
@@ -346,7 +334,8 @@ class _GuestScreenState extends State<GuestScreen> {
 
   void _onCloseSearch() {
     _clearSelection();
-    final hasActiveSearch = _searchController.text.isNotEmpty ||
+    final hasActiveSearch =
+        _searchController.text.isNotEmpty ||
         _resolveCubit(context).state.searchQuery != null &&
             _resolveCubit(context).state.searchQuery!.isNotEmpty;
     _searchController.clear();
@@ -361,9 +350,7 @@ class _GuestScreenState extends State<GuestScreen> {
   Future<void> _onSearch(String query) async {
     _clearSelection();
     final currentCubit = _resolveCubit(context);
-    final result = await currentCubit.fetchGuests(
-      search: query,
-    );
+    final result = await currentCubit.fetchGuests(search: query);
     if (!mounted) return;
     AppFetchFeedback.show(
       context,
@@ -464,10 +451,7 @@ class _GuestScreenState extends State<GuestScreen> {
 
     final fetchResult = isCurrentlyMine
         ? await cubit.changeCreatorFilter()
-        : await cubit.changeCreatorFilter(
-            email: userEmail,
-            name: userName,
-          );
+        : await cubit.changeCreatorFilter(email: userEmail, name: userName);
     if (mounted) {
       AppFetchFeedback.show(
         context,
@@ -626,8 +610,9 @@ class _GuestScreenState extends State<GuestScreen> {
     if (isAdmin) {
       final isCreatorActive = state.hasActiveCreatorFilter;
       final creatorName = state.filterCreatorName ?? state.filterCreatorEmail;
-      final creatorLabel =
-          isCreatorActive ? 'Dibuat oleh $creatorName' : 'Dibuat oleh';
+      final creatorLabel = isCreatorActive
+          ? 'Dibuat oleh $creatorName'
+          : 'Dibuat oleh';
 
       creatorChip = AppChip(
         type: AppChipType.filter,
@@ -765,8 +750,9 @@ class _GuestScreenState extends State<GuestScreen> {
                 onPressed: !isInitialLoading
                     ? (_isSearchExpanded ? _onCloseSearch : _onOpenSearch)
                     : null,
-                semanticLabel:
-                    _isSearchExpanded ? 'Tutup pencarian' : 'Cari data tamu',
+                semanticLabel: _isSearchExpanded
+                    ? 'Tutup pencarian'
+                    : 'Cari data tamu',
                 icon: AppSvgIcon(
                   _isSearchExpanded
                       ? KawaloVectors.cancel01
@@ -795,9 +781,7 @@ class _GuestScreenState extends State<GuestScreen> {
               AppIconButton(
                 onPressed: _isDeleting || isOffline
                     ? null
-                    : () => _onDeleteSelectedPressed(
-                          items: currentGuests,
-                        ),
+                    : () => _onDeleteSelectedPressed(items: currentGuests),
                 semanticLabel: 'Hapus data tamu terpilih',
                 icon: AppSvgIcon(
                   KawaloVectors.delete01Filled,
@@ -813,18 +797,13 @@ class _GuestScreenState extends State<GuestScreen> {
           ),
           floatingActionButton:
               _selectionController.isSelectionMode || !canCreate
-                  ? null
-                  : AppExtendedFab(
-                      onPressed: isOffline ? null : _onOpenCreateForm,
-                      icon: const AppSvgIcon(
-                        KawaloVectors.add01,
-                        size: 24,
-                      ),
-                      label: 'Tamu',
-                    ),
-          bottomNavigationBar: AppBottomOfflineBanner(
-            isOffline: isOffline,
-          ),
+              ? null
+              : AppExtendedFab(
+                  onPressed: isOffline ? null : _onOpenCreateForm,
+                  icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
+                  label: 'Tamu',
+                ),
+          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
           body: SafeArea(
             top: false,
             child: AppKeyboardInsetsPadding(
@@ -838,8 +817,8 @@ class _GuestScreenState extends State<GuestScreen> {
                       semanticsLabel: 'Memuat ulang data tamu',
                       notificationPredicate:
                           _selectionController.isSelectionMode
-                              ? (_) => false
-                              : defaultScrollNotificationPredicate,
+                          ? (_) => false
+                          : defaultScrollNotificationPredicate,
                       onRefresh: () => _handleRefresh(cubit),
                       child: bodyContent,
                     ),
@@ -863,8 +842,8 @@ class _GuestScreenState extends State<GuestScreen> {
         bottom: AppLayout.fabScrollClearance,
       ),
       itemCount: 4,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
-      itemBuilder: (_, __) => const GuestCardSkeleton(),
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemBuilder: (_, _) => const GuestCardSkeleton(),
     );
   }
 
@@ -886,20 +865,19 @@ class _GuestScreenState extends State<GuestScreen> {
         bottom: AppLayout.fabScrollClearance,
       ),
       itemCount: totalCount,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
       itemBuilder: (context, index) {
         if (index == guests.length) {
           return const Padding(
             padding: AppSpacing.paddingVertical200,
-            child: Center(
-              child: AppLoadingIndicator(),
-            ),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
 
         final item = guests[index];
         final isSelectable = _canSelectOrDelete(item, session);
-        final isSelected = _selectionController.isSelected(index) ||
+        final isSelected =
+            _selectionController.isSelected(index) ||
             _selectedIds.contains(item.id);
 
         return GuestCard(
@@ -916,11 +894,10 @@ class _GuestScreenState extends State<GuestScreen> {
 
   Widget _buildEmptyGroupState(BuildContext context) {
     return const AppEmptyState(
-      icon: AppSvgIcon.color(
-        KawaloColorVectors.guestValidation,
-      ),
+      icon: AppSvgIcon.color(KawaloColorVectors.guestValidation),
       title: 'Belum ada data tamu',
-      description: 'Belum ada kunjungan tamu '
+      description:
+          'Belum ada kunjungan tamu '
           'pada hari ini.',
     );
   }
@@ -928,7 +905,8 @@ class _GuestScreenState extends State<GuestScreen> {
   Widget _buildEmptySearchResult(BuildContext context) {
     return AppEmptyState.search(
       title: 'Data tamu tidak ditemukan',
-      description: 'Tidak ada data tamu yang cocok dengan '
+      description:
+          'Tidak ada data tamu yang cocok dengan '
           'pencarian atau filter yang diterapkan.',
       actionLabel: 'Reset filter & pencarian',
       onActionPressed: _resetAllFilters,
@@ -946,9 +924,7 @@ class _GuestScreenState extends State<GuestScreen> {
       retryLabel: 'Coba lagi',
       onRetry: () {
         final query = _searchController.text;
-        cubit.fetchGuests(
-          search: query.isEmpty ? null : query,
-        );
+        cubit.fetchGuests(search: query.isEmpty ? null : query);
       },
     );
   }

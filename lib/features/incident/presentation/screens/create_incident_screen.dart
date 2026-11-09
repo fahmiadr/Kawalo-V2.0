@@ -14,11 +14,7 @@ import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_fo
 /// Information.
 class CreateIncidentScreen extends StatelessWidget {
   /// Membuat instance [CreateIncidentScreen].
-  const CreateIncidentScreen({
-    super.key,
-    this.cubit,
-    this.mediaPickerService,
-  });
+  const CreateIncidentScreen({super.key, this.cubit, this.mediaPickerService});
 
   /// Instance [IncidentFormCubit] opsional.
   final IncidentFormCubit? cubit;
@@ -42,9 +38,7 @@ class CreateIncidentScreen extends StatelessWidget {
         final module = context.read<IncidentModule>();
         return BlocProvider<IncidentFormCubit>(
           create: (_) => module.createIncidentFormCubit(),
-          child: IncidentFormDialog(
-            mediaPickerService: mediaPickerService,
-          ),
+          child: IncidentFormDialog(mediaPickerService: mediaPickerService),
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/security/jwks_service.dart';
@@ -33,8 +34,9 @@ class JwtUtils {
 
       final exp = payload['exp'];
       if (exp is num) {
-        final expiryDate =
-            DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000);
+        final expiryDate = DateTime.fromMillisecondsSinceEpoch(
+          exp.toInt() * 1000,
+        );
         final threshold = DateTime.now().add(buffer);
         return threshold.isAfter(expiryDate);
       }
@@ -144,11 +146,7 @@ class JwtUtils {
     try {
       final pem = publicKeyPem ?? EnvConfig.jwtPublicKeyPem;
       final key = RSAPublicKey(normalizePem(pem));
-      final jwt = JWT.verify(
-        trimmed,
-        key,
-        checkExpiresIn: checkExpiresIn,
-      );
+      final jwt = JWT.verify(trimmed, key, checkExpiresIn: checkExpiresIn);
       if (jwt.payload is Map) {
         return (jwt.payload as Map).cast<String, dynamic>();
       }

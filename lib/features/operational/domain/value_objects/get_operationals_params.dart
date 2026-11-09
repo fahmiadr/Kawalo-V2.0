@@ -41,12 +41,12 @@ class GetOperationalsParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        search,
-        limit,
-        offset,
-        startDate,
-        endDate,
-        cancelToken,
-        isRefresh,
-      ];
+    search,
+    limit,
+    offset,
+    startDate,
+    endDate,
+    cancelToken,
+    isRefresh,
+  ];
 }

@@ -184,18 +184,18 @@ class AttendanceLoaded extends AttendanceState implements ListLoadedState {
 
   @override
   List<Object?> get props => [
-        attendances,
-        isFromCache,
-        lastSync,
-        hasMore,
-        isLoadingMore,
-        filterPeriod,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    attendances,
+    isFromCache,
+    lastSync,
+    hasMore,
+    isLoadingMore,
+    filterPeriod,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }
 
 /// Keadaan saat terjadi kegagalan saat memuat data absensi.
@@ -273,15 +273,15 @@ class AttendanceError extends AttendanceState {
 
   @override
   List<Object?> get props => [
-        message,
-        failure,
-        cachedAttendances,
-        lastSync,
-        filterPeriod,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    message,
+    failure,
+    cachedAttendances,
+    lastSync,
+    filterPeriod,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }

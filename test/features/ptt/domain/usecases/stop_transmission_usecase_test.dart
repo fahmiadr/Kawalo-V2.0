@@ -23,9 +23,7 @@ void main() {
         () => mockRepository.stopTransmission(),
       ).thenAnswer((_) async => const Right(null));
 
-      final result = await useCase(
-        const StopTransmissionParams(),
-      );
+      final result = await useCase(const StopTransmissionParams());
 
       expect(result.isRight(), isTrue);
       verify(() => mockRepository.stopTransmission()).called(1);
@@ -36,14 +34,9 @@ void main() {
         () => mockRepository.stopTransmission(),
       ).thenAnswer((_) async => const Left(ServerFailure('Service error')));
 
-      final result = await useCase(
-        const StopTransmissionParams(),
-      );
+      final result = await useCase(const StopTransmissionParams());
 
-      expect(
-        result,
-        const Left<Failure, void>(ServerFailure('Service error')),
-      );
+      expect(result, const Left<Failure, void>(ServerFailure('Service error')));
     });
   });
 }

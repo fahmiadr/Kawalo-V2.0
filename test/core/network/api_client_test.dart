@@ -117,119 +117,126 @@ void main() {
       },
     );
 
-    test('does not deduplicate GET requests with different parameters',
-        () async {
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/v1/workers',
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) async {
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-        return Response<Map<String, dynamic>>(
-          data: <String, dynamic>{'status': 'success'},
-          statusCode: 200,
-          requestOptions: RequestOptions(path: '/v1/workers'),
+    test(
+      'does not deduplicate GET requests with different parameters',
+      () async {
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/v1/workers',
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Response<Map<String, dynamic>>(
+            data: <String, dynamic>{'status': 'success'},
+            statusCode: 200,
+            requestOptions: RequestOptions(path: '/v1/workers'),
+          );
+        });
+
+        final results = await Future.wait([
+          apiClient.get('/v1/workers', queryParameters: {'search': 'andi'}),
+          apiClient.get('/v1/workers', queryParameters: {'search': 'budi'}),
+        ]);
+
+        expect(results[0], equals({'status': 'success'}));
+        expect(results[1], equals({'status': 'success'}));
+
+        verify(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/v1/workers',
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).called(2);
+      },
+    );
+
+    test(
+      'forwards CancelToken to Dio.get and maps DioException.cancel',
+      () async {
+        final token = CancelToken();
+
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/v1/test',
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: token,
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/v1/test'),
+            type: DioExceptionType.cancel,
+            message: 'Request cancelled',
+          ),
         );
-      });
 
-      final results = await Future.wait([
-        apiClient.get('/v1/workers', queryParameters: {'search': 'andi'}),
-        apiClient.get('/v1/workers', queryParameters: {'search': 'budi'}),
-      ]);
-
-      expect(results[0], equals({'status': 'success'}));
-      expect(results[1], equals({'status': 'success'}));
-
-      verify(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/v1/workers',
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).called(2);
-    });
-
-    test('forwards CancelToken to Dio.get and maps DioException.cancel',
-        () async {
-      final token = CancelToken();
-
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/v1/test',
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: token,
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(path: '/v1/test'),
-          type: DioExceptionType.cancel,
-          message: 'Request cancelled',
-        ),
-      );
-
-      expect(
-        () => apiClient.get('/v1/test', cancelToken: token),
-        throwsA(isA<RequestCancelledException>()),
-      );
-
-      verify(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/v1/test',
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: token,
-        ),
-      ).called(1);
-    });
-
-    test('bypasses in-flight deduplication when cancelToken is provided',
-        () async {
-      final token1 = CancelToken();
-      final token2 = CancelToken();
-
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/v1/items',
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) async {
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-        return Response<Map<String, dynamic>>(
-          data: <String, dynamic>{'status': 'ok'},
-          statusCode: 200,
-          requestOptions: RequestOptions(path: '/v1/items'),
+        expect(
+          () => apiClient.get('/v1/test', cancelToken: token),
+          throwsA(isA<RequestCancelledException>()),
         );
-      });
 
-      final results = await Future.wait([
-        apiClient.get('/v1/items', cancelToken: token1),
-        apiClient.get('/v1/items', cancelToken: token2),
-      ]);
+        verify(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/v1/test',
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: token,
+          ),
+        ).called(1);
+      },
+    );
 
-      expect(results[0], equals({'status': 'ok'}));
-      expect(results[1], equals({'status': 'ok'}));
+    test(
+      'bypasses in-flight deduplication when cancelToken is provided',
+      () async {
+        final token1 = CancelToken();
+        final token2 = CancelToken();
 
-      verify(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/v1/items',
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).called(2);
-    });
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/v1/items',
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return Response<Map<String, dynamic>>(
+            data: <String, dynamic>{'status': 'ok'},
+            statusCode: 200,
+            requestOptions: RequestOptions(path: '/v1/items'),
+          );
+        });
+
+        final results = await Future.wait([
+          apiClient.get('/v1/items', cancelToken: token1),
+          apiClient.get('/v1/items', cancelToken: token2),
+        ]);
+
+        expect(results[0], equals({'status': 'ok'}));
+        expect(results[1], equals({'status': 'ok'}));
+
+        verify(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/v1/items',
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).called(2);
+      },
+    );
 
     test('close closes both dio and tokenDio instances', () {
       when(() => mockDio.close(force: any(named: 'force'))).thenReturn(null);
-      when(() => mockTokenDio.close(force: any(named: 'force')))
-          .thenReturn(null);
+      when(
+        () => mockTokenDio.close(force: any(named: 'force')),
+      ).thenReturn(null);
 
       apiClient.close();
 
@@ -237,40 +244,41 @@ void main() {
       verify(() => mockTokenDio.close()).called(1);
     });
 
-    test('throws ServerException when response payload has success == false',
-        () async {
-      when(
-        () => mockDio.post<Map<String, dynamic>>(
-          '/v1/auth/login',
-          data: any(named: 'data'),
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) async {
-        return Response<Map<String, dynamic>>(
-          data: <String, dynamic>{
-            'success': false,
-            'message': 'Kredensial tidak valid',
-            'error_code': 'INVALID_CREDENTIALS',
-          },
-          statusCode: 200,
-          requestOptions: RequestOptions(path: '/v1/auth/login'),
-        );
-      });
-
-      expect(
-        () => apiClient.post('/v1/auth/login', body: {'email': 'a@b.com'}),
-        throwsA(
-          isA<ServerException>()
-              .having((e) => e.message, 'message', 'Kredensial tidak valid')
-              .having((e) => e.errorCode, 'errorCode', 'INVALID_CREDENTIALS'),
-        ),
-      );
-    });
-
     test(
-        'getStream bypasses deduplication and calls mockDio.get with '
+      'throws ServerException when response payload has success == false',
+      () async {
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            '/v1/auth/login',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async {
+          return Response<Map<String, dynamic>>(
+            data: <String, dynamic>{
+              'success': false,
+              'message': 'Kredensial tidak valid',
+              'error_code': 'INVALID_CREDENTIALS',
+            },
+            statusCode: 200,
+            requestOptions: RequestOptions(path: '/v1/auth/login'),
+          );
+        });
+
+        expect(
+          () => apiClient.post('/v1/auth/login', body: {'email': 'a@b.com'}),
+          throwsA(
+            isA<ServerException>()
+                .having((e) => e.message, 'message', 'Kredensial tidak valid')
+                .having((e) => e.errorCode, 'errorCode', 'INVALID_CREDENTIALS'),
+          ),
+        );
+      },
+    );
+
+    test('getStream bypasses deduplication and calls mockDio.get with '
         'ResponseBody', () async {
       final mockResponseBody = ResponseBody(
         Stream.fromIterable([

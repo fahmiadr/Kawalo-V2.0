@@ -118,7 +118,7 @@ class AppMultiShotCameraScreen extends StatefulWidget {
   /// Berguna untuk menentukan konfigurasi resolusi khusus atau driver tiruan
   /// saat pengujian.
   final CameraController Function(CameraDescription description)?
-      controllerFactory;
+  controllerFactory;
 
   /// Apakah modul lampu kilat LED fisik tersedia pada kamera aktif.
   ///
@@ -508,8 +508,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
   Duration _computeTeleportDuration(double ratio) {
     final clampedRatio = ratio.clamp(0.0, 1.0);
-    final durationMs =
-        (_teleportHalfDuration.inMilliseconds * clampedRatio).round();
+    final durationMs = (_teleportHalfDuration.inMilliseconds * clampedRatio)
+        .round();
     return durationMs > 20
         ? Duration(milliseconds: durationMs)
         : const Duration(milliseconds: 20);
@@ -521,8 +521,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         if (_activeBadgeOrientation != _deviceOrientation) {
           // Fase 1: Dissolve / Fade-out badge yang aktif di slot lama
           if (_badgeTeleportController.value > 0) {
-            final fadeOutDuration =
-                _computeTeleportDuration(_badgeTeleportController.value);
+            final fadeOutDuration = _computeTeleportDuration(
+              _badgeTeleportController.value,
+            );
             try {
               await _badgeTeleportController.animateTo(
                 0,
@@ -544,8 +545,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
           if (!mounted || generation != _teleportGeneration) return;
 
           // Fase 2: Materialize / Fade-in badge pada slot tujuan
-          final fadeInDuration =
-              _computeTeleportDuration(1.0 - _badgeTeleportController.value);
+          final fadeInDuration = _computeTeleportDuration(
+            1.0 - _badgeTeleportController.value,
+          );
           try {
             await _badgeTeleportController.animateTo(
               1,
@@ -554,8 +556,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
           } on Object catch (_) {}
         } else if (_badgeTeleportController.value < 1) {
           // Orientasi fisik sudah sesuai namun animasi fade-in terputus
-          final fadeInDuration =
-              _computeTeleportDuration(1.0 - _badgeTeleportController.value);
+          final fadeInDuration = _computeTeleportDuration(
+            1.0 - _badgeTeleportController.value,
+          );
           try {
             await _badgeTeleportController.animateTo(
               1,
@@ -591,9 +594,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
   void _setupSystemUI() {
     _hideStatusBar();
     unawaited(
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-      ]),
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
     );
     SystemChrome.setSystemUIChangeCallback((systemOverlaysAreVisible) async {
       if (!mounted || _hasRestoredSystemUi) return;
@@ -618,9 +619,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
     SystemChrome.setSystemUIChangeCallback(null);
     unawaited(AppLayout.applyPreferredOrientations());
     unawaited(_restoreBrightness());
-    unawaited(
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
-    );
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
   }
 
   @override
@@ -631,7 +630,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         widget.brightnessService ?? const DefaultScreenBrightnessService();
     _setupSystemUI();
 
-    _deviceOrientation = widget.initialDeviceOrientation ??
+    _deviceOrientation =
+        widget.initialDeviceOrientation ??
         widget.orientationSensorService?.currentOrientation ??
         (widget.controller != null
             ? (() {
@@ -663,14 +663,13 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       ),
     );
 
-    _orientationSensorService = widget.orientationSensorService ??
+    _orientationSensorService =
+        widget.orientationSensorService ??
         DefaultDeviceOrientationSensorService(
           initialOrientation: _deviceOrientation,
         );
-    _orientationSubscription =
-        _orientationSensorService.onOrientationChanged.listen(
-      _onOrientationChanged,
-    );
+    _orientationSubscription = _orientationSensorService.onOrientationChanged
+        .listen(_onOrientationChanged);
 
     _shutterFlashController = AnimationController(
       vsync: this,
@@ -792,7 +791,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       // aplikasi). Transisi fokus sementara (inactive) tidak memicu
       // inisialisasi ulang untuk mencegah infinite loop saat perizinan
       // dinonaktifkan atau terjadi galat HAL.
-      final wasBackground = _wasInBackground ||
+      final wasBackground =
+          _wasInBackground ||
           previousState == AppLifecycleState.paused ||
           previousState == AppLifecycleState.hidden;
       _wasInBackground = false;
@@ -848,11 +848,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
 
       final newController = widget.controllerFactory != null
           ? widget.controllerFactory!(camera)
-          : CameraController(
-              camera,
-              ResolutionPreset.high,
-              enableAudio: false,
-            );
+          : CameraController(camera, ResolutionPreset.high, enableAudio: false);
 
       await newController.initialize();
 
@@ -870,7 +866,8 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       // Kamera depan secara default tidak memiliki LED fisik (menggunakan
       // Screen Flash). Kamera belakang menguji kapabilitas hardware via
       // controller.
-      final hasPhysicalFlash = widget.hasPhysicalFlash ??
+      final hasPhysicalFlash =
+          widget.hasPhysicalFlash ??
           (!isFront && await _checkPhysicalFlashSupport(newController));
       _hasPhysicalFlash = hasPhysicalFlash;
 
@@ -965,8 +962,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
         await oldController.dispose();
       }
 
-      final targetLens =
-          wasFront ? CameraLensDirection.back : CameraLensDirection.front;
+      final targetLens = wasFront
+          ? CameraLensDirection.back
+          : CameraLensDirection.front;
       final targetIndex = _availableCameras.indexWhere(
         (c) => c.lensDirection == targetLens,
       );
@@ -1100,10 +1098,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
       // tidak terjadi kedipan (flashing) saat thumbnail pertama kali dirender.
       if (mediaFile.path != null && mounted) {
         try {
-          await precacheImage(
-            FileImage(File(mediaFile.path!)),
-            context,
-          );
+          await precacheImage(FileImage(File(mediaFile.path!)), context);
         } on Exception catch (_) {
           // Abaikan kegagalan precache agar alur pengambilan foto tidak macet
         }
@@ -1450,8 +1445,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                           _availableCameras.length > 1,
                                       orientationTurns: _orientationTurns,
                                       switchCameraTurns: _switchCameraTurns,
-                                      onSwitchCamera:
-                                          _isCapturing ? null : _switchCamera,
+                                      onSwitchCamera: _isCapturing
+                                          ? null
+                                          : _switchCamera,
                                       onTogglePhotoSelection:
                                           _togglePhotoSelection,
                                       onRemoveCapturedPhoto:

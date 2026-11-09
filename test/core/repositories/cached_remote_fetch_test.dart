@@ -22,29 +22,28 @@ void main() {
   });
 
   CacheOps<int> cacheOps() => CacheOps<int>(
-        read: () async {
-          log.add('read');
-          return [9];
-        },
-        write: (models) async => log.add('write'),
-        deleteOlderThan: (_) async => log.add('evict'),
-      );
+    read: () async {
+      log.add('read');
+      return [9];
+    },
+    write: (models) async => log.add('write'),
+    deleteOlderThan: (_) async => log.add('evict'),
+  );
 
   Future<Either<Failure, String>> run({
     required Future<List<int>> Function() remote,
     bool isRefresh = false,
     CacheOps<int>? cache,
-  }) =>
-      fetchRemoteWithCacheFallback<int, String>(
-        isRefresh: isRefresh,
-        networkInfo: network,
-        syncStorageService: sync,
-        syncKey: 'test',
-        fetchRemote: remote,
-        toResult: (models, {required isFromCache}) =>
-            '${isFromCache ? 'cache' : 'remote'}:$models',
-        cache: cache,
-      );
+  }) => fetchRemoteWithCacheFallback<int, String>(
+    isRefresh: isRefresh,
+    networkInfo: network,
+    syncStorageService: sync,
+    syncKey: 'test',
+    fetchRemote: remote,
+    toResult: (models, {required isFromCache}) =>
+        '${isFromCache ? 'cache' : 'remote'}:$models',
+    cache: cache,
+  );
 
   test('sukses: simpan cache, evict, dan catat sinkronisasi', () async {
     final r = await run(remote: () async => [1], cache: cacheOps());

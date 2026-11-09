@@ -50,16 +50,14 @@ void main() {
   }) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: OperationalDetailScreen(
-        item: item,
-        onRefresh: onRefresh,
-      ),
+      home: OperationalDetailScreen(item: item, onRefresh: onRefresh),
     );
   }
 
   group('OperationalDetailScreen Widget Tests', () {
-    testWidgets('renders AppHomeAppBar, top meta, profile card, and timeline',
-        (WidgetTester tester) async {
+    testWidgets('renders AppHomeAppBar, top meta, profile card, and timeline', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildDetailWidget(item: sampleWorker));
       await tester.pumpAndSettle();
 
@@ -87,34 +85,37 @@ void main() {
       expect(find.byType(AppCard), findsNWidgets(3));
     });
 
-    testWidgets('pull-to-refresh on OperationalDetailScreen triggers callback',
-        (WidgetTester tester) async {
-      var refreshed = false;
+    testWidgets(
+      'pull-to-refresh on OperationalDetailScreen triggers callback',
+      (WidgetTester tester) async {
+        var refreshed = false;
 
-      await tester.pumpWidget(
-        buildDetailWidget(
-          item: sampleWorker,
-          onRefresh: () async {
-            refreshed = true;
-          },
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildDetailWidget(
+            item: sampleWorker,
+            onRefresh: () async {
+              refreshed = true;
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.fling(
-        find.text('Agus Pratama'),
-        const Offset(0, 300),
-        1000,
-      );
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pumpAndSettle();
+        await tester.fling(
+          find.text('Agus Pratama'),
+          const Offset(0, 300),
+          1000,
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
 
-      expect(refreshed, isTrue);
-    });
+        expect(refreshed, isTrue);
+      },
+    );
 
-    testWidgets('displays lastSync greeting when cubit is provided',
-        (WidgetTester tester) async {
+    testWidgets('displays lastSync greeting when cubit is provided', (
+      WidgetTester tester,
+    ) async {
       final mockCubit = MockOperationalCubit();
       when(() => mockCubit.state).thenReturn(
         const OperationalLoaded(
@@ -122,17 +123,15 @@ void main() {
           lastSync: 'Diperbarui Kemarin, 14.20',
         ),
       );
-      when(() => mockCubit.stream)
-          .thenAnswer((_) => const Stream<OperationalState>.empty());
+      when(
+        () => mockCubit.stream,
+      ).thenAnswer((_) => const Stream<OperationalState>.empty());
       when(() => mockCubit.currentGreeting).thenReturn('Selamat Siang');
 
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
-          home: OperationalDetailScreen(
-            item: sampleWorker,
-            cubit: mockCubit,
-          ),
+          home: OperationalDetailScreen(item: sampleWorker, cubit: mockCubit),
         ),
       );
       await tester.pumpAndSettle();
@@ -140,8 +139,9 @@ void main() {
       expect(find.text('Diperbarui Kemarin, 14.20'), findsOneWidget);
     });
 
-    testWidgets('renders AppBottomOfflineBanner when offline',
-        (WidgetTester tester) async {
+    testWidgets('renders AppBottomOfflineBanner when offline', (
+      WidgetTester tester,
+    ) async {
       final offlineConnectivityCubit = ConnectivityCubit(
         initialState: ConnectivityStatus.offline,
         autoStart: false,
@@ -152,9 +152,7 @@ void main() {
           value: offlineConnectivityCubit,
           child: M3EMaterialApp(
             data: AppTheme.m3eLight(),
-            home: const OperationalDetailScreen(
-              item: sampleWorker,
-            ),
+            home: const OperationalDetailScreen(item: sampleWorker),
           ),
         ),
       );
@@ -167,20 +165,17 @@ void main() {
       );
     });
 
-    testWidgets('hides AppBottomOfflineBanner when online',
-        (WidgetTester tester) async {
-      final onlineConnectivityCubit = ConnectivityCubit(
-        autoStart: false,
-      );
+    testWidgets('hides AppBottomOfflineBanner when online', (
+      WidgetTester tester,
+    ) async {
+      final onlineConnectivityCubit = ConnectivityCubit(autoStart: false);
 
       await tester.pumpWidget(
         BlocProvider<ConnectivityCubit>.value(
           value: onlineConnectivityCubit,
           child: M3EMaterialApp(
             data: AppTheme.m3eLight(),
-            home: const OperationalDetailScreen(
-              item: sampleWorker,
-            ),
+            home: const OperationalDetailScreen(item: sampleWorker),
           ),
         ),
       );

@@ -35,10 +35,7 @@ abstract final class AppPageRoute {
           parent: animation,
           curve: curve,
         );
-        return FadeTransition(
-          opacity: curvedAnimation,
-          child: child,
-        );
+        return FadeTransition(opacity: curvedAnimation, child: child);
       },
     );
   }
@@ -66,10 +63,7 @@ abstract final class AppPageRoute {
           curve: AppEasing.emphasizedDecelerate,
         );
 
-        return FadeTransition(
-          opacity: fadeInAnimation,
-          child: child,
-        );
+        return FadeTransition(opacity: fadeInAnimation, child: child);
       },
     );
   }
@@ -118,18 +112,12 @@ abstract final class AppPageRoute {
         ).animate(curvedAnimation);
 
         if (isIOS) {
-          return SlideTransition(
-            position: slideAnimation,
-            child: child,
-          );
+          return SlideTransition(position: slideAnimation, child: child);
         }
 
         return SlideTransition(
           position: slideAnimation,
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
+          child: FadeTransition(opacity: curvedAnimation, child: child),
         );
       },
     );
@@ -165,10 +153,7 @@ abstract final class AppPageRoute {
           end: Offset.zero,
         ).animate(curvedAnimation);
 
-        return SlideTransition(
-          position: slideAnimation,
-          child: child,
-        );
+        return SlideTransition(position: slideAnimation, child: child);
       },
     );
   }
@@ -210,10 +195,7 @@ abstract final class AppPageRoute {
 
         return ScaleTransition(
           scale: scaleAnimation,
-          child: FadeTransition(
-            opacity: fadeAnimation,
-            child: child,
-          ),
+          child: FadeTransition(opacity: fadeAnimation, child: child),
         );
       },
     );
@@ -264,10 +246,7 @@ abstract final class AppPageRoute {
 
         return SlideTransition(
           position: slideAnimation,
-          child: FadeTransition(
-            opacity: curvedAnimation,
-            child: child,
-          ),
+          child: FadeTransition(opacity: curvedAnimation, child: child),
         );
       },
     );

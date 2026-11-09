@@ -23,15 +23,11 @@ class AppDisplayFormatter {
   static const String unrecorded = 'Tidak tercatat';
 
   /// Memeriksa apakah suatu string bernilai `null` atau hanya berisi spasi.
-  static bool isBlank(String? value) =>
-      value == null || value.trim().isEmpty;
+  static bool isBlank(String? value) => value == null || value.trim().isEmpty;
 
   /// Mengonversi nilai teks mentah menjadi string tampilan (*display*) aman
   /// dengan fallback em-dash (`—`) atau [fallback] pilihan.
-  static String toDisplay(
-    String? value, {
-    String fallback = emDash,
-  }) {
+  static String toDisplay(String? value, {String fallback = emDash}) {
     if (isBlank(value)) return fallback;
     return value!.trim();
   }
@@ -52,10 +48,7 @@ class AppDisplayFormatter {
 
   /// Mengonversi nilai teks mentah dengan fallback teks kustom
   /// [explicitFallback].
-  static String toDisplayExplicit(
-    String? value,
-    String explicitFallback,
-  ) =>
+  static String toDisplayExplicit(String? value, String explicitFallback) =>
       toDisplay(value, fallback: explicitFallback);
 
   /// Mengonversi nilai teks mentah menggunakan fungsi [formatter] kustom jika
@@ -83,13 +76,11 @@ extension DisplayGetterExtension on String? {
       AppDisplayFormatter.toDisplayNotAvailable(this);
 
   /// Mengonversi data mentah dengan fallback teks eksplisit `"Belum diatur"`.
-  String toDisplayNotSet() =>
-      AppDisplayFormatter.toDisplayNotSet(this);
+  String toDisplayNotSet() => AppDisplayFormatter.toDisplayNotSet(this);
 
   /// Mengonversi data mentah dengan fallback teks eksplisit
   /// `"Tidak tercatat"`.
-  String toDisplayUnrecorded() =>
-      AppDisplayFormatter.toDisplayUnrecorded(this);
+  String toDisplayUnrecorded() => AppDisplayFormatter.toDisplayUnrecorded(this);
 
   /// Mengonversi data mentah dengan fallback teks kustom [explicitFallback].
   String toDisplayExplicit(String explicitFallback) =>

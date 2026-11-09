@@ -24,9 +24,7 @@ void main() {
 
   setUp(() {
     mockUseCase = MockGetOperationalsUseCase();
-    cubit = OperationalCubit(
-      getOperationalsUseCase: mockUseCase,
-    );
+    cubit = OperationalCubit(getOperationalsUseCase: mockUseCase);
   });
 
   tearDown(() {
@@ -83,8 +81,9 @@ void main() {
     blocTest<OperationalCubit, OperationalState>(
       'emits [OperationalLoading, OperationalLoaded] when successful',
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.fetchOperationals(),
@@ -110,8 +109,9 @@ void main() {
       'emits [OperationalLoading, OperationalLoaded] with isFromCache true '
       'when serving cached fallback',
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Right(tCachedResult));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(tCachedResult));
         return cubit;
       },
       act: (cubit) => cubit.fetchOperationals(),
@@ -126,23 +126,28 @@ void main() {
     blocTest<OperationalCubit, OperationalState>(
       'emits [OperationalLoading, OperationalError] when failure occurs',
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Left(ServerFailure('Server Error')));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
       act: (cubit) => cubit.fetchOperationals(),
       expect: () => [
         const OperationalLoading(),
-        isA<OperationalError>()
-            .having((s) => s.message, 'message', 'Server Error'),
+        isA<OperationalError>().having(
+          (s) => s.message,
+          'message',
+          'Server Error',
+        ),
       ],
     );
 
     blocTest<OperationalCubit, OperationalState>(
       'retains cachedOperationals when refreshOperationals fails',
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Left(ServerFailure('Server Error')));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
       seed: () => const OperationalLoaded(
@@ -170,12 +175,8 @@ void main() {
       ),
       build: () {
         when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            OperationalResult(
-              items: [],
-              isFromCache: true,
-            ),
-          ),
+          (_) async =>
+              const Right(OperationalResult(items: [], isFromCache: true)),
         );
         return cubit;
       },
@@ -190,8 +191,9 @@ void main() {
     blocTest<OperationalCubit, OperationalState>(
       'clears cachedOperationals when fetchOperationals with new query fails',
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Left(ServerFailure('Server Error')));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
       seed: () => const OperationalLoaded(
@@ -217,8 +219,9 @@ void main() {
         endDate: DateTime(2026, 9, 5),
       ),
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Left(ServerFailure('Timeout')));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Timeout')));
         return cubit;
       },
       act: (cubit) => cubit.fetchOperationals(
@@ -234,11 +237,7 @@ void main() {
               'filterPeriod',
               AppDateFilterPeriod.custom,
             )
-            .having(
-              (s) => s.cachedOperationals,
-              'cachedOperationals',
-              isEmpty,
-            ),
+            .having((s) => s.cachedOperationals, 'cachedOperationals', isEmpty),
       ],
     );
 
@@ -253,8 +252,9 @@ void main() {
         searchQuery: 'satpam',
       ),
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetFilters(),
@@ -290,8 +290,9 @@ void main() {
         searchQuery: 'satpam',
       ),
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetDateFilter(),
@@ -321,8 +322,9 @@ void main() {
     blocTest<OperationalCubit, OperationalState>(
       'updates without emitting OperationalLoading',
       build: () {
-        when(() => mockUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       seed: () => const OperationalLoaded(
@@ -331,29 +333,29 @@ void main() {
       ),
       act: (c) => c.refreshOperationals(),
       expect: () => [
-        isA<OperationalLoaded>()
-            .having((s) => s.operationals.length, 'operationals.length', 1),
+        isA<OperationalLoaded>().having(
+          (s) => s.operationals.length,
+          'operationals.length',
+          1,
+        ),
       ],
     );
   });
 
   group('OperationalLoaded filter helper getters', () {
-    test(
-      'hasActiveFilter bernilai true jika searchQuery tidak kosong',
-      () {
-        const stateDefault = OperationalLoaded(
-          operationals: <OperationalItemEntity>[],
-          lastSync: 'Waktu',
-        );
-        expect(stateDefault.hasActiveFilter, isFalse);
+    test('hasActiveFilter bernilai true jika searchQuery tidak kosong', () {
+      const stateDefault = OperationalLoaded(
+        operationals: <OperationalItemEntity>[],
+        lastSync: 'Waktu',
+      );
+      expect(stateDefault.hasActiveFilter, isFalse);
 
-        final stateWithSearch = stateDefault.copyWith(searchQuery: 'satpam');
-        expect(stateWithSearch.hasActiveFilter, isTrue);
+      final stateWithSearch = stateDefault.copyWith(searchQuery: 'satpam');
+      expect(stateWithSearch.hasActiveFilter, isTrue);
 
-        final stateWithEmptySearch = stateDefault.copyWith(searchQuery: '');
-        expect(stateWithEmptySearch.hasActiveFilter, isFalse);
-      },
-    );
+      final stateWithEmptySearch = stateDefault.copyWith(searchQuery: '');
+      expect(stateWithEmptySearch.hasActiveFilter, isFalse);
+    });
 
     test(
       'hasActiveDateFilter bernilai true jika filter period bukan today atau '
@@ -398,8 +400,7 @@ void main() {
   });
 
   group('RequestSequenceGuard in OperationalCubit', () {
-    test(
-        'mengabaikan respons dari request lama yang datang terlambat '
+    test('mengabaikan respons dari request lama yang datang terlambat '
         '(out-of-order)', () async {
       const workerA = OperationalResult(
         items: [
@@ -439,9 +440,7 @@ void main() {
       when(
         () => mockUseCase(
           any(
-            that: predicate<GetOperationalsParams>(
-              (p) => p.search == 'first',
-            ),
+            that: predicate<GetOperationalsParams>((p) => p.search == 'first'),
           ),
         ),
       ).thenAnswer((_) async {
@@ -453,9 +452,7 @@ void main() {
       when(
         () => mockUseCase(
           any(
-            that: predicate<GetOperationalsParams>(
-              (p) => p.search == 'second',
-            ),
+            that: predicate<GetOperationalsParams>((p) => p.search == 'second'),
           ),
         ),
       ).thenAnswer((_) async {

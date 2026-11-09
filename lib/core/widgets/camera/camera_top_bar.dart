@@ -78,13 +78,9 @@ class CameraTopBar extends StatelessWidget {
                   backgroundColor: WidgetStatePropertyAll(
                     colorScheme.scrim.withValues(alpha: 0.60),
                   ),
-                  foregroundColor: const WidgetStatePropertyAll(
-                    Colors.white,
-                  ),
+                  foregroundColor: const WidgetStatePropertyAll(Colors.white),
                   side: WidgetStatePropertyAll(
-                    BorderSide(
-                      color: Colors.white.withValues(alpha: 0.30),
-                    ),
+                    BorderSide(color: Colors.white.withValues(alpha: 0.30)),
                   ),
                 ),
                 icon: const AppSvgIcon(
@@ -159,7 +155,7 @@ class CameraTopBar extends StatelessWidget {
                                 alignment: Alignment.center,
                                 children: <Widget>[
                                   ...previousChildren,
-                                  if (currentChild != null) currentChild,
+                                  ?currentChild,
                                 ],
                               );
                             },
@@ -175,8 +171,9 @@ class CameraTopBar extends StatelessWidget {
                                 end: Offset.zero,
                               );
                               final offsetAnimation =
-                                  (isIncoming ? inTween : outTween)
-                                      .animate(animation);
+                                  (isIncoming ? inTween : outTween).animate(
+                                    animation,
+                                  );
 
                               return SlideTransition(
                                 position: offsetAnimation,
@@ -208,10 +205,7 @@ class CameraTopBar extends StatelessWidget {
 
   static const Color _activeFlashAmber = Color(0xFFFFD54F);
 
-  static Color _flashIconColor(
-    FlashMode mode, {
-    required bool isEnabled,
-  }) {
+  static Color _flashIconColor(FlashMode mode, {required bool isEnabled}) {
     final isAmber = mode == FlashMode.always || mode == FlashMode.torch;
     final baseColor = isAmber ? _activeFlashAmber : Colors.white;
     if (!isEnabled) {

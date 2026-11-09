@@ -104,12 +104,13 @@ class InformationPublicationSection extends StatelessWidget {
   }
 
   Widget _buildFeedTypeSelector(BuildContext context) {
-    return BlocSelector<InformationFormCubit, InformationFormState,
-        ({String activeType, String? error})>(
-      selector: (state) => (
-        activeType: state.feedType,
-        error: state.feedTypeError,
-      ),
+    return BlocSelector<
+      InformationFormCubit,
+      InformationFormState,
+      ({String activeType, String? error})
+    >(
+      selector: (state) =>
+          (activeType: state.feedType, error: state.feedTypeError),
       builder: (context, data) {
         return AppFormChipGroup<String>(
           label: 'Kategori informasi',

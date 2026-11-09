@@ -32,9 +32,7 @@ class MockInformationFormCubit extends Mock implements InformationFormCubit {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(
-      const InformationItemEntity(id: '1', photos: []),
-    );
+    registerFallbackValue(const InformationItemEntity(id: '1', photos: []));
   });
 
   group('InformationDetailScreen Widget Tests', () {
@@ -86,9 +84,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const InformationDetailScreen(
-            item: dummyFeed,
-          ),
+          home: const InformationDetailScreen(item: dummyFeed),
         ),
       );
       await tester.pumpAndSettle();
@@ -99,8 +95,9 @@ void main() {
       expect(find.byType(InformationDetailFileSection), findsNothing);
     });
 
-    testWidgets('renders AppHomeAppBar with back button and pops on press',
-        (tester) async {
+    testWidgets('renders AppHomeAppBar with back button and pops on press', (
+      tester,
+    ) async {
       var didPop = false;
       await tester.pumpWidget(
         MaterialApp(
@@ -111,11 +108,7 @@ void main() {
             },
             pages: const [
               MaterialPage(child: Scaffold(body: Text('Root'))),
-              MaterialPage(
-                child: InformationDetailScreen(
-                  item: dummyFeed,
-                ),
-              ),
+              MaterialPage(child: InformationDetailScreen(item: dummyFeed)),
             ],
           ),
         ),
@@ -135,9 +128,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const InformationDetailScreen(
-            item: dummyFeedWithFile,
-          ),
+          home: const InformationDetailScreen(item: dummyFeedWithFile),
         ),
       );
       await tester.pumpAndSettle();
@@ -149,9 +140,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const InformationDetailScreen(
-            item: dummyFeed,
-          ),
+          home: const InformationDetailScreen(item: dummyFeed),
         ),
       );
       await tester.pumpAndSettle();
@@ -167,8 +156,9 @@ void main() {
       expect(find.text('Lapangan Timur'), findsOneWidget);
     });
 
-    testWidgets('renders posting, edit, and delete buttons for ADMIN role',
-        (tester) async {
+    testWidgets('renders posting, edit, and delete buttons for ADMIN role', (
+      tester,
+    ) async {
       const adminSession = AuthSessionEntity(
         userId: '1',
         email: 'admin@kawalo.id',
@@ -185,19 +175,14 @@ void main() {
           value: userSessionCubit,
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeed,
-            ),
+            home: const InformationDetailScreen(item: dummyFeed),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(find.byType(AppToolbar), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Posting informasi'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Posting informasi'), findsOneWidget);
       expect(
         find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
         findsOneWidget,
@@ -208,8 +193,9 @@ void main() {
       );
     });
 
-    testWidgets('renders posting, edit, and delete for GUARD on own post',
-        (tester) async {
+    testWidgets('renders posting, edit, and delete for GUARD on own post', (
+      tester,
+    ) async {
       const guardOwnSession = AuthSessionEntity(
         userId: '2',
         email: 'satpam@kawalo.id',
@@ -226,19 +212,14 @@ void main() {
           value: userSessionCubit,
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeed,
-            ),
+            home: const InformationDetailScreen(item: dummyFeed),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(find.byType(AppToolbar), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Posting informasi'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Posting informasi'), findsOneWidget);
       expect(
         find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
         findsOneWidget,
@@ -250,49 +231,46 @@ void main() {
     });
 
     testWidgets(
-        'renders posting button but hides edit/delete for GUARD on other post',
-        (tester) async {
-      const guardOtherSession = AuthSessionEntity(
-        userId: '3',
-        email: 'other_guard@kawalo.id',
-        name: 'Other Guard',
-        role: 'GUARD',
-        allowAdmin: false,
-        allowPatrol: true,
-        allowMonPatrol: false,
-      );
-      userSessionCubit.updateSession(guardOtherSession);
+      'renders posting button but hides edit/delete for GUARD on other post',
+      (tester) async {
+        const guardOtherSession = AuthSessionEntity(
+          userId: '3',
+          email: 'other_guard@kawalo.id',
+          name: 'Other Guard',
+          role: 'GUARD',
+          allowAdmin: false,
+          allowPatrol: true,
+          allowMonPatrol: false,
+        );
+        userSessionCubit.updateSession(guardOtherSession);
 
-      await tester.pumpWidget(
-        BlocProvider<UserSessionCubit>.value(
-          value: userSessionCubit,
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeed,
+        await tester.pumpWidget(
+          BlocProvider<UserSessionCubit>.value(
+            value: userSessionCubit,
+            child: MaterialApp(
+              theme: AppTheme.lightThemeData(),
+              home: const InformationDetailScreen(item: dummyFeed),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppToolbar), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Posting informasi'),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
-        findsNothing,
-      );
-      expect(
-        find.bySemanticsLabel('Hapus informasi Pelatihan Tanggap Darurat'),
-        findsNothing,
-      );
-    });
+        expect(find.byType(AppToolbar), findsOneWidget);
+        expect(find.bySemanticsLabel('Posting informasi'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
+          findsNothing,
+        );
+        expect(
+          find.bySemanticsLabel('Hapus informasi Pelatihan Tanggap Darurat'),
+          findsNothing,
+        );
+      },
+    );
 
-    testWidgets('hides AppToolbar for non-ADMIN and non-GUARD roles',
-        (tester) async {
+    testWidgets('hides AppToolbar for non-ADMIN and non-GUARD roles', (
+      tester,
+    ) async {
       const viewerSession = AuthSessionEntity(
         userId: '4',
         email: 'viewer@kawalo.id',
@@ -309,19 +287,14 @@ void main() {
           value: userSessionCubit,
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeed,
-            ),
+            home: const InformationDetailScreen(item: dummyFeed),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(find.byType(AppToolbar), findsNothing);
-      expect(
-        find.bySemanticsLabel('Posting informasi'),
-        findsNothing,
-      );
+      expect(find.bySemanticsLabel('Posting informasi'), findsNothing);
       expect(
         find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
         findsNothing,
@@ -332,20 +305,21 @@ void main() {
       );
     });
 
-    testWidgets('tapping posting button opens InformationFormDialog',
-        (tester) async {
+    testWidgets('tapping posting button opens InformationFormDialog', (
+      tester,
+    ) async {
       final mockCubit = MockInformationCubit();
       when(() => mockCubit.state).thenReturn(const InformationInitial());
-      when(() => mockCubit.stream)
-          .thenAnswer((_) => const Stream<InformationState>.empty());
+      when(
+        () => mockCubit.stream,
+      ).thenAnswer((_) => const Stream<InformationState>.empty());
       when(() => mockCubit.currentGreeting).thenReturn('10:00');
 
       final mockFormCubit = MockInformationFormCubit();
-      when(() => mockFormCubit.state).thenReturn(
-        const InformationFormState(),
-      );
-      when(() => mockFormCubit.stream)
-          .thenAnswer((_) => const Stream<InformationFormState>.empty());
+      when(() => mockFormCubit.state).thenReturn(const InformationFormState());
+      when(
+        () => mockFormCubit.stream,
+      ).thenAnswer((_) => const Stream<InformationFormState>.empty());
 
       const adminSession = AuthSessionEntity(
         userId: '1',
@@ -366,10 +340,7 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: InformationDetailScreen(
-              item: dummyFeed,
-              cubit: mockCubit,
-            ),
+            home: InformationDetailScreen(item: dummyFeed, cubit: mockCubit),
           ),
         ),
       );
@@ -390,12 +361,14 @@ void main() {
       expect(find.byType(InformationFormDialog), findsOneWidget);
     });
 
-    testWidgets('tapping edit button opens InformationFormDialog',
-        (tester) async {
+    testWidgets('tapping edit button opens InformationFormDialog', (
+      tester,
+    ) async {
       final mockCubit = MockInformationCubit();
       when(() => mockCubit.state).thenReturn(const InformationInitial());
-      when(() => mockCubit.stream)
-          .thenAnswer((_) => const Stream<InformationState>.empty());
+      when(
+        () => mockCubit.stream,
+      ).thenAnswer((_) => const Stream<InformationState>.empty());
       when(() => mockCubit.currentGreeting).thenReturn('10:00');
 
       final mockFormCubit = MockInformationFormCubit();
@@ -405,8 +378,9 @@ void main() {
           title: 'Pelatihan Tanggap Darurat',
         ),
       );
-      when(() => mockFormCubit.stream)
-          .thenAnswer((_) => const Stream<InformationFormState>.empty());
+      when(
+        () => mockFormCubit.stream,
+      ).thenAnswer((_) => const Stream<InformationFormState>.empty());
 
       const adminSession = AuthSessionEntity(
         userId: '1',
@@ -427,10 +401,7 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: InformationDetailScreen(
-              item: dummyFeed,
-              cubit: mockCubit,
-            ),
+            home: InformationDetailScreen(item: dummyFeed, cubit: mockCubit),
           ),
         ),
       );
@@ -447,20 +418,20 @@ void main() {
       expect(find.byType(InformationFormDialog), findsOneWidget);
     });
 
-    testWidgets('delete flow confirms dialog and triggers cubit',
-        (tester) async {
+    testWidgets('delete flow confirms dialog and triggers cubit', (
+      tester,
+    ) async {
       final mockCubit = MockInformationCubit();
       final deleteCompleter = Completer<Either<Failure, void>>();
 
       when(() => mockCubit.state).thenReturn(const InformationInitial());
-      when(() => mockCubit.stream)
-          .thenAnswer((_) => const Stream<InformationState>.empty());
+      when(
+        () => mockCubit.stream,
+      ).thenAnswer((_) => const Stream<InformationState>.empty());
       when(() => mockCubit.currentGreeting).thenReturn('10:00');
       when(
-        () => mockCubit.deleteInformation(
-          any(),
-          session: any(named: 'session'),
-        ),
+        () =>
+            mockCubit.deleteInformation(any(), session: any(named: 'session')),
       ).thenAnswer((_) => deleteCompleter.future);
 
       const adminSession = AuthSessionEntity(
@@ -479,10 +450,7 @@ void main() {
           value: userSessionCubit,
           child: M3EMaterialApp(
             data: AppTheme.m3eLight(),
-            home: InformationDetailScreen(
-              item: dummyFeed,
-              cubit: mockCubit,
-            ),
+            home: InformationDetailScreen(item: dummyFeed, cubit: mockCubit),
           ),
         ),
       );
@@ -508,10 +476,7 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(
-        () => mockCubit.deleteInformation(
-          dummyFeed,
-          session: adminSession,
-        ),
+        () => mockCubit.deleteInformation(dummyFeed, session: adminSession),
       ).called(1);
     });
 
@@ -522,8 +487,9 @@ void main() {
         final deleteCompleter = Completer<Either<Failure, void>>();
 
         when(() => mockCubit.state).thenReturn(const InformationInitial());
-        when(() => mockCubit.stream)
-            .thenAnswer((_) => const Stream<InformationState>.empty());
+        when(
+          () => mockCubit.stream,
+        ).thenAnswer((_) => const Stream<InformationState>.empty());
         when(() => mockCubit.currentGreeting).thenReturn('10:00');
         when(
           () => mockCubit.deleteInformation(
@@ -550,10 +516,7 @@ void main() {
             value: userSessionCubit,
             child: M3EMaterialApp(
               data: AppTheme.m3eLight(),
-              home: InformationDetailScreen(
-                item: ownFeed,
-                cubit: mockCubit,
-              ),
+              home: InformationDetailScreen(item: ownFeed, cubit: mockCubit),
             ),
           ),
         );
@@ -574,10 +537,7 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(
-          () => mockCubit.deleteInformation(
-            ownFeed,
-            session: guardOwnSession,
-          ),
+          () => mockCubit.deleteInformation(ownFeed, session: guardOwnSession),
         ).called(1);
       },
     );
@@ -609,9 +569,7 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeed,
-            ),
+            home: const InformationDetailScreen(item: dummyFeed),
           ),
         ),
       );
@@ -660,68 +618,68 @@ void main() {
     });
 
     testWidgets(
-        'scrolling down hides floating toolbar and scrolling up restores it',
-        (tester) async {
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Super Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
-      userSessionCubit.updateSession(adminSession);
+      'scrolling down hides floating toolbar and scrolling up restores it',
+      (tester) async {
+        const adminSession = AuthSessionEntity(
+          userId: '1',
+          email: 'admin@kawalo.id',
+          name: 'Super Admin',
+          role: 'ADMIN',
+          allowAdmin: true,
+          allowPatrol: true,
+          allowMonPatrol: true,
+        );
+        userSessionCubit.updateSession(adminSession);
 
-      await tester.pumpWidget(
-        BlocProvider<UserSessionCubit>.value(
-          value: userSessionCubit,
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeedWithFile,
+        await tester.pumpWidget(
+          BlocProvider<UserSessionCubit>.value(
+            value: userSessionCubit,
+            child: MaterialApp(
+              theme: AppTheme.lightThemeData(),
+              home: const InformationDetailScreen(item: dummyFeedWithFile),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppToolbar), findsOneWidget);
+        expect(find.byType(AppToolbar), findsOneWidget);
 
-      final postBtnFinder = find.byWidgetPredicate(
-        (w) => w is AppIconButton && w.semanticLabel == 'Posting informasi',
-      );
-      expect(postBtnFinder, findsOneWidget);
+        final postBtnFinder = find.byWidgetPredicate(
+          (w) => w is AppIconButton && w.semanticLabel == 'Posting informasi',
+        );
+        expect(postBtnFinder, findsOneWidget);
 
-      // Verify initial position is at bottom of screen (not in center)
-      final initialY = tester.getCenter(postBtnFinder).dy;
-      expect(initialY, greaterThan(500));
+        // Verify initial position is at bottom of screen (not in center)
+        final initialY = tester.getCenter(postBtnFinder).dy;
+        expect(initialY, greaterThan(500));
 
-      // Drag up (scrolling down the content)
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, -300),
-      );
-      await tester.pumpAndSettle();
+        // Drag up (scrolling down the content)
+        await tester.drag(
+          find.byType(SingleChildScrollView),
+          const Offset(0, -300),
+        );
+        await tester.pumpAndSettle();
 
-      // Verify toolbar moved off-screen (translated downwards)
-      final scrolledDownY = tester.getCenter(postBtnFinder).dy;
-      expect(scrolledDownY, greaterThan(initialY));
+        // Verify toolbar moved off-screen (translated downwards)
+        final scrolledDownY = tester.getCenter(postBtnFinder).dy;
+        expect(scrolledDownY, greaterThan(initialY));
 
-      // Drag down (scrolling up the content)
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, 300),
-      );
-      await tester.pumpAndSettle();
+        // Drag down (scrolling up the content)
+        await tester.drag(
+          find.byType(SingleChildScrollView),
+          const Offset(0, 300),
+        );
+        await tester.pumpAndSettle();
 
-      // Verify toolbar returned to its original bottom position
-      final restoredY = tester.getCenter(postBtnFinder).dy;
-      expect(restoredY, closeTo(initialY, 1.0));
-    });
+        // Verify toolbar returned to its original bottom position
+        final restoredY = tester.getCenter(postBtnFinder).dy;
+        expect(restoredY, closeTo(initialY, 1.0));
+      },
+    );
 
-    testWidgets('hides AppBottomOfflineBanner when online',
-        (WidgetTester tester) async {
+    testWidgets('hides AppBottomOfflineBanner when online', (
+      WidgetTester tester,
+    ) async {
       const adminSession = AuthSessionEntity(
         userId: '1',
         email: 'admin@kawalo.id',
@@ -733,9 +691,7 @@ void main() {
       );
       userSessionCubit.updateSession(adminSession);
 
-      final onlineConnectivityCubit = ConnectivityCubit(
-        autoStart: false,
-      );
+      final onlineConnectivityCubit = ConnectivityCubit(autoStart: false);
 
       await tester.pumpWidget(
         MultiBlocProvider(
@@ -747,9 +703,7 @@ void main() {
           ],
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: const InformationDetailScreen(
-              item: dummyFeed,
-            ),
+            home: const InformationDetailScreen(item: dummyFeed),
           ),
         ),
       );

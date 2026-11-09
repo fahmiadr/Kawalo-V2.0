@@ -52,8 +52,9 @@ class AppSnackbar extends StatelessWidget {
   static DateTime? _lastShownTime;
 
   /// Minimum duration between identical messages before showing again.
-  static const Duration duplicateDebounceDuration =
-      Duration(milliseconds: 1500);
+  static const Duration duplicateDebounceDuration = Duration(
+    milliseconds: 1500,
+  );
 
   /// Dismisses the currently displayed snackbar overlay, if any.
   static void hideCurrent() {

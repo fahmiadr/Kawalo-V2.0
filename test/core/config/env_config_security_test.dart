@@ -39,8 +39,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when API_BASE_URL is not '
+      test('throws ConfigurationSecurityException when API_BASE_URL is not '
           'HTTPS', () {
         dotenv.loadFromString(
           envString: '''
@@ -55,8 +54,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when API_BASE_URL is '
+      test('throws ConfigurationSecurityException when API_BASE_URL is '
           'localhost', () {
         dotenv.loadFromString(
           envString: '''
@@ -71,8 +69,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when API_BASE_URL is private '
+      test('throws ConfigurationSecurityException when API_BASE_URL is private '
           'LAN IP', () {
         dotenv.loadFromString(
           envString: '''
@@ -87,8 +84,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when API_BASE_URL has dev '
+      test('throws ConfigurationSecurityException when API_BASE_URL has dev '
           'label', () {
         dotenv.loadFromString(
           envString: '''
@@ -104,39 +100,41 @@ ENABLE_ONBOARDING_PERSISTENCE=true
       });
 
       test(
-          'throws ConfigurationSecurityException when API_BASE_URL has staging '
-          'label', () {
-        dotenv.loadFromString(
-          envString: '''
+        'throws ConfigurationSecurityException when API_BASE_URL has staging '
+        'label',
+        () {
+          dotenv.loadFromString(
+            envString: '''
 API_BASE_URL=https://staging.perusahaan.co.id/api/v1
 ENABLE_ONBOARDING_PERSISTENCE=true
 ''',
-        );
+          );
 
-        expect(
-          () => EnvConfig.validateConfiguration(AppEnvironment.prod),
-          throwsA(isA<ConfigurationSecurityException>()),
-        );
-      });
+          expect(
+            () => EnvConfig.validateConfiguration(AppEnvironment.prod),
+            throwsA(isA<ConfigurationSecurityException>()),
+          );
+        },
+      );
 
       test(
-          'throws ConfigurationSecurityException when host format is invalid',
-          () {
-        dotenv.loadFromString(
-          envString: '''
+        'throws ConfigurationSecurityException when host format is invalid',
+        () {
+          dotenv.loadFromString(
+            envString: '''
 API_BASE_URL=https://invalid..host/api/v1
 ENABLE_ONBOARDING_PERSISTENCE=true
 ''',
-        );
+          );
 
-        expect(
-          () => EnvConfig.validateConfiguration(AppEnvironment.prod),
-          throwsA(isA<ConfigurationSecurityException>()),
-        );
-      });
+          expect(
+            () => EnvConfig.validateConfiguration(AppEnvironment.prod),
+            throwsA(isA<ConfigurationSecurityException>()),
+          );
+        },
+      );
 
-      test(
-          'throws ConfigurationSecurityException when onboarding persistence '
+      test('throws ConfigurationSecurityException when onboarding persistence '
           'is false', () {
         dotenv.loadFromString(
           envString: '''
@@ -183,8 +181,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when API_BASE_URL is not '
+      test('throws ConfigurationSecurityException when API_BASE_URL is not '
           'HTTPS', () {
         dotenv.loadFromString(
           envString: '''
@@ -199,8 +196,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when staging points to '
+      test('throws ConfigurationSecurityException when staging points to '
           'localhost', () {
         dotenv.loadFromString(
           envString: '''
@@ -262,8 +258,7 @@ ENABLE_ONBOARDING_PERSISTENCE=true
         );
       });
 
-      test(
-          'throws ConfigurationSecurityException when API_BASE_URL is '
+      test('throws ConfigurationSecurityException when API_BASE_URL is '
           'malformed', () {
         dotenv.loadFromString(
           envString: '''
@@ -288,30 +283,26 @@ API_BASE_URL=http://insecure.test/api/v1
         );
 
         await expectLater(
-          EnvConfig.init(
-            AppEnvironment.prod,
-            validateSecurity: false,
-          ),
+          EnvConfig.init(AppEnvironment.prod, validateSecurity: false),
           completes,
         );
       });
     });
 
     group('JWT_PUBLIC_KEY Strict Requirement Tests', () {
-      test('throws StateError when JWT_PUBLIC_KEY is missing in environment',
-          () {
-        dotenv.loadFromString(
-          envString: '''
+      test(
+        'throws StateError when JWT_PUBLIC_KEY is missing in environment',
+        () {
+          dotenv.loadFromString(
+            envString: '''
 API_BASE_URL=https://api.kawalo.com/api/v1
 APP_NAME=Kawalo Mobile
 ''',
-        );
+          );
 
-        expect(
-          () => EnvConfig.jwtPublicKeyPem,
-          throwsA(isA<StateError>()),
-        );
-      });
+          expect(() => EnvConfig.jwtPublicKeyPem, throwsA(isA<StateError>()));
+        },
+      );
 
       test(
         'returns normalized PEM when JWT_PUBLIC_KEY is defined in environment',
@@ -322,14 +313,12 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8A\n--
 ''',
           );
 
-          const expectedPem = '-----BEGIN PUBLIC KEY-----\n'
+          const expectedPem =
+              '-----BEGIN PUBLIC KEY-----\n'
               'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8A\n'
               '-----END PUBLIC KEY-----';
 
-          expect(
-            EnvConfig.jwtPublicKeyPem,
-            equals(expectedPem),
-          );
+          expect(EnvConfig.jwtPublicKeyPem, equals(expectedPem));
         },
       );
     });

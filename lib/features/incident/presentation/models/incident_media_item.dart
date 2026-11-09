@@ -20,10 +20,7 @@ class IncidentMediaItem extends Equatable {
   });
 
   /// Factory untuk membuat item dari [AppMediaFile] jepretan kamera multi-shot.
-  factory IncidentMediaItem.fromAppMediaFile(
-    AppMediaFile file, {
-    String? id,
-  }) {
+  factory IncidentMediaItem.fromAppMediaFile(AppMediaFile file, {String? id}) {
     return IncidentMediaItem(
       id: id ?? DateTime.now().microsecondsSinceEpoch.toString(),
       name: file.name,
@@ -79,12 +76,5 @@ class IncidentMediaItem extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        path,
-        bytes,
-        remoteUrl,
-        isLocal,
-      ];
+  List<Object?> get props => [id, name, path, bytes, remoteUrl, isLocal];
 }

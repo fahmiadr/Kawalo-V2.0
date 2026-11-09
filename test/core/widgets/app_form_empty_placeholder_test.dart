@@ -61,8 +61,9 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('shows loading indicator when isLoading is true',
-        (tester) async {
+    testWidgets('shows loading indicator when isLoading is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildFrame(
           title: 'Memproses...',

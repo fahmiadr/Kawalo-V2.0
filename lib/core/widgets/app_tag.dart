@@ -100,8 +100,8 @@ class AppTag extends StatelessWidget {
       colorScheme,
     );
 
-    final effectiveBg = backgroundColor ??
-        (isOutlined ? Colors.transparent : resolvedBg);
+    final effectiveBg =
+        backgroundColor ?? (isOutlined ? Colors.transparent : resolvedBg);
     final effectiveFg = textColor ?? resolvedFg;
     final effectiveBorderColor = borderColor ?? resolvedBorder;
 
@@ -118,10 +118,7 @@ class AppTag extends StatelessWidget {
       children: [
         if (leading != null) ...[
           IconTheme(
-            data: IconThemeData(
-              color: effectiveFg,
-              size: iconThemeSize,
-            ),
+            data: IconThemeData(color: effectiveFg, size: iconThemeSize),
             child: leading!,
           ),
           SizedBox(width: gap),
@@ -135,10 +132,7 @@ class AppTag extends StatelessWidget {
         if (trailing != null) ...[
           SizedBox(width: gap),
           IconTheme(
-            data: IconThemeData(
-              color: effectiveFg,
-              size: iconThemeSize,
-            ),
+            data: IconThemeData(color: effectiveFg, size: iconThemeSize),
             child: trailing!,
           ),
         ],
@@ -154,15 +148,10 @@ class AppTag extends StatelessWidget {
           color: effectiveBg,
           borderRadius: effectiveBorderRadius,
           border: isOutlined || borderColor != null
-              ? Border.all(
-                  color: effectiveBorderColor,
-                )
+              ? Border.all(color: effectiveBorderColor)
               : null,
         ),
-        child: Padding(
-          padding: padding,
-          child: content,
-        ),
+        child: Padding(padding: padding, child: content),
       ),
     );
   }
@@ -205,10 +194,7 @@ class AppTag extends StatelessWidget {
   }
 
   (EdgeInsets padding, TextStyle textStyle, double gap, double iconSize)
-      _resolveMetrics(
-    M3ETypeScale typeScale,
-    Color contentColor,
-  ) {
+  _resolveMetrics(M3ETypeScale typeScale, Color contentColor) {
     switch (size) {
       case AppTagSize.small:
         return (

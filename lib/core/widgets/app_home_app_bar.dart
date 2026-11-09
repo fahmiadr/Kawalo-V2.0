@@ -161,7 +161,8 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     final emphasizedTypeScale = theme.typography.emphasized;
 
     final effectiveBgColor = backgroundColor ?? colorScheme.surface;
-    final effectivePadding = padding ??
+    final effectivePadding =
+        padding ??
         const EdgeInsets.only(
           left: AppSpacing.space200,
           right: AppSpacing.space200,
@@ -169,7 +170,8 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           bottom: AppSpacing.space150,
         );
 
-    final effectiveSearchBarPadding = searchBarPadding ??
+    final effectiveSearchBarPadding =
+        searchBarPadding ??
         const EdgeInsets.only(
           left: AppSpacing.space200,
           right: AppSpacing.space200,
@@ -177,15 +179,17 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           bottom: AppSpacing.space150,
         );
 
-    final greetingStyle =
-        typeScale.labelLarge.copyWith(color: colorScheme.onSurfaceVariant);
+    final greetingStyle = typeScale.labelLarge.copyWith(
+      color: colorScheme.onSurfaceVariant,
+    );
 
     final hasBack = showBackButton || onBackPressed != null;
     final hasLeadingButton =
         (leading != null && (title != null || titleWidget != null)) || hasBack;
 
-    final resolvedPadding =
-        effectivePadding.resolve(Directionality.of(context));
+    final resolvedPadding = effectivePadding.resolve(
+      Directionality.of(context),
+    );
     final headerHeight = preferredHeight;
     const rowHeight = AppSpacing.space300; // 24.0
     const targetSize = AppStateLayer.minTouchTarget; // 48.0
@@ -214,10 +218,7 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     } else if (hasBack) {
       leadingActionWidget = AppIconButton(
         size: backButtonSize ?? AppIconButtonSize.sm,
-        icon: const AppSvgIcon(
-          KawaloVectors.arrowLeft02,
-          size: 28,
-        ),
+        icon: const AppSvgIcon(KawaloVectors.arrowLeft02, size: 28),
         onPressed: onBackPressed ?? () => Navigator.of(context).maybePop(),
         semanticLabel: 'Kembali',
       );
@@ -247,7 +248,8 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     } else if (title != null) {
       effectiveLeading = Text(
         title!,
-        style: titleStyle ??
+        style:
+            titleStyle ??
             (hasLeadingButton
                 ? emphasizedTypeScale.titleLarge.copyWith(
                     color: colorScheme.onSurface,
@@ -262,9 +264,7 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         overflow: TextOverflow.ellipsis,
       );
     } else {
-      effectiveLeading = const KawaloLogoText(
-        textScaler: TextScaler.noScaling,
-      );
+      effectiveLeading = const KawaloLogoText(textScaler: TextScaler.noScaling);
     }
 
     return Material(
@@ -306,12 +306,12 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                                     overflow: TextOverflow.ellipsis,
                                   )
                                 : (greetingLoading
-                                    ? const _GreetingSkeletonPill(
-                                        key: ValueKey<String>('skeleton'),
-                                      )
-                                    : const SizedBox.shrink(
-                                        key: ValueKey<String>('empty'),
-                                      )),
+                                      ? const _GreetingSkeletonPill(
+                                          key: ValueKey<String>('skeleton'),
+                                        )
+                                      : const SizedBox.shrink(
+                                          key: ValueKey<String>('empty'),
+                                        )),
                           ),
                         ),
                       ),
@@ -334,12 +334,9 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                           switchOutCurve: AppMotion.emphasizedAccelerate,
                           layoutBuilder: (currentChild, previousChildren) =>
                               Stack(
-                            alignment: Alignment.centerLeft,
-                            children: [
-                              ...previousChildren,
-                              if (currentChild != null) currentChild,
-                            ],
-                          ),
+                                alignment: Alignment.centerLeft,
+                                children: [...previousChildren, ?currentChild],
+                              ),
                           child: KeyedSubtree(
                             key: ValueKey<int>(titleWidget != null ? 1 : 0),
                             child: titleWidget != null
@@ -361,7 +358,8 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                       top: rowCenterY,
                       child: FractionalTranslation(
                         translation: const Offset(0, -0.5),
-                        child: trailing ??
+                        child:
+                            trailing ??
                             _NotificationActionButton(
                               unreadCount: unreadNotificationsCount,
                               onPressed: onNotificationPressed,
@@ -383,11 +381,8 @@ class AppHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
             if (searchBar != null)
-              Padding(
-                padding: effectiveSearchBarPadding,
-                child: searchBar,
-              ),
-            if (bottom != null) bottom!,
+              Padding(padding: effectiveSearchBarPadding, child: searchBar),
+            ?bottom,
           ],
         ),
       ),
@@ -413,8 +408,9 @@ class _NotificationActionButton extends StatelessWidget {
         ? 'Notifikasi, $unreadCount pemberitahuan belum dibaca'
         : 'Notifikasi';
 
-    final badgeValue =
-        unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : null;
+    final badgeValue = unreadCount > 0
+        ? (unreadCount > 99 ? '99+' : unreadCount)
+        : null;
 
     return AppIconButton(
       onPressed: onPressed,

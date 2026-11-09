@@ -10,67 +10,53 @@ M3EIconButtonDecoration buildCameraOverlayButtonDecoration({
   bool isScreenFlashActive = false,
 }) {
   return M3EIconButtonDecoration(
-    backgroundColor: WidgetStateProperty.resolveWith(
-      (states) {
-        if (isScreenFlashActive) {
-          if (states.contains(WidgetState.disabled)) {
-            return Colors.black.withValues(
-              alpha: 0.12 * AppStateLayer.disabledContainerOpacity,
-            );
-          }
-          return Colors.black.withValues(alpha: 0.12);
-        }
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
+      if (isScreenFlashActive) {
         if (states.contains(WidgetState.disabled)) {
-          return colorScheme.scrim.withValues(
-            alpha: 0.60 * AppStateLayer.disabledContainerOpacity,
+          return Colors.black.withValues(
+            alpha: 0.12 * AppStateLayer.disabledContainerOpacity,
           );
         }
-        return colorScheme.scrim.withValues(alpha: 0.60);
-      },
-    ),
-    foregroundColor: WidgetStateProperty.resolveWith(
-      (states) {
-        if (isScreenFlashActive) {
-          if (states.contains(WidgetState.disabled)) {
-            return Colors.black.withValues(
-              alpha: AppStateLayer.disabledOpacity,
-            );
-          }
-          return Colors.black;
-        }
+        return Colors.black.withValues(alpha: 0.12);
+      }
+      if (states.contains(WidgetState.disabled)) {
+        return colorScheme.scrim.withValues(
+          alpha: 0.60 * AppStateLayer.disabledContainerOpacity,
+        );
+      }
+      return colorScheme.scrim.withValues(alpha: 0.60);
+    }),
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
+      if (isScreenFlashActive) {
         if (states.contains(WidgetState.disabled)) {
-          return Colors.white.withValues(
-            alpha: AppStateLayer.disabledOpacity,
-          );
+          return Colors.black.withValues(alpha: AppStateLayer.disabledOpacity);
         }
-        return Colors.white;
-      },
-    ),
-    side: WidgetStateProperty.resolveWith(
-      (states) {
-        if (isScreenFlashActive) {
-          if (states.contains(WidgetState.disabled)) {
-            return BorderSide(
-              color: Colors.black.withValues(
-                alpha: 0.20 * AppStateLayer.disabledOpacity,
-              ),
-            );
-          }
-          return BorderSide(
-            color: Colors.black.withValues(alpha: 0.20),
-          );
-        }
+        return Colors.black;
+      }
+      if (states.contains(WidgetState.disabled)) {
+        return Colors.white.withValues(alpha: AppStateLayer.disabledOpacity);
+      }
+      return Colors.white;
+    }),
+    side: WidgetStateProperty.resolveWith((states) {
+      if (isScreenFlashActive) {
         if (states.contains(WidgetState.disabled)) {
           return BorderSide(
-            color: Colors.white.withValues(
-              alpha: 0.30 * AppStateLayer.disabledOpacity,
+            color: Colors.black.withValues(
+              alpha: 0.20 * AppStateLayer.disabledOpacity,
             ),
           );
         }
+        return BorderSide(color: Colors.black.withValues(alpha: 0.20));
+      }
+      if (states.contains(WidgetState.disabled)) {
         return BorderSide(
-          color: Colors.white.withValues(alpha: 0.30),
+          color: Colors.white.withValues(
+            alpha: 0.30 * AppStateLayer.disabledOpacity,
+          ),
         );
-      },
-    ),
+      }
+      return BorderSide(color: Colors.white.withValues(alpha: 0.30));
+    }),
   );
 }

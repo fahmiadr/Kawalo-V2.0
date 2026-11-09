@@ -28,8 +28,8 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.localDataSource,
     ApiClient? apiClient,
     JwksService? jwksService,
-  })  : _apiClient = apiClient,
-        _jwksService = jwksService ?? JwksService();
+  }) : _apiClient = apiClient,
+       _jwksService = jwksService ?? JwksService();
 
   final AuthRemoteDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
@@ -86,9 +86,9 @@ class AuthRepositoryImpl implements AuthRepository {
       if (refreshToken != null && refreshToken.isNotEmpty) {
         try {
           final request = LogoutRequestModel(refreshToken: refreshToken);
-          await remoteDataSource.logout(request).timeout(
-                const Duration(seconds: 3),
-              );
+          await remoteDataSource
+              .logout(request)
+              .timeout(const Duration(seconds: 3));
         } on Object catch (_) {
           // Best-effort remote revocation
         }
@@ -273,9 +273,7 @@ class AuthRepositoryImpl implements AuthRepository {
         jwksService: _jwksService,
       );
       if (payload == null) {
-        throw const AuthException(
-          'Token otentikasi tidak valid dari server',
-        );
+        throw const AuthException('Token otentikasi tidak valid dari server');
       }
 
       final sessionModel = _sessionFromPayload(payload);

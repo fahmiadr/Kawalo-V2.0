@@ -10,20 +10,15 @@ void main() {
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
       home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 180,
-            height: 120,
-            child: child,
-          ),
-        ),
+        body: Center(child: SizedBox(width: 180, height: 120, child: child)),
       ),
     );
   }
 
   group('AppShortcutCard & AppAddShortcutCard Tests', () {
-    testWidgets('renders shortcut card with title, subtitle, and badge',
-        (tester) async {
+    testWidgets('renders shortcut card with title, subtitle, and badge', (
+      tester,
+    ) async {
       var tapped = false;
 
       final item = AppShortcutItem(
@@ -54,8 +49,9 @@ void main() {
         iconPath: KawaloColorVectors.guestValidation,
       );
 
-      await tester
-          .pumpWidget(buildTestWidget(const AppShortcutCard(item: item)));
+      await tester.pumpWidget(
+        buildTestWidget(const AppShortcutCard(item: item)),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Data Tamu'), findsOneWidget);
@@ -65,11 +61,7 @@ void main() {
       var addTapped = false;
 
       await tester.pumpWidget(
-        buildTestWidget(
-          AppAddShortcutCard(
-            onPressed: () => addTapped = true,
-          ),
-        ),
+        buildTestWidget(AppAddShortcutCard(onPressed: () => addTapped = true)),
       );
       await tester.pumpAndSettle();
 
@@ -90,10 +82,7 @@ void main() {
 
       await tester.pumpWidget(
         buildTestWidget(
-          const AppShortcutCard(
-            item: item,
-            size: AppShortcutCardSize.compact,
-          ),
+          const AppShortcutCard(item: item, size: AppShortcutCardSize.compact),
         ),
       );
       await tester.pumpAndSettle();
@@ -101,8 +90,9 @@ void main() {
       expect(find.byType(AppCard), findsOneWidget);
       expect(find.text('Aktifitas Operasional'), findsOneWidget);
 
-      final cardWidget =
-          tester.widget<AppShortcutCard>(find.byType(AppShortcutCard));
+      final cardWidget = tester.widget<AppShortcutCard>(
+        find.byType(AppShortcutCard),
+      );
       expect(cardWidget.isCompact, isTrue);
     });
   });

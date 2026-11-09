@@ -14,10 +14,7 @@ import 'package:kawalo_mobile/features/operational/presentation/extensions/opera
 /// dengan waktu dan status pembaruan dinas terakhir.
 class OperationalDetailSummaryCard extends StatelessWidget {
   /// Membuat instance [OperationalDetailSummaryCard].
-  const OperationalDetailSummaryCard({
-    required this.item,
-    super.key,
-  });
+  const OperationalDetailSummaryCard({required this.item, super.key});
 
   /// Data personil operasional yang ditampilkan.
   final OperationalItemEntity item;
@@ -35,7 +32,8 @@ class OperationalDetailSummaryCard extends StatelessWidget {
 
     final latestStatus = item.displayLatestState;
 
-    final semanticLabel = 'Ringkasan dinas harian, mulai dinas '
+    final semanticLabel =
+        'Ringkasan dinas harian, mulai dinas '
         '${item.displayFirstActivityTime} status $initialStatus, '
         'status terkini ${item.displayLatestStateTime} '
         'status $latestStatus';
@@ -53,10 +51,7 @@ class OperationalDetailSummaryCard extends StatelessWidget {
           // ── Header Kartu Ringkasan ──────────────────────────────────────
           Row(
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.calendarStar,
-                size: 32,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.calendarStar, size: 32),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(

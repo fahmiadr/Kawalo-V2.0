@@ -27,10 +27,7 @@ import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main
 
 /// Clean & Responsive Login Screen refactored from Figma specifications.
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({
-    this.sessionExpiredMessage,
-    super.key,
-  });
+  const LoginScreen({this.sessionExpiredMessage, super.key});
 
   /// Pesan opsional yang ditampilkan saat pengguna dialihkan ke login karena
   /// sesi kedaluwarsa atau anomali keamanan.
@@ -66,10 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (widget.sessionExpiredMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          AppSnackbar.show(
-            context,
-            message: widget.sessionExpiredMessage!,
-          );
+          AppSnackbar.show(context, message: widget.sessionExpiredMessage!);
         }
       });
     }
@@ -110,8 +104,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _validateInputs() {
     setState(() {
       _emailError = AppValidator.validateEmail(_emailController.text);
-      _passwordError =
-          AppValidator.validateLoginPassword(_passwordController.text);
+      _passwordError = AppValidator.validateLoginPassword(
+        _passwordController.text,
+      );
     });
   }
 
@@ -139,11 +134,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
 
     context.read<AuthBloc>().add(
-          LoginSubmitted(
-            email: email,
-            password: password,
-          ),
-        );
+      LoginSubmitted(email: email, password: password),
+    );
   }
 
   void _onForgotPasswordTap() {
@@ -163,10 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthFailure) {
-          AppSnackbar.show(
-            context,
-            message: state.message,
-          );
+          AppSnackbar.show(context, message: state.message);
         } else if (state is Authenticated) {
           Navigator.of(context).pushAndRemoveUntil<void>(
             AppPageRoute.fade<void>(
@@ -195,10 +184,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 body: SafeArea(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final isCompact =
-                          AppLayout.isCompact(constraints.maxWidth);
-                      final horizontalPadding =
-                          AppLayout.horizontalMargin(constraints.maxWidth);
+                      final isCompact = AppLayout.isCompact(
+                        constraints.maxWidth,
+                      );
+                      final horizontalPadding = AppLayout.horizontalMargin(
+                        constraints.maxWidth,
+                      );
 
                       Widget formContent = Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -217,12 +208,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // 3. Terms & Privacy Consent Text
                           TermsAndPrivacyWidget(
-                            onPrivacyTap: () => showPrivacyPolicyBottomSheet(
-                              context,
-                            ),
-                            onTermsTap: () => showTermsOfServiceBottomSheet(
-                              context,
-                            ),
+                            onPrivacyTap: () =>
+                                showPrivacyPolicyBottomSheet(context),
+                            onTermsTap: () =>
+                                showTermsOfServiceBottomSheet(context),
                           ),
 
                           if (isCompact) const Spacer(),
@@ -235,8 +224,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             shape: AppButtonShape.square,
                             size: AppButtonSize.md,
                             enabled: !isLoading,
-                            semanticLabel:
-                                isLoading ? 'Memverifikasi akun' : 'Masuk',
+                            semanticLabel: isLoading
+                                ? 'Memverifikasi akun'
+                                : 'Masuk',
                             onPressed: isLoading ? null : _onLoginSubmitted,
                             child: Text('Masuk', style: typeScale.titleMedium),
                           ),
@@ -267,13 +257,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
                                 maxWidth: AppLayout.contentMaxWidth,
-                                minHeight: constraints.maxHeight -
+                                minHeight:
+                                    constraints.maxHeight -
                                     (AppSpacing.space200 * 2),
                               ),
                               child: isCompact
-                                  ? IntrinsicHeight(
-                                      child: formContent,
-                                    )
+                                  ? IntrinsicHeight(child: formContent)
                                   : formContent,
                             ),
                           ),
@@ -286,9 +275,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Modal Scrim Overlay
               if (isLoading)
-                const AppLoadingOverlay(
-                  semanticLabel: 'Memverifikasi akun',
-                ),
+                const AppLoadingOverlay(semanticLabel: 'Memverifikasi akun'),
             ],
           ),
         );
@@ -356,9 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
               });
             }
           },
-          leading: const AppSvgIcon(
-            KawaloVectors.lockPassword,
-          ),
+          leading: const AppSvgIcon(KawaloVectors.lockPassword),
         ),
 
         AppSpacing.vGapXs,

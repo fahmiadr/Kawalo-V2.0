@@ -256,8 +256,9 @@ class _FocusReticle extends StatelessWidget {
             animation: Listenable.merge([entryAnimation, exitAnimation]),
             builder: (context, _) {
               final entryProgress = entryAnimation.value;
-              final exitProgress =
-                  Curves.easeIn.transform(exitAnimation.value.clamp(0.0, 1.0));
+              final exitProgress = Curves.easeIn.transform(
+                exitAnimation.value.clamp(0.0, 1.0),
+              );
 
               // 1. Skala Pegas Spasial M3 Expressive
               // Masuk: snap dari 1.35 ke 1.0 dengan overshoot pegas
@@ -274,15 +275,17 @@ class _FocusReticle extends StatelessWidget {
               // 2. Opasitas Efek M3 Expressive (masuk cepat, keluar memudar)
               final entryOpacity = (entryProgress * 3.0).clamp(0.0, 1.0);
               final exitOpacity = 1.0 - exitProgress;
-              final overallOpacity =
-                  (entryOpacity * exitOpacity).clamp(0.0, 1.0);
+              final overallOpacity = (entryOpacity * exitOpacity).clamp(
+                0.0,
+                1.0,
+              );
 
               // 3. Gelombang Gema Luar (Echo Ripple Wave)
               final rippleScale = 1.0 + (0.45 * entryProgress.clamp(0.0, 1.0));
               final rippleOpacity = isReducedMotion
                   ? 0.0
                   : ((1.0 - entryProgress.clamp(0.0, 1.0)) * 0.50 * exitOpacity)
-                      .clamp(0.0, 1.0);
+                        .clamp(0.0, 1.0);
 
               return Opacity(
                 opacity: overallOpacity,
@@ -327,15 +330,17 @@ class _FocusReticle extends StatelessWidget {
                             boxShadow: [
                               // 1. Key Shadow (Tepi Presisi & Kontras)
                               BoxShadow(
-                                color:
-                                    colorScheme.scrim.withValues(alpha: 0.40),
+                                color: colorScheme.scrim.withValues(
+                                  alpha: 0.40,
+                                ),
                                 blurRadius: 2,
                                 spreadRadius: 0.5,
                               ),
                               // 2. Ambient Shadow (Pendaran Halus Lembut)
                               BoxShadow(
-                                color:
-                                    colorScheme.scrim.withValues(alpha: 0.20),
+                                color: colorScheme.scrim.withValues(
+                                  alpha: 0.20,
+                                ),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                               ),
@@ -395,10 +400,7 @@ class _FocusReticle extends StatelessWidget {
 
 /// Aksen kuadran kardinal pada cincin fokus Material 3 Expressive.
 class _CardinalFocusTicks extends StatelessWidget {
-  const _CardinalFocusTicks({
-    required this.color,
-    required this.shadowColor,
-  });
+  const _CardinalFocusTicks({required this.color, required this.shadowColor});
 
   final Color color;
   final Color shadowColor;
@@ -407,19 +409,13 @@ class _CardinalFocusTicks extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: const Size(64, 64),
-      painter: _CardinalTicksPainter(
-        color: color,
-        shadowColor: shadowColor,
-      ),
+      painter: _CardinalTicksPainter(color: color, shadowColor: shadowColor),
     );
   }
 }
 
 class _CardinalTicksPainter extends CustomPainter {
-  const _CardinalTicksPainter({
-    required this.color,
-    required this.shadowColor,
-  });
+  const _CardinalTicksPainter({required this.color, required this.shadowColor});
 
   final Color color;
   final Color shadowColor;

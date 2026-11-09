@@ -197,113 +197,91 @@ void main() {
     const tResult = DeleteBatchResult(deletedCount: 2);
     const tValidIds = ['1', '2'];
 
-    test(
-      'returns ValidationFailure without calling repository when ids '
-      'are invalid',
-      () async {
-        final result = await deleteBatchUseCase(
-          const DeleteBatchInformationParams(
-            ids: ['abc'],
-            session: tSessionAdmin,
-            items: [],
-          ),
+    test('returns ValidationFailure without calling repository when ids '
+        'are invalid', () async {
+      final result = await deleteBatchUseCase(
+        const DeleteBatchInformationParams(
+          ids: ['abc'],
+          session: tSessionAdmin,
+          items: [],
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        expect(
+          (failure as ValidationFailure).message,
+          contains('Daftar ID informasi tidak boleh kosong'),
         );
+      }, (_) => fail('Should not succeed'));
+      verifyZeroInteractions(mockRepository);
+    });
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ValidationFailure>());
-            expect(
-              (failure as ValidationFailure).message,
-              contains('Daftar ID informasi tidak boleh kosong'),
-            );
-          },
-          (_) => fail('Should not succeed'),
+    test('returns ForbiddenFailure when unauthorized', () async {
+      final result = await deleteBatchUseCase(
+        const DeleteBatchInformationParams(
+          ids: tValidIds,
+          session: tSessionGuardOther,
+          items: [tItem1, tItem2],
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          (failure as ForbiddenFailure).message,
+          contains('Anda tidak memiliki izin untuk menghapus salah satu'),
         );
-        verifyZeroInteractions(mockRepository);
-      },
-    );
+      }, (_) => fail('Should not succeed'));
+      verifyZeroInteractions(mockRepository);
+    });
 
-    test(
-      'returns ForbiddenFailure when unauthorized',
-      () async {
-        final result = await deleteBatchUseCase(
-          const DeleteBatchInformationParams(
-            ids: tValidIds,
-            session: tSessionGuardOther,
-            items: [tItem1, tItem2],
-          ),
-        );
+    test('delegates to repository when ids are valid and authorized', () async {
+      when(
+        () => mockRepository.deleteBatchInformation(
+          ids: any(named: 'ids'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => const Right(tResult));
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ForbiddenFailure>());
-            expect(
-              (failure as ForbiddenFailure).message,
-              contains('Anda tidak memiliki izin untuk menghapus salah satu'),
-            );
-          },
-          (_) => fail('Should not succeed'),
-        );
-        verifyZeroInteractions(mockRepository);
-      },
-    );
+      final result = await deleteBatchUseCase(
+        const DeleteBatchInformationParams(
+          ids: tValidIds,
+          session: tSessionAdmin,
+          items: [tItem1, tItem2],
+        ),
+      );
 
-    test(
-      'delegates to repository when ids are valid and authorized',
-      () async {
-        when(
-          () => mockRepository.deleteBatchInformation(
-            ids: any(named: 'ids'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => const Right(tResult));
+      expect(result, const Right<Failure, DeleteBatchResult>(tResult));
+      verify(
+        () => mockRepository.deleteBatchInformation(ids: tValidIds),
+      ).called(1);
+      verifyNoMoreInteractions(mockRepository);
+    });
 
-        final result = await deleteBatchUseCase(
-          const DeleteBatchInformationParams(
-            ids: tValidIds,
-            session: tSessionAdmin,
-            items: [tItem1, tItem2],
-          ),
-        );
+    test('returns Failure when repository returns Left', () async {
+      const failure = ServerFailure('Kesalahan internal server.', 500);
+      when(
+        () => mockRepository.deleteBatchInformation(
+          ids: any(named: 'ids'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => const Left(failure));
 
-        expect(result, const Right<Failure, DeleteBatchResult>(tResult));
-        verify(
-          () => mockRepository.deleteBatchInformation(
-            ids: tValidIds,
-          ),
-        ).called(1);
-        verifyNoMoreInteractions(mockRepository);
-      },
-    );
+      final result = await deleteBatchUseCase(
+        const DeleteBatchInformationParams(
+          ids: tValidIds,
+          session: tSessionAdmin,
+          items: [tItem1, tItem2],
+        ),
+      );
 
-    test(
-      'returns Failure when repository returns Left',
-      () async {
-        const failure = ServerFailure('Kesalahan internal server.', 500);
-        when(
-          () => mockRepository.deleteBatchInformation(
-            ids: any(named: 'ids'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => const Left(failure));
-
-        final result = await deleteBatchUseCase(
-          const DeleteBatchInformationParams(
-            ids: tValidIds,
-            session: tSessionAdmin,
-            items: [tItem1, tItem2],
-          ),
-        );
-
-        expect(result, const Left<Failure, DeleteBatchResult>(failure));
-        verify(
-          () => mockRepository.deleteBatchInformation(
-            ids: tValidIds,
-          ),
-        ).called(1);
-      },
-    );
+      expect(result, const Left<Failure, DeleteBatchResult>(failure));
+      verify(
+        () => mockRepository.deleteBatchInformation(ids: tValidIds),
+      ).called(1);
+    });
   });
 }

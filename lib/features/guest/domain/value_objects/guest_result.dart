@@ -5,10 +5,7 @@ import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.d
 /// informasi transparansi sumber data (cache offline vs server remote).
 class GuestResult extends Equatable {
   /// Membuat instance [GuestResult].
-  const GuestResult({
-    required this.items,
-    this.isFromCache = false,
-  });
+  const GuestResult({required this.items, this.isFromCache = false});
 
   /// Daftar item data tamu.
   final List<GuestItemEntity> items;

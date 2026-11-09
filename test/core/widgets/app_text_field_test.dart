@@ -10,10 +10,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AppTextField(
-              label: 'Email Label',
-              controller: controller,
-            ),
+            body: AppTextField(label: 'Email Label', controller: controller),
           ),
         ),
       );
@@ -23,8 +20,9 @@ void main() {
       expect(controller.text, equals('user@test.com'));
     });
 
-    testWidgets('renders supportingText and errorText correctly',
-        (tester) async {
+    testWidgets('renders supportingText and errorText correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -41,10 +39,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: AppTextField(
-              label: 'Password',
-              errorText: 'Password salah',
-            ),
+            body: AppTextField(label: 'Password', errorText: 'Password salah'),
           ),
         ),
       );

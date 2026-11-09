@@ -8,9 +8,7 @@ void main() {
   Widget buildTestApp(Widget child) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
@@ -50,8 +48,9 @@ void main() {
       expect(itemTapped, isTrue);
     });
 
-    testWidgets('renders AppToolbar.floating in Scaffold correctly',
-        (tester) async {
+    testWidgets('renders AppToolbar.floating in Scaffold correctly', (
+      tester,
+    ) async {
       var bodyTapped = false;
       var actionTapped = false;
 
@@ -96,8 +95,9 @@ void main() {
       expect(actionTapped, isTrue);
     });
 
-    testWidgets('renders AppToolbar.floating with adjacent AppFab and widget',
-        (tester) async {
+    testWidgets('renders AppToolbar.floating with adjacent AppFab and widget', (
+      tester,
+    ) async {
       var sosTapped = false;
       var deleteTapped = false;
 

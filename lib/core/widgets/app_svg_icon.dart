@@ -31,8 +31,8 @@ class AppSvgIcon extends StatelessWidget {
     this.matchTextDirection = false,
     this.fit = BoxFit.contain,
     this.alignment = Alignment.center,
-  })  : color = null,
-        useIconThemeColor = false;
+  }) : color = null,
+       useIconThemeColor = false;
 
   /// Path file aset SVG (misalnya diambil dari `KawaloVectors` atau
   /// `KawaloColorVectors`).
@@ -71,15 +71,14 @@ class AppSvgIcon extends StatelessWidget {
     final iconColor = color ?? (useIconThemeColor ? iconTheme.color : null);
 
     // Auto-resolve ikon color jika masih berakhiran .svg ke .png
-    final resolvedPath = (assetPath.startsWith('assets/icons/color/') &&
+    final resolvedPath =
+        (assetPath.startsWith('assets/icons/color/') &&
             assetPath.toLowerCase().endsWith('.svg'))
-        ? assetPath.replaceAll(
-            RegExp(r'\.svg$', caseSensitive: false),
-            '.png',
-          )
+        ? assetPath.replaceAll(RegExp(r'\.svg$', caseSensitive: false), '.png')
         : assetPath;
 
-    final isRaster = resolvedPath.toLowerCase().endsWith('.png') ||
+    final isRaster =
+        resolvedPath.toLowerCase().endsWith('.png') ||
         resolvedPath.toLowerCase().endsWith('.webp');
 
     if (isRaster) {
@@ -92,10 +91,7 @@ class AppSvgIcon extends StatelessWidget {
         alignment: alignment,
         semanticLabel: semanticLabel,
         color: iconColor,
-        errorBuilder: (_, __, ___) => SizedBox(
-          width: iconSize,
-          height: iconSize,
-        ),
+        errorBuilder: (_, _, _) => SizedBox(width: iconSize, height: iconSize),
       );
     }
 

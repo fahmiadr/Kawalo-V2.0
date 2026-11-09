@@ -52,8 +52,9 @@ void main() {
   Widget createWidgetUnderTest({required IncidentDetailState state}) {
     when(() => mockCubit.state).thenReturn(state);
     when(() => mockCubit.stream).thenAnswer((_) => Stream.value(state));
-    when(() => mockCubit.init(session: any(named: 'session')))
-        .thenAnswer((_) async {});
+    when(
+      () => mockCubit.init(session: any(named: 'session')),
+    ).thenAnswer((_) async {});
     when(() => mockCubit.close()).thenAnswer((_) async {});
     when(() => mockCubit.pauseStream()).thenReturn(null);
     when(() => mockCubit.resumeStream()).thenReturn(null);
@@ -71,8 +72,9 @@ void main() {
   }
 
   group('IncidentDetailScreen Widget & Accessibility Tests', () {
-    testWidgets('renders incident header and reply bubbles correctly',
-        (tester) async {
+    testWidgets('renders incident header and reply bubbles correctly', (
+      tester,
+    ) async {
       final state = IncidentDetailState(
         status: IncidentDetailStatus.success,
         incident: tIncident,
@@ -90,32 +92,35 @@ void main() {
     });
 
     testWidgets(
-        'displays IncidentResolvedBanner and hides composer when isReadOnly '
-        'is true', (tester) async {
-      final resolvedIncident = tIncident.copyWith(
-        status: IncidentStatus.resolved,
-        resolvedBy: 'usr_admin',
-        resolvedByName: 'Dewi Sartika',
-        resolvedAt: DateTime.parse('2026-11-04T10:20:00.000Z'),
-      );
+      'displays IncidentResolvedBanner and hides composer when isReadOnly '
+      'is true',
+      (tester) async {
+        final resolvedIncident = tIncident.copyWith(
+          status: IncidentStatus.resolved,
+          resolvedBy: 'usr_admin',
+          resolvedByName: 'Dewi Sartika',
+          resolvedAt: DateTime.parse('2026-11-04T10:20:00.000Z'),
+        );
 
-      final state = IncidentDetailState(
-        status: IncidentDetailStatus.success,
-        incident: resolvedIncident,
-        replies: [tReply],
-        isReadOnly: true,
-      );
+        final state = IncidentDetailState(
+          status: IncidentDetailStatus.success,
+          incident: resolvedIncident,
+          replies: [tReply],
+          isReadOnly: true,
+        );
 
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
+        await tester.pumpWidget(createWidgetUnderTest(state: state));
+        await tester.pump();
 
-      expect(find.byType(IncidentResolvedBanner), findsOneWidget);
-      expect(find.byType(IncidentComposerBar), findsNothing);
-      expect(find.textContaining('Dewi Sartika'), findsWidgets);
-    });
+        expect(find.byType(IncidentResolvedBanner), findsOneWidget);
+        expect(find.byType(IncidentComposerBar), findsNothing);
+        expect(find.textContaining('Dewi Sartika'), findsWidgets);
+      },
+    );
 
-    testWidgets('renders without overflow under 200% dynamic text scaling',
-        (tester) async {
+    testWidgets('renders without overflow under 200% dynamic text scaling', (
+      tester,
+    ) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2.0;
       addTearDown(
         () => tester.platformDispatcher.clearTextScaleFactorTestValue(),

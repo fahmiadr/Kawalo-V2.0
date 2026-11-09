@@ -102,37 +102,39 @@ void main() {
       expect(result.isSuccess, isTrue);
     });
 
-    test('falls back to display_name when address details are missing',
-        () async {
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer(
-        (_) async => Response<Map<String, dynamic>>(
-          data: <String, dynamic>{
-            'display_name': 'Kawasan Konservasi Hutan Lindung, Jawa Barat',
-          },
-          requestOptions: RequestOptions(
-            path: 'https://nominatim.openstreetmap.org/reverse',
+    test(
+      'falls back to display_name when address details are missing',
+      () async {
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
           ),
-          statusCode: 200,
-        ),
-      );
+        ).thenAnswer(
+          (_) async => Response<Map<String, dynamic>>(
+            data: <String, dynamic>{
+              'display_name': 'Kawasan Konservasi Hutan Lindung, Jawa Barat',
+            },
+            requestOptions: RequestOptions(
+              path: 'https://nominatim.openstreetmap.org/reverse',
+            ),
+            statusCode: 200,
+          ),
+        );
 
-      final result = await service.reverseGeocode(
-        latitude: -6.789123,
-        longitude: 107.123456,
-      );
+        final result = await service.reverseGeocode(
+          latitude: -6.789123,
+          longitude: 107.123456,
+        );
 
-      expect(result.status, equals(ReverseGeocodeStatus.success));
-      expect(
-        result.address,
-        equals('Kawasan Konservasi Hutan Lindung, Jawa Barat'),
-      );
-    });
+        expect(result.status, equals(ReverseGeocodeStatus.success));
+        expect(
+          result.address,
+          equals('Kawasan Konservasi Hutan Lindung, Jawa Barat'),
+        );
+      },
+    );
 
     test('returns noResult when response data is null or empty', () async {
       when(
@@ -150,10 +152,7 @@ void main() {
         ),
       );
 
-      final result = await service.reverseGeocode(
-        latitude: -6,
-        longitude: 106,
-      );
+      final result = await service.reverseGeocode(latitude: -6, longitude: 106);
 
       expect(result.status, equals(ReverseGeocodeStatus.noResult));
       expect(result.address, isNull);
@@ -212,9 +211,7 @@ void main() {
         ),
       ).thenAnswer(
         (_) async => Response<Map<String, dynamic>>(
-          data: <String, dynamic>{
-            'display_name': 'Titik Lokasi Baru',
-          },
+          data: <String, dynamic>{'display_name': 'Titik Lokasi Baru'},
           requestOptions: RequestOptions(
             path: 'https://nominatim.openstreetmap.org/reverse',
           ),
@@ -247,22 +244,18 @@ void main() {
           queryParameters: any(named: 'queryParameters'),
           cancelToken: any(named: 'cancelToken'),
         ),
-      ).thenAnswer(
-        (invocation) async {
-          final query = invocation.namedArguments[#queryParameters]
-              as Map<String, dynamic>;
-          final lat = query['lat'] as double;
-          return Response<Map<String, dynamic>>(
-            data: <String, dynamic>{
-              'display_name': 'Lokasi $lat',
-            },
-            requestOptions: RequestOptions(
-              path: 'https://nominatim.openstreetmap.org/reverse',
-            ),
-            statusCode: 200,
-          );
-        },
-      );
+      ).thenAnswer((invocation) async {
+        final query =
+            invocation.namedArguments[#queryParameters] as Map<String, dynamic>;
+        final lat = query['lat'] as double;
+        return Response<Map<String, dynamic>>(
+          data: <String, dynamic>{'display_name': 'Lokasi $lat'},
+          requestOptions: RequestOptions(
+            path: 'https://nominatim.openstreetmap.org/reverse',
+          ),
+          statusCode: 200,
+        );
+      });
 
       // Query 1 and 2 (cache holds [1, 2])
       await smallCacheService.reverseGeocode(latitude: 1, longitude: 1);
@@ -287,16 +280,16 @@ void main() {
       ).called(4);
     });
 
-    test('deduplicates concurrent in-flight requests for identical coordinates',
-        () async {
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer(
-        (_) async {
+    test(
+      'deduplicates concurrent in-flight requests for identical coordinates',
+      () async {
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 50));
           return Response<Map<String, dynamic>>(
             data: <String, dynamic>{
@@ -310,25 +303,25 @@ void main() {
             ),
             statusCode: 200,
           );
-        },
-      );
+        });
 
-      final results = await Future.wait([
-        service.reverseGeocode(latitude: -6.920000, longitude: 107.610000),
-        service.reverseGeocode(latitude: -6.920000, longitude: 107.610000),
-      ]);
+        final results = await Future.wait([
+          service.reverseGeocode(latitude: -6.920000, longitude: 107.610000),
+          service.reverseGeocode(latitude: -6.920000, longitude: 107.610000),
+        ]);
 
-      expect(results[0].address, equals('Jl. Asia Afrika, Bandung'));
-      expect(results[1].address, equals('Jl. Asia Afrika, Bandung'));
+        expect(results[0].address, equals('Jl. Asia Afrika, Bandung'));
+        expect(results[1].address, equals('Jl. Asia Afrika, Bandung'));
 
-      verify(
-        () => mockDio.get<Map<String, dynamic>>(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).called(1);
-    });
+        verify(
+          () => mockDio.get<Map<String, dynamic>>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).called(1);
+      },
+    );
 
     test('handles cancel token and returns cancelled status', () async {
       final token = DioCancellationToken();
@@ -360,96 +353,99 @@ void main() {
       expect(result.isFailure, isFalse);
     });
 
-    test('handles connection timeout and returns timeout failure status',
-        () async {
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(
-            path: 'https://nominatim.openstreetmap.org/reverse',
+    test(
+      'handles connection timeout and returns timeout failure status',
+      () async {
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
           ),
-          type: DioExceptionType.connectionTimeout,
-          error: 'Connection timeout',
-        ),
-      );
-
-      final result = await service.reverseGeocode(
-        latitude: -7.111111,
-        longitude: 110.222222,
-      );
-
-      expect(result.status, equals(ReverseGeocodeStatus.timeout));
-      expect(result.isFailure, isTrue);
-      expect(result.address, isNull);
-    });
-
-    test('handles HTTP 429 rate limit and returns rateLimited status',
-        () async {
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(
-            path: 'https://nominatim.openstreetmap.org/reverse',
-          ),
-          response: Response(
-            statusCode: 429,
+        ).thenThrow(
+          DioException(
             requestOptions: RequestOptions(
               path: 'https://nominatim.openstreetmap.org/reverse',
             ),
+            type: DioExceptionType.connectionTimeout,
+            error: 'Connection timeout',
           ),
-        ),
-      );
+        );
 
-      final result = await service.reverseGeocode(
-        latitude: -7.111111,
-        longitude: 110.222222,
-      );
+        final result = await service.reverseGeocode(
+          latitude: -7.111111,
+          longitude: 110.222222,
+        );
 
-      expect(result.status, equals(ReverseGeocodeStatus.rateLimited));
-      expect(result.isFailure, isTrue);
-    });
+        expect(result.status, equals(ReverseGeocodeStatus.timeout));
+        expect(result.isFailure, isTrue);
+        expect(result.address, isNull);
+      },
+    );
 
-    test('handles generic DioException and returns networkError status',
-        () async {
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          any(),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(
-            path: 'https://nominatim.openstreetmap.org/reverse',
+    test(
+      'handles HTTP 429 rate limit and returns rateLimited status',
+      () async {
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
           ),
-          error: 'SocketException',
-        ),
-      );
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(
+              path: 'https://nominatim.openstreetmap.org/reverse',
+            ),
+            response: Response(
+              statusCode: 429,
+              requestOptions: RequestOptions(
+                path: 'https://nominatim.openstreetmap.org/reverse',
+              ),
+            ),
+          ),
+        );
 
-      final result = await service.reverseGeocode(
-        latitude: -7.111111,
-        longitude: 110.222222,
-      );
+        final result = await service.reverseGeocode(
+          latitude: -7.111111,
+          longitude: 110.222222,
+        );
 
-      expect(result.status, equals(ReverseGeocodeStatus.networkError));
-      expect(result.isFailure, isTrue);
-    });
+        expect(result.status, equals(ReverseGeocodeStatus.rateLimited));
+        expect(result.isFailure, isTrue);
+      },
+    );
+
+    test(
+      'handles generic DioException and returns networkError status',
+      () async {
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            any(),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(
+              path: 'https://nominatim.openstreetmap.org/reverse',
+            ),
+            error: 'SocketException',
+          ),
+        );
+
+        final result = await service.reverseGeocode(
+          latitude: -7.111111,
+          longitude: 110.222222,
+        );
+
+        expect(result.status, equals(ReverseGeocodeStatus.networkError));
+        expect(result.isFailure, isTrue);
+      },
+    );
 
     test('instance getters provide singleton instance', () {
-      expect(
-        ReverseGeocodeService.instance,
-        isA<ReverseGeocodeService>(),
-      );
+      expect(ReverseGeocodeService.instance, isA<ReverseGeocodeService>());
       expect(
         OsmNominatimReverseGeocodeService.instance,
         isA<OsmNominatimReverseGeocodeService>(),

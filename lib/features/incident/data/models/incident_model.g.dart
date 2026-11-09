@@ -19,7 +19,8 @@ IncidentModel _$IncidentModelFromJson(Map<String, dynamic> json) =>
       category: json['category'] as String?,
       glat: (json['glat'] as num?)?.toDouble(),
       glong: (json['glong'] as num?)?.toDouble(),
-      photos: (json['photos'] as List<dynamic>?)
+      photos:
+          (json['photos'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],

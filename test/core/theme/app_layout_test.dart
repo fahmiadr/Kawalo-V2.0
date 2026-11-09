@@ -62,8 +62,9 @@ void main() {
       ]);
     });
 
-    testWidgets('Orientation helpers detect landscape and portrait properly',
-        (tester) async {
+    testWidgets('Orientation helpers detect landscape and portrait properly', (
+      tester,
+    ) async {
       // Test portrait view
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
@@ -105,8 +106,9 @@ void main() {
       expect(AppLayout.toolbarScrollClearanceBase, 96.0);
     });
 
-    testWidgets('toolbarScrollClearance factors in safe area bottom padding',
-        (tester) async {
+    testWidgets('toolbarScrollClearance factors in safe area bottom padding', (
+      tester,
+    ) async {
       tester.view.devicePixelRatio = 1.0;
       tester.view.padding = const FakeViewPadding(bottom: 34);
       addTearDown(() {

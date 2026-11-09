@@ -7,16 +7,16 @@ part of 'login_response_model.dart';
 // **************************************************************************
 
 LoginResponseModel _$LoginResponseModelFromJson(Map<String, dynamic> json) =>
-    $checkedCreate(
-      'LoginResponseModel',
-      json,
-      ($checkedConvert) {
-        final val = LoginResponseModel(
-          user: $checkedConvert(
-              'user', (v) => UserModel.fromJson(v as Map<String, dynamic>)),
-          tokens: $checkedConvert('tokens',
-              (v) => AuthTokensModel.fromJson(v as Map<String, dynamic>)),
-        );
-        return val;
-      },
-    );
+    $checkedCreate('LoginResponseModel', json, ($checkedConvert) {
+      final val = LoginResponseModel(
+        user: $checkedConvert(
+          'user',
+          (v) => UserModel.fromJson(v as Map<String, dynamic>),
+        ),
+        tokens: $checkedConvert(
+          'tokens',
+          (v) => AuthTokensModel.fromJson(v as Map<String, dynamic>),
+        ),
+      );
+      return val;
+    });

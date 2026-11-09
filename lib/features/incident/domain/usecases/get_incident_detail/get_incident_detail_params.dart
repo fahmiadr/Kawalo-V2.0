@@ -25,9 +25,5 @@ class GetIncidentDetailParams extends Equatable {
   bool get isAuthorized => session != null;
 
   @override
-  List<Object?> get props => [
-        incidentId,
-        session,
-        cancelToken,
-      ];
+  List<Object?> get props => [incidentId, session, cancelToken];
 }

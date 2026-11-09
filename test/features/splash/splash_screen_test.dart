@@ -32,11 +32,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: SplashScreen(
-              onInitializationComplete: () {},
-            ),
-          ),
+          MaterialApp(home: SplashScreen(onInitializationComplete: () {})),
         );
 
         await tester.pump();
@@ -56,9 +52,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData.dark(),
-            home: SplashScreen(
-              onInitializationComplete: () {},
-            ),
+            home: SplashScreen(onInitializationComplete: () {}),
           ),
         );
 
@@ -79,9 +73,8 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: SplashScreen(
-              onInitialize: () => Future<void>.delayed(
-                const Duration(milliseconds: 4000),
-              ),
+              onInitialize: () =>
+                  Future<void>.delayed(const Duration(milliseconds: 4000)),
               onInitializationComplete: () {},
             ),
           ),
@@ -97,33 +90,30 @@ void main() {
       },
     );
 
-    testWidgets(
-      'SplashScreen respects reduced motion setting',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: MediaQuery(
-              data: const MediaQueryData(
-                accessibleNavigation: true,
-                disableAnimations: true,
-              ),
-              child: SplashScreen(
-                onInitializationComplete: () {},
-              ),
+    testWidgets('SplashScreen respects reduced motion setting', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              accessibleNavigation: true,
+              disableAnimations: true,
             ),
+            child: SplashScreen(onInitializationComplete: () {}),
           ),
-        );
+        ),
+      );
 
-        await tester.pump();
-        expect(find.byType(SplashScreen), findsOneWidget);
-        expect(
-          find.text('Keamanan Terpadu. Efisiensi Maksimal.'),
-          findsOneWidget,
-        );
+      await tester.pump();
+      expect(find.byType(SplashScreen), findsOneWidget);
+      expect(
+        find.text('Keamanan Terpadu. Efisiensi Maksimal.'),
+        findsOneWidget,
+      );
 
-        await tester.pump(const Duration(milliseconds: 3100));
-      },
-    );
+      await tester.pump(const Duration(milliseconds: 3100));
+    });
 
     testWidgets(
       'navigates to OnboardingScreen when onboarding is not completed',
@@ -149,63 +139,58 @@ void main() {
       },
     );
 
-    testWidgets(
-      'navigates to OnboardingScreen when persistence is disabled '
-      '(debug/review)',
-      (WidgetTester tester) async {
-        final mockStorage = MockSecureStorageService();
-        when(mockStorage.isOnboardingCompleted).thenAnswer((_) async => true);
-        when(mockStorage.getAccessToken).thenAnswer((_) async => null);
+    testWidgets('navigates to OnboardingScreen when persistence is disabled '
+        '(debug/review)', (WidgetTester tester) async {
+      final mockStorage = MockSecureStorageService();
+      when(mockStorage.isOnboardingCompleted).thenAnswer((_) async => true);
+      when(mockStorage.getAccessToken).thenAnswer((_) async => null);
 
-        await tester.pumpWidget(
-          MaterialApp(
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SplashScreen(
+            storageService: mockStorage,
+            enableOnboardingPersistence: false,
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 3100));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(OnboardingScreen), findsOneWidget);
+    });
+
+    testWidgets('navigates directly to LoginScreen when onboarding completed '
+        'but not authenticated', (WidgetTester tester) async {
+      final mockStorage = MockSecureStorageService();
+      when(mockStorage.isOnboardingCompleted).thenAnswer((_) async => true);
+      when(mockStorage.getAccessToken).thenAnswer((_) async => null);
+
+      final mockAuthBloc = MockAuthBloc();
+      when(() => mockAuthBloc.state).thenReturn(const Unauthenticated());
+      when(
+        () => mockAuthBloc.stream,
+      ).thenAnswer((_) => Stream.value(const Unauthenticated()));
+
+      await tester.pumpWidget(
+        BlocProvider<AuthBloc>.value(
+          value: mockAuthBloc,
+          child: MaterialApp(
             home: SplashScreen(
               storageService: mockStorage,
-              enableOnboardingPersistence: false,
+              enableOnboardingPersistence: true,
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 3100));
-        await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 3100));
+      await tester.pump(const Duration(milliseconds: 100));
 
-        expect(find.byType(OnboardingScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'navigates directly to LoginScreen when onboarding completed '
-      'but not authenticated',
-      (WidgetTester tester) async {
-        final mockStorage = MockSecureStorageService();
-        when(mockStorage.isOnboardingCompleted).thenAnswer((_) async => true);
-        when(mockStorage.getAccessToken).thenAnswer((_) async => null);
-
-        final mockAuthBloc = MockAuthBloc();
-        when(() => mockAuthBloc.state).thenReturn(const Unauthenticated());
-        when(() => mockAuthBloc.stream)
-            .thenAnswer((_) => Stream.value(const Unauthenticated()));
-
-        await tester.pumpWidget(
-          BlocProvider<AuthBloc>.value(
-            value: mockAuthBloc,
-            child: MaterialApp(
-              home: SplashScreen(
-                storageService: mockStorage,
-                enableOnboardingPersistence: true,
-              ),
-            ),
-          ),
-        );
-
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 3100));
-        await tester.pump(const Duration(milliseconds: 100));
-
-        expect(find.byType(LoginScreen), findsOneWidget);
-      },
-    );
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
 
     testWidgets(
       'navigates directly to MainNavigationScreen when onboarding completed '
@@ -268,8 +253,9 @@ void main() {
         );
 
         final mockAuthBloc = MockAuthBloc();
-        when(() => mockAuthBloc.state)
-            .thenReturn(const GroupSelectionRequired(user: tUser));
+        when(
+          () => mockAuthBloc.state,
+        ).thenReturn(const GroupSelectionRequired(user: tUser));
         when(() => mockAuthBloc.stream).thenAnswer(
           (_) => Stream.value(const GroupSelectionRequired(user: tUser)),
         );

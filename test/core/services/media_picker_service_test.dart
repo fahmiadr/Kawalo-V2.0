@@ -84,22 +84,24 @@ void main() {
       );
     });
 
-    test('instantiates with all default dependencies when no parameters passed',
-        () {
-      final service = DefaultMediaPickerService();
+    test(
+      'instantiates with all default dependencies when no parameters passed',
+      () {
+        final service = DefaultMediaPickerService();
 
-      expect(service, isA<MediaPickerService>());
-      expect(service.maxWidth, DefaultMediaPickerService.defaultMaxWidth);
-      expect(service.maxHeight, DefaultMediaPickerService.defaultMaxHeight);
-      expect(
-        service.imageQuality,
-        DefaultMediaPickerService.defaultImageQuality,
-      );
-      expect(
-        service.allowedDocumentExtensions,
-        DefaultMediaPickerService.defaultAllowedDocumentExtensions,
-      );
-    });
+        expect(service, isA<MediaPickerService>());
+        expect(service.maxWidth, DefaultMediaPickerService.defaultMaxWidth);
+        expect(service.maxHeight, DefaultMediaPickerService.defaultMaxHeight);
+        expect(
+          service.imageQuality,
+          DefaultMediaPickerService.defaultImageQuality,
+        );
+        expect(
+          service.allowedDocumentExtensions,
+          DefaultMediaPickerService.defaultAllowedDocumentExtensions,
+        );
+      },
+    );
 
     test('accepts custom compression configuration parameters', () {
       final service = DefaultMediaPickerService(
@@ -169,47 +171,59 @@ void main() {
       ).called(1);
     });
 
-    test('pickMultiImagesFromGallery returns all files when limit is null or 0',
-        () async {
-      final service = DefaultMediaPickerService(imagePicker: mockImagePicker);
+    test(
+      'pickMultiImagesFromGallery returns all files when limit is null or 0',
+      () async {
+        final service = DefaultMediaPickerService(imagePicker: mockImagePicker);
 
-      when(
-        () => mockImagePicker.pickMultiImage(
-          maxWidth: any(named: 'maxWidth'),
-          maxHeight: any(named: 'maxHeight'),
-          imageQuality: any(named: 'imageQuality'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer(
-        (_) async => [
-          XFile.fromData(Uint8List.fromList([1]), name: 'a.jpg', path: '/a.jpg'),
-          XFile.fromData(Uint8List.fromList([2]), name: 'b.jpg', path: '/b.jpg'),
-        ],
-      );
+        when(
+          () => mockImagePicker.pickMultiImage(
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer(
+          (_) async => [
+            XFile.fromData(
+              Uint8List.fromList([1]),
+              name: 'a.jpg',
+              path: '/a.jpg',
+            ),
+            XFile.fromData(
+              Uint8List.fromList([2]),
+              name: 'b.jpg',
+              path: '/b.jpg',
+            ),
+          ],
+        );
 
-      final results = await service.pickMultiImagesFromGallery(limit: 0);
+        final results = await service.pickMultiImagesFromGallery(limit: 0);
 
-      expect(results.length, 2);
-      expect(results[0].name, 'a.jpg');
-      expect(results[1].name, 'b.jpg');
-    });
+        expect(results.length, 2);
+        expect(results[0].name, 'a.jpg');
+        expect(results[1].name, 'b.jpg');
+      },
+    );
 
-    test('pickMultiImagesFromGallery returns empty list when user cancels',
-        () async {
-      final service = DefaultMediaPickerService(imagePicker: mockImagePicker);
+    test(
+      'pickMultiImagesFromGallery returns empty list when user cancels',
+      () async {
+        final service = DefaultMediaPickerService(imagePicker: mockImagePicker);
 
-      when(
-        () => mockImagePicker.pickMultiImage(
-          maxWidth: any(named: 'maxWidth'),
-          maxHeight: any(named: 'maxHeight'),
-          imageQuality: any(named: 'imageQuality'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer((_) async => []);
+        when(
+          () => mockImagePicker.pickMultiImage(
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => []);
 
-      final results = await service.pickMultiImagesFromGallery();
-      expect(results, isEmpty);
-    });
+        final results = await service.pickMultiImagesFromGallery();
+        expect(results, isEmpty);
+      },
+    );
 
     testWidgets(
       'captureMultiImagesFromCamera delegates parameters to cameraLauncher',
@@ -226,24 +240,28 @@ void main() {
           maxWidth: 1280,
           maxHeight: 720,
           imageQuality: 90,
-          cameraLauncher: (
-            context, {
-            int maxPhotos = 4,
-            int alreadyAttachedCount = 0,
-            double maxWidth = 1920,
-            double maxHeight = 1920,
-            int imageQuality = 85,
-          }) async {
-            capturedContext = context;
-            passedMaxPhotos = maxPhotos;
-            passedAttachedCount = alreadyAttachedCount;
-            passedMaxWidth = maxWidth;
-            passedMaxHeight = maxHeight;
-            passedQuality = imageQuality;
-            return const [
-              AppMediaFile(name: 'captured.jpg', path: '/path/captured.jpg'),
-            ];
-          },
+          cameraLauncher:
+              (
+                context, {
+                int maxPhotos = 4,
+                int alreadyAttachedCount = 0,
+                double maxWidth = 1920,
+                double maxHeight = 1920,
+                int imageQuality = 85,
+              }) async {
+                capturedContext = context;
+                passedMaxPhotos = maxPhotos;
+                passedAttachedCount = alreadyAttachedCount;
+                passedMaxWidth = maxWidth;
+                passedMaxHeight = maxHeight;
+                passedQuality = imageQuality;
+                return const [
+                  AppMediaFile(
+                    name: 'captured.jpg',
+                    path: '/path/captured.jpg',
+                  ),
+                ];
+              },
         );
 
         await tester.pumpWidget(
@@ -274,69 +292,75 @@ void main() {
       },
     );
 
-    test('pickDocumentFile maps selected document correctly using lengthSync',
-        () async {
-      FileType? passedType;
-      List<String>? passedExtensions;
+    test(
+      'pickDocumentFile maps selected document correctly using lengthSync',
+      () async {
+        FileType? passedType;
+        List<String>? passedExtensions;
 
-      final service = DefaultMediaPickerService(
-        imagePicker: mockImagePicker,
-        allowedDocumentExtensions: const ['pdf', 'docx'],
-        documentPicker: ({type = FileType.any, allowedExtensions}) async {
-          passedType = type;
-          passedExtensions = allowedExtensions;
-          return _TestPlatformFile(
-            name: 'dokumen_rahasia.pdf',
-            path: '/storage/dokumen_rahasia.pdf',
-            size: 2048,
-          );
-        },
-      );
+        final service = DefaultMediaPickerService(
+          imagePicker: mockImagePicker,
+          allowedDocumentExtensions: const ['pdf', 'docx'],
+          documentPicker: ({type = FileType.any, allowedExtensions}) async {
+            passedType = type;
+            passedExtensions = allowedExtensions;
+            return _TestPlatformFile(
+              name: 'dokumen_rahasia.pdf',
+              path: '/storage/dokumen_rahasia.pdf',
+              size: 2048,
+            );
+          },
+        );
 
-      final result = await service.pickDocumentFile();
+        final result = await service.pickDocumentFile();
 
-      expect(result, isNotNull);
-      expect(result!.name, 'dokumen_rahasia.pdf');
-      expect(result.path, '/storage/dokumen_rahasia.pdf');
-      expect(result.sizeInBytes, 2048);
-      expect(result.extension, 'pdf');
-      expect(passedType, FileType.custom);
-      expect(passedExtensions, const ['pdf', 'docx']);
-    });
+        expect(result, isNotNull);
+        expect(result!.name, 'dokumen_rahasia.pdf');
+        expect(result.path, '/storage/dokumen_rahasia.pdf');
+        expect(result.sizeInBytes, 2048);
+        expect(result.extension, 'pdf');
+        expect(passedType, FileType.custom);
+        expect(passedExtensions, const ['pdf', 'docx']);
+      },
+    );
 
-    test('pickDocumentFile falls back to async length when lengthSync is null',
-        () async {
-      final service = DefaultMediaPickerService(
-        imagePicker: mockImagePicker,
-        documentPicker: ({type = FileType.any, allowedExtensions}) async {
-          return _TestPlatformFile(
-            name: 'laporan.docx',
-            path: '/storage/laporan.docx',
-            size: 4096,
-            useAsyncLengthOnly: true,
-          );
-        },
-      );
+    test(
+      'pickDocumentFile falls back to async length when lengthSync is null',
+      () async {
+        final service = DefaultMediaPickerService(
+          imagePicker: mockImagePicker,
+          documentPicker: ({type = FileType.any, allowedExtensions}) async {
+            return _TestPlatformFile(
+              name: 'laporan.docx',
+              path: '/storage/laporan.docx',
+              size: 4096,
+              useAsyncLengthOnly: true,
+            );
+          },
+        );
 
-      final result = await service.pickDocumentFile();
+        final result = await service.pickDocumentFile();
 
-      expect(result, isNotNull);
-      expect(result!.name, 'laporan.docx');
-      expect(result.sizeInBytes, 4096);
-      expect(result.extension, 'docx');
-    });
+        expect(result, isNotNull);
+        expect(result!.name, 'laporan.docx');
+        expect(result.sizeInBytes, 4096);
+        expect(result.extension, 'docx');
+      },
+    );
 
-    test('pickDocumentFile returns null when user cancels picker dialog',
-        () async {
-      final service = DefaultMediaPickerService(
-        imagePicker: mockImagePicker,
-        documentPicker: ({type = FileType.any, allowedExtensions}) async =>
-            null,
-      );
+    test(
+      'pickDocumentFile returns null when user cancels picker dialog',
+      () async {
+        final service = DefaultMediaPickerService(
+          imagePicker: mockImagePicker,
+          documentPicker: ({type = FileType.any, allowedExtensions}) async =>
+              null,
+        );
 
-      final result = await service.pickDocumentFile();
-      expect(result, isNull);
-    });
+        final result = await service.pickDocumentFile();
+        expect(result, isNull);
+      },
+    );
   });
 
   group('AppMediaFile Model Tests', () {
@@ -355,24 +379,24 @@ void main() {
       expect(mediaFile.extension, 'jpg');
     });
 
-    test('fromXFile handles file without extension by returning null extension',
-        () async {
-      final xFile = XFile.fromData(
-        Uint8List.fromList([1, 2, 3]),
-        name: 'README',
-        path: '/storage/README',
-      );
+    test(
+      'fromXFile handles file without extension by returning null extension',
+      () async {
+        final xFile = XFile.fromData(
+          Uint8List.fromList([1, 2, 3]),
+          name: 'README',
+          path: '/storage/README',
+        );
 
-      final mediaFile = await AppMediaFile.fromXFile(xFile);
+        final mediaFile = await AppMediaFile.fromXFile(xFile);
 
-      expect(mediaFile.name, 'README');
-      expect(mediaFile.extension, isNull);
-    });
+        expect(mediaFile.name, 'README');
+        expect(mediaFile.extension, isNull);
+      },
+    );
 
     test('fromXFile handles Windows backslash path formatting', () async {
-      final xFile = XFile(
-        r'C:\Users\Admin\Documents\laporan_patroli.PDF',
-      );
+      final xFile = XFile(r'C:\Users\Admin\Documents\laporan_patroli.PDF');
 
       final mediaFile = await AppMediaFile.fromXFile(xFile);
 
@@ -392,22 +416,24 @@ void main() {
       expect(mediaFile.extension, 'png');
     });
 
-    test('fromPlatformFile maps name, path, extension, and size correctly',
-        () async {
-      final platformFile = _TestPlatformFile(
-        name: 'kontrak.PDF',
-        path: '/docs/kontrak.PDF',
-        size: 1024,
-        overrideExtension: 'pdf',
-      );
+    test(
+      'fromPlatformFile maps name, path, extension, and size correctly',
+      () async {
+        final platformFile = _TestPlatformFile(
+          name: 'kontrak.PDF',
+          path: '/docs/kontrak.PDF',
+          size: 1024,
+          overrideExtension: 'pdf',
+        );
 
-      final mediaFile = await AppMediaFile.fromPlatformFile(platformFile);
+        final mediaFile = await AppMediaFile.fromPlatformFile(platformFile);
 
-      expect(mediaFile.name, 'kontrak.PDF');
-      expect(mediaFile.path, '/docs/kontrak.PDF');
-      expect(mediaFile.sizeInBytes, 1024);
-      expect(mediaFile.extension, 'pdf');
-    });
+        expect(mediaFile.name, 'kontrak.PDF');
+        expect(mediaFile.path, '/docs/kontrak.PDF');
+        expect(mediaFile.sizeInBytes, 1024);
+        expect(mediaFile.extension, 'pdf');
+      },
+    );
 
     test('Equatable equality verifies identical props', () {
       const fileA = AppMediaFile(
@@ -431,13 +457,7 @@ void main() {
 
       expect(fileA, equals(fileB));
       expect(fileA == fileC, isFalse);
-      expect(fileA.props, [
-        'test.jpg',
-        '/test.jpg',
-        null,
-        100,
-        'jpg',
-      ]);
+      expect(fileA.props, ['test.jpg', '/test.jpg', null, 100, 'jpg']);
     });
 
     test('stringify prints descriptive representation of AppMediaFile', () {

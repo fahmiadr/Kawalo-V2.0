@@ -18,10 +18,7 @@ class AuthLoading extends AuthState {
 }
 
 class Authenticated extends AuthState {
-  const Authenticated({
-    required this.user,
-    this.session,
-  });
+  const Authenticated({required this.user, this.session});
   final UserEntity user;
   final AuthSessionEntity? session;
 

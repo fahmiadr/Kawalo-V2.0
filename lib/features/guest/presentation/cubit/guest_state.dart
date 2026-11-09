@@ -211,20 +211,20 @@ class GuestLoaded extends GuestState implements ListLoadedState {
 
   @override
   List<Object?> get props => [
-        guests,
-        isFromCache,
-        lastSync,
-        hasMore,
-        isLoadingMore,
-        filterPeriod,
-        filterCreatorEmail,
-        filterCreatorName,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    guests,
+    isFromCache,
+    lastSync,
+    hasMore,
+    isLoadingMore,
+    filterPeriod,
+    filterCreatorEmail,
+    filterCreatorName,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }
 
 /// Keadaan ketika terjadi kegagalan pengambilan data tamu.
@@ -307,17 +307,17 @@ class GuestError extends GuestState {
 
   @override
   List<Object?> get props => [
-        message,
-        failure,
-        cachedGuests,
-        lastSync,
-        filterPeriod,
-        filterCreatorEmail,
-        filterCreatorName,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    message,
+    failure,
+    cachedGuests,
+    lastSync,
+    filterPeriod,
+    filterCreatorEmail,
+    filterCreatorName,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }

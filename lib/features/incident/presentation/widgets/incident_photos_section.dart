@@ -58,13 +58,13 @@ class IncidentPhotosSection extends StatelessWidget {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return BlocSelector<IncidentFormCubit, IncidentFormState,
-        ({List<IncidentMediaItem> photos, String? error})>(
+    return BlocSelector<
+      IncidentFormCubit,
+      IncidentFormState,
+      ({List<IncidentMediaItem> photos, String? error})
+    >(
       bloc: cubit,
-      selector: (state) => (
-        photos: state.photos,
-        error: state.errorMessage,
-      ),
+      selector: (state) => (photos: state.photos, error: state.errorMessage),
       builder: (context, data) {
         final photos = data.photos;
         final canAddPhoto = !isSubmitting && photos.length < 4;
@@ -101,8 +101,7 @@ class IncidentPhotosSection extends StatelessWidget {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: AppSpacing.space150,
                     mainAxisSpacing: AppSpacing.space150,
@@ -130,10 +129,7 @@ class IncidentPhotosSection extends StatelessWidget {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        AppSvgIcon(
-                          KawaloVectors.add01,
-                          size: 18,
-                        ),
+                        AppSvgIcon(KawaloVectors.add01, size: 18),
                         AppSpacing.hGapXs,
                         Text('Tambah foto'),
                       ],

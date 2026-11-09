@@ -1,12 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/utils/date_range_utils.dart';
 
-enum TestPeriod {
-  today,
-  thisWeek,
-  thisMonth,
-  custom,
-}
+enum TestPeriod { today, thisWeek, thisMonth, custom }
 
 void main() {
   group('DateRangeUtils Tests', () {

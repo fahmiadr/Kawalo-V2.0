@@ -18,8 +18,9 @@ void main() {
   });
 
   test('should call repository logout and return void on success', () async {
-    when(() => mockRepository.logout())
-        .thenAnswer((_) async => const Right(null));
+    when(
+      () => mockRepository.logout(),
+    ).thenAnswer((_) async => const Right(null));
 
     final result = await useCase(const NoParams());
 

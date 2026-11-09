@@ -46,7 +46,8 @@ class AuthInterceptor extends QueuedInterceptor {
 
     // Abaikan path autentikasi publik tanpa kredensial
     final path = options.path;
-    final isAuthOrPublic = path.contains('/auth/login') ||
+    final isAuthOrPublic =
+        path.contains('/auth/login') ||
         path.contains('/auth/refresh') ||
         path.contains('/.well-known/');
 
@@ -171,9 +172,7 @@ class AuthInterceptor extends QueuedInterceptor {
 
       final response = await tokenDio.post<Map<String, dynamic>>(
         '/v1/auth/refresh',
-        data: {
-          'refresh_token': token,
-        },
+        data: {'refresh_token': token},
         cancelToken: cancelToken,
       );
       final responseData = response.data;

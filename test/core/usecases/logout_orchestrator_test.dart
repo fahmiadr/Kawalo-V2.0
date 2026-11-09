@@ -40,17 +40,20 @@ void main() {
       verify(() => cacheWiper.wipeAll()).called(1);
     });
 
-    test('propagates Left and still wipes cache when auth logout fails',
-        () async {
-      const failure = ServerFailure('gagal logout');
-      when(() => authLogout(any()))
-          .thenAnswer((_) async => const Left(failure));
+    test(
+      'propagates Left and still wipes cache when auth logout fails',
+      () async {
+        const failure = ServerFailure('gagal logout');
+        when(
+          () => authLogout(any()),
+        ).thenAnswer((_) async => const Left(failure));
 
-      final result = await orchestrator(const NoParams());
+        final result = await orchestrator(const NoParams());
 
-      expect(result, const Left<Failure, void>(failure));
-      verify(() => cacheWiper.wipeAll()).called(1);
-    });
+        expect(result, const Left<Failure, void>(failure));
+        verify(() => cacheWiper.wipeAll()).called(1);
+      },
+    );
 
     test('keeps thrown Failure as is and still wipes cache', () async {
       const failure = NetworkFailure();
@@ -62,18 +65,20 @@ void main() {
       verify(() => cacheWiper.wipeAll()).called(1);
     });
 
-    test('maps generic exception to ServerFailure and still wipes cache',
-        () async {
-      when(() => authLogout(any())).thenThrow(Exception('boom'));
+    test(
+      'maps generic exception to ServerFailure and still wipes cache',
+      () async {
+        when(() => authLogout(any())).thenThrow(Exception('boom'));
 
-      final result = await orchestrator(const NoParams());
+        final result = await orchestrator(const NoParams());
 
-      expect(result.isLeft(), isTrue);
-      result.match(
-        (failure) => expect(failure, isA<ServerFailure>()),
-        (_) => fail('Seharusnya Left'),
-      );
-      verify(() => cacheWiper.wipeAll()).called(1);
-    });
+        expect(result.isLeft(), isTrue);
+        result.match(
+          (failure) => expect(failure, isA<ServerFailure>()),
+          (_) => fail('Seharusnya Left'),
+        );
+        verify(() => cacheWiper.wipeAll()).called(1);
+      },
+    );
   });
 }

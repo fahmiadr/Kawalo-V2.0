@@ -59,13 +59,12 @@ class CameraBottomControls extends StatelessWidget {
     final hasSelected = selectedPhotos.isNotEmpty;
 
     final isReducedMotion = AppMotion.isReducedMotion(context);
-    final switchIconBaseColor =
-        isScreenFlashActive ? Colors.black : Colors.white;
+    final switchIconBaseColor = isScreenFlashActive
+        ? Colors.black
+        : Colors.white;
     final switchIconColor = onSwitchCamera != null
         ? switchIconBaseColor
-        : switchIconBaseColor.withValues(
-            alpha: AppStateLayer.disabledOpacity,
-          );
+        : switchIconBaseColor.withValues(alpha: AppStateLayer.disabledOpacity);
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -89,10 +88,12 @@ class CameraBottomControls extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: AnimatedSwitcher(
-                    duration:
-                        isReducedMotion ? Duration.zero : AppDuration.medium2,
-                    reverseDuration:
-                        isReducedMotion ? Duration.zero : AppDuration.short4,
+                    duration: isReducedMotion
+                        ? Duration.zero
+                        : AppDuration.medium2,
+                    reverseDuration: isReducedMotion
+                        ? Duration.zero
+                        : AppDuration.short4,
                     switchInCurve: Curves.easeOutBack,
                     switchOutCurve: Curves.easeInCubic,
                     transitionBuilder: (child, animation) {
@@ -115,12 +116,11 @@ class CameraBottomControls extends StatelessWidget {
                                 : AppMultiShotCameraScreen.rotationDuration,
                             curve: AppMultiShotCameraScreen.rotationCurve,
                             child: AppIconButton(
-                              key: const ValueKey<String>(
-                                'camera_done_button',
-                              ),
+                              key: const ValueKey<String>('camera_done_button'),
                               variant: AppIconButtonColor.filled,
                               size: AppIconButtonSize.md,
-                              semanticLabel: 'Selesai mengambil foto '
+                              semanticLabel:
+                                  'Selesai mengambil foto '
                                   '(${selectedPhotos.length} '
                                   'foto dipilih)',
                               badgeValue: selectedPhotos.length,
@@ -135,9 +135,7 @@ class CameraBottomControls extends StatelessWidget {
                             ),
                           )
                         : const SizedBox.shrink(
-                            key: ValueKey<String>(
-                              'empty_done_slot',
-                            ),
+                            key: ValueKey<String>('empty_done_slot'),
                           ),
                   ),
                 ),
@@ -169,10 +167,7 @@ class CameraBottomControls extends StatelessWidget {
                 const Expanded(
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                    ),
+                    child: SizedBox(width: 56, height: 56),
                   ),
                 ),
 

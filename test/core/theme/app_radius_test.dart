@@ -27,18 +27,7 @@ void main() {
 
     test('AppRadius.values list contains exactly 10 ordered tokens', () {
       expect(AppRadius.values.length, 10);
-      expect(AppRadius.values, [
-        0,
-        4,
-        8,
-        12,
-        16,
-        20,
-        28,
-        32,
-        48,
-        9999,
-      ]);
+      expect(AppRadius.values, [0, 4, 8, 12, 16, 20, 28, 32, 48, 9999]);
     });
   });
 
@@ -62,10 +51,7 @@ void main() {
         AppRadius.borderExtraSmall,
         const BorderRadius.all(Radius.circular(4)),
       );
-      expect(
-        AppRadius.borderSmall,
-        const BorderRadius.all(Radius.circular(8)),
-      );
+      expect(AppRadius.borderSmall, const BorderRadius.all(Radius.circular(8)));
       expect(
         AppRadius.borderMedium,
         const BorderRadius.all(Radius.circular(12)),
@@ -145,14 +131,15 @@ void main() {
       expect(AppRadius.inner(16, 5), 11);
     });
 
-    test('innerBorder returns concentric BorderRadius and supports snapToToken',
-        () {
-      final border = AppRadius.innerBorder(28, 12);
-      expect(border, const BorderRadius.all(Radius.circular(16)));
+    test(
+      'innerBorder returns concentric BorderRadius and supports snapToToken',
+      () {
+        final border = AppRadius.innerBorder(28, 12);
+        expect(border, const BorderRadius.all(Radius.circular(16)));
 
-      final snappedBorder =
-          AppRadius.innerBorder(16, 5, snapToToken: true);
-      expect(snappedBorder, const BorderRadius.all(Radius.circular(12)));
-    });
+        final snappedBorder = AppRadius.innerBorder(16, 5, snapToToken: true);
+        expect(snappedBorder, const BorderRadius.all(Radius.circular(12)));
+      },
+    );
   });
 }

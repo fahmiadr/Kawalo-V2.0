@@ -23,11 +23,7 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 /// Opsi personil yang dapat dipilih pada [AppUserFilterBottomSheet].
 class UserFilterOption extends Equatable {
   /// Membuat instance [UserFilterOption].
-  const UserFilterOption({
-    required this.email,
-    this.name,
-    this.profilePic,
-  });
+  const UserFilterOption({required this.email, this.name, this.profilePic});
 
   /// Alamat email unik personil.
   final String email;
@@ -49,10 +45,7 @@ class UserFilterOption extends Equatable {
 /// Hasil seleksi penyaringan personil dari [AppUserFilterBottomSheet].
 class AppUserFilterResult extends Equatable {
   /// Membuat instance [AppUserFilterResult].
-  const AppUserFilterResult({
-    this.selectedUser,
-    this.isReset = false,
-  });
+  const AppUserFilterResult({this.selectedUser, this.isReset = false});
 
   /// Personil terpilih (null jika direset ke seluruh personil).
   final UserFilterOption? selectedUser;
@@ -158,10 +151,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
               _errorMessage = failure.message;
             });
             if (context.mounted) {
-              AppSnackbar.show(
-                context,
-                message: failure.message,
-              );
+              AppSnackbar.show(context, message: failure.message);
             }
           },
           (fetched) {
@@ -185,17 +175,15 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
       }
     } on Object catch (e) {
       if (!mounted) return;
-      final message =
-          e is Failure ? e.message : 'Gagal memuat daftar personil.';
+      final message = e is Failure
+          ? e.message
+          : 'Gagal memuat daftar personil.';
       setState(() {
         _isLoading = false;
         _errorMessage = message;
       });
       if (context.mounted) {
-        AppSnackbar.show(
-          context,
-          message: message,
-        );
+        AppSnackbar.show(context, message: message);
       }
     }
   }
@@ -233,10 +221,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
 
     final session = widget.currentUserSession;
     if (session != null && session.email == email) {
-      return UserFilterOption(
-        email: session.email,
-        name: session.name,
-      );
+      return UserFilterOption(email: session.email, name: session.name);
     }
     return UserFilterOption(email: email);
   }
@@ -261,10 +246,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
   void _apply() {
     final user = _resolveSelectedUser();
     Navigator.of(context).pop(
-      AppUserFilterResult(
-        selectedUser: user,
-        isReset: _selectedEmail == null,
-      ),
+      AppUserFilterResult(selectedUser: user, isReset: _selectedEmail == null),
     );
   }
 
@@ -306,10 +288,7 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
             trailing: _hasSearchText
                 ? [
                     AppIconButton(
-                      icon: const AppSvgIcon(
-                        KawaloVectors.cancel01,
-                        size: 18,
-                      ),
+                      icon: const AppSvgIcon(KawaloVectors.cancel01, size: 18),
                       tooltip: 'Hapus teks pencarian',
                       semanticLabel: 'Hapus teks pencarian',
                       onPressed: _onClearSearch,
@@ -367,71 +346,69 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
               ),
             )
           : _errorMessage != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.space200,
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.space200,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppSvgIcon(
+                      _errorMessage!.toLowerCase().contains('internet') ||
+                              _errorMessage!.toLowerCase().contains('koneksi')
+                          ? KawaloVectors.wifiOff01
+                          : KawaloVectors.alertCircle,
+                      size: 32,
+                      color: colorScheme.error,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppSvgIcon(
-                          _errorMessage!.toLowerCase().contains('internet') ||
-                                  _errorMessage!
-                                      .toLowerCase()
-                                      .contains('koneksi')
-                              ? KawaloVectors.wifiOff01
-                              : KawaloVectors.alertCircle,
-                          size: 32,
-                          color: colorScheme.error,
-                        ),
-                        AppSpacing.vGap100,
-                        Text(
-                          _errorMessage!,
-                          style: typeScale.bodyMedium.copyWith(
-                            color: colorScheme.error,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        AppSpacing.vGapSm,
-                        AppButton(
-                          style: AppButtonColor.tonal,
-                          onPressed: _fetchUsers,
-                          child: const Text('Coba lagi'),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : filtered.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.space200,
-                        ),
-                        child: Text(
-                          'Tidak ada personil ditemukan.',
-                          style: typeScale.bodyMedium.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
+                    AppSpacing.vGap100,
+                    Text(
+                      _errorMessage!,
+                      style: typeScale.bodyMedium.copyWith(
+                        color: colorScheme.error,
                       ),
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: filtered
-                          .map(
-                            (user) => _buildOptionRow(
-                              label: user.displayName,
-                              subtitle: user.email,
-                              avatar: _buildAvatar(user.profilePic),
-                              radioValue: user.email,
-                              onTap: () => _onSelect(user.email),
-                            ),
-                          )
-                          .toList(),
+                      textAlign: TextAlign.center,
                     ),
+                    AppSpacing.vGapSm,
+                    AppButton(
+                      style: AppButtonColor.tonal,
+                      onPressed: _fetchUsers,
+                      child: const Text('Coba lagi'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : filtered.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.space200,
+                ),
+                child: Text(
+                  'Tidak ada personil ditemukan.',
+                  style: typeScale.bodyMedium.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: filtered
+                  .map(
+                    (user) => _buildOptionRow(
+                      label: user.displayName,
+                      subtitle: user.email,
+                      avatar: _buildAvatar(user.profilePic),
+                      radioValue: user.email,
+                      onTap: () => _onSelect(user.email),
+                    ),
+                  )
+                  .toList(),
+            ),
     );
   }
 
@@ -457,14 +434,12 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
 
   static const Widget _avatarFallback = ClipRRect(
     borderRadius: AppRadius.borderMedium,
-    child: AppSvgIcon.color(
-      KawaloColorVectors.patrol3,
-      size: 36,
-    ),
+    child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 36),
   );
 
   Widget _buildAvatar(String? pic) {
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -475,8 +450,8 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
           width: 36,
           height: 36,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _avatarFallback,
-          errorWidget: (_, __, ___) => _avatarFallback,
+          placeholder: (_, _) => _avatarFallback,
+          errorWidget: (_, _, _) => _avatarFallback,
         ),
       );
     }

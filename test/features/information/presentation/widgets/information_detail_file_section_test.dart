@@ -53,8 +53,9 @@ void main() {
       expect(find.text('Berkas Lampiran'), findsNothing);
     });
 
-    testWidgets('renders file tile, subtitle format, Buka, and Unduh for PDF',
-        (tester) async {
+    testWidgets('renders file tile, subtitle format, Buka, and Unduh for PDF', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
@@ -139,8 +140,9 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('tapping Unduh triggers download progress and snackbar',
-        (tester) async {
+    testWidgets('tapping Unduh triggers download progress and snackbar', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),

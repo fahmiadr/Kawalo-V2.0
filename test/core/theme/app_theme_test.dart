@@ -41,9 +41,7 @@ void main() {
               home: Builder(
                 builder: (context) {
                   capturedContext = context;
-                  return const Scaffold(
-                    body: SizedBox(),
-                  );
+                  return const Scaffold(body: SizedBox());
                 },
               ),
             ),
@@ -69,9 +67,7 @@ void main() {
               home: Builder(
                 builder: (context) {
                   capturedContext = context;
-                  return const Scaffold(
-                    body: SizedBox(),
-                  );
+                  return const Scaffold(body: SizedBox());
                 },
               ),
             ),
@@ -92,9 +88,7 @@ void main() {
             localizationsDelegates: AppTheme.localizationsDelegates,
             supportedLocales: AppTheme.supportedLocales,
             locale: const Locale('id', 'ID'),
-            home: const Scaffold(
-              body: Center(child: Text('Kawalo ID')),
-            ),
+            home: const Scaffold(body: Center(child: Text('Kawalo ID'))),
           ),
         );
 

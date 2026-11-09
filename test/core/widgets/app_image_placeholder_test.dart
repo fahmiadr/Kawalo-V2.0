@@ -5,51 +5,41 @@ import 'package:kawalo_mobile/core/widgets/app_image_placeholder.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 
 void main() {
-  testWidgets(
-    'AppImagePlaceholder renders label and default icon correctly',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppImagePlaceholder(
-              label: 'Avatar Placeholder',
-            ),
+  testWidgets('AppImagePlaceholder renders label and default icon correctly', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: AppImagePlaceholder(label: 'Avatar Placeholder')),
+      ),
+    );
+
+    expect(find.text('Avatar Placeholder'), findsOneWidget);
+  });
+
+  testWidgets('AppImagePlaceholder renders custom icon widget correctly', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppImagePlaceholder(
+            label: 'Custom Icon',
+            icon: Icon(Icons.person),
           ),
         ),
-      );
+      ),
+    );
 
-      expect(find.text('Avatar Placeholder'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'AppImagePlaceholder renders custom icon widget correctly',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppImagePlaceholder(
-              label: 'Custom Icon',
-              icon: Icon(Icons.person),
-            ),
-          ),
-        ),
-      );
-
-      expect(find.byIcon(Icons.person), findsOneWidget);
-      expect(find.text('Custom Icon'), findsOneWidget);
-    },
-  );
+    expect(find.byIcon(Icons.person), findsOneWidget);
+    expect(find.text('Custom Icon'), findsOneWidget);
+  });
 
   testWidgets(
     'AppImagePlaceholder renders without label properly without extra gap',
     (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppImagePlaceholder(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppImagePlaceholder())),
       );
 
       expect(find.byType(Text), findsNothing);
@@ -57,34 +47,27 @@ void main() {
     },
   );
 
-  testWidgets(
-    'AppImagePlaceholder uses AppShape tokens properly',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppImagePlaceholder(
-              label: 'Shape Test',
-              shape: AppShape.full,
-            ),
-          ),
+  testWidgets('AppImagePlaceholder uses AppShape tokens properly', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppImagePlaceholder(label: 'Shape Test', shape: AppShape.full),
         ),
-      );
+      ),
+    );
 
-      final container = tester.widget<Container>(
-        find.descendant(
-          of: find.byType(AppImagePlaceholder),
-          matching: find.byType(Container),
-        ),
-      );
+    final container = tester.widget<Container>(
+      find.descendant(
+        of: find.byType(AppImagePlaceholder),
+        matching: find.byType(Container),
+      ),
+    );
 
-      expect(container.decoration, isA<ShapeDecoration>());
-      expect(
-        (container.decoration! as ShapeDecoration).shape,
-        AppShape.full,
-      );
-    },
-  );
+    expect(container.decoration, isA<ShapeDecoration>());
+    expect((container.decoration! as ShapeDecoration).shape, AppShape.full);
+  });
 
   testWidgets(
     'AppImagePlaceholder applies custom backgroundColor and foregroundColor',
@@ -146,28 +129,27 @@ void main() {
     },
   );
 
-  testWidgets(
-    'AppImagePlaceholder applies iconSize to AppSvgIcon properly',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppImagePlaceholder(
-              iconPath: 'assets/icons/vector/image-not-found-01.svg',
-              iconSize: 60,
-            ),
+  testWidgets('AppImagePlaceholder applies iconSize to AppSvgIcon properly', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppImagePlaceholder(
+            iconPath: 'assets/icons/vector/image-not-found-01.svg',
+            iconSize: 60,
           ),
         ),
-      );
+      ),
+    );
 
-      final iconWidget = tester.widget<AppSvgIcon>(
-        find.descendant(
-          of: find.byType(AppImagePlaceholder),
-          matching: find.byType(AppSvgIcon),
-        ),
-      );
-      expect(iconWidget.size, 60);
-      expect(iconWidget.fit, BoxFit.contain);
-    },
-  );
+    final iconWidget = tester.widget<AppSvgIcon>(
+      find.descendant(
+        of: find.byType(AppImagePlaceholder),
+        matching: find.byType(AppSvgIcon),
+      ),
+    );
+    expect(iconWidget.size, 60);
+    expect(iconWidget.fit, BoxFit.contain);
+  });
 }

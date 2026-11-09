@@ -21,10 +21,7 @@ void main() {
 
     group('cleanEmail', () {
       test('normalizes email to lowercase and trims whitespace', () {
-        expect(
-          AppSanitizer.cleanEmail('  BUDI@KAWALO.ID  '),
-          'budi@kawalo.id',
-        );
+        expect(AppSanitizer.cleanEmail('  BUDI@KAWALO.ID  '), 'budi@kawalo.id');
       });
 
       test('returns null for empty, placeholders, and invalid emails', () {
@@ -39,19 +36,18 @@ void main() {
     });
 
     group('cleanPhone', () {
-      test('normalizes international numbers and retains single plus prefix',
-          () {
-        expect(
-          AppSanitizer.cleanPhone('  +62 (021) 555-0199  '),
-          '+620215550199',
-        );
-      });
+      test(
+        'normalizes international numbers and retains single plus prefix',
+        () {
+          expect(
+            AppSanitizer.cleanPhone('  +62 (021) 555-0199  '),
+            '+620215550199',
+          );
+        },
+      );
 
       test('normalizes local numbers without plus prefix', () {
-        expect(
-          AppSanitizer.cleanPhone('0812-3456-7890'),
-          '081234567890',
-        );
+        expect(AppSanitizer.cleanPhone('0812-3456-7890'), '081234567890');
       });
 
       test('cleans wild plus signs and non-digit characters in between', () {
@@ -98,10 +94,7 @@ void main() {
       });
 
       test('ignores legacy epoch dates and empty placeholders', () {
-        expect(
-          AppSanitizer.cleanDate('1970-01-01T00:00:00.000Z'),
-          isNull,
-        );
+        expect(AppSanitizer.cleanDate('1970-01-01T00:00:00.000Z'), isNull);
         expect(AppSanitizer.cleanDate('0000-00-00 00:00:00'), isNull);
         expect(AppSanitizer.cleanDate('N/A'), isNull);
         expect(AppSanitizer.cleanDate('   '), isNull);
@@ -110,10 +103,7 @@ void main() {
 
     group('cleanTimeWindow', () {
       test('returns valid time window string', () {
-        expect(
-          AppSanitizer.cleanTimeWindow('07:00 - 15:00'),
-          '07:00 - 15:00',
-        );
+        expect(AppSanitizer.cleanTimeWindow('07:00 - 15:00'), '07:00 - 15:00');
       });
 
       test('ignores dummy zero time windows and placeholders', () {
@@ -150,16 +140,18 @@ void main() {
         expect(AppSanitizer.cleanCoordinate(' 106.8456 '), '106.8456');
       });
 
-      test('ignores dummy zero coordinates or non-numeric/out-of-range strings',
-          () {
-        expect(AppSanitizer.cleanCoordinate('0'), isNull);
-        expect(AppSanitizer.cleanCoordinate('0.0'), isNull);
-        expect(AppSanitizer.cleanCoordinate('0.000000'), isNull);
-        expect(AppSanitizer.cleanCoordinate('not_a_number'), isNull);
-        expect(AppSanitizer.cleanCoordinate('200.0'), isNull);
-        expect(AppSanitizer.cleanCoordinate('-200.0'), isNull);
-        expect(AppSanitizer.cleanCoordinate('N/A'), isNull);
-      });
+      test(
+        'ignores dummy zero coordinates or non-numeric/out-of-range strings',
+        () {
+          expect(AppSanitizer.cleanCoordinate('0'), isNull);
+          expect(AppSanitizer.cleanCoordinate('0.0'), isNull);
+          expect(AppSanitizer.cleanCoordinate('0.000000'), isNull);
+          expect(AppSanitizer.cleanCoordinate('not_a_number'), isNull);
+          expect(AppSanitizer.cleanCoordinate('200.0'), isNull);
+          expect(AppSanitizer.cleanCoordinate('-200.0'), isNull);
+          expect(AppSanitizer.cleanCoordinate('N/A'), isNull);
+        },
+      );
 
       test('validates latitude bounds (-90..90)', () {
         expect(AppSanitizer.cleanLatitude('-6.2088'), '-6.2088');
@@ -257,18 +249,12 @@ void main() {
     group('stripFilePaths', () {
       test('masks Unix absolute paths with [path]', () {
         const input = 'Error at /data/user/0/id.kawalo.app/files/db.isar';
-        expect(
-          AppSanitizer.stripFilePaths(input),
-          equals('Error at [path]'),
-        );
+        expect(AppSanitizer.stripFilePaths(input), equals('Error at [path]'));
       });
 
       test('masks Windows absolute paths with [path]', () {
         const input = r'Error at C:\Users\User\AppData\Local\cache.db';
-        expect(
-          AppSanitizer.stripFilePaths(input),
-          equals('Error at [path]'),
-        );
+        expect(AppSanitizer.stripFilePaths(input), equals('Error at [path]'));
       });
 
       test('masks Windows absolute paths containing spaces entirely', () {

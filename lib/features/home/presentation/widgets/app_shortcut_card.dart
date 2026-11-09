@@ -72,7 +72,8 @@ class AppShortcutCard extends StatelessWidget {
     final typeScale = theme.typeScale;
     final emphasizedTypeScale = theme.typography.emphasized;
 
-    final effectiveSemanticLabel = item.semanticLabel ??
+    final effectiveSemanticLabel =
+        item.semanticLabel ??
         (item.subtitle != null && item.subtitle!.isNotEmpty
             ? '${item.title}, ${item.subtitle}'
             : item.title);

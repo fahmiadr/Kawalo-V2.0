@@ -67,8 +67,7 @@ class GuestPhotoSourceBottomSheet extends StatelessWidget {
                 title: 'Kamera',
                 subtitle: 'Ambil foto tamu langsung menggunakan kamera ponsel',
                 vectorIcon: KawaloVectors.camera01,
-                onTap: () =>
-                    Navigator.of(context).pop(GuestPhotoSource.camera),
+                onTap: () => Navigator.of(context).pop(GuestPhotoSource.camera),
               ),
               AppSpacing.vGap150,
               AppOptionTile(

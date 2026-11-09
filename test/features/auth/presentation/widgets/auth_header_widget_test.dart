@@ -9,9 +9,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: AuthHeaderWidget(
-              subtitle: 'Masukkan akun Anda',
-            ),
+            body: AuthHeaderWidget(subtitle: 'Masukkan akun Anda'),
           ),
         ),
       );

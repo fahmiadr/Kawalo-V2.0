@@ -19,8 +19,9 @@ void main() {
   }
 
   group('AppHomeAppBar Tests', () {
-    testWidgets('renders greeting, logo, and notification button',
-        (tester) async {
+    testWidgets('renders greeting, logo, and notification button', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           const AppHomeAppBar(
@@ -40,8 +41,9 @@ void main() {
       expect(find.text('9'), findsNothing);
     });
 
-    testWidgets('renders badge with count when unreadNotificationsCount > 0',
-        (tester) async {
+    testWidgets('renders badge with count when unreadNotificationsCount > 0', (
+      tester,
+    ) async {
       var notificationTapped = false;
 
       await tester.pumpWidget(
@@ -68,8 +70,9 @@ void main() {
       expect(notificationTapped, isTrue);
     });
 
-    testWidgets('renders 99+ when unreadNotificationsCount exceeds 99',
-        (tester) async {
+    testWidgets('renders 99+ when unreadNotificationsCount exceeds 99', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           const AppHomeAppBar(
@@ -100,48 +103,49 @@ void main() {
       expect(find.byType(KawaloLogoText), findsNothing);
     });
 
-    testWidgets('renders headline title text when title parameter is provided',
-        (tester) async {
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            greeting: 'Diperbarui Hari ini, 14.20',
-            title: 'Pusat Informasi',
+    testWidgets(
+      'renders headline title text when title parameter is provided',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              greeting: 'Diperbarui Hari ini, 14.20',
+              title: 'Pusat Informasi',
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Diperbarui Hari ini, 14.20'), findsOneWidget);
-      expect(find.text('Pusat Informasi'), findsOneWidget);
-      expect(find.byType(KawaloLogoText), findsNothing);
-    });
+        expect(find.text('Diperbarui Hari ini, 14.20'), findsOneWidget);
+        expect(find.text('Pusat Informasi'), findsOneWidget);
+        expect(find.byType(KawaloLogoText), findsNothing);
+      },
+    );
 
     testWidgets(
       'renders safely under 200% dynamic text scaling without overflow',
       (tester) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            greeting: 'Selamat siang, admin!',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildTestApp(const AppHomeAppBar(greeting: 'Selamat siang, admin!')),
+        );
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      expect(find.byType(KawaloLogoText), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        expect(find.byType(KawaloLogoText), findsOneWidget);
 
-      final logoWidget =
-          tester.widget<KawaloLogoText>(find.byType(KawaloLogoText));
-      expect(logoWidget.textScaler, equals(TextScaler.noScaling));
-    });
+        final logoWidget = tester.widget<KawaloLogoText>(
+          find.byType(KawaloLogoText),
+        );
+        expect(logoWidget.textScaler, equals(TextScaler.noScaling));
+      },
+    );
 
-    testWidgets('renders back button and handles onBackPressed',
-        (WidgetTester tester) async {
+    testWidgets('renders back button and handles onBackPressed', (
+      WidgetTester tester,
+    ) async {
       var backTapped = false;
 
       await tester.pumpWidget(
@@ -167,8 +171,9 @@ void main() {
       expect(backTapped, isTrue);
     });
 
-    testWidgets('renders searchBar and increases preferredSize height',
-        (WidgetTester tester) async {
+    testWidgets('renders searchBar and increases preferredSize height', (
+      WidgetTester tester,
+    ) async {
       const appBarWithSearch = AppHomeAppBar(
         greeting: 'Diperbarui Hari ini, 15.20',
         title: 'Data Tamu',
@@ -191,103 +196,107 @@ void main() {
     });
 
     testWidgets(
-        'back button and trailing button provide unblocked 48x48 touch targets '
-        'and respond to boundary taps', (WidgetTester tester) async {
-      var backTaps = 0;
-      var notificationTaps = 0;
+      'back button and trailing button provide unblocked 48x48 touch targets '
+      'and respond to boundary taps',
+      (WidgetTester tester) async {
+        var backTaps = 0;
+        var notificationTaps = 0;
 
-      await tester.pumpWidget(
-        buildTestApp(
-          AppHomeAppBar(
-            greeting: 'Diperbarui Hari ini, 15.20',
-            title: 'Data Tamu',
-            showBackButton: true,
-            onBackPressed: () => backTaps++,
-            unreadNotificationsCount: 1,
-            onNotificationPressed: () => notificationTaps++,
+        await tester.pumpWidget(
+          buildTestApp(
+            AppHomeAppBar(
+              greeting: 'Diperbarui Hari ini, 15.20',
+              title: 'Data Tamu',
+              showBackButton: true,
+              onBackPressed: () => backTaps++,
+              unreadNotificationsCount: 1,
+              onNotificationPressed: () => notificationTaps++,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final backFinder = find.bySemanticsLabel('Kembali');
-      final backSize = tester.getSize(backFinder);
-      expect(backSize.width, greaterThanOrEqualTo(48.0));
-      expect(backSize.height, greaterThanOrEqualTo(48.0));
+        final backFinder = find.bySemanticsLabel('Kembali');
+        final backSize = tester.getSize(backFinder);
+        expect(backSize.width, greaterThanOrEqualTo(48.0));
+        expect(backSize.height, greaterThanOrEqualTo(48.0));
 
-      final backCenter = tester.getCenter(backFinder);
+        final backCenter = tester.getCenter(backFinder);
 
-      // Tap near top (within touch target).
-      await tester.tapAt(backCenter - const Offset(0, 16));
-      await tester.pumpAndSettle();
-      expect(backTaps, equals(1));
+        // Tap near top (within touch target).
+        await tester.tapAt(backCenter - const Offset(0, 16));
+        await tester.pumpAndSettle();
+        expect(backTaps, equals(1));
 
-      // Tap near bottom (within touch target).
-      await tester.tapAt(backCenter + const Offset(0, 16));
-      await tester.pumpAndSettle();
-      expect(backTaps, equals(2));
+        // Tap near bottom (within touch target).
+        await tester.tapAt(backCenter + const Offset(0, 16));
+        await tester.pumpAndSettle();
+        expect(backTaps, equals(2));
 
-      // Tap near left (within touch target).
-      await tester.tapAt(backCenter - const Offset(16, 0));
-      await tester.pumpAndSettle();
-      expect(backTaps, equals(3));
+        // Tap near left (within touch target).
+        await tester.tapAt(backCenter - const Offset(16, 0));
+        await tester.pumpAndSettle();
+        expect(backTaps, equals(3));
 
-      // Tap near right (within touch target).
-      await tester.tapAt(backCenter + const Offset(16, 0));
-      await tester.pumpAndSettle();
-      expect(backTaps, equals(4));
+        // Tap near right (within touch target).
+        await tester.tapAt(backCenter + const Offset(16, 0));
+        await tester.pumpAndSettle();
+        expect(backTaps, equals(4));
 
-      final notifFinder = find.byType(AppIconButton).first;
-      final notifSize = tester.getSize(notifFinder);
-      expect(notifSize.width, greaterThanOrEqualTo(48.0));
-      expect(notifSize.height, greaterThanOrEqualTo(48.0));
+        final notifFinder = find.byType(AppIconButton).first;
+        final notifSize = tester.getSize(notifFinder);
+        expect(notifSize.width, greaterThanOrEqualTo(48.0));
+        expect(notifSize.height, greaterThanOrEqualTo(48.0));
 
-      final notifCenter = tester.getCenter(notifFinder);
+        final notifCenter = tester.getCenter(notifFinder);
 
-      // Tap near top of notification button.
-      await tester.tapAt(notifCenter - const Offset(0, 16));
-      await tester.pumpAndSettle();
-      expect(notificationTaps, equals(1));
+        // Tap near top of notification button.
+        await tester.tapAt(notifCenter - const Offset(0, 16));
+        await tester.pumpAndSettle();
+        expect(notificationTaps, equals(1));
 
-      // Tap near bottom of notification button.
-      await tester.tapAt(notifCenter + const Offset(0, 16));
-      await tester.pumpAndSettle();
-      expect(notificationTaps, equals(2));
+        // Tap near bottom of notification button.
+        await tester.tapAt(notifCenter + const Offset(0, 16));
+        await tester.pumpAndSettle();
+        expect(notificationTaps, equals(2));
 
-      // Tap near left of notification button.
-      await tester.tapAt(notifCenter - const Offset(16, 0));
-      await tester.pumpAndSettle();
-      expect(notificationTaps, equals(3));
+        // Tap near left of notification button.
+        await tester.tapAt(notifCenter - const Offset(16, 0));
+        await tester.pumpAndSettle();
+        expect(notificationTaps, equals(3));
 
-      // Tap near right of notification button.
-      await tester.tapAt(notifCenter + const Offset(16, 0));
-      await tester.pumpAndSettle();
-      expect(notificationTaps, equals(4));
-    });
+        // Tap near right of notification button.
+        await tester.tapAt(notifCenter + const Offset(16, 0));
+        await tester.pumpAndSettle();
+        expect(notificationTaps, equals(4));
+      },
+    );
 
     testWidgets(
-        'renders title with back button without greeting and without trailing',
-        (tester) async {
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            title: 'Detail tamu',
-            showBackButton: true,
-            showTrailing: false,
+      'renders title with back button without greeting and without trailing',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              title: 'Detail tamu',
+              showBackButton: true,
+              showTrailing: false,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Detail tamu'), findsOneWidget);
-      expect(find.bySemanticsLabel('Kembali'), findsOneWidget);
-      // Only 1 AppIconButton (the back button), no trailing notification button
-      expect(find.byType(AppIconButton), findsOneWidget);
-      expect(find.byType(KawaloLogoText), findsNothing);
-    });
+        expect(find.text('Detail tamu'), findsOneWidget);
+        expect(find.bySemanticsLabel('Kembali'), findsOneWidget);
+        // Only 1 AppIconButton (the back button), no trailing notification button
+        expect(find.byType(AppIconButton), findsOneWidget);
+        expect(find.byType(KawaloLogoText), findsNothing);
+      },
+    );
 
-    testWidgets('tapping back button triggers onBackPressed callback',
-        (tester) async {
+    testWidgets('tapping back button triggers onBackPressed callback', (
+      tester,
+    ) async {
       var backTapped = false;
       await tester.pumpWidget(
         buildTestApp(
@@ -310,69 +319,74 @@ void main() {
     });
 
     testWidgets(
-        'trailing button sizes (md, lg) are unconstrained and render at their '
-        'proper sizes', (tester) async {
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            title: 'Test Trailing Sizing',
-            trailing: AppIconButton(
-              key: ValueKey('trailing_btn_md'),
-              icon: Icon(Icons.download),
-              size: AppIconButtonSize.md,
+      'trailing button sizes (md, lg) are unconstrained and render at their '
+      'proper sizes',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              title: 'Test Trailing Sizing',
+              trailing: AppIconButton(
+                key: ValueKey('trailing_btn_md'),
+                icon: Icon(Icons.download),
+                size: AppIconButtonSize.md,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final mdSize =
-          tester.getSize(find.byKey(const ValueKey('trailing_btn_md')));
-      expect(mdSize.width, equals(56.0));
-      expect(mdSize.height, equals(56.0));
+        final mdSize = tester.getSize(
+          find.byKey(const ValueKey('trailing_btn_md')),
+        );
+        expect(mdSize.width, equals(56.0));
+        expect(mdSize.height, equals(56.0));
 
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            title: 'Test Trailing Sizing',
-            trailing: AppIconButton(
-              key: ValueKey('trailing_btn_lg'),
-              icon: Icon(Icons.download),
-              size: AppIconButtonSize.lg,
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              title: 'Test Trailing Sizing',
+              trailing: AppIconButton(
+                key: ValueKey('trailing_btn_lg'),
+                icon: Icon(Icons.download),
+                size: AppIconButtonSize.lg,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final lgSize =
-          tester.getSize(find.byKey(const ValueKey('trailing_btn_lg')));
-      expect(lgSize.width, greaterThan(48.0));
-      expect(lgSize.height, greaterThan(48.0));
-    });
+        final lgSize = tester.getSize(
+          find.byKey(const ValueKey('trailing_btn_lg')),
+        );
+        expect(lgSize.width, greaterThan(48.0));
+        expect(lgSize.height, greaterThan(48.0));
+      },
+    );
 
     testWidgets(
-        'back button respects backButtonSize and renders without container '
-        'clamping', (tester) async {
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            title: 'Test Back Button Sizing',
-            showBackButton: true,
-            backButtonSize: AppIconButtonSize.lg,
+      'back button respects backButtonSize and renders without container '
+      'clamping',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              title: 'Test Back Button Sizing',
+              showBackButton: true,
+              backButtonSize: AppIconButtonSize.lg,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final backFinder = find.bySemanticsLabel('Kembali');
-      final backSize = tester.getSize(backFinder);
-      expect(backSize.width, greaterThan(48.0));
-      expect(backSize.height, greaterThan(48.0));
-    });
+        final backFinder = find.bySemanticsLabel('Kembali');
+        final backSize = tester.getSize(backFinder);
+        expect(backSize.width, greaterThan(48.0));
+        expect(backSize.height, greaterThan(48.0));
+      },
+    );
 
-    testWidgets(
-        'leading button precedes title when both leading and title are '
+    testWidgets('leading button precedes title when both leading and title are '
         'provided', (tester) async {
       var leadingTapped = false;
       await tester.pumpWidget(
@@ -400,51 +414,57 @@ void main() {
     });
 
     testWidgets(
-        'reserveGreetingSpace locks title vertically and prevents layout shift '
-        'when greeting loads', (tester) async {
-      // Step 1: Render with reserveGreetingSpace: true
-      // and greetingLoading: true
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            reserveGreetingSpace: true,
-            greetingLoading: true,
-            title: 'Pusat Informasi',
+      'reserveGreetingSpace locks title vertically and prevents layout shift '
+      'when greeting loads',
+      (tester) async {
+        // Step 1: Render with reserveGreetingSpace: true
+        // and greetingLoading: true
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              reserveGreetingSpace: true,
+              greetingLoading: true,
+              title: 'Pusat Informasi',
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      expect(find.text('Pusat Informasi'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Memuat status pembaruan data'),
-        findsOneWidget,
-      );
-      final initialTitleOffset =
-          tester.getTopLeft(find.text('Pusat Informasi'));
+        expect(find.text('Pusat Informasi'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel('Memuat status pembaruan data'),
+          findsOneWidget,
+        );
+        final initialTitleOffset = tester.getTopLeft(
+          find.text('Pusat Informasi'),
+        );
 
-      // Step 2: Render with valid greeting loaded
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            reserveGreetingSpace: true,
-            greeting: 'Diperbarui Hari ini, 15.20',
-            title: 'Pusat Informasi',
+        // Step 2: Render with valid greeting loaded
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              reserveGreetingSpace: true,
+              greeting: 'Diperbarui Hari ini, 15.20',
+              title: 'Pusat Informasi',
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
-      expect(find.text('Pusat Informasi'), findsOneWidget);
-      final finalTitleOffset = tester.getTopLeft(find.text('Pusat Informasi'));
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Pusat Informasi'), findsOneWidget);
+        final finalTitleOffset = tester.getTopLeft(
+          find.text('Pusat Informasi'),
+        );
 
-      // The vertical Y-position of the title MUST remain exactly identical!
-      expect(finalTitleOffset.dy, equals(initialTitleOffset.dy));
-    });
+        // The vertical Y-position of the title MUST remain exactly identical!
+        expect(finalTitleOffset.dy, equals(initialTitleOffset.dy));
+      },
+    );
 
-    testWidgets('renders titleWidget when provided instead of text title',
-        (tester) async {
+    testWidgets('renders titleWidget when provided instead of text title', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           const AppHomeAppBar(
@@ -463,57 +483,56 @@ void main() {
     });
 
     testWidgets(
-        'title and titleWidget search bar start at exact same horizontal '
-        'alignment without extra padding', (tester) async {
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            greeting: 'Data tamu',
-            reserveGreetingSpace: true,
-            title: 'Data tamu',
-            showBackButton: true,
-            trailing: AppIconButton(
-              icon: Icon(Icons.search),
+      'title and titleWidget search bar start at exact same horizontal '
+      'alignment without extra padding',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              greeting: 'Data tamu',
+              reserveGreetingSpace: true,
+              title: 'Data tamu',
+              showBackButton: true,
+              trailing: AppIconButton(icon: Icon(Icons.search)),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final backBtnFinder = find.bySemanticsLabel('Kembali');
-      final backBox = tester.renderObject(backBtnFinder) as RenderBox;
-      final backRect = backBox.localToGlobal(Offset.zero) & backBox.size;
+        final backBtnFinder = find.bySemanticsLabel('Kembali');
+        final backBox = tester.renderObject(backBtnFinder) as RenderBox;
+        final backRect = backBox.localToGlobal(Offset.zero) & backBox.size;
 
-      final titleFinder = find.text('Data tamu').last;
-      final titleBox = tester.renderObject(titleFinder) as RenderBox;
-      final titleRect = titleBox.localToGlobal(Offset.zero) & titleBox.size;
+        final titleFinder = find.text('Data tamu').last;
+        final titleBox = tester.renderObject(titleFinder) as RenderBox;
+        final titleRect = titleBox.localToGlobal(Offset.zero) & titleBox.size;
 
-      expect(titleRect.left - backRect.right, equals(8));
+        expect(titleRect.left - backRect.right, equals(8));
 
-      await tester.pumpWidget(
-        buildTestApp(
-          const AppHomeAppBar(
-            greeting: 'Data tamu',
-            reserveGreetingSpace: true,
-            titleWidget: AppSearchBar(
-              hintText: 'Cari data tamu',
-              constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
-            ),
-            showBackButton: true,
-            trailing: AppIconButton(
-              icon: Icon(Icons.close),
+        await tester.pumpWidget(
+          buildTestApp(
+            const AppHomeAppBar(
+              greeting: 'Data tamu',
+              reserveGreetingSpace: true,
+              titleWidget: AppSearchBar(
+                hintText: 'Cari data tamu',
+                constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+              ),
+              showBackButton: true,
+              trailing: AppIconButton(icon: Icon(Icons.close)),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final searchFinder = find.byType(AppSearchBar);
-      final searchBox = tester.renderObject(searchFinder) as RenderBox;
-      final searchRect = searchBox.localToGlobal(Offset.zero) & searchBox.size;
+        final searchFinder = find.byType(AppSearchBar);
+        final searchBox = tester.renderObject(searchFinder) as RenderBox;
+        final searchRect =
+            searchBox.localToGlobal(Offset.zero) & searchBox.size;
 
-      expect(searchRect.left, equals(titleRect.left));
-      expect(searchRect.left - backRect.right, equals(8));
-    });
+        expect(searchRect.left, equals(titleRect.left));
+        expect(searchRect.left - backRect.right, equals(8));
+      },
+    );
   });
 }

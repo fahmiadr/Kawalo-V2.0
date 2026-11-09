@@ -64,36 +64,40 @@ void main() {
   });
 
   group('LocationResult Value Object Tests', () {
-    test('success factory creates valid safe result with coordinates record',
-        () {
-      final result = LocationResult.success(dummyPosition);
+    test(
+      'success factory creates valid safe result with coordinates record',
+      () {
+        final result = LocationResult.success(dummyPosition);
 
-      expect(result.status, equals(LocationStatus.success));
-      expect(result.position, equals(dummyPosition));
-      expect(result.isMocked, isFalse);
-      expect(result.errorMessage, isNull);
-      expect(result.isSafe, isTrue);
-      expect(result.isSuccess, isTrue);
-      expect(result.isFailure, isFalse);
+        expect(result.status, equals(LocationStatus.success));
+        expect(result.position, equals(dummyPosition));
+        expect(result.isMocked, isFalse);
+        expect(result.errorMessage, isNull);
+        expect(result.isSafe, isTrue);
+        expect(result.isSuccess, isTrue);
+        expect(result.isFailure, isFalse);
 
-      expect(result.coordinates, isNotNull);
-      final (lat, lng) = result.coordinates!;
-      expect(lat, equals(-6.2088));
-      expect(lng, equals(106.8456));
-    });
+        expect(result.coordinates, isNotNull);
+        final (lat, lng) = result.coordinates!;
+        expect(lat, equals(-6.2088));
+        expect(lng, equals(106.8456));
+      },
+    );
 
-    test('serviceDisabled factory creates expected status with null coords',
-        () {
-      const result = LocationResult.serviceDisabled();
+    test(
+      'serviceDisabled factory creates expected status with null coords',
+      () {
+        const result = LocationResult.serviceDisabled();
 
-      expect(result.status, equals(LocationStatus.serviceDisabled));
-      expect(result.position, isNull);
-      expect(result.coordinates, isNull);
-      expect(result.isSafe, isFalse);
-      expect(result.isSuccess, isFalse);
-      expect(result.isFailure, isTrue);
-      expect(result.errorMessage, contains('Layanan lokasi'));
-    });
+        expect(result.status, equals(LocationStatus.serviceDisabled));
+        expect(result.position, isNull);
+        expect(result.coordinates, isNull);
+        expect(result.isSafe, isFalse);
+        expect(result.isSuccess, isFalse);
+        expect(result.isFailure, isTrue);
+        expect(result.errorMessage, contains('Layanan lokasi'));
+      },
+    );
 
     test('permissionDenied factory creates expected status', () {
       const result = LocationResult.permissionDenied();
@@ -182,14 +186,16 @@ void main() {
 
     setUp(() {
       mockPlatform = MockGeolocatorPlatform();
-      when(mockPlatform.getLocationAccuracy)
-          .thenAnswer((_) async => LocationAccuracyStatus.precise);
+      when(
+        mockPlatform.getLocationAccuracy,
+      ).thenAnswer((_) async => LocationAccuracyStatus.precise);
       service = DefaultLocationService(geolocatorPlatform: mockPlatform);
     });
 
     test('returns serviceDisabled when device GPS is disabled', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => false);
+      when(
+        mockPlatform.isLocationServiceEnabled,
+      ).thenAnswer((_) async => false);
 
       final result = await service.getCurrentPosition();
 
@@ -199,12 +205,13 @@ void main() {
     });
 
     test('returns permissionDenied when user denies permission', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.denied);
-      when(mockPlatform.requestPermission)
-          .thenAnswer((_) async => LocationPermission.denied);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.denied);
+      when(
+        mockPlatform.requestPermission,
+      ).thenAnswer((_) async => LocationPermission.denied);
 
       final result = await service.getCurrentPosition();
 
@@ -213,25 +220,29 @@ void main() {
       verify(mockPlatform.requestPermission).called(1);
     });
 
-    test('returns permissionDeniedForever when permission is deniedForever',
-        () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.deniedForever);
+    test(
+      'returns permissionDeniedForever when permission is deniedForever',
+      () async {
+        when(
+          mockPlatform.isLocationServiceEnabled,
+        ).thenAnswer((_) async => true);
+        when(
+          mockPlatform.checkPermission,
+        ).thenAnswer((_) async => LocationPermission.deniedForever);
 
-      final result = await service.getCurrentPosition();
+        final result = await service.getCurrentPosition();
 
-      expect(result.status, equals(LocationStatus.permissionDeniedForever));
-      expect(result.isSafe, isFalse);
-      verifyNever(mockPlatform.requestPermission);
-    });
+        expect(result.status, equals(LocationStatus.permissionDeniedForever));
+        expect(result.isSafe, isFalse);
+        verifyNever(mockPlatform.requestPermission);
+      },
+    );
 
     test('returns success when valid real location is obtained', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.whileInUse);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.whileInUse);
       when(
         () => mockPlatform.getCurrentPosition(
           locationSettings: any(named: 'locationSettings'),
@@ -245,32 +256,36 @@ void main() {
       expect(result.isSafe, isTrue);
     });
 
-    test('returns mockLocationDetected when isMocked is true and enforced',
-        () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.always);
-      when(
-        () => mockPlatform.getCurrentPosition(
-          locationSettings: any(named: 'locationSettings'),
-        ),
-      ).thenAnswer((_) async => dummyMockedPosition);
+    test(
+      'returns mockLocationDetected when isMocked is true and enforced',
+      () async {
+        when(
+          mockPlatform.isLocationServiceEnabled,
+        ).thenAnswer((_) async => true);
+        when(
+          mockPlatform.checkPermission,
+        ).thenAnswer((_) async => LocationPermission.always);
+        when(
+          () => mockPlatform.getCurrentPosition(
+            locationSettings: any(named: 'locationSettings'),
+          ),
+        ).thenAnswer((_) async => dummyMockedPosition);
 
-      final result = await service.getCurrentPosition(
-        enforceMockDetection: true,
-      );
+        final result = await service.getCurrentPosition(
+          enforceMockDetection: true,
+        );
 
-      expect(result.status, equals(LocationStatus.mockLocationDetected));
-      expect(result.isMocked, isTrue);
-      expect(result.isSafe, isFalse);
-    });
+        expect(result.status, equals(LocationStatus.mockLocationDetected));
+        expect(result.isMocked, isTrue);
+        expect(result.isSafe, isFalse);
+      },
+    );
 
     test('returns timeout when position request exceeds time limit', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.always);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.always);
       when(
         () => mockPlatform.getCurrentPosition(
           locationSettings: any(named: 'locationSettings'),
@@ -284,10 +299,10 @@ void main() {
     });
 
     test('handles LocationServiceDisabledException gracefully', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.always);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.always);
       when(
         () => mockPlatform.getCurrentPosition(
           locationSettings: any(named: 'locationSettings'),
@@ -301,10 +316,10 @@ void main() {
     });
 
     test('handles PermissionDeniedException gracefully', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.always);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.always);
       when(
         () => mockPlatform.getCurrentPosition(
           locationSettings: any(named: 'locationSettings'),
@@ -318,10 +333,10 @@ void main() {
     });
 
     test('returns unknownError when unexpected exception is thrown', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenThrow(Exception('Native bridge failure'));
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenThrow(Exception('Native bridge failure'));
 
       final result = await service.getCurrentPosition();
 
@@ -331,10 +346,10 @@ void main() {
     });
 
     test('handles unableToDetermine permission gracefully', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.unableToDetermine);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.unableToDetermine);
 
       final result = await service.getCurrentPosition();
 
@@ -343,12 +358,13 @@ void main() {
     });
 
     test('handles requestPermission unableToDetermine gracefully', () async {
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.denied);
-      when(mockPlatform.requestPermission)
-          .thenAnswer((_) async => LocationPermission.unableToDetermine);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.denied);
+      when(
+        mockPlatform.requestPermission,
+      ).thenAnswer((_) async => LocationPermission.unableToDetermine);
 
       final result = await service.getCurrentPosition();
 
@@ -356,28 +372,28 @@ void main() {
       expect(result.errorMessage, contains('tidak dapat ditentukan'));
     });
 
-    test('getLastKnownPosition returns cached position or null on failure',
-        () async {
-      when(mockPlatform.getLastKnownPosition)
-          .thenAnswer((_) async => dummyPosition);
+    test(
+      'getLastKnownPosition returns cached position or null on failure',
+      () async {
+        when(
+          mockPlatform.getLastKnownPosition,
+        ).thenAnswer((_) async => dummyPosition);
 
-      final position = await service.getLastKnownPosition();
-      expect(position, equals(dummyPosition));
+        final position = await service.getLastKnownPosition();
+        expect(position, equals(dummyPosition));
 
-      when(mockPlatform.getLastKnownPosition)
-          .thenThrow(Exception('Failed to read cache'));
-      final failedPosition = await service.getLastKnownPosition();
-      expect(failedPosition, isNull);
-    });
+        when(
+          mockPlatform.getLastKnownPosition,
+        ).thenThrow(Exception('Failed to read cache'));
+        final failedPosition = await service.getLastKnownPosition();
+        expect(failedPosition, isNull);
+      },
+    );
 
     test('distanceBetween delegates calculation to platform', () {
       when(
-        () => mockPlatform.distanceBetween(
-          -6.2088,
-          106.8456,
-          -6.2090,
-          106.8458,
-        ),
+        () =>
+            mockPlatform.distanceBetween(-6.2088, 106.8456, -6.2090, 106.8458),
       ).thenReturn(31.5);
 
       final distance = service.distanceBetween(
@@ -390,67 +406,67 @@ void main() {
       expect(distance, equals(31.5));
     });
 
-    test(
-      'returns preciseLocationRequired when accuracy is reduced and '
-      'upgrade fails',
-      () async {
-        when(mockPlatform.isLocationServiceEnabled)
-            .thenAnswer((_) async => true);
-        when(mockPlatform.checkPermission)
-            .thenAnswer((_) async => LocationPermission.whileInUse);
-        when(mockPlatform.getLocationAccuracy)
-            .thenAnswer((_) async => LocationAccuracyStatus.reduced);
-        when(mockPlatform.requestPermission)
-            .thenAnswer((_) async => LocationPermission.whileInUse);
+    test('returns preciseLocationRequired when accuracy is reduced and '
+        'upgrade fails', () async {
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.whileInUse);
+      when(
+        mockPlatform.getLocationAccuracy,
+      ).thenAnswer((_) async => LocationAccuracyStatus.reduced);
+      when(
+        mockPlatform.requestPermission,
+      ).thenAnswer((_) async => LocationPermission.whileInUse);
 
-        final result = await service.getCurrentPosition();
+      final result = await service.getCurrentPosition();
 
-        expect(result.status, equals(LocationStatus.preciseLocationRequired));
-        expect(result.isSafe, isFalse);
-        verify(mockPlatform.requestPermission).called(1);
-      },
-    );
+      expect(result.status, equals(LocationStatus.preciseLocationRequired));
+      expect(result.isSafe, isFalse);
+      verify(mockPlatform.requestPermission).called(1);
+    });
 
-    test(
-      'returns success when initial accuracy is reduced but upgraded '
-      'to precise',
-      () async {
-        when(mockPlatform.isLocationServiceEnabled)
-            .thenAnswer((_) async => true);
-        when(mockPlatform.checkPermission)
-            .thenAnswer((_) async => LocationPermission.whileInUse);
-        var accuracyCallCount = 0;
-        when(mockPlatform.getLocationAccuracy).thenAnswer((_) async {
-          accuracyCallCount++;
-          return accuracyCallCount == 1
-              ? LocationAccuracyStatus.reduced
-              : LocationAccuracyStatus.precise;
-        });
-        when(mockPlatform.requestPermission)
-            .thenAnswer((_) async => LocationPermission.whileInUse);
-        when(
-          () => mockPlatform.getCurrentPosition(
-            locationSettings: any(named: 'locationSettings'),
-          ),
-        ).thenAnswer((_) async => dummyPosition);
+    test('returns success when initial accuracy is reduced but upgraded '
+        'to precise', () async {
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.whileInUse);
+      var accuracyCallCount = 0;
+      when(mockPlatform.getLocationAccuracy).thenAnswer((_) async {
+        accuracyCallCount++;
+        return accuracyCallCount == 1
+            ? LocationAccuracyStatus.reduced
+            : LocationAccuracyStatus.precise;
+      });
+      when(
+        mockPlatform.requestPermission,
+      ).thenAnswer((_) async => LocationPermission.whileInUse);
+      when(
+        () => mockPlatform.getCurrentPosition(
+          locationSettings: any(named: 'locationSettings'),
+        ),
+      ).thenAnswer((_) async => dummyPosition);
 
-        final result = await service.getCurrentPosition();
+      final result = await service.getCurrentPosition();
 
-        expect(result.status, equals(LocationStatus.success));
-        expect(result.position, equals(dummyPosition));
-        expect(result.isSafe, isTrue);
-      },
-    );
+      expect(result.status, equals(LocationStatus.success));
+      expect(result.position, equals(dummyPosition));
+      expect(result.isSafe, isTrue);
+    });
 
     test(
       'proceeds safely when getLocationAccuracy throws an exception',
       () async {
-        when(mockPlatform.isLocationServiceEnabled)
-            .thenAnswer((_) async => true);
-        when(mockPlatform.checkPermission)
-            .thenAnswer((_) async => LocationPermission.whileInUse);
-        when(mockPlatform.getLocationAccuracy)
-            .thenThrow(UnsupportedError('Platform not supported'));
+        when(
+          mockPlatform.isLocationServiceEnabled,
+        ).thenAnswer((_) async => true);
+        when(
+          mockPlatform.checkPermission,
+        ).thenAnswer((_) async => LocationPermission.whileInUse);
+        when(
+          mockPlatform.getLocationAccuracy,
+        ).thenThrow(UnsupportedError('Platform not supported'));
         when(
           () => mockPlatform.getCurrentPosition(
             locationSettings: any(named: 'locationSettings'),
@@ -468,10 +484,10 @@ void main() {
       EnvConfig.resetForTesting();
       expect(EnvConfig.isInitialized, isFalse);
 
-      when(mockPlatform.isLocationServiceEnabled)
-          .thenAnswer((_) async => true);
-      when(mockPlatform.checkPermission)
-          .thenAnswer((_) async => LocationPermission.always);
+      when(mockPlatform.isLocationServiceEnabled).thenAnswer((_) async => true);
+      when(
+        mockPlatform.checkPermission,
+      ).thenAnswer((_) async => LocationPermission.always);
       when(
         () => mockPlatform.getCurrentPosition(
           locationSettings: any(named: 'locationSettings'),

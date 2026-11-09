@@ -14,9 +14,8 @@ void main() {
       node1 = FocusNode();
       node2 = FocusNode();
       scrollController = ScrollController();
-      scroller = AppKeyboardAutoScroller(
-        scrollController: scrollController,
-      )..registerNodes([node1, node2]);
+      scroller = AppKeyboardAutoScroller(scrollController: scrollController)
+        ..registerNodes([node1, node2]);
     });
 
     tearDown(() {
@@ -31,14 +30,13 @@ void main() {
         data: AppTheme.m3eLight(),
         localizationsDelegates: AppTheme.localizationsDelegates,
         supportedLocales: AppTheme.supportedLocales,
-        home: Scaffold(
-          body: child,
-        ),
+        home: Scaffold(body: child),
       );
     }
 
-    testWidgets('registers nodes and triggers scroll when node gains focus',
-        (tester) async {
+    testWidgets('registers nodes and triggers scroll when node gains focus', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           child: Builder(
@@ -74,8 +72,9 @@ void main() {
       expect(scrollController.offset, greaterThan(0));
     });
 
-    testWidgets('scrollToNode forces focus and initiates auto-scroll',
-        (tester) async {
+    testWidgets('scrollToNode forces focus and initiates auto-scroll', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           child: Builder(
@@ -263,113 +262,15 @@ void main() {
       },
     );
 
-    testWidgets(
-      'handles switching focus while keyboard remains open',
-      (tester) async {
-        tester.view.devicePixelRatio = 1;
-        tester.view.physicalSize = const Size(400, 800);
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        addTearDown(tester.view.resetViewInsets);
+    testWidgets('handles switching focus while keyboard remains open', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(400, 800);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
 
-        await tester.pumpWidget(
-          buildTestApp(
-            child: Builder(
-              builder: (context) {
-                scroller.attachContext(context);
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 200),
-                      TextField(focusNode: node1),
-                      const SizedBox(height: 400),
-                      TextField(focusNode: node2),
-                      const SizedBox(height: 600),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // 1. Focus node1 and open keyboard
-        node1.requestFocus();
-        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-        scroller.didChangeMetrics();
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 350));
-        await tester.pumpAndSettle();
-
-        final offset1 = scrollController.offset;
-
-        // 2. Switch focus to node2 while keyboard STAYS OPEN
-        node2.requestFocus();
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 350));
-        await tester.pumpAndSettle();
-
-        expect(scrollController.offset, greaterThan(offset1));
-      },
-    );
-
-    testWidgets(
-      'handles tapping to switch focus while keyboard remains open',
-      (tester) async {
-        tester.view.devicePixelRatio = 1;
-        tester.view.physicalSize = const Size(400, 800);
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        addTearDown(tester.view.resetViewInsets);
-
-        await tester.pumpWidget(
-          buildTestApp(
-            child: Builder(
-              builder: (context) {
-                scroller.attachContext(context);
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 100),
-                      TextField(focusNode: node1),
-                      const SizedBox(height: 320),
-                      TextField(focusNode: node2),
-                      const SizedBox(height: 600),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // 1. Focus node1 and open keyboard
-        await tester.tap(find.byType(TextField).at(0));
-        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-        scroller.didChangeMetrics();
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 350));
-        await tester.pumpAndSettle();
-
-        final offset1 = scrollController.offset;
-
-        // 2. Tap to focus node2 directly via touch while keyboard is open
-        await tester.tap(find.byType(TextField).at(1));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 350));
-        await tester.pumpAndSettle();
-
-        final offset2 = scrollController.offset;
-        expect(node2.hasFocus, isTrue);
-        expect(offset2, greaterThan(offset1));
-      },
-    );
-
-    testWidgets('dispose cancels pending timers cleanly', (tester) async {
       await tester.pumpWidget(
         buildTestApp(
           child: Builder(
@@ -379,9 +280,101 @@ void main() {
                 controller: scrollController,
                 child: Column(
                   children: [
+                    const SizedBox(height: 200),
                     TextField(focusNode: node1),
+                    const SizedBox(height: 400),
+                    TextField(focusNode: node2),
+                    const SizedBox(height: 600),
                   ],
                 ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Focus node1 and open keyboard
+      node1.requestFocus();
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      scroller.didChangeMetrics();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      final offset1 = scrollController.offset;
+
+      // 2. Switch focus to node2 while keyboard STAYS OPEN
+      node2.requestFocus();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      expect(scrollController.offset, greaterThan(offset1));
+    });
+
+    testWidgets('handles tapping to switch focus while keyboard remains open', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(400, 800);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+
+      await tester.pumpWidget(
+        buildTestApp(
+          child: Builder(
+            builder: (context) {
+              scroller.attachContext(context);
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 100),
+                    TextField(focusNode: node1),
+                    const SizedBox(height: 320),
+                    TextField(focusNode: node2),
+                    const SizedBox(height: 600),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Focus node1 and open keyboard
+      await tester.tap(find.byType(TextField).at(0));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      scroller.didChangeMetrics();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      final offset1 = scrollController.offset;
+
+      // 2. Tap to focus node2 directly via touch while keyboard is open
+      await tester.tap(find.byType(TextField).at(1));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      final offset2 = scrollController.offset;
+      expect(node2.hasFocus, isTrue);
+      expect(offset2, greaterThan(offset1));
+    });
+
+    testWidgets('dispose cancels pending timers cleanly', (tester) async {
+      await tester.pumpWidget(
+        buildTestApp(
+          child: Builder(
+            builder: (context) {
+              scroller.attachContext(context);
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Column(children: [TextField(focusNode: node1)]),
               );
             },
           ),

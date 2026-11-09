@@ -17,12 +17,15 @@ void main() {
       mockNetworkInfo = MockNetworkInfo();
       connectivityStreamController = StreamController<bool>.broadcast();
       when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(() => mockNetworkInfo.checkConnectivity())
-          .thenAnswer((_) async => true);
-      when(() => mockNetworkInfo.checkReachability())
-          .thenAnswer((_) async => true);
-      when(() => mockNetworkInfo.onConnectivityChanged)
-          .thenAnswer((_) => connectivityStreamController.stream);
+      when(
+        () => mockNetworkInfo.checkConnectivity(),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockNetworkInfo.checkReachability(),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockNetworkInfo.onConnectivityChanged,
+      ).thenAnswer((_) => connectivityStreamController.stream);
     });
 
     tearDown(() {
@@ -55,9 +58,7 @@ void main() {
     test(
       'reacts to onConnectivityChanged stream from NetworkInfo (UDF)',
       () async {
-        final cubit = ConnectivityCubit(
-          networkInfo: mockNetworkInfo,
-        );
+        final cubit = ConnectivityCubit(networkInfo: mockNetworkInfo);
 
         // Sinyalkan perubahan jaringan: internet terputus
         connectivityStreamController.add(false);
@@ -78,8 +79,9 @@ void main() {
     test(
       'checkNow and checkConnectivity emit new status based on probe',
       () async {
-        when(() => mockNetworkInfo.checkConnectivity())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockNetworkInfo.checkConnectivity(),
+        ).thenAnswer((_) async => false);
 
         final cubit = ConnectivityCubit(
           networkInfo: mockNetworkInfo,
@@ -89,8 +91,9 @@ void main() {
         await cubit.checkConnectivity();
         expect(cubit.state, ConnectivityStatus.offline);
 
-        when(() => mockNetworkInfo.checkConnectivity())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockNetworkInfo.checkConnectivity(),
+        ).thenAnswer((_) async => true);
         await cubit.checkNow();
         expect(cubit.state, ConnectivityStatus.online);
 
@@ -99,8 +102,9 @@ void main() {
     );
 
     test('re-probes connectivity when lifecycle resumes', () async {
-      when(() => mockNetworkInfo.checkConnectivity())
-          .thenAnswer((_) async => true);
+      when(
+        () => mockNetworkInfo.checkConnectivity(),
+      ).thenAnswer((_) async => true);
 
       final cubit = ConnectivityCubit(
         networkInfo: mockNetworkInfo,

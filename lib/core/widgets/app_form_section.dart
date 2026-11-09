@@ -40,9 +40,9 @@ class AppFormSection extends StatelessWidget {
     ),
     this.headerToContentGap = AppSpacing.vGap150,
     super.key,
-  })  : isContained = false,
-        cardVariant = AppCardVariant.outlined,
-        cardPadding = EdgeInsets.zero;
+  }) : isContained = false,
+       cardVariant = AppCardVariant.outlined,
+       cardPadding = EdgeInsets.zero;
 
   /// Judul seksi formulir (misal: "Informasi tamu & identitas").
   final String title;
@@ -94,11 +94,7 @@ class AppFormSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
-      children: [
-        header,
-        headerToContentGap,
-        content,
-      ],
+      children: [header, headerToContentGap, content],
     );
   }
 }

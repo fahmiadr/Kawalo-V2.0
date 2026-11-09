@@ -32,10 +32,7 @@ import 'package:kawalo_mobile/features/operational/presentation/widgets/operatio
 /// dikelompokkan berdasarkan userEmail dari tabel tkdutyjourney.
 class OperationalScreen extends StatefulWidget {
   /// Membuat instance [OperationalScreen].
-  const OperationalScreen({
-    super.key,
-    this.cubit,
-  });
+  const OperationalScreen({super.key, this.cubit});
 
   /// Instance [OperationalCubit] opsional untuk injeksi pengujian.
   final OperationalCubit? cubit;
@@ -134,7 +131,8 @@ class _OperationalScreenState extends State<OperationalScreen> {
   }
 
   void _onCloseSearch() {
-    final hasActiveSearch = _searchController.text.isNotEmpty ||
+    final hasActiveSearch =
+        _searchController.text.isNotEmpty ||
         _resolveCubit(context).state.searchQuery != null &&
             _resolveCubit(context).state.searchQuery!.isNotEmpty;
     _searchController.clear();
@@ -379,10 +377,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
                 autoFocus: true,
                 enabled: !isInitialLoading,
                 onSearch: _onSearch,
-                constraints: const BoxConstraints(
-                  minHeight: 40,
-                  maxHeight: 40,
-                ),
+                constraints: const BoxConstraints(minHeight: 40, maxHeight: 40),
               )
             : null,
         showBackButton: true,
@@ -404,9 +399,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomOfflineBanner(
-        isOffline: isOffline,
-      ),
+      bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
       body: SafeArea(
         top: false,
         child: AppKeyboardInsetsPadding(
@@ -439,8 +432,8 @@ class _OperationalScreenState extends State<OperationalScreen> {
         bottom: AppSpacing.space200,
       ),
       itemCount: 4,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
-      itemBuilder: (_, __) => const OperationalCardSkeleton(),
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemBuilder: (_, _) => const OperationalCardSkeleton(),
     );
   }
 
@@ -460,14 +453,12 @@ class _OperationalScreenState extends State<OperationalScreen> {
         bottom: AppSpacing.space200,
       ),
       itemCount: totalCount,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
       itemBuilder: (context, index) {
         if (index == operationals.length) {
           return const Padding(
             padding: AppSpacing.paddingVertical200,
-            child: Center(
-              child: AppLoadingIndicator(),
-            ),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
 
@@ -482,9 +473,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
 
   Widget _buildEmptyGroupState(BuildContext context) {
     return const AppEmptyState(
-      icon: AppSvgIcon.color(
-        KawaloColorVectors.patrol2,
-      ),
+      icon: AppSvgIcon.color(KawaloColorVectors.patrol2),
       title: 'Belum ada aktifitas operasional',
       description: 'Belum ada aktifitas tugas personil pada hari ini.',
     );
@@ -493,7 +482,8 @@ class _OperationalScreenState extends State<OperationalScreen> {
   Widget _buildEmptySearchResult(BuildContext context) {
     return AppEmptyState.search(
       title: 'Aktifitas operasional tidak ditemukan',
-      description: 'Tidak ada aktifitas operasional yang cocok dengan '
+      description:
+          'Tidak ada aktifitas operasional yang cocok dengan '
           'pencarian atau filter yang diterapkan.',
       actionLabel: 'Reset filter & pencarian',
       onActionPressed: _resetAllFilters,
@@ -511,9 +501,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
       retryLabel: 'Coba lagi',
       onRetry: () {
         final query = _searchController.text;
-        cubit.fetchOperationals(
-          search: query.isEmpty ? null : query,
-        );
+        cubit.fetchOperationals(search: query.isEmpty ? null : query);
       },
     );
   }

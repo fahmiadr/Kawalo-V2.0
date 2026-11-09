@@ -6,11 +6,7 @@ import 'package:kawalo_mobile/core/widgets/app_tappable.dart';
 /// Terms of Service and Privacy Policy consent text widget formatted as a
 /// continuous inline text paragraph with accessible hyperlinks.
 class TermsAndPrivacyWidget extends StatelessWidget {
-  const TermsAndPrivacyWidget({
-    this.onPrivacyTap,
-    this.onTermsTap,
-    super.key,
-  });
+  const TermsAndPrivacyWidget({this.onPrivacyTap, this.onTermsTap, super.key});
 
   final VoidCallback? onPrivacyTap;
   final VoidCallback? onTermsTap;
@@ -48,10 +44,7 @@ class TermsAndPrivacyWidget extends StatelessWidget {
                 child: AppTappable(
                   onTap: onPrivacyTap,
                   semanticLabel: 'Kebijakan Privasi',
-                  child: Text(
-                    'Kebijakan Privasi',
-                    style: linkStyle,
-                  ),
+                  child: Text('Kebijakan Privasi', style: linkStyle),
                 ),
               ),
               const TextSpan(text: ' dan '),
@@ -61,10 +54,7 @@ class TermsAndPrivacyWidget extends StatelessWidget {
                 child: AppTappable(
                   onTap: onTermsTap,
                   semanticLabel: 'Ketentuan Layanan',
-                  child: Text(
-                    'Ketentuan Layanan',
-                    style: linkStyle,
-                  ),
+                  child: Text('Ketentuan Layanan', style: linkStyle),
                 ),
               ),
               const TextSpan(text: ' Kawalo.'),

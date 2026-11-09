@@ -55,9 +55,8 @@ Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
   required R Function(List<M> models, {required bool isFromCache}) toResult,
   required CacheOps<M>? cache,
 }) async {
-  Future<Either<Failure, R>> fromCache(CacheOps<M> ops) async => Right(
-        toResult(await ops.read(), isFromCache: true),
-      );
+  Future<Either<Failure, R>> fromCache(CacheOps<M> ops) async =>
+      Right(toResult(await ops.read(), isFromCache: true));
 
   // Pull-to-refresh always tries the remote, even while offline.
   if (!isRefresh) {
@@ -79,8 +78,10 @@ Future<Either<Failure, R>> fetchRemoteWithCacheFallback<M, R>({
     }
 
     // Record the sync time ONLY when the remote call succeeds.
-    await (syncStorageService ?? SyncStorageService.singleton())
-        .saveLastSync(syncKey, DateTime.now());
+    await (syncStorageService ?? SyncStorageService.singleton()).saveLastSync(
+      syncKey,
+      DateTime.now(),
+    );
 
     return Right(toResult(models, isFromCache: false));
   } on AppException catch (e) {

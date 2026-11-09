@@ -46,27 +46,20 @@ void main() {
       final result = await useCase(tParams);
 
       expect(result, const Right<Failure, GuestResult>(tGuestResult));
-      verify(
-        () => mockRepository.getGuests(tParams),
-      ).called(1);
+      verify(() => mockRepository.getGuests(tParams)).called(1);
     },
   );
 
-  test(
-    'should return Failure when repository call fails',
-    () async {
-      const tFailure = ServerFailure('Gagal memuat data');
-      const tParams = GetGuestsParams();
-      when(
-        () => mockRepository.getGuests(any()),
-      ).thenAnswer((_) async => const Left(tFailure));
+  test('should return Failure when repository call fails', () async {
+    const tFailure = ServerFailure('Gagal memuat data');
+    const tParams = GetGuestsParams();
+    when(
+      () => mockRepository.getGuests(any()),
+    ).thenAnswer((_) async => const Left(tFailure));
 
-      final result = await useCase(tParams);
+    final result = await useCase(tParams);
 
-      expect(result, const Left<Failure, GuestResult>(tFailure));
-      verify(
-        () => mockRepository.getGuests(tParams),
-      ).called(1);
-    },
-  );
+    expect(result, const Left<Failure, GuestResult>(tFailure));
+    verify(() => mockRepository.getGuests(tParams)).called(1);
+  });
 }

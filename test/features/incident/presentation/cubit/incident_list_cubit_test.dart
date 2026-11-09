@@ -94,8 +94,9 @@ void main() {
       'emits [IncidentLoading, IncidentLoaded] on successful fetch from '
       'initial',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
         return cubit;
       },
       act: (c) => c.fetchIncidents(session: tSession),
@@ -137,8 +138,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'does not emit IncidentLoading when refreshing from IncidentLoaded',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident2]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident2]));
         return cubit;
       },
       seed: () => IncidentLoaded(
@@ -182,8 +184,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'appends newly fetched incidents when hasMore is true',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident2]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident2]));
         return cubit;
       },
       seed: () => IncidentLoaded(
@@ -222,8 +225,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'setFilter updates selectedFilter and refetches',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
         return cubit;
       },
       act: (c) => c.setFilter(IncidentStatus.open, session: tSession),
@@ -238,8 +242,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'setFilter null clears selectedFilter and refetches',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
         return cubit;
       },
       seed: () => const IncidentLoaded(
@@ -258,8 +263,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'setDateFilter updates date fields and refetches',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
         return cubit;
       },
       act: (c) {
@@ -269,11 +275,7 @@ void main() {
       expect: () => [
         isA<IncidentLoading>(),
         isA<IncidentLoaded>()
-            .having(
-              (s) => s.filterPeriod,
-              'period',
-              AppDateFilterPeriod.today,
-            )
+            .having((s) => s.filterPeriod, 'period', AppDateFilterPeriod.today)
             .having((s) => s.incidents.length, 'count', 1),
       ],
     );
@@ -281,8 +283,9 @@ void main() {
     blocTest<IncidentListCubit, IncidentState>(
       'resetDateFilter clears date fields and refetches',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
         return cubit;
       },
       seed: () => IncidentLoaded(
@@ -295,31 +298,31 @@ void main() {
       act: (c) => c.resetDateFilter(session: tSession),
       expect: () => [
         isA<IncidentLoaded>()
-            .having(
-              (s) => s.filterPeriod,
-              'period',
-              AppDateFilterPeriod.today,
-            )
+            .having((s) => s.filterPeriod, 'period', AppDateFilterPeriod.today)
             .having((s) => s.startDate, 'startDate', isNull)
             .having((s) => s.endDate, 'endDate', isNull),
       ],
     );
 
-    test('searchIncidents returns AppFetchResult.success and updates query',
-        () async {
-      when(() => mockGetIncidentsUseCase(any()))
-          .thenAnswer((_) async => Right([tIncident]));
+    test(
+      'searchIncidents returns AppFetchResult.success and updates query',
+      () async {
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
 
-      final result = await cubit.searchIncidents('pintu', session: tSession);
-      expect(result, equals(AppFetchResult.success));
-      expect(cubit.state.searchQuery, equals('pintu'));
-    });
+        final result = await cubit.searchIncidents('pintu', session: tSession);
+        expect(result, equals(AppFetchResult.success));
+        expect(cubit.state.searchQuery, equals('pintu'));
+      },
+    );
 
     blocTest<IncidentListCubit, IncidentState>(
       'resetFilters clears status, search, and date filters',
       build: () {
-        when(() => mockGetIncidentsUseCase(any()))
-            .thenAnswer((_) async => Right([tIncident]));
+        when(
+          () => mockGetIncidentsUseCase(any()),
+        ).thenAnswer((_) async => Right([tIncident]));
         return cubit;
       },
       seed: () => IncidentLoaded(

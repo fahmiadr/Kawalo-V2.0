@@ -173,18 +173,18 @@ class OperationalLoaded extends OperationalState implements ListLoadedState {
 
   @override
   List<Object?> get props => [
-        operationals,
-        isFromCache,
-        lastSync,
-        hasMore,
-        isLoadingMore,
-        filterPeriod,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    operationals,
+    isFromCache,
+    lastSync,
+    hasMore,
+    isLoadingMore,
+    filterPeriod,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }
 
 /// Keadaan ketika terjadi kegagalan pengambilan aktifitas operasional.
@@ -251,15 +251,15 @@ class OperationalError extends OperationalState {
 
   @override
   List<Object?> get props => [
-        message,
-        failure,
-        cachedOperationals,
-        lastSync,
-        filterPeriod,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    message,
+    failure,
+    cachedOperationals,
+    lastSync,
+    filterPeriod,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }

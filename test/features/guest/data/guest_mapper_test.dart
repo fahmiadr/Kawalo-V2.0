@@ -119,16 +119,13 @@ void main() {
       expect(entity.guestCheckoutByName, 'Satpam Sore');
     });
 
-    test(
-      'toDeleteBatchResult accurately maps deletedCount from DTO '
-      'to Value Object',
-      () {
-        const dto = DeleteBatchGuestResponseModel(deletedCount: 5);
-        final entity = GuestMapper.toDeleteBatchResult(dto);
+    test('toDeleteBatchResult accurately maps deletedCount from DTO '
+        'to Value Object', () {
+      const dto = DeleteBatchGuestResponseModel(deletedCount: 5);
+      final entity = GuestMapper.toDeleteBatchResult(dto);
 
-        expect(entity, isA<DeleteBatchResult>());
-        expect(entity.deletedCount, 5);
-      },
-    );
+      expect(entity, isA<DeleteBatchResult>());
+      expect(entity.deletedCount, 5);
+    });
   });
 }

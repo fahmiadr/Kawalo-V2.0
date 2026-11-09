@@ -52,20 +52,10 @@ void main() {
         guestType: 'TAMU',
       ),
     );
-    registerFallbackValue(
-      const UpdateGuestData(
-        id: '1',
-      ),
-    );
-    registerFallbackValue(
-      const UpdateGuestModel(),
-    );
-    registerFallbackValue(
-      const CheckoutGuestData(id: '1'),
-    );
-    registerFallbackValue(
-      const CheckoutGuestModel(),
-    );
+    registerFallbackValue(const UpdateGuestData(id: '1'));
+    registerFallbackValue(const UpdateGuestModel());
+    registerFallbackValue(const CheckoutGuestData(id: '1'));
+    registerFallbackValue(const CheckoutGuestModel());
   });
 
   setUp(() {
@@ -94,144 +84,116 @@ void main() {
   final tGuestList = [tGuestModel];
 
   group('getGuests', () {
-    test(
-      'should return GuestResultEntity and cache data when remote call is '
-      'successful',
-      () async {
-        when(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => tGuestList);
+    test('should return GuestResultEntity and cache data when remote call is '
+        'successful', () async {
+      when(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => tGuestList);
 
-        when(
-          () => mockLocalDataSource.cacheGuests(any()),
-        ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.cacheGuests(any()),
+      ).thenAnswer((_) async {});
 
-        when(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.deleteOlderThan(any()),
+      ).thenAnswer((_) async {});
 
-        final result = await repository.getGuests(
-          const GetGuestsParams(search: 'John'),
-        );
+      final result = await repository.getGuests(
+        const GetGuestsParams(search: 'John'),
+      );
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should be Right'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(resultEntity.items.first.id, 'guest_1');
-            expect(resultEntity.isFromCache, isFalse);
-          },
-        );
-        verify(
-          () => mockRemoteDataSource.getGuests(
-            query: const GuestQueryModel(search: 'John'),
-          ),
-        ).called(1);
-        verify(
-          () => mockLocalDataSource.cacheGuests(tGuestList),
-        ).called(1);
-        verify(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).called(1);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Should be Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first.id, 'guest_1');
+        expect(resultEntity.isFromCache, isFalse);
+      });
+      verify(
+        () => mockRemoteDataSource.getGuests(
+          query: const GuestQueryModel(search: 'John'),
+        ),
+      ).called(1);
+      verify(() => mockLocalDataSource.cacheGuests(tGuestList)).called(1);
+      verify(() => mockLocalDataSource.deleteOlderThan(any())).called(1);
+    });
 
-    test(
-      'should return ServerFailure when remote throws ServerException '
-      'and localDataSource is null',
-      () async {
-        final repoNoLocal = GuestRepositoryImpl(
-          remoteDataSource: mockRemoteDataSource,
-          networkInfo: mockNetworkInfo,
-        );
-        when(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(const ServerException('Server error'));
+    test('should return ServerFailure when remote throws ServerException '
+        'and localDataSource is null', () async {
+      final repoNoLocal = GuestRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+      );
+      when(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(const ServerException('Server error'));
 
-        final result = await repoNoLocal.getGuests(const GetGuestsParams());
+      final result = await repoNoLocal.getGuests(const GetGuestsParams());
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ServerFailure>());
-            expect(failure.message, 'Server error');
-          },
-          (guests) => fail('Should be Left'),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'Server error');
+      }, (guests) => fail('Should be Left'));
+    });
 
-    test(
-      'should fallback to cached guests when remote throws ServerException '
-      'and localDataSource is present',
-      () async {
-        when(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(const ServerException('Server error'));
+    test('should fallback to cached guests when remote throws ServerException '
+        'and localDataSource is present', () async {
+      when(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(const ServerException('Server error'));
 
-        when(
-          () => mockLocalDataSource.getCachedGuests(
-            search: any(named: 'search'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => tGuestList);
+      when(
+        () => mockLocalDataSource.getCachedGuests(
+          search: any(named: 'search'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => tGuestList);
 
-        final result = await repository.getGuests(const GetGuestsParams());
+      final result = await repository.getGuests(const GetGuestsParams());
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should be Right'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(resultEntity.items.first.id, 'guest_1');
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
-      },
-    );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Should be Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first.id, 'guest_1');
+        expect(resultEntity.isFromCache, isTrue);
+      });
+    });
 
-    test(
-      'should return cached guests when remote fails with NetworkException '
-      'and period is not custom',
-      () async {
-        when(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(const NetworkException('No internet'));
+    test('should return cached guests when remote fails with NetworkException '
+        'and period is not custom', () async {
+      when(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(const NetworkException('No internet'));
 
-        when(
-          () => mockLocalDataSource.getCachedGuests(
-            search: any(named: 'search'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => tGuestList);
+      when(
+        () => mockLocalDataSource.getCachedGuests(
+          search: any(named: 'search'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => tGuestList);
 
-        final result = await repository.getGuests(const GetGuestsParams());
+      final result = await repository.getGuests(const GetGuestsParams());
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should be Right'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
-      },
-    );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Should be Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.isFromCache, isTrue);
+      });
+    });
 
     test(
       'does not trigger remote fetch when offline and serves cache directly',
@@ -250,13 +212,10 @@ void main() {
         );
 
         expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should be Right'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
+        result.fold((failure) => fail('Should be Right'), (resultEntity) {
+          expect(resultEntity.items.length, 1);
+          expect(resultEntity.isFromCache, isTrue);
+        });
 
         verifyNever(
           () => mockRemoteDataSource.getGuests(
@@ -267,74 +226,64 @@ void main() {
       },
     );
 
-    test(
-      'triggers remote fetch when offline if isRefresh is true',
-      () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-        when(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => tGuestList);
-        when(
-          () => mockLocalDataSource.cacheGuests(any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).thenAnswer((_) async {});
+    test('triggers remote fetch when offline if isRefresh is true', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      when(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => tGuestList);
+      when(
+        () => mockLocalDataSource.cacheGuests(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.deleteOlderThan(any()),
+      ).thenAnswer((_) async {});
 
-        final result = await repository.getGuests(
-          const GetGuestsParams(
-            search: 'John',
-            isRefresh: true,
-          ),
-        );
+      final result = await repository.getGuests(
+        const GetGuestsParams(search: 'John', isRefresh: true),
+      );
 
-        expect(result.isRight(), isTrue);
-        verify(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      verify(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
+    });
 
-    test(
-      'does not trigger remote fetch when offline and returns empty cache '
-      'result when no data found',
-      () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-        when(
-          () => mockLocalDataSource.getCachedGuests(
-            search: any(named: 'search'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => []);
+    test('does not trigger remote fetch when offline and returns empty cache '
+        'result when no data found', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      when(
+        () => mockLocalDataSource.getCachedGuests(
+          search: any(named: 'search'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => []);
 
-        final result = await repository.getGuests(
-          const GetGuestsParams(search: 'NonExistent'),
-        );
+      final result = await repository.getGuests(
+        const GetGuestsParams(search: 'NonExistent'),
+      );
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Expected Right but got Left: $failure'),
-          (resultEntity) {
-            expect(resultEntity.items, isEmpty);
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Expected Right but got Left: $failure'), (
+        resultEntity,
+      ) {
+        expect(resultEntity.items, isEmpty);
+        expect(resultEntity.isFromCache, isTrue);
+      });
 
-        verifyNever(
-          () => mockRemoteDataSource.getGuests(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        );
-      },
-    );
+      verifyNever(
+        () => mockRemoteDataSource.getGuests(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      );
+    });
 
     test(
       'returns Right with empty items and isFromCache true when remote throws '
@@ -484,66 +433,57 @@ void main() {
       },
     );
 
-    test(
-      'returns Right(null) even when localDataSource throws '
-      '(best-effort cache eviction)',
-      () async {
-        when(
-          () => mockRemoteDataSource.deleteGuest(
-            params: any(named: 'params'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async {});
+    test('returns Right(null) even when localDataSource throws '
+        '(best-effort cache eviction)', () async {
+      when(
+        () => mockRemoteDataSource.deleteGuest(
+          params: any(named: 'params'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async {});
 
-        when(
-          () => mockLocalDataSource.deleteGuest(any()),
-        ).thenThrow(Exception('Isar local disk full'));
+      when(
+        () => mockLocalDataSource.deleteGuest(any()),
+      ).thenThrow(Exception('Isar local disk full'));
 
-        final result = await repository.deleteGuest(id: tId);
+      final result = await repository.deleteGuest(id: tId);
 
-        expect(result.isRight(), isTrue);
-        verify(
-          () => mockRemoteDataSource.deleteGuest(
-            params: const GuestIdParamsModel(id: tId),
-          ),
-        ).called(1);
-        verify(() => mockLocalDataSource.deleteGuest(tId)).called(1);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      verify(
+        () => mockRemoteDataSource.deleteGuest(
+          params: const GuestIdParamsModel(id: tId),
+        ),
+      ).called(1);
+      verify(() => mockLocalDataSource.deleteGuest(tId)).called(1);
+    });
 
-    test(
-      'returns Left(ServerFailure) on ServerException',
-      () async {
-        when(
-          () => mockRemoteDataSource.deleteGuest(
-            params: any(named: 'params'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(
-          const ServerException(
-            'Hanya Admin atau Petugas yang dapat menghapus data tamu.',
-            403,
-            'FORBIDDEN',
-          ),
+    test('returns Left(ServerFailure) on ServerException', () async {
+      when(
+        () => mockRemoteDataSource.deleteGuest(
+          params: any(named: 'params'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(
+        const ServerException(
+          'Hanya Admin atau Petugas yang dapat menghapus data tamu.',
+          403,
+          'FORBIDDEN',
+        ),
+      );
+
+      final result = await repository.deleteGuest(id: tId);
+
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(
+          failure.message,
+          'Hanya Admin atau Petugas yang dapat menghapus data tamu.',
         );
-
-        final result = await repository.deleteGuest(id: tId);
-
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ServerFailure>());
-            expect(
-              failure.message,
-              'Hanya Admin atau Petugas yang dapat menghapus data tamu.',
-            );
-            expect(failure.statusCode, 403);
-          },
-          (_) => fail('Expected Left but got Right'),
-        );
-        verifyNever(() => mockLocalDataSource.deleteGuest(any()));
-      },
-    );
+        expect(failure.statusCode, 403);
+      }, (_) => fail('Expected Left but got Right'));
+      verifyNever(() => mockLocalDataSource.deleteGuest(any()));
+    });
 
     test(
       'returns Left(RequestCancelledFailure) when request is cancelled',
@@ -627,48 +567,38 @@ void main() {
         final result = await repository.createGuest(tData);
 
         expect(result.isRight(), isTrue);
-        result.fold(
-          (_) => fail('Expected Right but got Left'),
-          (entity) {
-            expect(entity.id, 'guest_01');
-            expect(entity.guestName, 'Budi Santoso');
-          },
-        );
-        verify(
-          () => mockRemoteDataSource.createGuest(
-            data: tModel,
-          ),
-        ).called(1);
+        result.fold((_) => fail('Expected Right but got Left'), (entity) {
+          expect(entity.id, 'guest_01');
+          expect(entity.guestName, 'Budi Santoso');
+        });
+        verify(() => mockRemoteDataSource.createGuest(data: tModel)).called(1);
         verify(
           () => mockLocalDataSource.cacheGuests([tCreatedModel]),
         ).called(1);
       },
     );
 
-    test(
-      'returns Right(entity) even when localDataSource is null',
-      () async {
-        final repoNoLocal = GuestRepositoryImpl(
-          remoteDataSource: mockRemoteDataSource,
-          networkInfo: mockNetworkInfo,
-        );
+    test('returns Right(entity) even when localDataSource is null', () async {
+      final repoNoLocal = GuestRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+      );
 
-        when(
-          () => mockRemoteDataSource.createGuest(
-            data: any(named: 'data'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => tCreatedModel);
+      when(
+        () => mockRemoteDataSource.createGuest(
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => tCreatedModel);
 
-        final result = await repoNoLocal.createGuest(tData);
+      final result = await repoNoLocal.createGuest(tData);
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (_) => fail('Expected Right'),
-          (entity) => expect(entity.id, 'guest_01'),
-        );
-      },
-    );
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Expected Right'),
+        (entity) => expect(entity.id, 'guest_01'),
+      );
+    });
 
     test(
       'returns Right(entity) when localDataSource caching throws (best-effort)',
@@ -714,69 +644,54 @@ void main() {
       },
     );
 
-    test(
-      'returns Left(ServerFailure) on AppException',
-      () async {
-        when(
-          () => mockRemoteDataSource.createGuest(
-            data: any(named: 'data'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(
-          const ServerException(
-            'Tipe tamu tidak valid.',
-            400,
-            'BAD_REQUEST',
-          ),
-        );
+    test('returns Left(ServerFailure) on AppException', () async {
+      when(
+        () => mockRemoteDataSource.createGuest(
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(
+        const ServerException('Tipe tamu tidak valid.', 400, 'BAD_REQUEST'),
+      );
 
-        final result = await repository.createGuest(tData);
+      final result = await repository.createGuest(tData);
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ServerFailure>());
-            expect(failure.message, 'Tipe tamu tidak valid.');
-          },
-          (_) => fail('Expected Left but got Right'),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'Tipe tamu tidak valid.');
+      }, (_) => fail('Expected Left but got Right'));
+    });
 
-    test(
-      'forwards cancelToken to remote data source',
-      () async {
-        final token = MockAppCancellationToken();
-        final tDataWithToken = CreateGuestData(
-          guestName: tData.guestName,
-          guestDestination: tData.guestDestination,
-          guestType: tData.guestType,
-          guestPurpose: tData.guestPurpose,
-          cancelToken: token,
-        );
+    test('forwards cancelToken to remote data source', () async {
+      final token = MockAppCancellationToken();
+      final tDataWithToken = CreateGuestData(
+        guestName: tData.guestName,
+        guestDestination: tData.guestDestination,
+        guestType: tData.guestType,
+        guestPurpose: tData.guestPurpose,
+        cancelToken: token,
+      );
 
-        when(
-          () => mockRemoteDataSource.createGuest(
-            data: any(named: 'data'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => tCreatedModel);
+      when(
+        () => mockRemoteDataSource.createGuest(
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => tCreatedModel);
 
-        when(
-          () => mockLocalDataSource.cacheGuests(any()),
-        ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.cacheGuests(any()),
+      ).thenAnswer((_) async {});
 
-        final result = await repository.createGuest(tDataWithToken);
+      final result = await repository.createGuest(tDataWithToken);
 
-        expect(result.isRight(), isTrue);
-        verify(
-          () => mockRemoteDataSource.createGuest(
-            data: tModel,
-            cancelToken: token,
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      verify(
+        () =>
+            mockRemoteDataSource.createGuest(data: tModel, cancelToken: token),
+      ).called(1);
+    });
   });
 
   group('updateGuest', () {
@@ -845,13 +760,10 @@ void main() {
         final result = await repository.updateGuest(tUpdateData);
 
         expect(result.isRight(), isTrue);
-        result.fold(
-          (_) => fail('Expected Right but got Left'),
-          (entity) {
-            expect(entity.id, '101');
-            expect(entity.guestName, 'Budi Santoso Update');
-          },
-        );
+        result.fold((_) => fail('Expected Right but got Left'), (entity) {
+          expect(entity.id, '101');
+          expect(entity.guestName, 'Budi Santoso Update');
+        });
         verify(
           () => mockRemoteDataSource.updateGuest(
             params: tUpdateParams,
@@ -864,31 +776,28 @@ void main() {
       },
     );
 
-    test(
-      'returns Right(entity) even when localDataSource is null',
-      () async {
-        final repoNoLocal = GuestRepositoryImpl(
-          remoteDataSource: mockRemoteDataSource,
-          networkInfo: mockNetworkInfo,
-        );
+    test('returns Right(entity) even when localDataSource is null', () async {
+      final repoNoLocal = GuestRepositoryImpl(
+        remoteDataSource: mockRemoteDataSource,
+        networkInfo: mockNetworkInfo,
+      );
 
-        when(
-          () => mockRemoteDataSource.updateGuest(
-            params: any(named: 'params'),
-            data: any(named: 'data'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => tUpdatedGuestModel);
+      when(
+        () => mockRemoteDataSource.updateGuest(
+          params: any(named: 'params'),
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => tUpdatedGuestModel);
 
-        final result = await repoNoLocal.updateGuest(tUpdateData);
+      final result = await repoNoLocal.updateGuest(tUpdateData);
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (_) => fail('Expected Right'),
-          (entity) => expect(entity.id, '101'),
-        );
-      },
-    );
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('Expected Right'),
+        (entity) => expect(entity.id, '101'),
+      );
+    });
 
     test(
       'returns Right(entity) when localDataSource caching throws (best-effort)',
@@ -936,90 +845,69 @@ void main() {
       },
     );
 
-    test(
-      'returns Left(ServerFailure) on AppException',
-      () async {
-        when(
-          () => mockRemoteDataSource.updateGuest(
-            params: any(named: 'params'),
-            data: any(named: 'data'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(
-          const ServerException(
-            'Data tamu tidak ditemukan.',
-            404,
-            'NOT_FOUND',
-          ),
-        );
+    test('returns Left(ServerFailure) on AppException', () async {
+      when(
+        () => mockRemoteDataSource.updateGuest(
+          params: any(named: 'params'),
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(
+        const ServerException('Data tamu tidak ditemukan.', 404, 'NOT_FOUND'),
+      );
 
-        final result = await repository.updateGuest(tUpdateData);
+      final result = await repository.updateGuest(tUpdateData);
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ServerFailure>());
-            expect(failure.message, 'Data tamu tidak ditemukan.');
-          },
-          (_) => fail('Expected Left but got Right'),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'Data tamu tidak ditemukan.');
+      }, (_) => fail('Expected Left but got Right'));
+    });
 
-    test(
-      'forwards cancelToken to remote data source',
-      () async {
-        final token = MockAppCancellationToken();
-        final tUpdateWithToken = UpdateGuestData(
-          id: tUpdateData.id,
-          guestName: tUpdateData.guestName,
-          guestDestination: tUpdateData.guestDestination,
-          guestType: tUpdateData.guestType,
-          guestPurpose: tUpdateData.guestPurpose,
+    test('forwards cancelToken to remote data source', () async {
+      final token = MockAppCancellationToken();
+      final tUpdateWithToken = UpdateGuestData(
+        id: tUpdateData.id,
+        guestName: tUpdateData.guestName,
+        guestDestination: tUpdateData.guestDestination,
+        guestType: tUpdateData.guestType,
+        guestPurpose: tUpdateData.guestPurpose,
+        cancelToken: token,
+      );
+
+      when(
+        () => mockRemoteDataSource.updateGuest(
+          params: any(named: 'params'),
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => tUpdatedGuestModel);
+
+      when(
+        () => mockLocalDataSource.cacheGuests(any()),
+      ).thenAnswer((_) async {});
+
+      final result = await repository.updateGuest(tUpdateWithToken);
+
+      expect(result.isRight(), isTrue);
+      verify(
+        () => mockRemoteDataSource.updateGuest(
+          params: tUpdateParams,
+          data: tUpdateModel,
           cancelToken: token,
-        );
-
-        when(
-          () => mockRemoteDataSource.updateGuest(
-            params: any(named: 'params'),
-            data: any(named: 'data'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => tUpdatedGuestModel);
-
-        when(
-          () => mockLocalDataSource.cacheGuests(any()),
-        ).thenAnswer((_) async {});
-
-        final result = await repository.updateGuest(tUpdateWithToken);
-
-        expect(result.isRight(), isTrue);
-        verify(
-          () => mockRemoteDataSource.updateGuest(
-            params: tUpdateParams,
-            data: tUpdateModel,
-            cancelToken: token,
-          ),
-        ).called(1);
-      },
-    );
+        ),
+      ).called(1);
+    });
   });
 
   group('getMasterGuestTypes', () {
     const tModels = [
-      MasterGuestTypeModel(
-        id: '1',
-        uid: 'type_1',
-        name: 'TAMU',
-      ),
+      MasterGuestTypeModel(id: '1', uid: 'type_1', name: 'TAMU'),
     ];
 
     const tEntities = [
-      MasterGuestTypeEntity(
-        id: '1',
-        uid: 'type_1',
-        name: 'TAMU',
-      ),
+      MasterGuestTypeEntity(id: '1', uid: 'type_1', name: 'TAMU'),
     ];
 
     test(
@@ -1091,43 +979,38 @@ void main() {
       final result = await repository.getMasterGuestTypes();
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'Gagal memuat tipe tamu');
-        },
-        (_) => fail('Expected Left but got Right'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'Gagal memuat tipe tamu');
+      }, (_) => fail('Expected Left but got Right'));
     });
   });
 
   group('checkoutGuest', () {
-    const tCheckoutData = CheckoutGuestData(
-      id: '101',
-      qrUid: 'QR-101',
-    );
+    const tCheckoutData = CheckoutGuestData(id: '101', qrUid: 'QR-101');
     const tGuestModel = GuestModel(
       id: '101',
       guestName: 'Budi',
       guestOutDt: '2026-11-02T10:00:00.000Z',
     );
 
-    test('returns Left(NoInternetFailure) when network is not connected',
-        () async {
-      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-
-      final result = await repository.checkoutGuest(tCheckoutData);
-
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<NoInternetFailure>()),
-        (_) => fail('Expected Left but got Right'),
-      );
-      verifyZeroInteractions(mockRemoteDataSource);
-    });
-
     test(
-        'calls remoteDataSource.checkoutGuest, caches result, and returns '
+      'returns Left(NoInternetFailure) when network is not connected',
+      () async {
+        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+
+        final result = await repository.checkoutGuest(tCheckoutData);
+
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<NoInternetFailure>()),
+          (_) => fail('Expected Left but got Right'),
+        );
+        verifyZeroInteractions(mockRemoteDataSource);
+      },
+    );
+
+    test('calls remoteDataSource.checkoutGuest, caches result, and returns '
         'Right(entity)', () async {
       when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
       when(
@@ -1137,21 +1020,18 @@ void main() {
           cancelToken: any(named: 'cancelToken'),
         ),
       ).thenAnswer((_) async => tGuestModel);
-      when(() => mockLocalDataSource.cacheGuests(any())).thenAnswer(
-        (_) async {},
-      );
+      when(
+        () => mockLocalDataSource.cacheGuests(any()),
+      ).thenAnswer((_) async {});
 
       final result = await repository.checkoutGuest(tCheckoutData);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Expected Right but got Left'),
-        (entity) {
-          expect(entity.id, equals('101'));
-          expect(entity.guestName, equals('Budi'));
-          expect(entity.isExited, isTrue);
-        },
-      );
+      result.fold((_) => fail('Expected Right but got Left'), (entity) {
+        expect(entity.id, equals('101'));
+        expect(entity.guestName, equals('Budi'));
+        expect(entity.isExited, isTrue);
+      });
       verify(
         () => mockRemoteDataSource.checkoutGuest(
           params: const GuestIdParamsModel(id: '101'),
@@ -1161,8 +1041,7 @@ void main() {
       verify(() => mockLocalDataSource.cacheGuests([tGuestModel])).called(1);
     });
 
-    test(
-        'returns Left(ServerFailure) when remoteDataSource throws '
+    test('returns Left(ServerFailure) when remoteDataSource throws '
         'ServerException', () async {
       when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
       when(
@@ -1176,13 +1055,10 @@ void main() {
       final result = await repository.checkoutGuest(tCheckoutData);
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, equals('Gagal check-out'));
-        },
-        (_) => fail('Expected Left but got Right'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, equals('Gagal check-out'));
+      }, (_) => fail('Expected Left but got Right'));
     });
   });
 }

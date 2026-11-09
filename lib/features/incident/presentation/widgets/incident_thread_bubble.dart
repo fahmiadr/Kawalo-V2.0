@@ -45,10 +45,12 @@ class IncidentThreadBubble extends StatelessWidget {
     final roleUpper = reply.senderRole.toUpperCase();
     final isAdmin = roleUpper == 'ADMIN';
 
-    final bubbleColor =
-        isMe ? colorScheme.primaryContainer : colorScheme.surfaceContainerHigh;
-    final textColor =
-        isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface;
+    final bubbleColor = isMe
+        ? colorScheme.primaryContainer
+        : colorScheme.surfaceContainerHigh;
+    final textColor = isMe
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.onSurface;
     final metaColor = isMe
         ? colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
         : colorScheme.onSurfaceVariant;
@@ -85,15 +87,17 @@ class IncidentThreadBubble extends StatelessWidget {
                 ),
         ),
         child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header: Nama Pengirim + Role Badge + Waktu (Reflow-aware)
             if (isEnlargedText) ...[
               Column(
-                crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: isMe
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
@@ -116,9 +120,7 @@ class IncidentThreadBubble extends StatelessWidget {
                   AppSpacing.vGap25,
                   Text(
                     formattedTime,
-                    style: typeScale.labelSmall.copyWith(
-                      color: metaColor,
-                    ),
+                    style: typeScale.labelSmall.copyWith(color: metaColor),
                   ),
                 ],
               ),
@@ -141,9 +143,7 @@ class IncidentThreadBubble extends StatelessWidget {
                   AppSpacing.hGapSm,
                   Text(
                     formattedTime,
-                    style: typeScale.labelSmall.copyWith(
-                      color: metaColor,
-                    ),
+                    style: typeScale.labelSmall.copyWith(color: metaColor),
                   ),
                 ],
               ),
@@ -154,9 +154,7 @@ class IncidentThreadBubble extends StatelessWidget {
               AppSpacing.vGap50,
               SelectableText(
                 reply.message,
-                style: typeScale.bodyMedium.copyWith(
-                  color: textColor,
-                ),
+                style: typeScale.bodyMedium.copyWith(color: textColor),
               ),
             ],
 
@@ -184,12 +182,12 @@ class IncidentThreadBubble extends StatelessWidget {
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => const SizedBox(
+                        placeholder: (_, _) => const SizedBox(
                           width: 80,
                           height: 80,
                           child: AppImagePlaceholder(),
                         ),
-                        errorWidget: (_, __, ___) => Container(
+                        errorWidget: (_, _, _) => Container(
                           width: 80,
                           height: 80,
                           color: colorScheme.surfaceContainerHighest,

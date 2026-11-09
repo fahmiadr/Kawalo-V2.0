@@ -9,8 +9,9 @@ void main() {
     required String title,
     String? subtitle,
     Widget? trailing,
-    EdgeInsetsGeometry padding =
-        const EdgeInsets.symmetric(horizontal: AppSpacing.space50),
+    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(
+      horizontal: AppSpacing.space50,
+    ),
   }) {
     return M3ETheme(
       data: AppTheme.m3eLight(),
@@ -45,11 +46,7 @@ void main() {
     });
 
     testWidgets('renders without subtitle when omitted', (tester) async {
-      await tester.pumpWidget(
-        buildFrame(
-          title: 'Judul Tunggal',
-        ),
-      );
+      await tester.pumpWidget(buildFrame(title: 'Judul Tunggal'));
 
       expect(find.text('Judul Tunggal'), findsOneWidget);
     });

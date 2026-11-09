@@ -34,11 +34,7 @@ class RecentGuestItem {
 /// dan indikator titik.
 class HomeRecentGuestsCard extends StatefulWidget {
   /// Membuat instance [HomeRecentGuestsCard].
-  const HomeRecentGuestsCard({
-    super.key,
-    this.guestPages,
-    this.onTapItem,
-  });
+  const HomeRecentGuestsCard({super.key, this.guestPages, this.onTapItem});
 
   /// Daftar halaman data tamu.
   final List<List<RecentGuestItem>>? guestPages;
@@ -274,10 +270,7 @@ class _HomeRecentGuestsCardState extends State<HomeRecentGuestsCard> {
 
 /// Baris tunggal informasi tamu di dalam kartu Tamu Terakhir.
 class _GuestRowItem extends StatelessWidget {
-  const _GuestRowItem({
-    required this.item,
-    this.onTap,
-  });
+  const _GuestRowItem({required this.item, this.onTap});
 
   final RecentGuestItem item;
   final VoidCallback? onTap;
@@ -288,7 +281,8 @@ class _GuestRowItem extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    final semanticText = 'Tamu ${item.identifier}, lokasi ${item.location}, '
+    final semanticText =
+        'Tamu ${item.identifier}, lokasi ${item.location}, '
         'waktu ${item.timestamp}';
 
     return AppTappable(
@@ -296,60 +290,60 @@ class _GuestRowItem extends StatelessWidget {
       enabled: onTap != null,
       semanticLabel: semanticText,
       child: Padding(
-          padding: AppSpacing.paddingVerticalXs,
-          child: Row(
-            children: [
-              AppSvgIcon.color(
-                item.iconPath,
-                size: 28,
-                semanticLabel: item.identifier,
-              ),
-              AppSpacing.hGapSm,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      item.identifier,
-                      style: typeScale.bodyMedium.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+        padding: AppSpacing.paddingVerticalXs,
+        child: Row(
+          children: [
+            AppSvgIcon.color(
+              item.iconPath,
+              size: 28,
+              semanticLabel: item.identifier,
+            ),
+            AppSpacing.hGapSm,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.identifier,
+                    style: typeScale.bodyMedium.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            item.location,
-                            style: typeScale.labelSmall.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        AppSpacing.hGapSm,
-                        Text(
-                          item.timestamp,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          item.location,
                           style: typeScale.labelSmall.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      AppSpacing.hGapSm,
+                      Text(
+                        item.timestamp,
+                        style: typeScale.labelSmall.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 }

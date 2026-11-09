@@ -60,17 +60,17 @@ class OperationalItemEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userEmail,
-        totalActivities,
-        userName,
-        userProfilePic,
-        groupName,
-        latestDuty,
-        latestState,
-        latestDutyDt,
-        latestStateDt,
-        dutyDate,
-        timeline,
-      ];
+    id,
+    userEmail,
+    totalActivities,
+    userName,
+    userProfilePic,
+    groupName,
+    latestDuty,
+    latestState,
+    latestDutyDt,
+    latestStateDt,
+    dutyDate,
+    timeline,
+  ];
 }

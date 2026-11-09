@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
@@ -107,19 +108,20 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Keyframe 300ms -> 3000ms, Warna light inversePrimary Opacity 0% -> 32%
     final glowBaseColor = AppTheme.lightThemeData().colorScheme.inversePrimary;
-    _glowColorAnimation = ColorTween(
-      begin: glowBaseColor.withValues(alpha: 0),
-      end: glowBaseColor.withValues(alpha: 0.32),
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(
-          300 / 3000,
-          1,
-          curve: AppMotion.emphasizedDecelerate,
-        ),
-      ),
-    );
+    _glowColorAnimation =
+        ColorTween(
+          begin: glowBaseColor.withValues(alpha: 0),
+          end: glowBaseColor.withValues(alpha: 0.32),
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(
+              300 / 3000,
+              1,
+              curve: AppMotion.emphasizedDecelerate,
+            ),
+          ),
+        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -152,8 +154,8 @@ class _SplashScreenState extends State<SplashScreen>
 
       // 1. Periksa status onboarding dari secure storage
       if (widget.storageService != null) {
-        _isOnboardingCompleted =
-            await widget.storageService!.isOnboardingCompleted();
+        _isOnboardingCompleted = await widget.storageService!
+            .isOnboardingCompleted();
       } else {
         try {
           final storage = SecureStorageService();
@@ -171,9 +173,7 @@ class _SplashScreenState extends State<SplashScreen>
               authBloc.state is! GroupSelectionRequired) {
             authBloc.add(const AuthCheckRequested());
             final state = await authBloc.stream
-                .firstWhere(
-                  (s) => s is! AuthLoading && s is! AuthInitial,
-                )
+                .firstWhere((s) => s is! AuthLoading && s is! AuthInitial)
                 .timeout(
                   const Duration(seconds: 5),
                   onTimeout: () => authBloc.state,
@@ -222,7 +222,8 @@ class _SplashScreenState extends State<SplashScreen>
 
       var persistenceEnabled = true;
       try {
-        persistenceEnabled = widget.enableOnboardingPersistence ??
+        persistenceEnabled =
+            widget.enableOnboardingPersistence ??
             EnvConfig.enableOnboardingPersistence;
       } on Object catch (_) {
         persistenceEnabled = widget.enableOnboardingPersistence ?? true;
@@ -240,9 +241,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
 
       Navigator.of(context).pushReplacement<void, void>(
-        AppPageRoute.fade<void>(
-          builder: (_) => nextScreen,
-        ),
+        AppPageRoute.fade<void>(builder: (_) => nextScreen),
       );
     }
   }
@@ -278,8 +277,9 @@ class _SplashScreenState extends State<SplashScreen>
           );
 
     final loadingIndicatorChild = AnimatedOpacity(
-      duration:
-          isReducedMotion ? Duration.zero : const Duration(milliseconds: 300),
+      duration: isReducedMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 300),
       curve: AppMotion.emphasizedDecelerate,
       opacity: _showSlowLoadingIndicator ? 1.0 : 0.0,
       child: AppLoadingIndicator(

@@ -18,11 +18,7 @@ import 'package:kawalo_mobile/features/operational/presentation/extensions/opera
 /// serta standar aksesibilitas WCAG 2.1/2.2 AA.
 class OperationalCard extends StatelessWidget {
   /// Membuat instance [OperationalCard].
-  const OperationalCard({
-    required this.item,
-    super.key,
-    this.onTap,
-  });
+  const OperationalCard({required this.item, super.key, this.onTap});
 
   /// Data personil tenaga kerja operasional.
   final OperationalItemEntity item;
@@ -37,7 +33,8 @@ class OperationalCard extends StatelessWidget {
     final typeScale = theme.typeScale;
     final emphasizedTypeScale = theme.typography.emphasized;
 
-    final semanticLabel = 'Personil ${item.displayUserName}, '
+    final semanticLabel =
+        'Personil ${item.displayUserName}, '
         'email ${item.displayUserEmail}, '
         'status dinas ${item.displayLatestDuty}, '
         '${item.displayTotalActivities} aktivitas, '
@@ -79,10 +76,7 @@ class OperationalCard extends StatelessWidget {
                           ),
                         ),
                         AppSpacing.hGapXs,
-                        const AppSvgIcon(
-                          KawaloVectors.arrowRight01,
-                          size: 24,
-                        ),
+                        const AppSvgIcon(KawaloVectors.arrowRight01, size: 24),
                       ],
                     ),
                     Text(
@@ -147,10 +141,7 @@ class OperationalCard extends StatelessWidget {
 
     return Row(
       children: [
-        AppSvgIcon.color(
-          iconPath,
-          size: 20,
-        ),
+        AppSvgIcon.color(iconPath, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(
@@ -173,10 +164,7 @@ class OperationalCard extends StatelessWidget {
 
     return Row(
       children: [
-        const AppSvgIcon.color(
-          KawaloColorVectors.timeRotation,
-          size: 20,
-        ),
+        const AppSvgIcon.color(KawaloColorVectors.timeRotation, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(
@@ -200,7 +188,8 @@ class OperationalCard extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final pic = item.userProfilePic;
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -211,8 +200,8 @@ class OperationalCard extends StatelessWidget {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildAvatarFallback(),
-          errorWidget: (_, __, ___) => _buildAvatarFallback(),
+          placeholder: (_, _) => _buildAvatarFallback(),
+          errorWidget: (_, _, _) => _buildAvatarFallback(),
         ),
       );
     }
@@ -222,10 +211,7 @@ class OperationalCard extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.patrol3,
-        size: 40,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 40),
     );
   }
 }

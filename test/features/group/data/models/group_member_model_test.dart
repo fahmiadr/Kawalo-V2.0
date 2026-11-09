@@ -18,9 +18,7 @@ void main() {
     });
 
     test('fromJson should handle null optional fields', () {
-      final json = {
-        'email': 'member@kawalo.id',
-      };
+      final json = {'email': 'member@kawalo.id'};
 
       final result = GroupMemberModel.fromJson(json);
 
@@ -37,14 +35,8 @@ void main() {
     });
 
     test('props equality works as expected', () {
-      const modelA = GroupMemberModel(
-        email: 'test@kawalo.id',
-        name: 'Test',
-      );
-      const modelB = GroupMemberModel(
-        email: 'test@kawalo.id',
-        name: 'Test',
-      );
+      const modelA = GroupMemberModel(email: 'test@kawalo.id', name: 'Test');
+      const modelB = GroupMemberModel(email: 'test@kawalo.id', name: 'Test');
 
       expect(modelA, equals(modelB));
     });

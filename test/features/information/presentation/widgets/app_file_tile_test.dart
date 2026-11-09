@@ -7,15 +7,14 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/app_file
 
 void main() {
   group('AppFileTile Core Widget Tests', () {
-    testWidgets('renders filename, format subtitle, and AppFileIcon',
-        (tester) async {
+    testWidgets('renders filename, format subtitle, and AppFileIcon', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
           home: const Scaffold(
-            body: Center(
-              child: AppFileTile(fileName: 'laporan_tahunan.pdf'),
-            ),
+            body: Center(child: AppFileTile(fileName: 'laporan_tahunan.pdf')),
           ),
         ),
       );
@@ -33,8 +32,9 @@ void main() {
       );
     });
 
-    testWidgets('renders custom subtitle and trailing widget when provided',
-        (tester) async {
+    testWidgets('renders custom subtitle and trailing widget when provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
@@ -56,8 +56,9 @@ void main() {
       expect(find.byIcon(Icons.check), findsOneWidget);
     });
 
-    testWidgets('resolves extensions correctly for word, excel, powerpoint',
-        (tester) async {
+    testWidgets('resolves extensions correctly for word, excel, powerpoint', (
+      tester,
+    ) async {
       expect(AppFileTile.formatDescriptionOf('docx'), 'Word');
       expect(AppFileTile.formatDescriptionOf('xlsx'), 'Excel');
       expect(AppFileTile.formatDescriptionOf('pptx'), 'PowerPoint');

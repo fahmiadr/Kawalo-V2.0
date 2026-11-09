@@ -64,35 +64,30 @@ void main() {
       expect(orientation, isNull);
     });
 
-    test(
-      'preserves orientation within hysteresis threshold',
-      () {
-        // Current is portraitUp. Slight tilt towards landscapeRight (~50°).
-        // With default 10° hysteresis, portraitUp sector extends up to 55°.
-        // At angle = 50°: x = -sin(50°)*9.8, y = cos(50°)*9.8
-        final orientationWithin = strategy.calculate(
-          x: -7.5,
-          y: 6.3,
-          z: 0,
-          current: DeviceOrientation.portraitUp,
-        );
-        expect(orientationWithin, equals(DeviceOrientation.portraitUp));
+    test('preserves orientation within hysteresis threshold', () {
+      // Current is portraitUp. Slight tilt towards landscapeRight (~50°).
+      // With default 10° hysteresis, portraitUp sector extends up to 55°.
+      // At angle = 50°: x = -sin(50°)*9.8, y = cos(50°)*9.8
+      final orientationWithin = strategy.calculate(
+        x: -7.5,
+        y: 6.3,
+        z: 0,
+        current: DeviceOrientation.portraitUp,
+      );
+      expect(orientationWithin, equals(DeviceOrientation.portraitUp));
 
-        // Once tilted beyond 55° (e.g. 60°: x = -8.5, y = 4.9)
-        final orientationBeyond = strategy.calculate(
-          x: -8.5,
-          y: 4.9,
-          z: 0,
-          current: DeviceOrientation.portraitUp,
-        );
-        expect(orientationBeyond, equals(DeviceOrientation.landscapeRight));
-      },
-    );
+      // Once tilted beyond 55° (e.g. 60°: x = -8.5, y = 4.9)
+      final orientationBeyond = strategy.calculate(
+        x: -8.5,
+        y: 4.9,
+        z: 0,
+        current: DeviceOrientation.portraitUp,
+      );
+      expect(orientationBeyond, equals(DeviceOrientation.landscapeRight));
+    });
 
     test('supports custom hysteresisDegrees value', () {
-      const wideStrategy = AospDeviceOrientationStrategy(
-        hysteresisDegrees: 20,
-      );
+      const wideStrategy = AospDeviceOrientationStrategy(hysteresisDegrees: 20);
 
       // At ~57°, default (10°) would transition. With 20° hysteresis,
       // portraitUp sector extends to 65°, so ~57° stays portraitUp.
@@ -164,10 +159,7 @@ void main() {
 
       expect(
         received,
-        equals([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.portraitUp,
-        ]),
+        equals([DeviceOrientation.landscapeLeft, DeviceOrientation.portraitUp]),
       );
 
       await sub.cancel();

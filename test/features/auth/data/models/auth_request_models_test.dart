@@ -39,18 +39,14 @@ void main() {
     });
 
     test('RefreshTokenRequestModel.toJson serializes refresh_token', () {
-      final model = RefreshTokenRequestModel(
-        refreshToken: 'a' * 64,
-      );
+      final model = RefreshTokenRequestModel(refreshToken: 'a' * 64);
 
       final json = model.toJson();
       expect(json['refresh_token'], 'a' * 64);
     });
 
     test('SwitchGroupRequestModel.toJson serializes group_uid', () {
-      const model = SwitchGroupRequestModel(
-        groupUid: 'grp_target_99',
-      );
+      const model = SwitchGroupRequestModel(groupUid: 'grp_target_99');
 
       final json = model.toJson();
       expect(json['group_uid'], 'grp_target_99');

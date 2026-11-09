@@ -35,15 +35,14 @@ void main() {
   Widget buildTestWidget(OperationalItemEntity item) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: OperationalCard(item: item),
-      ),
+      home: Scaffold(body: OperationalCard(item: item)),
     );
   }
 
   group('OperationalCard Tests', () {
-    testWidgets('renders fallback vector avatar when userProfilePic is null',
-        (tester) async {
+    testWidgets('renders fallback vector avatar when userProfilePic is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(sampleWorkerWithoutPic));
       await tester.pumpAndSettle();
 

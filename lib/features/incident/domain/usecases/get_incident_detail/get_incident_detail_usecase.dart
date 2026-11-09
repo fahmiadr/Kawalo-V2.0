@@ -20,9 +20,7 @@ class GetIncidentDetailUseCase
   ) async {
     if (!params.isAuthorized) {
       return const Left(
-        ForbiddenFailure(
-          'Sesi tidak valid untuk melihat detail insiden.',
-        ),
+        ForbiddenFailure('Sesi tidak valid untuk melihat detail insiden.'),
       );
     }
 

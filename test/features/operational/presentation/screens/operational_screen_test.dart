@@ -51,14 +51,12 @@ MockOperationalCubit createMockOperationalCubit({
     ),
   ).thenAnswer((_) async => AppFetchResult.success);
   when(
-    () => mockCubit.refreshOperationals(
-      search: any(named: 'search'),
-    ),
+    () => mockCubit.refreshOperationals(search: any(named: 'search')),
   ).thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetDateFilter)
-      .thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetFilters)
-      .thenAnswer((_) async => AppFetchResult.success);
+  when(
+    mockCubit.resetDateFilter,
+  ).thenAnswer((_) async => AppFetchResult.success);
+  when(mockCubit.resetFilters).thenAnswer((_) async => AppFetchResult.success);
   return mockCubit;
 }
 
@@ -113,16 +111,15 @@ void main() {
     OperationalCubit? cubit,
     String? initialGreeting,
   }) {
-    final effectiveCubit = cubit ??
+    final effectiveCubit =
+        cubit ??
         createMockOperationalCubit(
           operationals: initialWorkers ?? testWorkers,
           greeting: initialGreeting ?? 'Diperbarui Hari ini, 15.20',
         );
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: OperationalScreen(
-        cubit: effectiveCubit,
-      ),
+      home: OperationalScreen(cubit: effectiveCubit),
     );
   }
 
@@ -156,8 +153,9 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        final searchToggleBtn =
-            find.bySemanticsLabel('Cari aktifitas operasional');
+        final searchToggleBtn = find.bySemanticsLabel(
+          'Cari aktifitas operasional',
+        );
         expect(searchToggleBtn, findsOneWidget);
         expect(find.text('Aktifitas operasional'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
@@ -187,92 +185,82 @@ void main() {
       },
     );
 
-    testWidgets(
-      'renders OperationalCard for each operational worker',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
+    testWidgets('renders OperationalCard for each operational worker', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-        expect(find.byType(OperationalCard), findsNWidgets(2));
-        expect(find.text('Agus Setiawan'), findsOneWidget);
-        expect(find.text('Hendra Pratama'), findsOneWidget);
-        expect(find.text('agus.security@kawalo.id'), findsOneWidget);
-        expect(find.text('Patroli Lingkungan'), findsOneWidget);
-      },
-    );
+      expect(find.byType(OperationalCard), findsNWidgets(2));
+      expect(find.text('Agus Setiawan'), findsOneWidget);
+      expect(find.text('Hendra Pratama'), findsOneWidget);
+      expect(find.text('agus.security@kawalo.id'), findsOneWidget);
+      expect(find.text('Patroli Lingkungan'), findsOneWidget);
+    });
 
-    testWidgets(
-      'filters list when user searches by worker name',
-      (WidgetTester tester) async {
-        registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer((invocation) async {
-          final params =
-              invocation.positionalArguments.first as GetOperationalsParams;
-          if (params.search?.toLowerCase() == 'agus') {
-            return Right(OperationalResult(items: [testWorkers.first]));
-          }
-          return Right(OperationalResult(items: testWorkers));
-        });
+    testWidgets('filters list when user searches by worker name', (
+      WidgetTester tester,
+    ) async {
+      registerFallbackValue(const GetOperationalsParams());
+      final mockUseCase = MockGetOperationalsUseCase();
+      when(() => mockUseCase(any())).thenAnswer((invocation) async {
+        final params =
+            invocation.positionalArguments.first as GetOperationalsParams;
+        if (params.search?.toLowerCase() == 'agus') {
+          return Right(OperationalResult(items: [testWorkers.first]));
+        }
+        return Right(OperationalResult(items: testWorkers));
+      });
 
-        final cubit = OperationalCubit(getOperationalsUseCase: mockUseCase);
+      final cubit = OperationalCubit(getOperationalsUseCase: mockUseCase);
 
-        await tester.pumpWidget(
-          M3EMaterialApp(
-            data: AppTheme.m3eLight(),
-            home: OperationalScreen(cubit: cubit),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          home: OperationalScreen(cubit: cubit),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+      await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(AppSearchBar), 'Agus');
-        await tester.pump(const Duration(milliseconds: 400));
-        await tester.pumpAndSettle();
+      await tester.enterText(find.byType(AppSearchBar), 'Agus');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
 
-        expect(find.byType(OperationalCard), findsOneWidget);
-        expect(find.text('Agus Setiawan'), findsOneWidget);
-        expect(find.text('Hendra Pratama'), findsNothing);
-      },
-    );
+      expect(find.byType(OperationalCard), findsOneWidget);
+      expect(find.text('Agus Setiawan'), findsOneWidget);
+      expect(find.text('Hendra Pratama'), findsNothing);
+    });
 
-    testWidgets(
-      'does not render SOS Extended FAB',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
+    testWidgets('does not render SOS Extended FAB', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-        expect(find.byType(AppExtendedFab), findsNothing);
-        expect(find.text('SOS'), findsNothing);
-      },
-    );
+      expect(find.byType(AppExtendedFab), findsNothing);
+      expect(find.text('SOS'), findsNothing);
+    });
 
-    testWidgets(
-      'renders AppRefreshIndicator with correct semantics',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
+    testWidgets('renders AppRefreshIndicator with correct semantics', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-        expect(find.byType(AppRefreshIndicator), findsOneWidget);
-      },
-    );
+      expect(find.byType(AppRefreshIndicator), findsOneWidget);
+    });
 
-    testWidgets(
-      'renders Belum ada aktifitas operasional when list is empty '
-      'without filter',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(initialWorkers: []));
-        await tester.pumpAndSettle();
+    testWidgets('renders Belum ada aktifitas operasional when list is empty '
+        'without filter', (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget(initialWorkers: []));
+      await tester.pumpAndSettle();
 
-        expect(find.text('Belum ada aktifitas operasional'), findsOneWidget);
-        expect(
-          find.text('Aktifitas operasional tidak ditemukan'),
-          findsNothing,
-        );
-      },
-    );
+      expect(find.text('Belum ada aktifitas operasional'), findsOneWidget);
+      expect(find.text('Aktifitas operasional tidak ditemukan'), findsNothing);
+    });
 
     testWidgets(
       'renders Tidak ada hasil ditemukan with reset button when search yields '
@@ -328,26 +316,25 @@ void main() {
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
         final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(OperationalResult(items: testWorkers)),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
         final connectivityCubit = ConnectivityCubit(
           autoStart: false,
           checkConnection: () async => false,
         )..setStatus(ConnectivityStatus.offline);
 
-        final operationalCubit =
-            OperationalCubit(getOperationalsUseCase: mockUseCase);
+        final operationalCubit = OperationalCubit(
+          getOperationalsUseCase: mockUseCase,
+        );
 
         await tester.pumpWidget(
           BlocProvider<ConnectivityCubit>.value(
             value: connectivityCubit,
             child: M3EMaterialApp(
               data: AppTheme.m3eLight(),
-              home: OperationalScreen(
-                cubit: operationalCubit,
-              ),
+              home: OperationalScreen(cubit: operationalCubit),
             ),
           ),
         );
@@ -385,59 +372,54 @@ void main() {
       },
     );
 
-    testWidgets(
-      'focusing search bar does NOT trigger remote fetchWorkers',
-      (WidgetTester tester) async {
-        registerFallbackValue(const GetOperationalsParams());
-        final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(OperationalResult(items: testWorkers)),
-        );
+    testWidgets('focusing search bar does NOT trigger remote fetchWorkers', (
+      WidgetTester tester,
+    ) async {
+      registerFallbackValue(const GetOperationalsParams());
+      final mockUseCase = MockGetOperationalsUseCase();
+      when(
+        () => mockUseCase(any()),
+      ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit = OperationalCubit(
-          getOperationalsUseCase: mockUseCase,
-        );
+      final operationalCubit = OperationalCubit(
+        getOperationalsUseCase: mockUseCase,
+      );
 
-        await tester.pumpWidget(
-          M3EMaterialApp(
-            data: AppTheme.m3eLight(),
-            home: OperationalScreen(
-              cubit: operationalCubit,
-            ),
+      await tester.pumpWidget(
+        M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          home: OperationalScreen(cubit: operationalCubit),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Initial fetch on mount called once
+      verify(() => mockUseCase(any())).called(1);
+
+      // Open search then tap/focus search bar without changing text
+      await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(AppSearchBar));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Must NOT trigger another fetchWorkers call
+      verifyNever(() => mockUseCase(any()));
+
+      // Entering text DOES trigger search after debounce
+      await tester.enterText(find.byType(AppSearchBar), 'Agus');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      verify(
+        () => mockUseCase(
+          any(
+            that: predicate<GetOperationalsParams>((p) => p.search == 'agus'),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      ).called(1);
 
-        // Initial fetch on mount called once
-        verify(() => mockUseCase(any())).called(1);
-
-        // Open search then tap/focus search bar without changing text
-        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byType(AppSearchBar));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
-
-        // Must NOT trigger another fetchWorkers call
-        verifyNever(() => mockUseCase(any()));
-
-        // Entering text DOES trigger search after debounce
-        await tester.enterText(find.byType(AppSearchBar), 'Agus');
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 400));
-        verify(
-          () => mockUseCase(
-            any(
-              that: predicate<GetOperationalsParams>(
-                (p) => p.search == 'agus',
-              ),
-            ),
-          ),
-        ).called(1);
-
-        await operationalCubit.close();
-      },
-    );
+      await operationalCubit.close();
+    });
 
     testWidgets(
       'tapping Reset Filter & Pencarian triggers remote fetchWorkers exactly '
@@ -445,9 +427,9 @@ void main() {
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
         final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(OperationalResult(items: testWorkers)),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
         final operationalCubit = OperationalCubit(
           getOperationalsUseCase: mockUseCase,
@@ -456,9 +438,7 @@ void main() {
         await tester.pumpWidget(
           M3EMaterialApp(
             data: AppTheme.m3eLight(),
-            home: OperationalScreen(
-              cubit: operationalCubit,
-            ),
+            home: OperationalScreen(cubit: operationalCubit),
           ),
         );
         await tester.pumpAndSettle();
@@ -468,9 +448,8 @@ void main() {
 
         // Mock search returns empty so empty search state is displayed
         when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            OperationalResult(items: <OperationalItemEntity>[]),
-          ),
+          (_) async =>
+              const Right(OperationalResult(items: <OperationalItemEntity>[])),
         );
 
         await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
@@ -487,9 +466,9 @@ void main() {
         // Verify empty state button is visible
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
 
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(OperationalResult(items: testWorkers)),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
         // Tap "Reset filter & pencarian"
         await tester.tap(find.text('Reset filter & pencarian'));
@@ -522,9 +501,7 @@ void main() {
             data: AppTheme.m3eLight(),
             home: MediaQuery(
               data: const MediaQueryData(disableAnimations: true),
-              child: OperationalScreen(
-                cubit: operationalCubit,
-              ),
+              child: OperationalScreen(cubit: operationalCubit),
             ),
           ),
         );
@@ -547,9 +524,9 @@ void main() {
         expect(find.text('Coba lagi'), findsOneWidget);
 
         // When user taps 'Coba lagi', it should retry WITH search 'Agus'
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(OperationalResult(items: testWorkers)),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
         clearInteractions(mockUseCase);
 
         await tester.tap(find.text('Coba lagi'));
@@ -560,9 +537,7 @@ void main() {
         verify(
           () => mockUseCase(
             any(
-              that: predicate<GetOperationalsParams>(
-                (p) => p.search == 'Agus',
-              ),
+              that: predicate<GetOperationalsParams>((p) => p.search == 'Agus'),
             ),
           ),
         ).called(1);
@@ -577,12 +552,13 @@ void main() {
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
         final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(OperationalResult(items: testWorkers)),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit =
-            OperationalCubit(getOperationalsUseCase: mockUseCase);
+        final operationalCubit = OperationalCubit(
+          getOperationalsUseCase: mockUseCase,
+        );
 
         // Fetch with search 'Agus' and filter 'thisWeek'
         await operationalCubit.fetchOperationals(
@@ -601,8 +577,9 @@ void main() {
 
         // Expect search bar to contain 'Agus' and active filter chip to be
         // selected
-        final searchBar =
-            tester.widget<AppSearchBar>(find.byType(AppSearchBar));
+        final searchBar = tester.widget<AppSearchBar>(
+          find.byType(AppSearchBar),
+        );
         expect(searchBar.controller?.text, 'Agus');
         final filterChip = tester.widget<AppChip>(find.byType(AppChip));
         expect(filterChip.selected, isTrue);
@@ -618,13 +595,13 @@ void main() {
         registerFallbackValue(const GetOperationalsParams());
         final mockUseCase = MockGetOperationalsUseCase();
         when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            OperationalResult(items: [], isFromCache: true),
-          ),
+          (_) async =>
+              const Right(OperationalResult(items: [], isFromCache: true)),
         );
 
-        final operationalCubit =
-            OperationalCubit(getOperationalsUseCase: mockUseCase);
+        final operationalCubit = OperationalCubit(
+          getOperationalsUseCase: mockUseCase,
+        );
 
         await operationalCubit.fetchOperationals(search: 'NonExistent');
 
@@ -661,16 +638,13 @@ void main() {
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
         final mockUseCase = MockGetOperationalsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => Right(
-            OperationalResult(
-              items: testWorkers,
-            ),
-          ),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => Right(OperationalResult(items: testWorkers)));
 
-        final operationalCubit =
-            OperationalCubit(getOperationalsUseCase: mockUseCase);
+        final operationalCubit = OperationalCubit(
+          getOperationalsUseCase: mockUseCase,
+        );
 
         await tester.pumpWidget(
           M3EMaterialApp(
@@ -684,9 +658,7 @@ void main() {
         verify(() => mockUseCase(any())).called(1);
 
         // 2. Open search bar
-        await tester.tap(
-          find.bySemanticsLabel('Cari aktifitas operasional'),
-        );
+        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
         await tester.pumpAndSettle();
 
         // Verify no fetch triggered on open

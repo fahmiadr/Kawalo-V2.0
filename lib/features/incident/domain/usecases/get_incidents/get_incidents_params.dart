@@ -72,14 +72,14 @@ class GetIncidentsParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        session,
-        status,
-        search,
-        startDate,
-        endDate,
-        limit,
-        offset,
-        cancelToken,
-        isRefresh,
-      ];
+    session,
+    status,
+    search,
+    startDate,
+    endDate,
+    limit,
+    offset,
+    cancelToken,
+    isRefresh,
+  ];
 }

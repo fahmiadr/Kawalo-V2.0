@@ -19,9 +19,7 @@ class WatchIncidentRepliesUseCase {
   ) async* {
     if (!params.isAuthorized) {
       yield const Left(
-        ForbiddenFailure(
-          'Sesi tidak valid untuk memantau stream insiden.',
-        ),
+        ForbiddenFailure('Sesi tidak valid untuk memantau stream insiden.'),
       );
       return;
     }

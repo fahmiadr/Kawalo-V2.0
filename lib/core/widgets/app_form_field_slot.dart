@@ -47,8 +47,9 @@ class AppFormFieldSlot extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    final displayLabel =
-        isRequired && !label.endsWith('*') ? '$label *' : label;
+    final displayLabel = isRequired && !label.endsWith('*')
+        ? '$label *'
+        : label;
 
     return Padding(
       padding: padding ?? EdgeInsets.zero,
@@ -61,16 +62,14 @@ class AppFormFieldSlot extends StatelessWidget {
               Expanded(
                 child: Text(
                   displayLabel,
-                  style: labelStyle ??
+                  style:
+                      labelStyle ??
                       typeScale.labelMedium.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),
-              if (trailing != null) ...[
-                AppSpacing.hGapXs,
-                trailing!,
-              ],
+              if (trailing != null) ...[AppSpacing.hGapXs, trailing!],
             ],
           ),
           AppSpacing.vGapXs,
@@ -79,9 +78,7 @@ class AppFormFieldSlot extends StatelessWidget {
             AppSpacing.vGapXs,
             Text(
               errorText!,
-              style: typeScale.bodySmall.copyWith(
-                color: colorScheme.error,
-              ),
+              style: typeScale.bodySmall.copyWith(color: colorScheme.error),
             ),
           ],
         ],

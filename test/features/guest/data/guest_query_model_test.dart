@@ -25,10 +25,7 @@ void main() {
     );
 
     test('toQueryParams omits null fields and preserves exact values', () {
-      const query = GuestQueryModel(
-        search: 'B 1234 CD',
-        offset: 0,
-      );
+      const query = GuestQueryModel(search: 'B 1234 CD', offset: 0);
 
       final params = query.toQueryParams();
 

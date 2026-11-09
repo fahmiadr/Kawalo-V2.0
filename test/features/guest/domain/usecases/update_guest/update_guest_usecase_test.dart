@@ -234,16 +234,13 @@ void main() {
       final result = await useCase(invalidParams);
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          expect(
-            failure.message,
-            'ID tamu wajib diisi dan harus berupa angka valid.',
-          );
-        },
-        (_) => fail('Should not be Right'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        expect(
+          failure.message,
+          'ID tamu wajib diisi dan harus berupa angka valid.',
+        );
+      }, (_) => fail('Should not be Right'));
       verifyZeroInteractions(mockRepository);
     });
 
@@ -257,22 +254,20 @@ void main() {
       final result = await useCase(forbiddenParams);
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ForbiddenFailure>());
-          expect(
-            failure.message,
-            'Anda tidak memiliki izin untuk mengubah data tamu ini.',
-          );
-        },
-        (_) => fail('Should not be Right'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          failure.message,
+          'Anda tidak memiliki izin untuk mengubah data tamu ini.',
+        );
+      }, (_) => fail('Should not be Right'));
       verifyZeroInteractions(mockRepository);
     });
 
     test('delegates to repository on success for authorized caller', () async {
-      when(() => mockRepository.updateGuest(any()))
-          .thenAnswer((_) async => const Right(tResultEntity));
+      when(
+        () => mockRepository.updateGuest(any()),
+      ).thenAnswer((_) async => const Right(tResultEntity));
 
       final result = await useCase(tParams);
 
@@ -282,8 +277,9 @@ void main() {
         (entity) => expect(entity, equals(tResultEntity)),
       );
 
-      verify(() => mockRepository.updateGuest(tParams.toRepositoryData()))
-          .called(1);
+      verify(
+        () => mockRepository.updateGuest(tParams.toRepositoryData()),
+      ).called(1);
       verifyNoMoreInteractions(mockRepository);
     });
 
@@ -296,8 +292,9 @@ void main() {
         item: tItem,
         cancelToken: token,
       );
-      when(() => mockRepository.updateGuest(any()))
-          .thenAnswer((_) async => const Right(tResultEntity));
+      when(
+        () => mockRepository.updateGuest(any()),
+      ).thenAnswer((_) async => const Right(tResultEntity));
 
       final result = await useCase(paramsWithToken);
 
@@ -309,8 +306,9 @@ void main() {
 
     test('returns failure when repository fails', () async {
       const tFailure = ServerFailure('Gagal memperbarui data tamu');
-      when(() => mockRepository.updateGuest(any()))
-          .thenAnswer((_) async => const Left(tFailure));
+      when(
+        () => mockRepository.updateGuest(any()),
+      ).thenAnswer((_) async => const Left(tFailure));
 
       final result = await useCase(tParams);
 
@@ -319,8 +317,9 @@ void main() {
         (failure) => expect(failure, equals(tFailure)),
         (_) => fail('Should be Left'),
       );
-      verify(() => mockRepository.updateGuest(tParams.toRepositoryData()))
-          .called(1);
+      verify(
+        () => mockRepository.updateGuest(tParams.toRepositoryData()),
+      ).called(1);
     });
   });
 }

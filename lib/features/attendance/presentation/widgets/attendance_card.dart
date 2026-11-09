@@ -18,11 +18,7 @@ import 'package:kawalo_mobile/features/attendance/presentation/extensions/attend
 /// dan indikator keterlambatan.
 class AttendanceCard extends StatelessWidget {
   /// Membuat instance [AttendanceCard].
-  const AttendanceCard({
-    required this.item,
-    super.key,
-    this.onTap,
-  });
+  const AttendanceCard({required this.item, super.key, this.onTap});
 
   /// Data catatan absensi yang ditampilkan.
   final AttendanceItemEntity item;
@@ -37,7 +33,8 @@ class AttendanceCard extends StatelessWidget {
     final typeScale = theme.typeScale;
     final emphasizedTypeScale = theme.typography.emphasized;
 
-    final semanticLabel = 'Absensi ${item.displayUserName}, '
+    final semanticLabel =
+        'Absensi ${item.displayUserName}, '
         'email ${item.displayUserEmail}, '
         'status ${item.displayCategory}, '
         'shift ${item.displayShift}, '
@@ -91,10 +88,7 @@ class AttendanceCard extends StatelessWidget {
           AppSpacing.vGapSm,
 
           // ── Tag Status Absensi ────────────────────────────────────
-          AppTag(
-            label: item.displayCategory,
-            variant: item.tagVariant,
-          ),
+          AppTag(label: item.displayCategory, variant: item.tagVariant),
 
           // ── Garis Pemisah (AppDivider) ────────────────────────────
           const Padding(
@@ -115,9 +109,7 @@ class AttendanceCard extends StatelessWidget {
             text: item.displayLocationName,
           ),
           AppSpacing.vGap50,
-          _buildTimestampAndStatusRow(
-            context: context,
-          ),
+          _buildTimestampAndStatusRow(context: context),
         ],
       ),
     );
@@ -134,10 +126,7 @@ class AttendanceCard extends StatelessWidget {
 
     return Row(
       children: [
-        AppSvgIcon.color(
-          iconPath,
-          size: 20,
-        ),
+        AppSvgIcon.color(iconPath, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(
@@ -153,22 +142,18 @@ class AttendanceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTimestampAndStatusRow({
-    required BuildContext context,
-  }) {
+  Widget _buildTimestampAndStatusRow({required BuildContext context}) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    final statusVariant =
-        item.isLate ? AppTagVariant.error : AppTagVariant.primary;
+    final statusVariant = item.isLate
+        ? AppTagVariant.error
+        : AppTagVariant.primary;
 
     return Row(
       children: [
-        const AppSvgIcon.color(
-          KawaloColorVectors.calendar1,
-          size: 20,
-        ),
+        const AppSvgIcon.color(KawaloColorVectors.calendar1, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(
@@ -192,7 +177,8 @@ class AttendanceCard extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final pic = item.userProfilePic;
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -203,8 +189,8 @@ class AttendanceCard extends StatelessWidget {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildAvatarFallback(),
-          errorWidget: (_, __, ___) => _buildAvatarFallback(),
+          placeholder: (_, _) => _buildAvatarFallback(),
+          errorWidget: (_, _, _) => _buildAvatarFallback(),
         ),
       );
     }
@@ -214,10 +200,7 @@ class AttendanceCard extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.patrol3,
-        size: 40,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 40),
     );
   }
 }

@@ -30,12 +30,13 @@ final class InformationModule {
     required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
     GetGroupMembersUseCase? getGroupMembersUseCase,
-  })  : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
-        _getGroupMembersUseCase = getGroupMembersUseCase ??
-            GroupModule.createGetGroupMembersUseCase(
-              apiClient: apiClient,
-              networkInfo: networkInfo,
-            ) {
+  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+       _getGroupMembersUseCase =
+           getGroupMembersUseCase ??
+           GroupModule.createGetGroupMembersUseCase(
+             apiClient: apiClient,
+             networkInfo: networkInfo,
+           ) {
     repository = InformationRepositoryImpl(
       remoteDataSource: InformationRemoteDataSourceImpl(apiClient: apiClient),
       localDataSource: InformationLocalDataSourceImpl(isar: isar),

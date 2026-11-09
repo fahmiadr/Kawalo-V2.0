@@ -91,7 +91,5 @@ class ValidationFailure extends Failure {
 /// Failure saat permintaan dibatalkan secara eksplisit oleh klien via
 /// CancelToken.
 class RequestCancelledFailure extends Failure {
-  const RequestCancelledFailure([
-    super.message = 'Permintaan dibatalkan.',
-  ]);
+  const RequestCancelledFailure([super.message = 'Permintaan dibatalkan.']);
 }

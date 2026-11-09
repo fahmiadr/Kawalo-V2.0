@@ -354,12 +354,12 @@ class _AppCollageTile extends StatelessWidget {
       fit: BoxFit.cover,
       fadeInDuration: Duration.zero,
       fadeOutDuration: Duration.zero,
-      placeholder: (_, __) => const AppImagePlaceholder(
+      placeholder: (_, _) => const AppImagePlaceholder(
         width: double.infinity,
         height: double.infinity,
         iconSize: 32,
       ),
-      errorWidget: (_, __, ___) => const AppImagePlaceholder(
+      errorWidget: (_, _, _) => const AppImagePlaceholder(
         width: double.infinity,
         height: double.infinity,
         iconSize: 32,
@@ -374,10 +374,7 @@ class _AppCollageTile extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Hero(
-            tag: heroTag,
-            child: imageWidget,
-          ),
+          Hero(tag: heroTag, child: imageWidget),
           if (remainingCount != null && remainingCount! > 0)
             ColoredBox(
               color: colorScheme.scrim.withValues(alpha: 0.60),

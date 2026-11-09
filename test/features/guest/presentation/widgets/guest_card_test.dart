@@ -71,8 +71,9 @@ void main() {
   }
 
   group('GuestCard Widget Tests', () {
-    testWidgets('renders all card details with exited status (Keluar)',
-        (WidgetTester tester) async {
+    testWidgets('renders all card details with exited status (Keluar)', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildCardWidget(sampleExitedGuest));
       await tester.pumpAndSettle();
 
@@ -88,8 +89,9 @@ void main() {
       expect(find.text('Keluar'), findsOneWidget);
     });
 
-    testWidgets('renders all card details with waiting status (Masuk)',
-        (WidgetTester tester) async {
+    testWidgets('renders all card details with waiting status (Masuk)', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildCardWidget(sampleWaitingGuest));
       await tester.pumpAndSettle();
 
@@ -103,14 +105,12 @@ void main() {
       expect(find.text('Masuk'), findsOneWidget);
     });
 
-    testWidgets('triggers onTap callback when card is tapped',
-        (WidgetTester tester) async {
+    testWidgets('triggers onTap callback when card is tapped', (
+      WidgetTester tester,
+    ) async {
       var tapped = false;
       await tester.pumpWidget(
-        buildCardWidget(
-          sampleExitedGuest,
-          onTap: () => tapped = true,
-        ),
+        buildCardWidget(sampleExitedGuest, onTap: () => tapped = true),
       );
       await tester.pumpAndSettle();
 
@@ -120,38 +120,35 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('passes accessible semantic label to AppCard',
-        (WidgetTester tester) async {
+    testWidgets('passes accessible semantic label to AppCard', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildCardWidget(sampleExitedGuest));
       await tester.pumpAndSettle();
 
       final card = tester.widget<AppCard>(find.byType(AppCard));
-      expect(
-        card.semanticLabel,
-        contains('Data tamu Bambang Sudarsono'),
-      );
-      expect(
-        card.semanticLabel,
-        contains('status terakhir Keluar'),
-      );
+      expect(card.semanticLabel, contains('Data tamu Bambang Sudarsono'));
+      expect(card.semanticLabel, contains('status terakhir Keluar'));
     });
 
     testWidgets(
-        'renders safely under 200% dynamic text scaling without overflow',
-        (WidgetTester tester) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      'renders safely under 200% dynamic text scaling without overflow',
+      (WidgetTester tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-      await tester.pumpWidget(buildCardWidget(sampleExitedGuest));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(buildCardWidget(sampleExitedGuest));
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('Bambang Sudarsono'), findsOneWidget);
-      expect(find.text('Keluar'), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.text('Bambang Sudarsono'), findsOneWidget);
+        expect(find.text('Keluar'), findsOneWidget);
+      },
+    );
 
-    testWidgets('triggers onLongPress callback when card is long-pressed',
-        (WidgetTester tester) async {
+    testWidgets('triggers onLongPress callback when card is long-pressed', (
+      WidgetTester tester,
+    ) async {
       var longPressed = false;
       await tester.pumpWidget(
         buildCardWidget(

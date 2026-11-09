@@ -104,18 +104,18 @@ class UpdateInformationParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        text,
-        feedFile,
-        photos,
-        feedType,
-        eventLocation,
-        glat,
-        glong,
-        includeNulls,
-        session,
-        item,
-        cancelToken,
-      ];
+    id,
+    title,
+    text,
+    feedFile,
+    photos,
+    feedType,
+    eventLocation,
+    glat,
+    glong,
+    includeNulls,
+    session,
+    item,
+    cancelToken,
+  ];
 }

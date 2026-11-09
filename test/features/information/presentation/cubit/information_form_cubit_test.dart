@@ -46,15 +46,9 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      const CreateInformationParams(
-        title: 'Fallback Title',
-      ),
+      const CreateInformationParams(title: 'Fallback Title'),
     );
-    registerFallbackValue(
-      const UpdateInformationParams(
-        id: '1',
-      ),
-    );
+    registerFallbackValue(const UpdateInformationParams(id: '1'));
   });
 
   setUp(() {
@@ -92,10 +86,9 @@ void main() {
       expect(cubit.state.title, 'Pengumuman Penting');
       expect(cubit.state.text, 'Harap seluruh personil berkumpul.');
       expect(cubit.state.feedType, 'EVENT');
-      expect(
-        cubit.state.photos.map((p) => p.displaySource).toList(),
-        ['https://example.com/photo1.jpg'],
-      );
+      expect(cubit.state.photos.map((p) => p.displaySource).toList(), [
+        'https://example.com/photo1.jpg',
+      ]);
       expect(cubit.state.feedFile, 'https://example.com/doc.pdf');
       expect(cubit.state.documentMedia?.name, 'doc.pdf');
       expect(cubit.state.eventLocation, 'Gedung Utama');
@@ -155,78 +148,82 @@ void main() {
       await cubit.close();
     });
 
-    test('onAddPhoto, onRemovePhoto, onClearAllPhotos, and onReorderPhotos',
-        () async {
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      );
+    test(
+      'onAddPhoto, onRemovePhoto, onClearAllPhotos, and onReorderPhotos',
+      () async {
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        );
 
-      expect(cubit.onAddPhoto('https://example.com/1.jpg'), isTrue);
-      expect(cubit.onAddPhoto('https://example.com/2.jpg'), isTrue);
-      expect(cubit.state.photos.length, 2);
+        expect(cubit.onAddPhoto('https://example.com/1.jpg'), isTrue);
+        expect(cubit.onAddPhoto('https://example.com/2.jpg'), isTrue);
+        expect(cubit.state.photos.length, 2);
 
-      // Duplicate check
-      expect(cubit.onAddPhoto('https://example.com/1.jpg'), isFalse);
-      expect(cubit.state.photosError, isNotNull);
+        // Duplicate check
+        expect(cubit.onAddPhoto('https://example.com/1.jpg'), isFalse);
+        expect(cubit.state.photosError, isNotNull);
 
-      expect(cubit.onAddPhoto('https://example.com/3.jpg'), isTrue);
-      expect(cubit.onAddPhoto('https://example.com/4.jpg'), isTrue);
+        expect(cubit.onAddPhoto('https://example.com/3.jpg'), isTrue);
+        expect(cubit.onAddPhoto('https://example.com/4.jpg'), isTrue);
 
-      // Max 4 photos check
-      expect(cubit.onAddPhoto('https://example.com/5.jpg'), isFalse);
-      expect(cubit.state.photos.length, 4);
+        // Max 4 photos check
+        expect(cubit.onAddPhoto('https://example.com/5.jpg'), isFalse);
+        expect(cubit.state.photos.length, 4);
 
-      // Reorder photos: move index 0 to index 2
-      cubit.onReorderPhotos(0, 2);
-      expect(cubit.state.photos[2].displaySource, 'https://example.com/1.jpg');
+        // Reorder photos: move index 0 to index 2
+        cubit.onReorderPhotos(0, 2);
+        expect(
+          cubit.state.photos[2].displaySource,
+          'https://example.com/1.jpg',
+        );
 
-      // Remove photo
-      cubit.onRemovePhoto(0);
-      expect(cubit.state.photos.length, 3);
+        // Remove photo
+        cubit.onRemovePhoto(0);
+        expect(cubit.state.photos.length, 3);
 
-      // Replace photo by ID
-      final itemToReplace = cubit.state.photos.first;
-      const replacement = InformationFormMediaItem(
-        id: 'replacement_id',
-        name: 'replaced.jpg',
-        path: '/path/replaced.jpg',
-      );
-      final replaceSuccess = cubit.onReplacePhoto(
-        targetId: itemToReplace.id,
-        newItem: replacement,
-      );
-      expect(replaceSuccess, isTrue);
-      expect(cubit.state.photos.first.id, 'replacement_id');
+        // Replace photo by ID
+        final itemToReplace = cubit.state.photos.first;
+        const replacement = InformationFormMediaItem(
+          id: 'replacement_id',
+          name: 'replaced.jpg',
+          path: '/path/replaced.jpg',
+        );
+        final replaceSuccess = cubit.onReplacePhoto(
+          targetId: itemToReplace.id,
+          newItem: replacement,
+        );
+        expect(replaceSuccess, isTrue);
+        expect(cubit.state.photos.first.id, 'replacement_id');
 
-      // Remove photo by ID
-      final removeByIdSuccess = cubit.onRemovePhotoById('replacement_id');
-      expect(removeByIdSuccess, isTrue);
-      expect(
-        cubit.state.photos.any((p) => p.id == 'replacement_id'),
-        isFalse,
-      );
+        // Remove photo by ID
+        final removeByIdSuccess = cubit.onRemovePhotoById('replacement_id');
+        expect(removeByIdSuccess, isTrue);
+        expect(
+          cubit.state.photos.any((p) => p.id == 'replacement_id'),
+          isFalse,
+        );
 
-      // Clear all photos
-      cubit.onClearAllPhotos();
-      expect(cubit.state.photos, isEmpty);
-      expect(cubit.state.photosError, isNull);
+        // Clear all photos
+        cubit.onClearAllPhotos();
+        expect(cubit.state.photos, isEmpty);
+        expect(cubit.state.photosError, isNull);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     test('submit is blocked when any photo is in loading state', () async {
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      )
-        ..onTitleChanged('Judul Valid')
-        ..onTextChanged('Deskripsi valid')
-        ..onAddMediaPhoto(
-          InformationFormMediaItem.loading(
-            id: 'loading_1',
-          ),
-        );
+      final cubit =
+          InformationFormCubit(
+              createInformationUseCase: mockCreateUseCase,
+              updateInformationUseCase: mockUpdateUseCase,
+            )
+            ..onTitleChanged('Judul Valid')
+            ..onTextChanged('Deskripsi valid')
+            ..onAddMediaPhoto(
+              InformationFormMediaItem.loading(id: 'loading_1'),
+            );
 
       expect(cubit.state.photos.first.isLoading, isTrue);
 
@@ -322,10 +319,7 @@ void main() {
       expect(cubit.state.eventLocation, 'Pos Satpam');
 
       // Pasang koordinat GPS / Peta - eventLocation TIDAK boleh termutasi
-      cubit.onSetLocationCoordinates(
-        lat: -6.2088,
-        lng: 106.8456,
-      );
+      cubit.onSetLocationCoordinates(lat: -6.2088, lng: 106.8456);
 
       expect(cubit.state.hasLocation, isTrue);
       expect(cubit.state.latitude, -6.2088);
@@ -350,10 +344,7 @@ void main() {
 
       expect(cubit.state.documentMedia, isNull);
 
-      const media = InformationFormMediaItem(
-        id: 'doc-1',
-        name: 'laporan.pdf',
-      );
+      const media = InformationFormMediaItem(id: 'doc-1', name: 'laporan.pdf');
       cubit.onSetDocumentMedia(media);
 
       expect(cubit.state.documentMedia, media);
@@ -388,16 +379,17 @@ void main() {
 
   group('InformationFormCubit - Submit', () {
     test('submit create succeeds and emits success', () async {
-      when(() => mockCreateUseCase(any())).thenAnswer(
-        (_) async => const Right(dummyItem),
-      );
+      when(
+        () => mockCreateUseCase(any()),
+      ).thenAnswer((_) async => const Right(dummyItem));
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      )
-        ..onTitleChanged('Patroli Pos A')
-        ..onTextChanged('Kondisi terkendali.');
+      final cubit =
+          InformationFormCubit(
+              createInformationUseCase: mockCreateUseCase,
+              updateInformationUseCase: mockUpdateUseCase,
+            )
+            ..onTitleChanged('Patroli Pos A')
+            ..onTextChanged('Kondisi terkendali.');
 
       await cubit.submit(session: dummySession);
 
@@ -409,9 +401,9 @@ void main() {
     });
 
     test('submit update succeeds and emits success', () async {
-      when(() => mockUpdateUseCase(any())).thenAnswer(
-        (_) async => const Right(dummyItem),
-      );
+      when(
+        () => mockUpdateUseCase(any()),
+      ).thenAnswer((_) async => const Right(dummyItem));
 
       final cubit = InformationFormCubit(
         createInformationUseCase: mockCreateUseCase,
@@ -449,51 +441,54 @@ void main() {
     test(
       'submit in update mode sends empty photos list when photos are cleared',
       () async {
-      UpdateInformationParams? capturedParams;
-      when(() => mockUpdateUseCase(any())).thenAnswer(
-        (invocation) async {
+        UpdateInformationParams? capturedParams;
+        when(() => mockUpdateUseCase(any())).thenAnswer((invocation) async {
           capturedParams =
               invocation.positionalArguments[0] as UpdateInformationParams;
           return const Right(dummyItem);
-        },
-      );
+        });
 
-      const itemWithPhotos = InformationItemEntity(
-        id: '10',
-        title: 'Pengumuman',
-        photos: ['photo1.jpg', 'photo2.jpg'],
-      );
+        const itemWithPhotos = InformationItemEntity(
+          id: '10',
+          title: 'Pengumuman',
+          photos: ['photo1.jpg', 'photo2.jpg'],
+        );
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-        initialItem: itemWithPhotos,
-      );
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+          initialItem: itemWithPhotos,
+        );
 
-      expect(cubit.state.photos.length, 2);
-      expect(cubit.state.canSubmit, isFalse); // not dirty yet
+        expect(cubit.state.photos.length, 2);
+        expect(cubit.state.canSubmit, isFalse); // not dirty yet
 
-      cubit.onClearAllPhotos();
-      expect(cubit.state.photos, isEmpty);
-      expect(cubit.state.isDirty, isTrue);
-      expect(cubit.state.canSubmit, isTrue);
+        cubit.onClearAllPhotos();
+        expect(cubit.state.photos, isEmpty);
+        expect(cubit.state.isDirty, isTrue);
+        expect(cubit.state.canSubmit, isTrue);
 
-      await cubit.submit(session: dummySession);
+        await cubit.submit(session: dummySession);
 
-      expect(cubit.state.status, InformationFormStatus.success);
-      expect(capturedParams, isNotNull);
-      expect(capturedParams!.photos, isEmpty); // verifies [] is sent, not null!
+        expect(cubit.state.status, InformationFormStatus.success);
+        expect(capturedParams, isNotNull);
+        expect(
+          capturedParams!.photos,
+          isEmpty,
+        ); // verifies [] is sent, not null!
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     test('validates coordinate pairing and blocks submit if partial', () async {
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      )
-        ..onTitleChanged('Kegiatan Warga')
-        ..onGlatChanged('-6.2088'); // glat without glong
+      final cubit =
+          InformationFormCubit(
+              createInformationUseCase: mockCreateUseCase,
+              updateInformationUseCase: mockUpdateUseCase,
+            )
+            ..onTitleChanged('Kegiatan Warga')
+            ..onGlatChanged('-6.2088'); // glat without glong
 
       expect(cubit.state.isValid, isFalse);
       expect(cubit.state.canSubmit, isFalse);

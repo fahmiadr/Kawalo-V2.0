@@ -62,99 +62,85 @@ void main() {
       },
     );
 
-    test(
-      'createInformation calls POST /v1/information and returns '
-      'InformationModel',
-      () async {
-        const tModel = CreateInformationModel(
-          title: 'Posko Siaga',
-          text: 'Posko siaga 24 jam.',
-          feedType: 'GENERAL',
-        );
+    test('createInformation calls POST /v1/information and returns '
+        'InformationModel', () async {
+      const tModel = CreateInformationModel(
+        title: 'Posko Siaga',
+        text: 'Posko siaga 24 jam.',
+        feedType: 'GENERAL',
+      );
 
-        when(
-          () => mockApiClient.post(
-            '/v1/information',
-            body: any<dynamic>(named: 'body'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (_) async => {
-            'success': true,
-            'message': 'Data informasi berhasil dibuat',
-            'data': {
-              'id': '99',
-              'title': 'Posko Siaga',
-              'text': 'Posko siaga 24 jam.',
-              'feed_type': 'GENERAL',
-              'photos': <String>[],
-            },
+      when(
+        () => mockApiClient.post(
+          '/v1/information',
+          body: any<dynamic>(named: 'body'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer(
+        (_) async => {
+          'success': true,
+          'message': 'Data informasi berhasil dibuat',
+          'data': {
+            'id': '99',
+            'title': 'Posko Siaga',
+            'text': 'Posko siaga 24 jam.',
+            'feed_type': 'GENERAL',
+            'photos': <String>[],
           },
-        );
+        },
+      );
 
-        final result = await dataSource.createInformation(
-          data: tModel,
-        );
+      final result = await dataSource.createInformation(data: tModel);
 
-        expect(result.id, '99');
-        expect(result.title, 'Posko Siaga');
-        expect(result.feedType, 'GENERAL');
-        verify(
-          () => mockApiClient.post(
-            '/v1/information',
-            body: tModel.toJson(),
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.id, '99');
+      expect(result.title, 'Posko Siaga');
+      expect(result.feedType, 'GENERAL');
+      verify(
+        () => mockApiClient.post('/v1/information', body: tModel.toJson()),
+      ).called(1);
+    });
 
-    test(
-      'updateInformation calls PUT /v1/information/:id and returns '
-      'InformationModel',
-      () async {
-        const tParams = InformationIdParamsModel(id: '99');
-        const tModel = UpdateInformationModel(
-          title: 'Posko Siaga Diperbarui',
-          text: 'Posko siaga buka mulai jam 18:00.',
-          feedType: 'GENERAL',
-        );
+    test('updateInformation calls PUT /v1/information/:id and returns '
+        'InformationModel', () async {
+      const tParams = InformationIdParamsModel(id: '99');
+      const tModel = UpdateInformationModel(
+        title: 'Posko Siaga Diperbarui',
+        text: 'Posko siaga buka mulai jam 18:00.',
+        feedType: 'GENERAL',
+      );
 
-        when(
-          () => mockApiClient.put(
-            '/v1/information/99',
-            body: any<dynamic>(named: 'body'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (_) async => {
-            'success': true,
-            'message': 'Data informasi berhasil diperbarui',
-            'data': {
-              'id': '99',
-              'title': 'Posko Siaga Diperbarui',
-              'text': 'Posko siaga buka mulai jam 18:00.',
-              'feed_type': 'GENERAL',
-              'photos': <String>[],
-            },
+      when(
+        () => mockApiClient.put(
+          '/v1/information/99',
+          body: any<dynamic>(named: 'body'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer(
+        (_) async => {
+          'success': true,
+          'message': 'Data informasi berhasil diperbarui',
+          'data': {
+            'id': '99',
+            'title': 'Posko Siaga Diperbarui',
+            'text': 'Posko siaga buka mulai jam 18:00.',
+            'feed_type': 'GENERAL',
+            'photos': <String>[],
           },
-        );
+        },
+      );
 
-        final result = await dataSource.updateInformation(
-          params: tParams,
-          data: tModel,
-        );
+      final result = await dataSource.updateInformation(
+        params: tParams,
+        data: tModel,
+      );
 
-        expect(result.id, '99');
-        expect(result.title, 'Posko Siaga Diperbarui');
-        expect(result.feedType, 'GENERAL');
-        verify(
-          () => mockApiClient.put(
-            '/v1/information/99',
-            body: tModel.toJson(),
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.id, '99');
+      expect(result.title, 'Posko Siaga Diperbarui');
+      expect(result.feedType, 'GENERAL');
+      verify(
+        () => mockApiClient.put('/v1/information/99', body: tModel.toJson()),
+      ).called(1);
+    });
 
     test(
       'deleteInformation calls DELETE /v1/information/:id with proper path',
@@ -189,42 +175,40 @@ void main() {
       },
     );
 
-    test(
-      'deleteBatchInformation calls DELETE /v1/information with body and '
-      'returns DeleteBatchInformationResponseModel',
-      () async {
-        final cancelToken = DioCancellationToken();
-        const params =
-            DeleteBatchInformationRequestModel(ids: ['1', '2']);
+    test('deleteBatchInformation calls DELETE /v1/information with body and '
+        'returns DeleteBatchInformationResponseModel', () async {
+      final cancelToken = DioCancellationToken();
+      const params = DeleteBatchInformationRequestModel(ids: ['1', '2']);
 
-        when(
-          () => mockApiClient.delete(
-            '/v1/information',
-            body: any<dynamic>(named: 'body'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (_) async => {
-            'success': true,
-            'message': '2 data informasi berhasil dihapus',
-            'data': {'deleted_count': 2},
+      when(
+        () => mockApiClient.delete(
+          '/v1/information',
+          body: any<dynamic>(named: 'body'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer(
+        (_) async => {
+          'success': true,
+          'message': '2 data informasi berhasil dihapus',
+          'data': {'deleted_count': 2},
+        },
+      );
+
+      final result = await dataSource.deleteBatchInformation(
+        params: params,
+        cancelToken: cancelToken,
+      );
+
+      expect(result.deletedCount, 2);
+      verify(
+        () => mockApiClient.delete(
+          '/v1/information',
+          body: const {
+            'ids': ['1', '2'],
           },
-        );
-
-        final result = await dataSource.deleteBatchInformation(
-          params: params,
-          cancelToken: cancelToken,
-        );
-
-        expect(result.deletedCount, 2);
-        verify(
-          () => mockApiClient.delete(
-            '/v1/information',
-            body: const {'ids': ['1', '2']},
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
-      },
-    );
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
+    });
   });
 }

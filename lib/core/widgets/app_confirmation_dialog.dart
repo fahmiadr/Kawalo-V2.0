@@ -176,8 +176,8 @@ class AppConfirmationDialog extends AppDialog {
     final typeScale = theme.typeScale;
     final emphasizedTypeScale = theme.typography.emphasized;
 
-    final effectiveConfirmColor = confirmTextColor ??
-        (isDestructive ? colorScheme.error : null);
+    final effectiveConfirmColor =
+        confirmTextColor ?? (isDestructive ? colorScheme.error : null);
 
     final confirmDecoration = effectiveConfirmColor != null
         ? AppButtonDecoration(
@@ -189,15 +189,15 @@ class AppConfirmationDialog extends AppDialog {
 
     final cancelDecoration =
         (cancelTextColor != null || cancelButtonColor != null)
-            ? AppButtonDecoration(
-                backgroundColor: cancelButtonColor != null
-                    ? WidgetStatePropertyAll<Color?>(cancelButtonColor)
-                    : null,
-                foregroundColor: cancelTextColor != null
-                    ? WidgetStatePropertyAll<Color?>(cancelTextColor)
-                    : null,
-              )
-            : null;
+        ? AppButtonDecoration(
+            backgroundColor: cancelButtonColor != null
+                ? WidgetStatePropertyAll<Color?>(cancelButtonColor)
+                : null,
+            foregroundColor: cancelTextColor != null
+                ? WidgetStatePropertyAll<Color?>(cancelTextColor)
+                : null,
+          )
+        : null;
 
     return Container(
       constraints: BoxConstraints(
@@ -217,10 +217,7 @@ class AppConfirmationDialog extends AppDialog {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
-              icon!,
-              AppSpacing.vGapSm,
-            ],
+            if (icon != null) ...[icon!, AppSpacing.vGapSm],
 
             // ── 1. Judul Dialog ─────────────────────────────────────────
             SizedBox(
@@ -277,10 +274,7 @@ class AppConfirmationDialog extends AppDialog {
                               navigator.pop(false);
                             }
                           },
-                          child: Text(
-                            cancelText,
-                            style: typeScale.titleMedium,
-                          ),
+                          child: Text(cancelText, style: typeScale.titleMedium),
                         ),
                       ),
                     ),

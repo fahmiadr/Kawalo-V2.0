@@ -34,10 +34,8 @@ abstract final class GuestMapper {
       qrUid: AppSanitizer.cleanString(model.qrUid),
       guestAddress: AppSanitizer.cleanString(model.guestAddress),
       guestType: AppSanitizer.cleanString(model.guestType),
-      guestCheckoutByEmail:
-          AppSanitizer.cleanEmail(model.guestCheckoutByEmail),
-      guestCheckoutByName:
-          AppSanitizer.cleanString(model.guestCheckoutByName),
+      guestCheckoutByEmail: AppSanitizer.cleanEmail(model.guestCheckoutByEmail),
+      guestCheckoutByName: AppSanitizer.cleanString(model.guestCheckoutByName),
     );
   }
 

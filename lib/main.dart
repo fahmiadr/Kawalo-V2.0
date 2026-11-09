@@ -44,11 +44,7 @@ import 'package:kawalo_mobile/features/splash/presentation/screens/splash_screen
 void main() => bootstrap(AppEnvironment.dev);
 
 class MyApp extends StatefulWidget {
-  const MyApp({
-    this.isar,
-    this.securityViolation,
-    super.key,
-  });
+  const MyApp({this.isar, this.securityViolation, super.key});
 
   final Isar? isar;
   final SecurityViolationType? securityViolation;
@@ -237,12 +233,8 @@ class _MyAppState extends State<MyApp> {
           BlocProvider<ConnectivityCubit>(
             create: (context) => ConnectivityCubit(networkInfo: _networkInfo),
           ),
-          BlocProvider<UserSessionCubit>.value(
-            value: _userSessionCubit,
-          ),
-          BlocProvider<AuthBloc>.value(
-            value: _authBloc,
-          ),
+          BlocProvider<UserSessionCubit>.value(value: _userSessionCubit),
+          BlocProvider<AuthBloc>.value(value: _authBloc),
           BlocProvider<GuestCubit>(
             create: (context) => _guestModule.createCubit(),
           ),
@@ -259,14 +251,10 @@ class _MyAppState extends State<MyApp> {
             create: (context) => _incidentModule.createIncidentListCubit(),
           ),
           BlocProvider<PttCubit>(
-            create: (context) => PttModule.createCubit(
-              apiClient: _apiClient,
-            ),
+            create: (context) => PttModule.createCubit(apiClient: _apiClient),
           ),
         ],
-        child: _buildMaterialApp(
-          home: const SplashScreen(),
-        ),
+        child: _buildMaterialApp(home: const SplashScreen()),
       ),
     );
   }

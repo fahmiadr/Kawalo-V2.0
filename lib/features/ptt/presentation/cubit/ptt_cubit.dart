@@ -42,28 +42,19 @@ class PttCubit extends Cubit<PttState> {
         // Jika pembicara aktif adalah orang lain dan kita tidak
         // sedang mentransmisi atau sedang meminta floor
         if (state is! PttTransmitting && state is! PttRequestingFloor) {
-          emit(
-            PttListening(
-              channel: currentChannel,
-              floorState: floorState,
-            ),
-          );
+          emit(PttListening(channel: currentChannel, floorState: floorState));
         }
       } else {
         // Channel IDLE
         if (state is! PttRequestingFloor && state is! PttTransmitting) {
-          emit(
-            PttIdle(
-              channel: currentChannel,
-              floorState: floorState,
-            ),
-          );
+          emit(PttIdle(channel: currentChannel, floorState: floorState));
         }
       }
     });
 
-    _connectionSubscription =
-        repository.watchConnectionStatus().listen((connectionStatus) {
+    _connectionSubscription = repository.watchConnectionStatus().listen((
+      connectionStatus,
+    ) {
       final updatedChannel = state.channel.copyWith(
         connectionStatus: connectionStatus,
       );
@@ -79,10 +70,7 @@ class PttCubit extends Cubit<PttState> {
         case PttConnectionStatus.connected:
           if (state is! PttTransmitting && state is! PttListening) {
             emit(
-              PttIdle(
-                channel: updatedChannel,
-                floorState: state.floorState,
-              ),
+              PttIdle(channel: updatedChannel, floorState: state.floorState),
             );
           }
         case PttConnectionStatus.reconnecting:
@@ -102,8 +90,9 @@ class PttCubit extends Cubit<PttState> {
       }
     });
 
-    _memberCountSubscription =
-        repository.watchMemberCount().listen((memberCount) {
+    _memberCountSubscription = repository.watchMemberCount().listen((
+      memberCount,
+    ) {
       final updatedChannel = state.channel.copyWith(memberCount: memberCount);
       final updatedFloor = PttFloorStateEntity(
         status: state.floorState.status,
@@ -132,8 +121,9 @@ class PttCubit extends Cubit<PttState> {
       }
     });
 
-    _transmissionSubscription =
-        repository.watchTransmissionEvents().listen((event) {
+    _transmissionSubscription = repository.watchTransmissionEvents().listen((
+      event,
+    ) {
       final eventState = event['state']?.toString().toUpperCase();
 
       if (eventState == 'GRANTED') {
@@ -191,20 +181,17 @@ class PttCubit extends Cubit<PttState> {
       ),
     );
 
-    result.fold(
-      (failure) {
-        emit(
-          PttDisconnected(
-            channel: state.channel.copyWith(
-              connectionStatus: PttConnectionStatus.disconnected,
-            ),
-            floorState: state.floorState,
-            errorMessage: failure.message,
+    result.fold((failure) {
+      emit(
+        PttDisconnected(
+          channel: state.channel.copyWith(
+            connectionStatus: PttConnectionStatus.disconnected,
           ),
-        );
-      },
-      (_) {},
-    );
+          floorState: state.floorState,
+          errorMessage: failure.message,
+        ),
+      );
+    }, (_) {});
   }
 
   /// Keluar dari saluran PTT dan hentikan background service.
@@ -255,18 +242,15 @@ class PttCubit extends Cubit<PttState> {
       StartTransmissionParams(requestId: requestId),
     );
 
-    result.fold(
-      (failure) {
-        emit(
-          PttFloorDenied(
-            channel: state.channel,
-            floorState: state.floorState,
-            reason: failure.message,
-          ),
-        );
-      },
-      (_) {},
-    );
+    result.fold((failure) {
+      emit(
+        PttFloorDenied(
+          channel: state.channel,
+          floorState: state.floorState,
+          reason: failure.message,
+        ),
+      );
+    }, (_) {});
   }
 
   /// Aksi saat tombol PTT dilepas (Touch Up / Hardware Key Up).

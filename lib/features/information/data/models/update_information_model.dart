@@ -75,14 +75,14 @@ class UpdateInformationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        text,
-        feedFile,
-        photos,
-        feedType,
-        eventLocation,
-        glat,
-        glong,
-        includeNulls,
-      ];
+    title,
+    text,
+    feedFile,
+    photos,
+    feedType,
+    eventLocation,
+    glat,
+    glong,
+    includeNulls,
+  ];
 }

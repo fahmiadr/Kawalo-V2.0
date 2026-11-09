@@ -36,10 +36,7 @@ Widget _wrapActionableErrorTheme({
 
   return Theme(
     data: themePair.$1,
-    child: M3ETheme(
-      data: themePair.$2,
-      child: child,
-    ),
+    child: M3ETheme(data: themePair.$2, child: child),
   );
 }
 
@@ -64,10 +61,7 @@ class _CompactErrorScrollableBody extends StatelessWidget {
       physics: const ClampingScrollPhysics(),
       child: Padding(
         padding: padding,
-        child: ActionableErrorSlotContent(
-          data: data,
-          isCompact: true,
-        ),
+        child: ActionableErrorSlotContent(data: data, isCompact: true),
       ),
     );
   }
@@ -119,9 +113,7 @@ class AppActionableErrorView extends StatelessWidget {
         return SingleChildScrollView(
           physics: physics,
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight,
-            ),
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: IntrinsicHeight(
               child: Padding(
                 padding: padding,
@@ -134,20 +126,14 @@ class AppActionableErrorView extends StatelessWidget {
     );
 
     if (backgroundColor != null) {
-      content = ColoredBox(
-        color: backgroundColor!,
-        child: content,
-      );
+      content = ColoredBox(color: backgroundColor!, child: content);
     }
 
     if (!wrapTheme) {
       return content;
     }
 
-    return _wrapActionableErrorTheme(
-      themeMode: data.themeMode,
-      child: content,
-    );
+    return _wrapActionableErrorTheme(themeMode: data.themeMode, child: content);
   }
 }
 
@@ -161,10 +147,7 @@ class AppActionableErrorView extends StatelessWidget {
 /// di tengah alur kerja aktif (misal: saat kamera aktif dan foto gagal
 /// disimpan) tanpa meninggalkan konteks halaman saat ini.
 class AppActionableErrorBottomSheet extends StatelessWidget {
-  const AppActionableErrorBottomSheet({
-    required this.data,
-    super.key,
-  });
+  const AppActionableErrorBottomSheet({required this.data, super.key});
 
   /// Data galat terstandarisasi.
   final AppActionableErrorData data;
@@ -218,10 +201,7 @@ class AppActionableErrorBottomSheet extends StatelessWidget {
 /// Disajikan saat memerlukan konfirmasi pengguna atau dialog peringatan dengan
 /// fokus interaksi terarah.
 class AppActionableErrorDialog extends StatelessWidget {
-  const AppActionableErrorDialog({
-    required this.data,
-    super.key,
-  });
+  const AppActionableErrorDialog({required this.data, super.key});
 
   /// Data galat terstandarisasi.
   final AppActionableErrorData data;
@@ -250,9 +230,7 @@ class AppActionableErrorDialog extends StatelessWidget {
 
           return Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 340,
-              ),
+              constraints: const BoxConstraints(maxWidth: 340),
               child: Material(
                 color: colorScheme.surfaceContainerHigh,
                 shape: AppShape.extraLarge,
@@ -299,10 +277,8 @@ class AppActionableErrorFullScreen extends StatelessWidget {
     return Navigator.of(context).push<T>(
       MaterialPageRoute<T>(
         fullscreenDialog: true,
-        builder: (routeContext) => AppActionableErrorFullScreen(
-          data: data,
-          isBlocking: isBlocking,
-        ),
+        builder: (routeContext) =>
+            AppActionableErrorFullScreen(data: data, isBlocking: isBlocking),
       ),
     );
   }
@@ -331,10 +307,7 @@ class AppActionableErrorFullScreen extends StatelessWidget {
           );
 
           if (isBlocking) {
-            return PopScope(
-              canPop: false,
-              child: content,
-            );
+            return PopScope(canPop: false, child: content);
           }
 
           return content;

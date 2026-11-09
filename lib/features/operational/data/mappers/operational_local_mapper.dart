@@ -38,12 +38,11 @@ abstract final class OperationalLocalMapper {
   /// [OperationalLocalModel] untuk disimpan ke Isar database dengan sanitasi.
   /// Mengembalikan `null` jika email tidak valid.
   static OperationalLocalModel? toLocal(OperationalModel model) {
-    final cleanedEmail = AppSanitizer.cleanEmail(model.userEmail) ??
-        model.userEmail.trim();
+    final cleanedEmail =
+        AppSanitizer.cleanEmail(model.userEmail) ?? model.userEmail.trim();
 
     final cleanedDate = AppSanitizer.cleanDate(model.dutyDate);
-    final cleanedId =
-        AppSanitizer.cleanString(model.id) ?? model.id.trim();
+    final cleanedId = AppSanitizer.cleanString(model.id) ?? model.id.trim();
 
     final timelineTokens = model.timeline
         .map((t) => '${t.duty ?? ''} ${t.state ?? ''}')
@@ -63,7 +62,7 @@ abstract final class OperationalLocalMapper {
       ..userEmail = cleanedEmail
       ..totalActivities =
           AppSanitizer.cleanInteger(model.totalActivities) ??
-              model.totalActivities
+          model.totalActivities
       ..userName = AppSanitizer.cleanString(model.userName)
       ..userProfilePic = AppSanitizer.cleanString(model.userProfilePic)
       ..groupName = AppSanitizer.cleanString(model.groupName)
@@ -84,11 +83,11 @@ abstract final class OperationalLocalMapper {
   static OperationalModel? fromLocal(OperationalLocalModel local) {
     return OperationalModel(
       id: AppSanitizer.cleanString(local.id) ?? local.id.trim(),
-      userEmail: AppSanitizer.cleanEmail(local.userEmail) ??
-          local.userEmail.trim(),
+      userEmail:
+          AppSanitizer.cleanEmail(local.userEmail) ?? local.userEmail.trim(),
       totalActivities:
           AppSanitizer.cleanInteger(local.totalActivities) ??
-              local.totalActivities,
+          local.totalActivities,
       userName: AppSanitizer.cleanString(local.userName),
       userProfilePic: AppSanitizer.cleanString(local.userProfilePic),
       groupName: AppSanitizer.cleanString(local.groupName),

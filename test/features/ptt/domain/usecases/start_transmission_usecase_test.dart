@@ -42,10 +42,7 @@ void main() {
         const StartTransmissionParams(requestId: 'req_123'),
       );
 
-      expect(
-        result,
-        const Left<Failure, void>(ServerFailure('Socket closed')),
-      );
+      expect(result, const Left<Failure, void>(ServerFailure('Socket closed')));
     });
   });
 }

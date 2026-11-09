@@ -23,30 +23,24 @@ void main() {
     MasterGuestTypeEntity(id: '2', uid: 'GT-002', name: 'KURIR'),
   ];
 
-  test(
-    'should return list of MasterGuestTypeEntity when successful',
-    () async {
-      when(
-        () => mockRepository.getMasterGuestTypes(
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer(
-        (_) async => const Right<Failure, List<MasterGuestTypeEntity>>(tTypes),
-      );
+  test('should return list of MasterGuestTypeEntity when successful', () async {
+    when(
+      () => mockRepository.getMasterGuestTypes(
+        cancelToken: any(named: 'cancelToken'),
+      ),
+    ).thenAnswer(
+      (_) async => const Right<Failure, List<MasterGuestTypeEntity>>(tTypes),
+    );
 
-      final result = await useCase(const GetMasterGuestTypesParams());
+    final result = await useCase(const GetMasterGuestTypesParams());
 
-      expect(
-        result,
-        const Right<Failure, List<MasterGuestTypeEntity>>(tTypes),
-      );
-      verify(
-        () => mockRepository.getMasterGuestTypes(
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).called(1);
-    },
-  );
+    expect(result, const Right<Failure, List<MasterGuestTypeEntity>>(tTypes));
+    verify(
+      () => mockRepository.getMasterGuestTypes(
+        cancelToken: any(named: 'cancelToken'),
+      ),
+    ).called(1);
+  });
 
   test('should return Failure when repository call fails', () async {
     const tFailure = ServerFailure('Gagal memuat master tipe tamu');
@@ -60,10 +54,7 @@ void main() {
 
     final result = await useCase(const GetMasterGuestTypesParams());
 
-    expect(
-      result,
-      const Left<Failure, List<MasterGuestTypeEntity>>(tFailure),
-    );
+    expect(result, const Left<Failure, List<MasterGuestTypeEntity>>(tFailure));
   });
 
   test('GetMasterGuestTypesParams supports value equality', () {

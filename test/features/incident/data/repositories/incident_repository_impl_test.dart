@@ -48,28 +48,27 @@ void main() {
   );
 
   group('IncidentRepositoryImpl Tests', () {
-    test('getIncidents returns Right(List<IncidentEntity>) on success',
-        () async {
-      when(
-        () => mockRemoteDataSource.getIncidents(
-          query: any(named: 'query'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) async => [tIncidentModel]);
+    test(
+      'getIncidents returns Right(List<IncidentEntity>) on success',
+      () async {
+        when(
+          () => mockRemoteDataSource.getIncidents(
+            query: any(named: 'query'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async => [tIncidentModel]);
 
-      const params = IncidentQueryParams(groupId: 'grp_1');
-      final result = await repository.getIncidents(params);
+        const params = IncidentQueryParams(groupId: 'grp_1');
+        final result = await repository.getIncidents(params);
 
-      expect(result.isRight(), isTrue);
-      result.fold(
-        (_) => fail('Should be right'),
-        (items) {
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Should be right'), (items) {
           expect(items.length, equals(1));
           expect(items[0].id, equals('inc_1'));
           expect(items[0].status, equals(IncidentStatus.open));
-        },
-      );
-    });
+        });
+      },
+    );
 
     test('getIncidents returns Left(Failure) on AppException', () async {
       when(
@@ -110,77 +109,69 @@ void main() {
           (_) => fail('Should be left'),
         );
         verifyNever(
-          () => mockRemoteDataSource.createIncident(
-            data: any(named: 'data'),
-          ),
+          () => mockRemoteDataSource.createIncident(data: any(named: 'data')),
         );
       },
     );
 
-    test('resolveIncident maps 409 Conflict ServerException to ServerFailure',
-        () async {
-      when(
-        () => mockRemoteDataSource.resolveIncident(
-          incidentId: 'inc_1',
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenThrow(
-        const ServerException(
-          'Sudah diselesaikan',
-          409,
-          'ALREADY_RESOLVED',
-        ),
-      );
+    test(
+      'resolveIncident maps 409 Conflict ServerException to ServerFailure',
+      () async {
+        when(
+          () => mockRemoteDataSource.resolveIncident(
+            incidentId: 'inc_1',
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenThrow(
+          const ServerException('Sudah diselesaikan', 409, 'ALREADY_RESOLVED'),
+        );
 
-      final result = await repository.resolveIncident(incidentId: 'inc_1');
+        final result = await repository.resolveIncident(incidentId: 'inc_1');
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
+        expect(result.isLeft(), isTrue);
+        result.fold((failure) {
           expect(failure, isA<ServerFailure>());
           final serverFailure = failure as ServerFailure;
           expect(serverFailure.statusCode, equals(409));
-        },
-        (_) => fail('Should be left'),
-      );
-    });
+        }, (_) => fail('Should be left'));
+      },
+    );
 
-    test('watchIncidentReplies parses SseMessage into IncidentReplyStreamEvent',
-        () async {
-      const message = SseMessage(
-        id: 'rep_1',
-        event: 'new_reply',
-        data: '{"id": "rep_1", "incident_id": "inc_1", "sender_id": "u1", '
-            '"sender_name": "Budi", "sender_role": "guard", "message": "Siap", '
-            '"created_at": "2026-11-04T10:00:00.000Z"}',
-      );
+    test(
+      'watchIncidentReplies parses SseMessage into IncidentReplyStreamEvent',
+      () async {
+        const message = SseMessage(
+          id: 'rep_1',
+          event: 'new_reply',
+          data:
+              '{"id": "rep_1", "incident_id": "inc_1", "sender_id": "u1", '
+              '"sender_name": "Budi", "sender_role": "guard", "message": "Siap", '
+              '"created_at": "2026-11-04T10:00:00.000Z"}',
+        );
 
-      when(
-        () => mockRemoteDataSource.watchIncidentStream(
-          incidentId: 'inc_1',
-          lastEventId: any(named: 'lastEventId'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) => Stream.value(message));
+        when(
+          () => mockRemoteDataSource.watchIncidentStream(
+            incidentId: 'inc_1',
+            lastEventId: any(named: 'lastEventId'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) => Stream.value(message));
 
-      final stream = repository.watchIncidentReplies(incidentId: 'inc_1');
-      final events = await stream.toList();
+        final stream = repository.watchIncidentReplies(incidentId: 'inc_1');
+        final events = await stream.toList();
 
-      expect(events.length, equals(1));
-      expect(events[0].isRight(), isTrue);
-      events[0].fold(
-        (_) => fail('Should be right'),
-        (event) {
+        expect(events.length, equals(1));
+        expect(events[0].isRight(), isTrue);
+        events[0].fold((_) => fail('Should be right'), (event) {
           expect(event, isA<IncidentReplyStreamEvent>());
           final replyEvent = event as IncidentReplyStreamEvent;
           expect(replyEvent.reply.message, equals('Siap'));
-        },
-      );
-    });
+        });
+      },
+    );
 
-    test(
-        'watchIncidentReplies emits IncidentResyncedStreamEvent on '
-            'sync_required', () async {
+    test('watchIncidentReplies emits IncidentResyncedStreamEvent on '
+        'sync_required', () async {
       const syncMessage = SseMessage(
         event: 'sync_required',
         data: '{"reason": "buffer_overflow"}',
@@ -220,16 +211,13 @@ void main() {
       final events = await stream.toList();
 
       expect(events.length, equals(1));
-      events[0].fold(
-        (_) => fail('Should be right'),
-        (event) {
-          expect(event, isA<IncidentResyncedStreamEvent>());
-          final resync = event as IncidentResyncedStreamEvent;
-          expect(resync.incident.id, equals('inc_1'));
-          expect(resync.replies.length, equals(1));
-          expect(resync.replies[0].message, equals('Resynced reply'));
-        },
-      );
+      events[0].fold((_) => fail('Should be right'), (event) {
+        expect(event, isA<IncidentResyncedStreamEvent>());
+        final resync = event as IncidentResyncedStreamEvent;
+        expect(resync.incident.id, equals('inc_1'));
+        expect(resync.replies.length, equals(1));
+        expect(resync.replies[0].message, equals('Resynced reply'));
+      });
     });
   });
 }

@@ -40,13 +40,11 @@ void main() {
       const AppFormChipItem<String?>(value: 'paspor', label: 'Paspor'),
     ];
 
-    testWidgets('renders all items and label in horizontalScroll mode',
-        (tester) async {
+    testWidgets('renders all items and label in horizontalScroll mode', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildFrame(
-          items: testItems,
-          selectedValue: 'ktp',
-        ),
+        buildFrame(items: testItems, selectedValue: 'ktp'),
       );
 
       expect(find.text('Jenis Identitas'), findsOneWidget);
@@ -55,8 +53,9 @@ void main() {
       expect(find.text('Paspor'), findsOneWidget);
     });
 
-    testWidgets('invokes onSelected when tapping an unselected item',
-        (tester) async {
+    testWidgets('invokes onSelected when tapping an unselected item', (
+      tester,
+    ) async {
       String? selected;
       await tester.pumpWidget(
         buildFrame(
@@ -73,10 +72,7 @@ void main() {
 
     testWidgets('renders items in wrap mode', (tester) async {
       await tester.pumpWidget(
-        buildFrame(
-          layout: AppFormChipGroupLayout.wrap,
-          items: testItems,
-        ),
+        buildFrame(layout: AppFormChipGroupLayout.wrap, items: testItems),
       );
 
       expect(find.byType(Wrap), findsOneWidget);
@@ -96,25 +92,14 @@ void main() {
       expect(find.text('Pilih salah satu jenis identitas'), findsOneWidget);
     });
 
-    testWidgets(
-        'treats sentinel item with null value as selected when '
+    testWidgets('treats sentinel item with null value as selected when '
         'selectedValue is null', (tester) async {
       final sentinelItems = [
-        const AppFormChipItem<String?>(
-          value: null,
-          label: 'Tanpa Identitas',
-        ),
-        const AppFormChipItem<String?>(
-          value: 'ktp',
-          label: 'KTP',
-        ),
+        const AppFormChipItem<String?>(value: null, label: 'Tanpa Identitas'),
+        const AppFormChipItem<String?>(value: 'ktp', label: 'KTP'),
       ];
 
-      await tester.pumpWidget(
-        buildFrame(
-          items: sentinelItems,
-        ),
-      );
+      await tester.pumpWidget(buildFrame(items: sentinelItems));
 
       final tanpaIdentitasChip = tester.widget<AppChip>(
         find.widgetWithText(AppChip, 'Tanpa Identitas'),

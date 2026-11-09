@@ -34,9 +34,7 @@ void main() {
       '/// Kumpulan path konstan untuk seluruh aset vektor SVG '
       'aplikasi Kawalo.',
     )
-    ..writeln(
-      '/// File ini dibuat otomatis via `tool/generate_vectors.dart`.',
-    )
+    ..writeln('/// File ini dibuat otomatis via `tool/generate_vectors.dart`.')
     ..writeln('class KawaloVectors {')
     ..writeln('  const KawaloVectors._();')
     ..writeln()
@@ -72,10 +70,9 @@ void main() {
 
 void _extractEmbeddedPngs(Directory dir) {
   final regExp = RegExp('href="data:image/png;base64,([^"]+)"');
-  final svgFiles = dir
-      .listSync()
-      .whereType<File>()
-      .where((f) => f.path.toLowerCase().endsWith('.svg'));
+  final svgFiles = dir.listSync().whereType<File>().where(
+    (f) => f.path.toLowerCase().endsWith('.svg'),
+  );
 
   for (final file in svgFiles) {
     try {

@@ -58,105 +58,103 @@ void main() {
     },
   );
 
-  testWidgets(
-    'shows warning when empty fields are submitted',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1024, 768);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+  testWidgets('shows warning when empty fields are submitted', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
 
-      final mockLoginUseCase = MockLoginUseCase();
+    final mockLoginUseCase = MockLoginUseCase();
 
-      await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Masuk'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Harap isi email terlebih dahulu.'), findsOneWidget);
-      expect(find.text('Harap isi password terlebih dahulu.'), findsOneWidget);
-      verifyNever(() => mockLoginUseCase(any()));
-    },
-  );
+    expect(find.text('Harap isi email terlebih dahulu.'), findsOneWidget);
+    expect(find.text('Harap isi password terlebih dahulu.'), findsOneWidget);
+    verifyNever(() => mockLoginUseCase(any()));
+  });
 
-  testWidgets(
-    'auto-focuses email field when both fields are empty on submit',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1024, 768);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+  testWidgets('auto-focuses email field when both fields are empty on submit', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
 
-      final mockLoginUseCase = MockLoginUseCase();
+    final mockLoginUseCase = MockLoginUseCase();
 
-      await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Masuk'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
 
-      // M3: first invalid field (email) must receive focus automatically.
-      final emailField = tester.widget<AppTextField>(
-        find.byType(AppTextField).first,
+    // M3: first invalid field (email) must receive focus automatically.
+    final emailField = tester.widget<AppTextField>(
+      find.byType(AppTextField).first,
+    );
+    expect(emailField.focusNode?.hasFocus, isTrue);
+    verifyNever(() => mockLoginUseCase(any()));
+  });
+
+  testWidgets('fields are disabled (busy state) while AuthLoading is active', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    // Use a Completer so the mock hangs with no pending timer.
+    // fake_async throws if a real Duration timer outlives the widget tree.
+    final completer = Completer<Either<Failure, UserEntity>>();
+    final mockLoginUseCase = MockLoginUseCase();
+    when(() => mockLoginUseCase(any())).thenAnswer((_) => completer.future);
+
+    await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(EditableText).first,
+      'admin@kawalo.co.id',
+    );
+    await tester.enterText(find.byType(EditableText).last, 'password123');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Masuk'));
+    // One pump so the BLoC emits AuthLoading before the future resolves.
+    await tester.pump();
+
+    // M3 Busy State: both AppTextFields must be disabled while loading.
+    final textFields = tester.widgetList<AppTextField>(
+      find.byType(AppTextField),
+    );
+    for (final field in textFields) {
+      expect(
+        field.enabled,
+        isFalse,
+        reason: 'Field harus disabled saat AuthLoading aktif',
       );
-      expect(emailField.focusNode?.hasFocus, isTrue);
-      verifyNever(() => mockLoginUseCase(any()));
-    },
-  );
+    }
 
-  testWidgets(
-    'fields are disabled (busy state) while AuthLoading is active',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1024, 768);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    // Verify modal scrim overlay with contained AppLoadingIndicator
+    final indicatorFinder = find.byType(AppLoadingIndicator);
+    expect(indicatorFinder, findsOneWidget);
+    final indicator = tester.widget<AppLoadingIndicator>(indicatorFinder);
+    expect(indicator.variant, AppLoadingIndicatorVariant.contained);
+    expect(indicator.semanticLabel, 'Memverifikasi akun');
 
-      // Use a Completer so the mock hangs with no pending timer.
-      // fake_async throws if a real Duration timer outlives the widget tree.
-      final completer = Completer<Either<Failure, UserEntity>>();
-      final mockLoginUseCase = MockLoginUseCase();
-      when(() => mockLoginUseCase(any())).thenAnswer((_) => completer.future);
-
-      await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-        find.byType(EditableText).first,
-        'admin@kawalo.co.id',
-      );
-      await tester.enterText(find.byType(EditableText).last, 'password123');
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Masuk'));
-      // One pump so the BLoC emits AuthLoading before the future resolves.
-      await tester.pump();
-
-      // M3 Busy State: both AppTextFields must be disabled while loading.
-      final textFields =
-          tester.widgetList<AppTextField>(find.byType(AppTextField));
-      for (final field in textFields) {
-        expect(
-          field.enabled,
-          isFalse,
-          reason: 'Field harus disabled saat AuthLoading aktif',
-        );
-      }
-
-      // Verify modal scrim overlay with contained AppLoadingIndicator
-      final indicatorFinder = find.byType(AppLoadingIndicator);
-      expect(indicatorFinder, findsOneWidget);
-      final indicator = tester.widget<AppLoadingIndicator>(indicatorFinder);
-      expect(indicator.variant, AppLoadingIndicatorVariant.contained);
-      expect(indicator.semanticLabel, 'Memverifikasi akun');
-
-      // Release the completer so the BLoC and widget tree can settle cleanly.
-      completer.complete(
-        const Right(
-          UserEntity(id: 'u1', email: 'a@b.co', name: 'Test', groups: []),
-        ),
-      );
-      await tester.pumpAndSettle();
-    },
-  );
+    // Release the completer so the BLoC and widget tree can settle cleanly.
+    completer.complete(
+      const Right(
+        UserEntity(id: 'u1', email: 'a@b.co', name: 'Test', groups: []),
+      ),
+    );
+    await tester.pumpAndSettle();
+  });
 
   testWidgets(
     'submits LoginSubmitted when valid credentials are typed and Masuk is '
@@ -198,38 +196,38 @@ void main() {
     },
   );
 
-  testWidgets(
-    'displays sessionExpiredMessage in snackbar when provided',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1024, 768);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+  testWidgets('displays sessionExpiredMessage in snackbar when provided', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
 
-      final mockLoginUseCase = MockLoginUseCase();
+    final mockLoginUseCase = MockLoginUseCase();
 
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: BlocProvider<AuthBloc>(
-            create: (_) => AuthBloc(loginUseCase: mockLoginUseCase),
-            child: const LoginScreen(
-              sessionExpiredMessage: 'Sesi Anda telah berakhir demi keamanan. '
-                  'Silakan masuk kembali.',
-            ),
+    await tester.pumpWidget(
+      M3EMaterialApp(
+        data: AppTheme.m3eLight(),
+        home: BlocProvider<AuthBloc>(
+          create: (_) => AuthBloc(loginUseCase: mockLoginUseCase),
+          child: const LoginScreen(
+            sessionExpiredMessage:
+                'Sesi Anda telah berakhir demi keamanan. '
+                'Silakan masuk kembali.',
           ),
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(
-        find.text(
-          'Sesi Anda telah berakhir demi keamanan. '
-          'Silakan masuk kembali.',
-        ),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(
+      find.text(
+        'Sesi Anda telah berakhir demi keamanan. '
+        'Silakan masuk kembali.',
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'auto-scrolls to reveal Masuk button when keyboard appears on login screen',

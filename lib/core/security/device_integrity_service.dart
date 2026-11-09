@@ -22,8 +22,7 @@ abstract interface class DeviceIntegrityPlatform {
 
 /// Implementasi default platform integritas perangkat menggunakan plugin
 /// resmi platform channel.
-final class DefaultDeviceIntegrityPlatform
-    implements DeviceIntegrityPlatform {
+final class DefaultDeviceIntegrityPlatform implements DeviceIntegrityPlatform {
   const DefaultDeviceIntegrityPlatform();
 
   @override

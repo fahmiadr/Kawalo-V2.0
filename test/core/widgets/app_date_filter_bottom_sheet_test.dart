@@ -12,8 +12,9 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 
 void main() {
   group('AppDateFilterBottomSheet Widget Tests', () {
-    testWidgets('renders custom title, options, and applies selection',
-        (tester) async {
+    testWidgets('renders custom title, options, and applies selection', (
+      tester,
+    ) async {
       AppDateFilterResult? appliedResult;
 
       await tester.pumpWidget(
@@ -60,43 +61,44 @@ void main() {
       expect(appliedResult!.isDefault, isFalse);
     });
 
-    testWidgets('bottom sheet height hugs content instead of filling maxHeight',
-        (tester) async {
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: ElevatedButton(
-                  onPressed: () => showAppDateFilterBottomSheet(
-                    context: context,
+    testWidgets(
+      'bottom sheet height hugs content instead of filling maxHeight',
+      (tester) async {
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: Builder(
+              builder: (context) {
+                return Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () =>
+                        showAppDateFilterBottomSheet(context: context),
+                    child: const Text('Buka'),
                   ),
-                  child: const Text('Buka'),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Buka'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Buka'));
+        await tester.pumpAndSettle();
 
-      final sheetFinder = find.byType(AppDateFilterBottomSheet);
-      expect(sheetFinder, findsOneWidget);
-      final optionsSize = tester.getSize(sheetFinder);
-      expect(optionsSize.height, lessThan(450.0));
-      expect(optionsSize.height, greaterThan(300.0));
+        final sheetFinder = find.byType(AppDateFilterBottomSheet);
+        expect(sheetFinder, findsOneWidget);
+        final optionsSize = tester.getSize(sheetFinder);
+        expect(optionsSize.height, lessThan(450.0));
+        expect(optionsSize.height, greaterThan(300.0));
 
-      // Transition to custom range view
-      await tester.tap(find.text('Rentang khusus'));
-      await tester.pumpAndSettle();
+        // Transition to custom range view
+        await tester.tap(find.text('Rentang khusus'));
+        await tester.pumpAndSettle();
 
-      final customRangeSize = tester.getSize(sheetFinder);
-      expect(customRangeSize.height, lessThan(300.0));
-      expect(customRangeSize.height, greaterThan(200.0));
-    });
+        final customRangeSize = tester.getSize(sheetFinder);
+        expect(customRangeSize.height, lessThan(300.0));
+        expect(customRangeSize.height, greaterThan(200.0));
+      },
+    );
 
     testWidgets('renders custom subtitle when provided', (tester) async {
       await tester.pumpWidget(
@@ -126,8 +128,9 @@ void main() {
       expect(find.text('Rentang waktu'), findsOneWidget);
     });
 
-    testWidgets('transitions to custom date range view and back',
-        (tester) async {
+    testWidgets('transitions to custom date range view and back', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -169,8 +172,9 @@ void main() {
       expect(find.text('Filter kustom'), findsOneWidget);
     });
 
-    testWidgets('renders AppRadio<AppDateFilterPeriod> correctly',
-        (tester) async {
+    testWidgets('renders AppRadio<AppDateFilterPeriod> correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -238,29 +242,32 @@ void main() {
       );
     });
 
-    testWidgets('pastOnly scope initializes endDate to today instead of future',
-        (tester) async {
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: const Scaffold(
-            body: AppDateFilterBottomSheet(
-              scope: AppDateFilterScope.pastOnly,
-              startInCustomRange: true,
+    testWidgets(
+      'pastOnly scope initializes endDate to today instead of future',
+      (tester) async {
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: const Scaffold(
+              body: AppDateFilterBottomSheet(
+                scope: AppDateFilterScope.pastOnly,
+                startInCustomRange: true,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Atur rentang waktu'), findsOneWidget);
-      expect(find.text('Dari'), findsOneWidget);
-      expect(find.text('Ke'), findsOneWidget);
-      expect(find.text('Pasang'), findsOneWidget);
-    });
+        expect(find.text('Atur rentang waktu'), findsOneWidget);
+        expect(find.text('Dari'), findsOneWidget);
+        expect(find.text('Ke'), findsOneWidget);
+        expect(find.text('Pasang'), findsOneWidget);
+      },
+    );
 
-    testWidgets('tapping Dari in modal bottom sheet opens date picker dialog',
-        (tester) async {
+    testWidgets('tapping Dari in modal bottom sheet opens date picker dialog', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
@@ -276,10 +283,8 @@ void main() {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          builder: (context, child) => M3ETheme(
-            data: AppTheme.m3eLight(),
-            child: child!,
-          ),
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
           home: Builder(
             builder: (context) => Scaffold(
               body: ElevatedButton(
@@ -307,8 +312,9 @@ void main() {
       expect(find.byType(AppDatePickerDialog), findsOneWidget);
     });
 
-    testWidgets('scrolls gracefully without overflow on constrained viewport',
-        (tester) async {
+    testWidgets('scrolls gracefully without overflow on constrained viewport', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(360, 300);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -321,9 +327,7 @@ void main() {
           home: Builder(
             builder: (context) => Scaffold(
               body: ElevatedButton(
-                onPressed: () => showAppDateFilterBottomSheet(
-                  context: context,
-                ),
+                onPressed: () => showAppDateFilterBottomSheet(context: context),
                 child: const Text('Open'),
               ),
             ),
@@ -343,159 +347,161 @@ void main() {
       expect(find.text('Terapkan'), findsOneWidget);
     });
 
-    testWidgets('renders AppDivider between date range and additional sections',
-        (tester) async {
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          localizationsDelegates: AppTheme.localizationsDelegates,
-          supportedLocales: AppTheme.supportedLocales,
-          home: const Scaffold(
-            body: AppDateFilterBottomSheet(
-              additionalSections: [
-                Text('Section 1: Status'),
-                Text('Section 2: Kategori'),
-              ],
+    testWidgets(
+      'renders AppDivider between date range and additional sections',
+      (tester) async {
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
+            supportedLocales: AppTheme.supportedLocales,
+            home: const Scaffold(
+              body: AppDateFilterBottomSheet(
+                additionalSections: [
+                  Text('Section 1: Status'),
+                  Text('Section 2: Kategori'),
+                ],
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Rentang waktu'), findsOneWidget);
-      expect(find.text('Section 1: Status'), findsOneWidget);
-      expect(find.text('Section 2: Kategori'), findsOneWidget);
+        expect(find.text('Rentang waktu'), findsOneWidget);
+        expect(find.text('Section 1: Status'), findsOneWidget);
+        expect(find.text('Section 2: Kategori'), findsOneWidget);
 
-      // 1 divider after date range, 1 divider between section 1 and 2
-      expect(find.byType(AppDivider), findsNWidgets(2));
-    });
+        // 1 divider after date range, 1 divider between section 1 and 2
+        expect(find.byType(AppDivider), findsNWidgets(2));
+      },
+    );
 
     testWidgets(
-        'formats custom date range subtitle without repeating same month/year',
-        (tester) async {
-      // 1. Same day
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          localizationsDelegates: AppTheme.localizationsDelegates,
-          supportedLocales: AppTheme.supportedLocales,
-          home: Scaffold(
-            body: AppDateFilterBottomSheet(
-              key: const ValueKey('case1'),
-              initialPeriod: AppDateFilterPeriod.custom,
-              initialStartDate: DateTime(2026, 10),
-              initialEndDate: DateTime(2026, 10),
+      'formats custom date range subtitle without repeating same month/year',
+      (tester) async {
+        // 1. Same day
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
+            supportedLocales: AppTheme.supportedLocales,
+            home: Scaffold(
+              body: AppDateFilterBottomSheet(
+                key: const ValueKey('case1'),
+                initialPeriod: AppDateFilterPeriod.custom,
+                initialStartDate: DateTime(2026, 10),
+                initialEndDate: DateTime(2026, 10),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('01 Okt 2026'), findsOneWidget);
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('01 Okt 2026'), findsOneWidget);
 
-      // 2. Same month and year
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          localizationsDelegates: AppTheme.localizationsDelegates,
-          supportedLocales: AppTheme.supportedLocales,
-          home: Scaffold(
-            body: AppDateFilterBottomSheet(
-              key: const ValueKey('case2'),
-              initialPeriod: AppDateFilterPeriod.custom,
-              initialStartDate: DateTime(2026, 10),
-              initialEndDate: DateTime(2026, 10, 3),
+        // 2. Same month and year
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
+            supportedLocales: AppTheme.supportedLocales,
+            home: Scaffold(
+              body: AppDateFilterBottomSheet(
+                key: const ValueKey('case2'),
+                initialPeriod: AppDateFilterPeriod.custom,
+                initialStartDate: DateTime(2026, 10),
+                initialEndDate: DateTime(2026, 10, 3),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('01–03 Okt 2026'), findsOneWidget);
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('01–03 Okt 2026'), findsOneWidget);
 
-      // 3. Same year, different month
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          localizationsDelegates: AppTheme.localizationsDelegates,
-          supportedLocales: AppTheme.supportedLocales,
-          home: Scaffold(
-            body: AppDateFilterBottomSheet(
-              key: const ValueKey('case3'),
-              initialPeriod: AppDateFilterPeriod.custom,
-              initialStartDate: DateTime(2026, 9),
-              initialEndDate: DateTime(2026, 10, 3),
+        // 3. Same year, different month
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
+            supportedLocales: AppTheme.supportedLocales,
+            home: Scaffold(
+              body: AppDateFilterBottomSheet(
+                key: const ValueKey('case3'),
+                initialPeriod: AppDateFilterPeriod.custom,
+                initialStartDate: DateTime(2026, 9),
+                initialEndDate: DateTime(2026, 10, 3),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('01 Sep – 03 Okt 2026'), findsOneWidget);
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('01 Sep – 03 Okt 2026'), findsOneWidget);
 
-      // 4. Different year
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          localizationsDelegates: AppTheme.localizationsDelegates,
-          supportedLocales: AppTheme.supportedLocales,
-          home: Scaffold(
-            body: AppDateFilterBottomSheet(
-              key: const ValueKey('case4'),
-              initialPeriod: AppDateFilterPeriod.custom,
-              initialStartDate: DateTime(2025, 9),
-              initialEndDate: DateTime(2026, 10, 3),
+        // 4. Different year
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
+            supportedLocales: AppTheme.supportedLocales,
+            home: Scaffold(
+              body: AppDateFilterBottomSheet(
+                key: const ValueKey('case4'),
+                initialPeriod: AppDateFilterPeriod.custom,
+                initialStartDate: DateTime(2025, 9),
+                initialEndDate: DateTime(2026, 10, 3),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('01 Sep 2025 – 03 Okt 2026'), findsOneWidget);
-    });
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('01 Sep 2025 – 03 Okt 2026'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'shows date range label when today, thisWeek, or thisMonth is selected',
-        (tester) async {
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          localizationsDelegates: AppTheme.localizationsDelegates,
-          supportedLocales: AppTheme.supportedLocales,
-          home: const Scaffold(
-            body: AppDateFilterBottomSheet(),
+      'shows date range label when today, thisWeek, or thisMonth is selected',
+      (tester) async {
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
+            supportedLocales: AppTheme.supportedLocales,
+            home: const Scaffold(body: AppDateFilterBottomSheet()),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final now = DateTime.now();
-      final todayStr = AppDateFormat.formatDateRange(
-        now,
-        now,
-        useLeadingZero: true,
-      );
-      expect(find.text(todayStr), findsOneWidget);
+        final now = DateTime.now();
+        final todayStr = AppDateFormat.formatDateRange(
+          now,
+          now,
+          useLeadingZero: true,
+        );
+        expect(find.text(todayStr), findsOneWidget);
 
-      await tester.tap(find.text('Pekan ini'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Pekan ini'));
+        await tester.pumpAndSettle();
 
-      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-      final endOfWeek = startOfWeek.add(const Duration(days: 6));
-      final weekStr = AppDateFormat.formatDateRange(
-        startOfWeek,
-        endOfWeek,
-        useLeadingZero: true,
-      );
-      expect(find.text(weekStr), findsOneWidget);
+        final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        final endOfWeek = startOfWeek.add(const Duration(days: 6));
+        final weekStr = AppDateFormat.formatDateRange(
+          startOfWeek,
+          endOfWeek,
+          useLeadingZero: true,
+        );
+        expect(find.text(weekStr), findsOneWidget);
 
-      await tester.tap(find.text('Bulan ini'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Bulan ini'));
+        await tester.pumpAndSettle();
 
-      final startOfMonth = DateTime(now.year, now.month);
-      final endOfMonth = DateTime(now.year, now.month + 1, 0);
-      final monthStr = AppDateFormat.formatDateRange(
-        startOfMonth,
-        endOfMonth,
-        useLeadingZero: true,
-      );
-      expect(find.text(monthStr), findsOneWidget);
-    });
+        final startOfMonth = DateTime(now.year, now.month);
+        final endOfMonth = DateTime(now.year, now.month + 1, 0);
+        final monthStr = AppDateFormat.formatDateRange(
+          startOfMonth,
+          endOfMonth,
+          useLeadingZero: true,
+        );
+        expect(find.text(monthStr), findsOneWidget);
+      },
+    );
   });
 }

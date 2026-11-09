@@ -24,8 +24,9 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('renders via AppTappable.builder and handles state',
-        (WidgetTester tester) async {
+    testWidgets('renders via AppTappable.builder and handles state', (
+      WidgetTester tester,
+    ) async {
       var tapped = false;
 
       await tester.pumpWidget(
@@ -34,9 +35,7 @@ void main() {
             body: AppTappable.builder(
               onTap: () => tapped = true,
               builder: (context, state) {
-                return Text(
-                  state.pressed ? 'Pressed' : 'Idle',
-                );
+                return Text(state.pressed ? 'Pressed' : 'Idle');
               },
             ),
           ),

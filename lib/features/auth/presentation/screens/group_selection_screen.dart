@@ -31,10 +31,7 @@ import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main
 /// Follows Material 3 Expressive standards, accessible touch targets, and
 /// design system tokens.
 class GroupSelectionScreen extends StatefulWidget {
-  const GroupSelectionScreen({
-    required this.user,
-    super.key,
-  });
+  const GroupSelectionScreen({required this.user, super.key});
 
   final UserEntity user;
 
@@ -50,7 +47,8 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
   void initState() {
     super.initState();
     // Default selection: activeGroup if available, or first group in the list
-    _selectedGroupUid = widget.user.activeGroup?.groupUid ??
+    _selectedGroupUid =
+        widget.user.activeGroup?.groupUid ??
         (widget.user.groups.isNotEmpty
             ? widget.user.groups.first.groupUid
             : '');
@@ -114,8 +112,8 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
   void _onConfirmSelection() {
     if (_selectedGroupUid.isEmpty) return;
     context.read<AuthBloc>().add(
-          SwitchGroupSubmitted(groupUid: _selectedGroupUid),
-        );
+      SwitchGroupSubmitted(groupUid: _selectedGroupUid),
+    );
   }
 
   void _onLogoutPressed() {
@@ -159,10 +157,7 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthFailure) {
-          AppSnackbar.show(
-            context,
-            message: state.message,
-          );
+          AppSnackbar.show(context, message: state.message);
         } else if (state is Authenticated) {
           Navigator.of(context).pushAndRemoveUntil<void>(
             AppPageRoute.fade<void>(
@@ -173,9 +168,7 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
         } else if (state is Unauthenticated) {
           Navigator.of(context).pushAndRemoveUntil<void>(
             AppPageRoute.fade<void>(
-              builder: (_) => LoginScreen(
-                sessionExpiredMessage: state.message,
-              ),
+              builder: (_) => LoginScreen(sessionExpiredMessage: state.message),
             ),
             (route) => false,
           );
@@ -195,10 +188,7 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                   scrolledUnderElevation: 0,
                   elevation: 0,
                   leading: AppIconButton(
-                    icon: const AppSvgIcon(
-                      KawaloVectors.arrowLeft02,
-                      size: 24,
-                    ),
+                    icon: const AppSvgIcon(KawaloVectors.arrowLeft02, size: 24),
                     onPressed: isLoading ? null : _onLogoutPressed,
                     semanticLabel: 'Kembali ke halaman login',
                   ),
@@ -217,10 +207,7 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                             colorScheme.error,
                           ),
                         ),
-                        child: Text(
-                          'Ganti akun',
-                          style: typeScale.labelLarge,
-                        ),
+                        child: Text('Ganti akun', style: typeScale.labelLarge),
                       ),
                     ),
                   ],
@@ -228,8 +215,9 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                 body: SafeArea(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final horizontalPadding =
-                          AppLayout.horizontalMargin(constraints.maxWidth);
+                      final horizontalPadding = AppLayout.horizontalMargin(
+                        constraints.maxWidth,
+                      );
 
                       return Column(
                         children: [
@@ -254,8 +242,8 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                                         'Pilih grup',
                                         style: emphasizedScale.headlineMedium
                                             .copyWith(
-                                          color: colorScheme.onSurface,
-                                        ),
+                                              color: colorScheme.onSurface,
+                                            ),
                                       ),
                                       AppSpacing.vGapXs,
                                       Text(
@@ -283,8 +271,9 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                                             group: group,
                                             isSelected: isSelected,
                                             isLoading: isLoading,
-                                            focusNode: _groupFocusNodes[
-                                                group.groupUid],
+                                            focusNode:
+                                                _groupFocusNodes[group
+                                                    .groupUid],
                                             onSelect: () => _onGroupSelected(
                                               group.groupUid,
                                             ),
@@ -293,8 +282,8 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                                             ),
                                             statusVariant:
                                                 _groupStatusToVariant(
-                                              group.groupStatus,
-                                            ),
+                                                  group.groupStatus,
+                                                ),
                                           ),
                                         );
                                       }),
@@ -312,8 +301,9 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                               color: colorScheme.surface,
                               border: Border(
                                 top: BorderSide(
-                                  color: colorScheme.outlineVariant
-                                      .withValues(alpha: 0.35),
+                                  color: colorScheme.outlineVariant.withValues(
+                                    alpha: 0.35,
+                                  ),
                                 ),
                               ),
                             ),
@@ -332,12 +322,13 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                                     child: AppButton(
                                       size: AppButtonSize.md,
                                       shape: AppButtonShape.square,
-                                      enabled: !isLoading &&
+                                      enabled:
+                                          !isLoading &&
                                           _selectedGroupUid.isNotEmpty,
                                       semanticLabel: isLoading
                                           ? 'Menyiapkan grup'
                                           : 'Konfirmasi dan lanjutkan ke '
-                                              'beranda',
+                                                'beranda',
                                       onPressed: isLoading
                                           ? null
                                           : _onConfirmSelection,
@@ -360,9 +351,7 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
 
               // Modal Scrim Overlay
               if (isLoading)
-                const AppLoadingOverlay(
-                  semanticLabel: 'Menyiapkan grup',
-                ),
+                const AppLoadingOverlay(semanticLabel: 'Menyiapkan grup'),
             ],
           ),
         );
@@ -399,9 +388,7 @@ class _GroupCardState extends State<_GroupCard> {
   bool _isFocused = false;
 
   Widget _buildGroupLogo(String? logoUrl, String groupName) {
-    return ExcludeSemantics(
-      child: _buildGroupLogoVisual(logoUrl, groupName),
-    );
+    return ExcludeSemantics(child: _buildGroupLogoVisual(logoUrl, groupName));
   }
 
   Widget _buildGroupLogoVisual(String? logoUrl, String groupName) {
@@ -415,7 +402,7 @@ class _GroupCardState extends State<_GroupCard> {
           width: 48,
           height: 48,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildFallbackLogo(groupName),
+          errorBuilder: (_, _, _) => _buildFallbackLogo(groupName),
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return _buildFallbackLogo(groupName);
@@ -449,7 +436,8 @@ class _GroupCardState extends State<_GroupCard> {
     final emphasizedScale = AppTheme.emphasizedTypeScaleOf(context);
 
     final groupName = widget.group.groupName ?? widget.group.groupUid;
-    final roleName = (widget.group.category != null &&
+    final roleName =
+        (widget.group.category != null &&
             widget.group.category!.trim().isNotEmpty)
         ? widget.group.category!.trim()
         : '-';
@@ -460,8 +448,8 @@ class _GroupCardState extends State<_GroupCard> {
     final borderColor = isFocused
         ? colorScheme.secondary
         : (isSelected
-            ? colorScheme.primary
-            : colorScheme.outlineVariant.withValues(alpha: 0.5));
+              ? colorScheme.primary
+              : colorScheme.outlineVariant.withValues(alpha: 0.5));
 
     final borderWidth = isFocused ? 2.5 : (isSelected ? 2.0 : 1.0);
 
@@ -470,10 +458,11 @@ class _GroupCardState extends State<_GroupCard> {
             alpha: 0.16 + (isFocused ? AppStateLayer.focusOpacity : 0.0),
           )
         : (isFocused
-            ? colorScheme.surfaceContainerHigh
-            : colorScheme.surfaceContainerLowest);
+              ? colorScheme.surfaceContainerHigh
+              : colorScheme.surfaceContainerLowest);
 
-    final hasOwner = widget.group.groupOwner != null &&
+    final hasOwner =
+        widget.group.groupOwner != null &&
         widget.group.groupOwner!.trim().isNotEmpty;
     final ownerPart = hasOwner ? ', pemilik ${widget.group.groupOwner}' : '';
     final selectionText = isSelected ? 'Terpilih' : 'Ketuk untuk memilih';
@@ -515,10 +504,7 @@ class _GroupCardState extends State<_GroupCard> {
         child: AppCard(
           variant: isSelected ? AppCardVariant.filled : AppCardVariant.outlined,
           color: backgroundColor,
-          border: BorderSide(
-            color: borderColor,
-            width: borderWidth,
-          ),
+          border: BorderSide(color: borderColor, width: borderWidth),
           onPressed: widget.isLoading ? null : widget.onSelect,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -597,8 +583,9 @@ class _GroupCardState extends State<_GroupCard> {
                     child: AppRadio<String>(
                       value: widget.group.groupUid,
                       groupValue: isSelected ? widget.group.groupUid : null,
-                      onChanged:
-                          widget.isLoading ? null : (_) => widget.onSelect(),
+                      onChanged: widget.isLoading
+                          ? null
+                          : (_) => widget.onSelect(),
                     ),
                   ),
                 ],

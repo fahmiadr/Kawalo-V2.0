@@ -24,14 +24,15 @@ class GuestFormIdentityFields extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<
-        GuestFormCubit,
-        GuestFormState,
-        ({
-          String? identityType,
-          String? identityNumberError,
-          bool isBusy,
-          int validationAttempt,
-        })>(
+      GuestFormCubit,
+      GuestFormState,
+      ({
+        String? identityType,
+        String? identityNumberError,
+        bool isBusy,
+        int validationAttempt,
+      })
+    >(
       selector: (state) => (
         identityType: state.identityType,
         identityNumberError: state.identityNumberError,
@@ -46,7 +47,8 @@ class GuestFormIdentityFields extends StatelessWidget {
         identityNumberFocusNode.skipTraversal =
             !hasIdentityType || idState.isBusy;
 
-        final showError = idState.validationAttempt > 0 ||
+        final showError =
+            idState.validationAttempt > 0 ||
             cubit.state.identityNumber.isNotEmpty;
 
         final chipItems = [

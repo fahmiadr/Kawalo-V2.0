@@ -55,39 +55,39 @@ class AttendanceLocalDataSourceImpl implements AttendanceLocalDataSource {
     if (search != null && search.isNotEmpty) {
       final q = search;
       query = query.and().group(
-            (qBuilder) => qBuilder
-                .userNameContains(q, caseSensitive: false)
-                .or()
-                .userEmailContains(q, caseSensitive: false)
-                .or()
-                .attendanceTypeContains(q, caseSensitive: false)
-                .or()
-                .locationNameContains(q, caseSensitive: false)
-                .or()
-                .shiftNameContains(q, caseSensitive: false),
-          );
+        (qBuilder) => qBuilder
+            .userNameContains(q, caseSensitive: false)
+            .or()
+            .userEmailContains(q, caseSensitive: false)
+            .or()
+            .attendanceTypeContains(q, caseSensitive: false)
+            .or()
+            .locationNameContains(q, caseSensitive: false)
+            .or()
+            .shiftNameContains(q, caseSensitive: false),
+      );
     }
 
     if (startDate != null) {
       final startSpace = startDate.replaceFirst('T', ' ');
       final startT = startDate.replaceFirst(' ', 'T');
       query = query.and().group(
-            (q) => q
-                .attendanceDtGreaterThan(startSpace, include: true)
-                .or()
-                .attendanceDtGreaterThan(startT, include: true),
-          );
+        (q) => q
+            .attendanceDtGreaterThan(startSpace, include: true)
+            .or()
+            .attendanceDtGreaterThan(startT, include: true),
+      );
     }
 
     if (endDate != null) {
       final endSpace = endDate.replaceFirst('T', ' ');
       final endT = endDate.replaceFirst(' ', 'T');
       query = query.and().group(
-            (q) => q
-                .attendanceDtLessThan(endSpace, include: true)
-                .or()
-                .attendanceDtLessThan(endT, include: true),
-          );
+        (q) => q
+            .attendanceDtLessThan(endSpace, include: true)
+            .or()
+            .attendanceDtLessThan(endT, include: true),
+      );
     }
 
     final collections = await query.sortByAttendanceDtDesc().findAll();

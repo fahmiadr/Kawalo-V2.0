@@ -1,4 +1,5 @@
 import 'dart:io' as io;
+
 import 'package:flutter/foundation.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
@@ -8,13 +9,12 @@ import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 class SyncStorageService {
   /// Membuat instance [SyncStorageService].
   SyncStorageService({SecureStorageService? storageService})
-      : _storageService = storageService ??
-            (_isTestEnvironment ? null : SecureStorageService());
+    : _storageService =
+          storageService ??
+          (_isTestEnvironment ? null : SecureStorageService());
 
   /// Factory constructor singleton untuk kemudahan akses di Shared Kernel.
-  factory SyncStorageService.singleton({
-    SecureStorageService? storageService,
-  }) {
+  factory SyncStorageService.singleton({SecureStorageService? storageService}) {
     return _instance ??= SyncStorageService(storageService: storageService);
   }
 

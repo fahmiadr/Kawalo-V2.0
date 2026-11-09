@@ -7,18 +7,15 @@ void main() {
   Widget buildTestApp(Widget child) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
   group('KawaloLogoText Widget Tests', () {
-    testWidgets('renders default logo with correct semantic label',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        buildTestApp(const KawaloLogoText()),
-      );
+    testWidgets('renders default logo with correct semantic label', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(buildTestApp(const KawaloLogoText()));
       await tester.pumpAndSettle();
 
       expect(find.byType(KawaloLogoText), findsOneWidget);
@@ -29,14 +26,12 @@ void main() {
       expect(semantics.flagsCollection.isHeader, isTrue);
     });
 
-    testWidgets('respects custom fontSize and custom semanticLabel',
-        (WidgetTester tester) async {
+    testWidgets('respects custom fontSize and custom semanticLabel', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
-          const KawaloLogoText(
-            fontSize: 48,
-            semanticLabel: 'KAWALO_BRAND',
-          ),
+          const KawaloLogoText(fontSize: 48, semanticLabel: 'KAWALO_BRAND'),
         ),
       );
       await tester.pumpAndSettle();
@@ -53,27 +48,22 @@ void main() {
             const SizedBox(
               width: 50,
               height: 24,
-              child: KawaloLogoText(
-                fontSize: 76,
-                fit: BoxFit.scaleDown,
-              ),
+              child: KawaloLogoText(fontSize: 76, fit: BoxFit.scaleDown),
             ),
           ),
         );
         await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      expect(find.byType(KawaloLogoText), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.byType(KawaloLogoText), findsOneWidget);
+      },
+    );
 
-    testWidgets('respects custom textScaler override',
-        (WidgetTester tester) async {
+    testWidgets('respects custom textScaler override', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
-        buildTestApp(
-          const KawaloLogoText(
-            textScaler: TextScaler.noScaling,
-          ),
-        ),
+        buildTestApp(const KawaloLogoText(textScaler: TextScaler.noScaling)),
       );
       await tester.pumpAndSettle();
 
@@ -81,8 +71,9 @@ void main() {
       expect(textWidget.textScaler, equals(TextScaler.noScaling));
     });
 
-    testWidgets('supports custom colors for text and accent W',
-        (WidgetTester tester) async {
+    testWidgets('supports custom colors for text and accent W', (
+      WidgetTester tester,
+    ) async {
       const textColor = Color(0xFF112233);
       const primaryColor = Color(0xFF445566);
 

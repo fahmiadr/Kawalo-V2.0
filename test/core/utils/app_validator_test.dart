@@ -14,19 +14,20 @@ void main() {
     test(
       'returns formatted error using fieldName when value is null or empty',
       () {
-      expect(
-        AppValidator.validateRequired(null, fieldName: 'Nama tamu'),
-        equals('Nama tamu wajib diisi'),
-      );
-      expect(
-        AppValidator.validateRequired('', fieldName: 'Nama tamu'),
-        equals('Nama tamu wajib diisi'),
-      );
-      expect(
-        AppValidator.validateRequired('   ', fieldName: 'Destinasi tujuan'),
-        equals('Destinasi tujuan wajib diisi'),
-      );
-    });
+        expect(
+          AppValidator.validateRequired(null, fieldName: 'Nama tamu'),
+          equals('Nama tamu wajib diisi'),
+        );
+        expect(
+          AppValidator.validateRequired('', fieldName: 'Nama tamu'),
+          equals('Nama tamu wajib diisi'),
+        );
+        expect(
+          AppValidator.validateRequired('   ', fieldName: 'Destinasi tujuan'),
+          equals('Destinasi tujuan wajib diisi'),
+        );
+      },
+    );
 
     test('returns customMessage when provided on empty value', () {
       expect(
@@ -46,10 +47,8 @@ void main() {
       );
     });
 
-    test(
-      'returns default message when neither fieldName nor customMessage '
-      'is given',
-      () {
+    test('returns default message when neither fieldName nor customMessage '
+        'is given', () {
       expect(
         AppValidator.validateRequired(null),
         equals('Field ini wajib diisi'),
@@ -79,8 +78,7 @@ void main() {
 
     test('returns error when email exceeds maximum length (254 chars)', () {
       final longLocal = 'a' * 60;
-      final longDomain =
-          '${'b' * 60}.${'c' * 60}.${'d' * 60}.${'e' * 60}.com';
+      final longDomain = '${'b' * 60}.${'c' * 60}.${'d' * 60}.${'e' * 60}.com';
       final longEmail = '$longLocal@$longDomain';
 
       expect(longEmail.length, greaterThan(254));
@@ -103,19 +101,20 @@ void main() {
     test(
       'detects and blocks CRLF, null bytes, and control character injection',
       () {
-      expect(
-        AppValidator.validateEmail('admin\n@kawalo.co.id'),
-        equals('Format email mengandung karakter tidak valid.'),
-      );
-      expect(
-        AppValidator.validateEmail('admin\r\n@kawalo.co.id'),
-        equals('Format email mengandung karakter tidak valid.'),
-      );
-      expect(
-        AppValidator.validateEmail('admin\x00@kawalo.co.id'),
-        equals('Format email mengandung karakter tidak valid.'),
-      );
-    });
+        expect(
+          AppValidator.validateEmail('admin\n@kawalo.co.id'),
+          equals('Format email mengandung karakter tidak valid.'),
+        );
+        expect(
+          AppValidator.validateEmail('admin\r\n@kawalo.co.id'),
+          equals('Format email mengandung karakter tidak valid.'),
+        );
+        expect(
+          AppValidator.validateEmail('admin\x00@kawalo.co.id'),
+          equals('Format email mengandung karakter tidak valid.'),
+        );
+      },
+    );
 
     test('rejects emails with missing or multiple @ symbols', () {
       expect(
@@ -136,24 +135,27 @@ void main() {
       );
     });
 
-    test('rejects consecutive dots and leading/trailing dots in local-part or domain', () {
-      expect(
-        AppValidator.validateEmail('admin..user@kawalo.co.id'),
-        contains('Format email tidak valid (titik tidak boleh berurutan'),
-      );
-      expect(
-        AppValidator.validateEmail('.admin@kawalo.co.id'),
-        contains('Format email tidak valid (titik tidak boleh berurutan'),
-      );
-      expect(
-        AppValidator.validateEmail('admin.@kawalo.co.id'),
-        contains('Format email tidak valid (titik tidak boleh berurutan'),
-      );
-      expect(
-        AppValidator.validateEmail('admin@kawalo..co.id'),
-        contains('Format email tidak valid (titik tidak boleh berurutan'),
-      );
-    });
+    test(
+      'rejects consecutive dots and leading/trailing dots in local-part or domain',
+      () {
+        expect(
+          AppValidator.validateEmail('admin..user@kawalo.co.id'),
+          contains('Format email tidak valid (titik tidak boleh berurutan'),
+        );
+        expect(
+          AppValidator.validateEmail('.admin@kawalo.co.id'),
+          contains('Format email tidak valid (titik tidak boleh berurutan'),
+        );
+        expect(
+          AppValidator.validateEmail('admin.@kawalo.co.id'),
+          contains('Format email tidak valid (titik tidak boleh berurutan'),
+        );
+        expect(
+          AppValidator.validateEmail('admin@kawalo..co.id'),
+          contains('Format email tidak valid (titik tidak boleh berurutan'),
+        );
+      },
+    );
 
     test('rejects invalid domain labels and invalid TLDs', () {
       expect(
@@ -320,8 +322,9 @@ void main() {
       expect(weakResult.isValid, isFalse);
       expect(weakResult.strengthLevel, equals(PasswordStrength.veryWeak));
 
-      final strongResult =
-          AppValidator.evaluateNewPassword('Kawalo#2026Secure!');
+      final strongResult = AppValidator.evaluateNewPassword(
+        'Kawalo#2026Secure!',
+      );
       expect(strongResult.hasMinLength, isTrue);
       expect(strongResult.hasUppercase, isTrue);
       expect(strongResult.hasLowercase, isTrue);

@@ -8,18 +8,16 @@ import 'package:kawalo_mobile/features/incident/data/models/incident_reply_model
 /// Dilarang keras mengimpor Domain Entity ke dalam file ini.
 class IncidentDetailModel extends Equatable {
   /// Membuat instance [IncidentDetailModel].
-  const IncidentDetailModel({
-    required this.incident,
-    this.replies = const [],
-  });
+  const IncidentDetailModel({required this.incident, this.replies = const []});
 
   /// Mengonversi JSON Map dari backend menjadi objek [IncidentDetailModel].
   factory IncidentDetailModel.fromJson(Map<String, dynamic> json) {
     final IncidentModel incident;
     if (json.containsKey('incident') &&
         json['incident'] is Map<String, dynamic>) {
-      incident =
-          IncidentModel.fromJson(json['incident'] as Map<String, dynamic>);
+      incident = IncidentModel.fromJson(
+        json['incident'] as Map<String, dynamic>,
+      );
     } else {
       incident = IncidentModel.fromJson(json);
     }
@@ -30,10 +28,7 @@ class IncidentDetailModel extends Equatable {
         .map(IncidentReplyModel.fromJson)
         .toList();
 
-    return IncidentDetailModel(
-      incident: incident,
-      replies: replies,
-    );
+    return IncidentDetailModel(incident: incident, replies: replies);
   }
 
   /// Data DTO header laporan insiden.

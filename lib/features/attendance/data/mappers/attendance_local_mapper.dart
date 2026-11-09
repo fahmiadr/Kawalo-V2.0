@@ -12,10 +12,10 @@ abstract final class AttendanceLocalMapper {
   static AttendanceLocalModel toLocal(AttendanceModel model) {
     return AttendanceLocalModel()
       ..id = AppSanitizer.cleanString(model.id) ?? model.id.trim()
-      ..category = AppSanitizer.cleanString(model.category) ??
-          model.category.trim()
-      ..diffMinutes = AppSanitizer.cleanInteger(model.diffMinutes) ??
-          model.diffMinutes
+      ..category =
+          AppSanitizer.cleanString(model.category) ?? model.category.trim()
+      ..diffMinutes =
+          AppSanitizer.cleanInteger(model.diffMinutes) ?? model.diffMinutes
       ..userEmail = AppSanitizer.cleanEmail(model.userEmail)
       ..userName = AppSanitizer.cleanString(model.userName)
       ..userProfilePic = AppSanitizer.cleanString(model.userProfilePic)
@@ -27,8 +27,7 @@ abstract final class AttendanceLocalMapper {
       ..locationName = AppSanitizer.cleanString(model.locationName)
       ..shiftName = AppSanitizer.cleanString(model.shiftName)
       ..shiftColor = AppSanitizer.cleanString(model.shiftColor)
-      ..shiftTimeWindow =
-          AppSanitizer.cleanTimeWindow(model.shiftTimeWindow)
+      ..shiftTimeWindow = AppSanitizer.cleanTimeWindow(model.shiftTimeWindow)
       ..groupName = AppSanitizer.cleanString(model.groupName);
   }
 
@@ -37,10 +36,10 @@ abstract final class AttendanceLocalMapper {
   static AttendanceModel fromLocal(AttendanceLocalModel local) {
     return AttendanceModel(
       id: AppSanitizer.cleanString(local.id) ?? local.id.trim(),
-      category: AppSanitizer.cleanString(local.category) ??
-          local.category.trim(),
-      diffMinutes: AppSanitizer.cleanInteger(local.diffMinutes) ??
-          local.diffMinutes,
+      category:
+          AppSanitizer.cleanString(local.category) ?? local.category.trim(),
+      diffMinutes:
+          AppSanitizer.cleanInteger(local.diffMinutes) ?? local.diffMinutes,
       userEmail: AppSanitizer.cleanEmail(local.userEmail),
       userName: AppSanitizer.cleanString(local.userName),
       userProfilePic: AppSanitizer.cleanString(local.userProfilePic),
@@ -52,17 +51,14 @@ abstract final class AttendanceLocalMapper {
       locationName: AppSanitizer.cleanString(local.locationName),
       shiftName: AppSanitizer.cleanString(local.shiftName),
       shiftColor: AppSanitizer.cleanString(local.shiftColor),
-      shiftTimeWindow:
-          AppSanitizer.cleanTimeWindow(local.shiftTimeWindow),
+      shiftTimeWindow: AppSanitizer.cleanTimeWindow(local.shiftTimeWindow),
       groupName: AppSanitizer.cleanString(local.groupName),
     );
   }
 
   /// Mengonversi daftar [AttendanceModel] menjadi daftar
   /// [AttendanceLocalModel].
-  static List<AttendanceLocalModel> toLocalList(
-    List<AttendanceModel> models,
-  ) {
+  static List<AttendanceLocalModel> toLocalList(List<AttendanceModel> models) {
     return models.map(toLocal).toList(growable: false);
   }
 

@@ -36,7 +36,8 @@ Future<void> navigateToInformationDetailScreen(
   required InformationItemEntity item,
   InformationCubit? cubit,
 }) {
-  final resolvedCubit = cubit ??
+  final resolvedCubit =
+      cubit ??
       (() {
         try {
           return context.read<InformationCubit>();
@@ -45,18 +46,12 @@ Future<void> navigateToInformationDetailScreen(
         }
       })();
 
-  final screen = InformationDetailScreen(
-    item: item,
-    cubit: resolvedCubit,
-  );
+  final screen = InformationDetailScreen(item: item, cubit: resolvedCubit);
 
   return Navigator.of(context).push<void>(
     AppPageRoute.forwardBackward<void>(
       builder: (_) => resolvedCubit != null
-          ? BlocProvider.value(
-              value: resolvedCubit,
-              child: screen,
-            )
+          ? BlocProvider.value(value: resolvedCubit, child: screen)
           : screen,
     ),
   );
@@ -154,19 +149,13 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
     }
 
     if (mounted) {
-      AppSnackbar.show(
-        context,
-        message: 'Data informasi berhasil diperbarui.',
-      );
+      AppSnackbar.show(context, message: 'Data informasi berhasil diperbarui.');
     }
   }
 
   Future<void> _onPostPressed(BuildContext context) async {
     final cubit = _resolveCubit(context);
-    await InformationFormDialog.showCreate(
-      context,
-      informationCubit: cubit,
-    );
+    await InformationFormDialog.showCreate(context, informationCubit: cubit);
   }
 
   Future<void> _onDeletePressed(
@@ -186,7 +175,8 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
     final confirmed = await showAppConfirmationDialog(
       context: context,
       title: 'Hapus informasi?',
-      message: 'Informasi "${currentItem.displayTitle}" akan dihapus '
+      message:
+          'Informasi "${currentItem.displayTitle}" akan dihapus '
           'secara permanen.',
     );
 
@@ -207,16 +197,10 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
               setState(() {
                 _isDeleting = false;
               });
-              AppSnackbar.show(
-                context,
-                message: failure.message,
-              );
+              AppSnackbar.show(context, message: failure.message);
             },
             (_) {
-              AppSnackbar.show(
-                context,
-                message: 'Informasi berhasil dihapus.',
-              );
+              AppSnackbar.show(context, message: 'Informasi berhasil dihapus.');
               Navigator.of(context).pop();
             },
           );
@@ -268,9 +252,7 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
             showBackButton: true,
             showTrailing: false,
           ),
-          bottomNavigationBar: AppBottomOfflineBanner(
-            isOffline: isOffline,
-          ),
+          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
           body: SafeArea(
             top: false,
             bottom: false,
@@ -408,8 +390,11 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
     }
 
     if (cubit != null) {
-      return BlocSelector<InformationCubit, InformationState,
-          (InformationItemEntity, String)>(
+      return BlocSelector<
+        InformationCubit,
+        InformationState,
+        (InformationItemEntity, String)
+      >(
         bloc: cubit,
         selector: (state) {
           final item = state is InformationLoaded
@@ -421,8 +406,8 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
           final greeting = state.lastSync.isNotEmpty
               ? state.lastSync
               : (cubit.currentGreeting.isNotEmpty
-                  ? cubit.currentGreeting
-                  : AppDateFormat.formatGreeting(DateTime.now()));
+                    ? cubit.currentGreeting
+                    : AppDateFormat.formatGreeting(DateTime.now()));
           return (item, greeting);
         },
         builder: (context, data) {

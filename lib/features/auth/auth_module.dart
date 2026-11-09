@@ -26,11 +26,11 @@ abstract final class AuthModule {
     required SecureStorageService storageService,
     required JwksService jwksService,
   }) {
-    final remoteDataSource =
-        AuthRemoteDataSourceImpl(apiClient: apiClient);
+    final remoteDataSource = AuthRemoteDataSourceImpl(apiClient: apiClient);
 
-    final localDataSource =
-        AuthLocalDataSourceImpl(storageService: storageService);
+    final localDataSource = AuthLocalDataSourceImpl(
+      storageService: storageService,
+    );
 
     return AuthRepositoryImpl(
       remoteDataSource: remoteDataSource,
@@ -50,8 +50,10 @@ abstract final class AuthModule {
     CacheWiper? cacheWiper,
   }) {
     final loginUseCase = LoginUseCase(repository, cacheWiper: cacheWiper);
-    final switchGroupUseCase =
-        SwitchGroupUseCase(repository, cacheWiper: cacheWiper);
+    final switchGroupUseCase = SwitchGroupUseCase(
+      repository,
+      cacheWiper: cacheWiper,
+    );
     final getCurrentUserUseCase = GetCurrentUserUseCase(repository);
     final rawLogoutUseCase = LogoutUseCase(repository);
     final logoutUseCase = cacheWiper != null

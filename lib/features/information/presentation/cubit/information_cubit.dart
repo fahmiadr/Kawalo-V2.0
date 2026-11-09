@@ -36,15 +36,15 @@ class InformationCubit
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
   }) : super(
-          InformationInitial(
-            lastSync: SyncStorageService.resolveInitialGreeting(
-              initialGreeting: initialGreeting,
-              featureKey: AppConstants.syncKeyInformation,
-              storageService: syncStorageService,
-            ),
-          ),
-          syncKey: AppConstants.syncKeyInformation,
-        );
+         InformationInitial(
+           lastSync: SyncStorageService.resolveInitialGreeting(
+             initialGreeting: initialGreeting,
+             featureKey: AppConstants.syncKeyInformation,
+             storageService: syncStorageService,
+           ),
+         ),
+         syncKey: AppConstants.syncKeyInformation,
+       );
 
   /// Use case untuk mengambil data informasi.
   final GetInformationUseCase getInformationUseCase;
@@ -82,19 +82,18 @@ class InformationCubit
     String? authorEmail,
     String? authorName,
     bool clearAuthorFilter = false,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        authorEmail: authorEmail,
-        authorName: authorName,
-        clearAuthorFilter: clearAuthorFilter,
-        isRefresh: false,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    authorEmail: authorEmail,
+    authorName: authorName,
+    clearAuthorFilter: clearAuthorFilter,
+    isRefresh: false,
+  );
 
   /// Memperbarui data informasi secara reaktif melalui tarikan pull-to-refresh.
   Future<AppFetchResult> refreshInformation({
@@ -107,19 +106,18 @@ class InformationCubit
     String? authorEmail,
     String? authorName,
     bool clearAuthorFilter = false,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        authorEmail: authorEmail,
-        authorName: authorName,
-        clearAuthorFilter: clearAuthorFilter,
-        isRefresh: true,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    authorEmail: authorEmail,
+    authorName: authorName,
+    clearAuthorFilter: clearAuthorFilter,
+    isRefresh: true,
+  );
 
   Future<AppFetchResult> _fetch({
     required bool isRefresh,
@@ -133,10 +131,12 @@ class InformationCubit
     String? authorName,
     bool clearAuthorFilter = false,
   }) {
-    final effectiveAuthorEmail =
-        clearAuthorFilter ? null : (authorEmail ?? state.filterAuthorEmail);
-    final effectiveAuthorName =
-        clearAuthorFilter ? null : (authorName ?? state.filterAuthorName);
+    final effectiveAuthorEmail = clearAuthorFilter
+        ? null
+        : (authorEmail ?? state.filterAuthorEmail);
+    final effectiveAuthorName = clearAuthorFilter
+        ? null
+        : (authorName ?? state.filterAuthorName);
     final filter = resolveFilter(
       search: search,
       filterPeriod: filterPeriod,
@@ -162,8 +162,7 @@ class InformationCubit
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      ))
-          .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
       loaded: (page, lastSync, {required hasMore}) => InformationLoaded(
         information: page.items,
         isFromCache: page.isFromCache,
@@ -197,25 +196,24 @@ class InformationCubit
 
   /// Memuat halaman data informasi berikutnya untuk mendukung infinite scroll.
   Future<void> loadMoreInformation() => runLoadMore<InformationLoaded>(
-        request: (current) async => (await getInformationUseCase(
-          GetInformationParams(
-            search: current.searchQuery,
-            limit: pageSize,
-            offset: current.information.length,
-            startDate: current.startDateIso,
-            endDate: current.endDateIso,
-            createdBy: current.filterAuthorEmail,
-          ),
-        ))
-            .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
-        setLoadingMore: (current, {required loadingMore}) =>
-            current.copyWith(isLoadingMore: loadingMore),
-        append: (current, newItems, {required hasMore}) => current.copyWith(
-          information: [...current.information, ...newItems],
-          hasMore: hasMore,
-          isLoadingMore: false,
-        ),
-      );
+    request: (current) async => (await getInformationUseCase(
+      GetInformationParams(
+        search: current.searchQuery,
+        limit: pageSize,
+        offset: current.information.length,
+        startDate: current.startDateIso,
+        endDate: current.endDateIso,
+        createdBy: current.filterAuthorEmail,
+      ),
+    )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+    setLoadingMore: (current, {required loadingMore}) =>
+        current.copyWith(isLoadingMore: loadingMore),
+    append: (current, newItems, {required hasMore}) => current.copyWith(
+      information: [...current.information, ...newItems],
+      hasMore: hasMore,
+      isLoadingMore: false,
+    ),
+  );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
   Future<AppFetchResult> setFilter(AppDateFilterResult filterResult) =>
@@ -227,10 +225,7 @@ class InformationCubit
       resetDateFilterWith(fetchInformation);
 
   /// Mengubah filter pembuat informasi (Author / Creator) oleh ADMIN.
-  Future<AppFetchResult> changeAuthorFilter({
-    String? email,
-    String? name,
-  }) =>
+  Future<AppFetchResult> changeAuthorFilter({String? email, String? name}) =>
       fetchInformation(
         authorEmail: email,
         authorName: name,
@@ -239,15 +234,8 @@ class InformationCubit
 
   /// Mengatur ulang seluruh filter waktu, pencarian, dan pembuat ke default.
   Future<AppFetchResult> resetFilters() => resetAllFiltersWith(
-        ({
-          search,
-          filterPeriod,
-          startDate,
-          endDate,
-          startDateIso,
-          endDateIso,
-        }) =>
-            fetchInformation(
+    ({search, filterPeriod, startDate, endDate, startDateIso, endDateIso}) =>
+        fetchInformation(
           search: search,
           filterPeriod: filterPeriod,
           startDate: startDate,
@@ -256,7 +244,7 @@ class InformationCubit
           endDateIso: endDateIso,
           clearAuthorFilter: true,
         ),
-      );
+  );
 
   /// Memuat daftar anggota grup secara segar on-demand dari remote service.
   ///
@@ -268,9 +256,7 @@ class InformationCubit
     if (useCase == null) {
       return const Left(ServerFailure('Layanan anggota grup tidak tersedia.'));
     }
-    return await useCase.call(
-      GetGroupMembersParams(cancelToken: cancelToken),
-    );
+    return await useCase.call(GetGroupMembersParams(cancelToken: cancelToken));
   }
 
   /// Menghapus data informasi [item] atas nama [session].
@@ -289,17 +275,15 @@ class InformationCubit
       DeleteInformationParams(id: id, session: session, item: item),
     );
 
-    result.fold(
-      (failure) => null,
-      (_) {
-        final currentState = state;
-        if (currentState is InformationLoaded) {
-          final updated =
-              currentState.information.where((item) => item.id != id).toList();
-          emit(currentState.copyWith(information: updated));
-        }
-      },
-    );
+    result.fold((failure) => null, (_) {
+      final currentState = state;
+      if (currentState is InformationLoaded) {
+        final updated = currentState.information
+            .where((item) => item.id != id)
+            .toList();
+        emit(currentState.copyWith(information: updated));
+      }
+    });
 
     return result;
   }
@@ -319,8 +303,8 @@ class InformationCubit
     final loadedState = state;
     final knownItems = loadedState is InformationLoaded
         ? loadedState.information
-            .where((item) => ids.contains(item.id))
-            .toList()
+              .where((item) => ids.contains(item.id))
+              .toList()
         : <InformationItemEntity>[];
     final result = await deleteBatchInformationUseCase(
       DeleteBatchInformationParams(
@@ -330,18 +314,15 @@ class InformationCubit
       ),
     );
 
-    result.fold(
-      (failure) => null,
-      (deleteResult) {
-        final currentState = state;
-        if (currentState is InformationLoaded) {
-          final updated = currentState.information
-              .where((item) => !ids.contains(item.id))
-              .toList();
-          emit(currentState.copyWith(information: updated));
-        }
-      },
-    );
+    result.fold((failure) => null, (deleteResult) {
+      final currentState = state;
+      if (currentState is InformationLoaded) {
+        final updated = currentState.information
+            .where((item) => !ids.contains(item.id))
+            .toList();
+        emit(currentState.copyWith(information: updated));
+      }
+    });
 
     return result;
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -17,14 +18,15 @@ void main() {
       'returns false gracefully when file contains non-image bytes',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
-      final tempFile = File('${tempDir.path}/dummy.jpg')
-        ..writeAsBytesSync([1, 2, 3, 4]);
+        final tempFile = File('${tempDir.path}/dummy.jpg')
+          ..writeAsBytesSync([1, 2, 3, 4]);
 
-      final result = await ImageCropUtils.cropFileTo9x16(tempFile.path);
-      expect(result, isFalse);
+        final result = await ImageCropUtils.cropFileTo9x16(tempFile.path);
+        expect(result, isFalse);
 
-      tempDir.deleteSync(recursive: true);
-    });
+        tempDir.deleteSync(recursive: true);
+      },
+    );
 
     test('crops a square 1:1 image to 9:16 aspect ratio', () async {
       final tempDir = Directory.systemTemp.createTempSync();
@@ -123,10 +125,8 @@ void main() {
       },
     );
 
-    test(
-      'preserves 16:9 landscape aspect ratio when orientation is '
-      'landscapeLeft',
-      () async {
+    test('preserves 16:9 landscape aspect ratio when orientation is '
+        'landscapeLeft', () async {
       final tempDir = Directory.systemTemp.createTempSync();
       final tempFile = File('${tempDir.path}/landscape_16_9.jpg');
 
@@ -152,74 +152,16 @@ void main() {
       tempDir.deleteSync(recursive: true);
     });
 
-    test('crops 4:3 landscape image to 16:9 when orientation is landscapeRight',
-        () async {
-      final tempDir = Directory.systemTemp.createTempSync();
-      final tempFile = File('${tempDir.path}/landscape_4_3.jpg');
-
-      // Citra 1600 lebar x 1200 tinggi (4:3)
-      final landscapeImg = img.Image(width: 1600, height: 1200);
-      img.fill(landscapeImg, color: img.ColorRgb8(0, 120, 120));
-      tempFile.writeAsBytesSync(img.encodeJpg(landscapeImg));
-
-      final result = await ImageCropUtils.cropFileTo9x16(
-        tempFile.path,
-        orientation: DeviceOrientation.landscapeRight,
-      );
-      expect(result, isTrue);
-
-      final croppedBytes = tempFile.readAsBytesSync();
-      final decoded = img.decodeImage(croppedBytes);
-      expect(decoded, isNotNull);
-      expect(decoded!.width, equals(1600));
-      expect(decoded.height, equals(900));
-      final aspect = decoded.width / decoded.height;
-      expect((aspect - (16 / 9)).abs() < 0.001, isTrue);
-
-      tempDir.deleteSync(recursive: true);
-    });
-
     test(
-      'rotates and crops portrait sensor image to 16:9 when orientation is '
-      'landscapeLeft',
+      'crops 4:3 landscape image to 16:9 when orientation is landscapeRight',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/sensor_landscape_left.jpg');
+        final tempFile = File('${tempDir.path}/landscape_4_3.jpg');
 
-        // Citra portrait dari sensor (1200 lebar x 1600 tinggi)
-        final portraitImg = img.Image(width: 1200, height: 1600);
-        img.fill(portraitImg, color: img.ColorRgb8(10, 20, 30));
-        tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
-
-        final result = await ImageCropUtils.cropFileTo9x16(
-          tempFile.path,
-          orientation: DeviceOrientation.landscapeLeft,
-        );
-        expect(result, isTrue);
-
-        final croppedBytes = tempFile.readAsBytesSync();
-        final decoded = img.decodeImage(croppedBytes);
-        expect(decoded, isNotNull);
-        expect(decoded!.width, equals(1600));
-        expect(decoded.height, equals(900));
-        final aspect = decoded.width / decoded.height;
-        expect((aspect - (16 / 9)).abs() < 0.001, isTrue);
-
-        tempDir.deleteSync(recursive: true);
-      },
-    );
-
-    test(
-      'rotates and crops portrait sensor image to 16:9 when orientation is '
-      'landscapeRight',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/sensor_landscape_right.jpg');
-
-        // Citra portrait dari sensor (1200 lebar x 1600 tinggi)
-        final portraitImg = img.Image(width: 1200, height: 1600);
-        img.fill(portraitImg, color: img.ColorRgb8(40, 50, 60));
-        tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
+        // Citra 1600 lebar x 1200 tinggi (4:3)
+        final landscapeImg = img.Image(width: 1600, height: 1200);
+        img.fill(landscapeImg, color: img.ColorRgb8(0, 120, 120));
+        tempFile.writeAsBytesSync(img.encodeJpg(landscapeImg));
 
         final result = await ImageCropUtils.cropFileTo9x16(
           tempFile.path,
@@ -239,35 +181,86 @@ void main() {
       },
     );
 
-    test(
-      'rotates and crops portrait sensor image to 9:16 when orientation is '
-      'portraitDown',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/sensor_portrait_down.jpg');
+    test('rotates and crops portrait sensor image to 16:9 when orientation is '
+        'landscapeLeft', () async {
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/sensor_landscape_left.jpg');
 
-        // Citra portrait dari sensor (1200 lebar x 1600 tinggi)
-        final portraitImg = img.Image(width: 1200, height: 1600);
-        img.fill(portraitImg, color: img.ColorRgb8(70, 80, 90));
-        tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
+      // Citra portrait dari sensor (1200 lebar x 1600 tinggi)
+      final portraitImg = img.Image(width: 1200, height: 1600);
+      img.fill(portraitImg, color: img.ColorRgb8(10, 20, 30));
+      tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
 
-        final result = await ImageCropUtils.cropFileTo9x16(
-          tempFile.path,
-          orientation: DeviceOrientation.portraitDown,
-        );
-        expect(result, isTrue);
+      final result = await ImageCropUtils.cropFileTo9x16(
+        tempFile.path,
+        orientation: DeviceOrientation.landscapeLeft,
+      );
+      expect(result, isTrue);
 
-        final croppedBytes = tempFile.readAsBytesSync();
-        final decoded = img.decodeImage(croppedBytes);
-        expect(decoded, isNotNull);
-        expect(decoded!.width, equals(900));
-        expect(decoded.height, equals(1600));
-        final aspect = decoded.width / decoded.height;
-        expect((aspect - (9 / 16)).abs() < 0.001, isTrue);
+      final croppedBytes = tempFile.readAsBytesSync();
+      final decoded = img.decodeImage(croppedBytes);
+      expect(decoded, isNotNull);
+      expect(decoded!.width, equals(1600));
+      expect(decoded.height, equals(900));
+      final aspect = decoded.width / decoded.height;
+      expect((aspect - (16 / 9)).abs() < 0.001, isTrue);
 
-        tempDir.deleteSync(recursive: true);
-      },
-    );
+      tempDir.deleteSync(recursive: true);
+    });
+
+    test('rotates and crops portrait sensor image to 16:9 when orientation is '
+        'landscapeRight', () async {
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/sensor_landscape_right.jpg');
+
+      // Citra portrait dari sensor (1200 lebar x 1600 tinggi)
+      final portraitImg = img.Image(width: 1200, height: 1600);
+      img.fill(portraitImg, color: img.ColorRgb8(40, 50, 60));
+      tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
+
+      final result = await ImageCropUtils.cropFileTo9x16(
+        tempFile.path,
+        orientation: DeviceOrientation.landscapeRight,
+      );
+      expect(result, isTrue);
+
+      final croppedBytes = tempFile.readAsBytesSync();
+      final decoded = img.decodeImage(croppedBytes);
+      expect(decoded, isNotNull);
+      expect(decoded!.width, equals(1600));
+      expect(decoded.height, equals(900));
+      final aspect = decoded.width / decoded.height;
+      expect((aspect - (16 / 9)).abs() < 0.001, isTrue);
+
+      tempDir.deleteSync(recursive: true);
+    });
+
+    test('rotates and crops portrait sensor image to 9:16 when orientation is '
+        'portraitDown', () async {
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/sensor_portrait_down.jpg');
+
+      // Citra portrait dari sensor (1200 lebar x 1600 tinggi)
+      final portraitImg = img.Image(width: 1200, height: 1600);
+      img.fill(portraitImg, color: img.ColorRgb8(70, 80, 90));
+      tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
+
+      final result = await ImageCropUtils.cropFileTo9x16(
+        tempFile.path,
+        orientation: DeviceOrientation.portraitDown,
+      );
+      expect(result, isTrue);
+
+      final croppedBytes = tempFile.readAsBytesSync();
+      final decoded = img.decodeImage(croppedBytes);
+      expect(decoded, isNotNull);
+      expect(decoded!.width, equals(900));
+      expect(decoded.height, equals(1600));
+      final aspect = decoded.width / decoded.height;
+      expect((aspect - (9 / 16)).abs() < 0.001, isTrue);
+
+      tempDir.deleteSync(recursive: true);
+    });
 
     test('rotationAngleFor returns calibrated angle for front and rear', () {
       // Portrait Up (0 deg)
@@ -377,35 +370,32 @@ void main() {
       },
     );
 
-    test(
-      'rotates and crops front camera portrait sensor to 16:9 in '
-      'landscapeRight',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        final tempFile = File('${tempDir.path}/front_landscape_right.jpg');
+    test('rotates and crops front camera portrait sensor to 16:9 in '
+        'landscapeRight', () async {
+      final tempDir = Directory.systemTemp.createTempSync();
+      final tempFile = File('${tempDir.path}/front_landscape_right.jpg');
 
-        final portraitImg = img.Image(width: 1200, height: 1600);
-        img.fill(portraitImg, color: img.ColorRgb8(15, 25, 35));
-        tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
+      final portraitImg = img.Image(width: 1200, height: 1600);
+      img.fill(portraitImg, color: img.ColorRgb8(15, 25, 35));
+      tempFile.writeAsBytesSync(img.encodeJpg(portraitImg));
 
-        final result = await ImageCropUtils.cropFileTo9x16(
-          tempFile.path,
-          orientation: DeviceOrientation.landscapeRight,
-          isFrontCamera: true,
-        );
-        expect(result, isTrue);
+      final result = await ImageCropUtils.cropFileTo9x16(
+        tempFile.path,
+        orientation: DeviceOrientation.landscapeRight,
+        isFrontCamera: true,
+      );
+      expect(result, isTrue);
 
-        final croppedBytes = tempFile.readAsBytesSync();
-        final decoded = img.decodeImage(croppedBytes);
-        expect(decoded, isNotNull);
-        expect(decoded!.width, equals(1600));
-        expect(decoded.height, equals(900));
-        final aspect = decoded.width / decoded.height;
-        expect((aspect - (16 / 9)).abs() < 0.001, isTrue);
+      final croppedBytes = tempFile.readAsBytesSync();
+      final decoded = img.decodeImage(croppedBytes);
+      expect(decoded, isNotNull);
+      expect(decoded!.width, equals(1600));
+      expect(decoded.height, equals(900));
+      final aspect = decoded.width / decoded.height;
+      expect((aspect - (16 / 9)).abs() < 0.001, isTrue);
 
-        tempDir.deleteSync(recursive: true);
-      },
-    );
+      tempDir.deleteSync(recursive: true);
+    });
 
     test(
       'DefaultImageCropper implements ImageCropper and delegates crop',
@@ -430,12 +420,8 @@ void main() {
     });
 
     test('CropImagePayload equality and props', () {
-      final payload1 = CropImagePayload(
-        bytes: Uint8List.fromList([1, 2, 3]),
-      );
-      final payload2 = CropImagePayload(
-        bytes: Uint8List.fromList([1, 2, 3]),
-      );
+      final payload1 = CropImagePayload(bytes: Uint8List.fromList([1, 2, 3]));
+      final payload2 = CropImagePayload(bytes: Uint8List.fromList([1, 2, 3]));
       final payloadFront = CropImagePayload(
         bytes: Uint8List.fromList([1, 2, 3]),
         isFrontCamera: true,
@@ -497,43 +483,45 @@ void main() {
       tempDir.deleteSync(recursive: true);
     });
 
-    test('does not flip image horizontally when isFrontCamera is false',
-        () async {
-      final tempDir = Directory.systemTemp.createTempSync();
-      final tempFile = File('${tempDir.path}/rear_camera_photo.jpg');
+    test(
+      'does not flip image horizontally when isFrontCamera is false',
+      () async {
+        final tempDir = Directory.systemTemp.createTempSync();
+        final tempFile = File('${tempDir.path}/rear_camera_photo.jpg');
 
-      // Citra 900x1600 (9:16): sisi kiri Merah, sisi kanan Biru
-      final image = img.Image(width: 900, height: 1600);
-      for (var y = 0; y < 1600; y++) {
-        for (var x = 0; x < 900; x++) {
-          if (x < 450) {
-            image.setPixelRgba(x, y, 255, 0, 0, 255);
-          } else {
-            image.setPixelRgba(x, y, 0, 0, 255, 255);
+        // Citra 900x1600 (9:16): sisi kiri Merah, sisi kanan Biru
+        final image = img.Image(width: 900, height: 1600);
+        for (var y = 0; y < 1600; y++) {
+          for (var x = 0; x < 900; x++) {
+            if (x < 450) {
+              image.setPixelRgba(x, y, 255, 0, 0, 255);
+            } else {
+              image.setPixelRgba(x, y, 0, 0, 255, 255);
+            }
           }
         }
-      }
-      tempFile.writeAsBytesSync(img.encodeJpg(image));
+        tempFile.writeAsBytesSync(img.encodeJpg(image));
 
-      const cropper = DefaultImageCropper();
-      final result = await cropper.cropFileTo9x16(tempFile.path);
-      expect(result, isTrue);
+        const cropper = DefaultImageCropper();
+        final result = await cropper.cropFileTo9x16(tempFile.path);
+        expect(result, isTrue);
 
-      final resultBytes = tempFile.readAsBytesSync();
-      final decoded = img.decodeImage(resultBytes);
-      expect(decoded, isNotNull);
+        final resultBytes = tempFile.readAsBytesSync();
+        final decoded = img.decodeImage(resultBytes);
+        expect(decoded, isNotNull);
 
-      // Tanpa flip, sisi kiri tetap Merah dan kanan tetap Biru
-      final leftPixel = decoded!.getPixel(100, 800);
-      final rightPixel = decoded.getPixel(800, 800);
+        // Tanpa flip, sisi kiri tetap Merah dan kanan tetap Biru
+        final leftPixel = decoded!.getPixel(100, 800);
+        final rightPixel = decoded.getPixel(800, 800);
 
-      expect(leftPixel.r > 200, isTrue);
-      expect(leftPixel.b < 50, isTrue);
-      expect(rightPixel.b > 200, isTrue);
-      expect(rightPixel.r < 50, isTrue);
+        expect(leftPixel.r > 200, isTrue);
+        expect(leftPixel.b < 50, isTrue);
+        expect(rightPixel.b > 200, isTrue);
+        expect(rightPixel.r < 50, isTrue);
 
-      tempDir.deleteSync(recursive: true);
-    });
+        tempDir.deleteSync(recursive: true);
+      },
+    );
 
     test('calculateDownscaleDimensions returns null when within bounds', () {
       final result = ImageCropUtils.calculateDownscaleDimensions(

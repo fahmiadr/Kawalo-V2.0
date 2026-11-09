@@ -25,9 +25,9 @@ final class IncidentModule {
     required ApiClient apiClient,
     required NetworkInfo networkInfo,
   }) : repository = IncidentRepositoryImpl(
-          remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
-          networkInfo: networkInfo,
-        );
+         remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: apiClient),
+         networkInfo: networkInfo,
+       );
   final IncidentRepository repository;
 
   /// Merakit dan mengembalikan instance [IncidentListCubit] yang siap pakai.
@@ -39,9 +39,7 @@ final class IncidentModule {
 
   /// Merakit dan mengembalikan instance [IncidentDetailCubit] untuk layar
   /// detail insiden.
-  IncidentDetailCubit createIncidentDetailCubit({
-    required String incidentId,
-  }) {
+  IncidentDetailCubit createIncidentDetailCubit({required String incidentId}) {
     return IncidentDetailCubit(
       incidentId: incidentId,
       getIncidentDetailUseCase: GetIncidentDetailUseCase(repository),

@@ -123,21 +123,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final result = await getCurrentUserUseCase!(const NoParams());
 
-      await result.fold(
-        (_) async => emit(const Unauthenticated()),
-        (user) async {
-          if (user != null) {
-            if (user.groups.length > 1 && user.activeGroup == null) {
-              emit(GroupSelectionRequired(user: user));
-            } else {
-              final session = await _resolveSession();
-              emit(Authenticated(user: user, session: session));
-            }
+      await result.fold((_) async => emit(const Unauthenticated()), (
+        user,
+      ) async {
+        if (user != null) {
+          if (user.groups.length > 1 && user.activeGroup == null) {
+            emit(GroupSelectionRequired(user: user));
           } else {
-            emit(const Unauthenticated());
+            final session = await _resolveSession();
+            emit(Authenticated(user: user, session: session));
           }
-        },
-      );
+        } else {
+          emit(const Unauthenticated());
+        }
+      });
     } on Object catch (_) {
       emit(const Unauthenticated());
     }

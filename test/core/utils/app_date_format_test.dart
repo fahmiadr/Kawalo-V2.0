@@ -3,13 +3,10 @@ import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 
 void main() {
   group('AppDateFormat Tests', () {
-    test(
-      'formatDate formats DateTime into "dd MMM yyyy HH:mm"',
-      () {
-        final dt = DateTime(2026, 7, 8, 15, 21);
-        expect(AppDateFormat.formatDate(dt), '08 Jul 2026 15:21');
-      },
-    );
+    test('formatDate formats DateTime into "dd MMM yyyy HH:mm"', () {
+      final dt = DateTime(2026, 7, 8, 15, 21);
+      expect(AppDateFormat.formatDate(dt), '08 Jul 2026 15:21');
+    });
 
     test(
       'formatGreeting formats DateTime into "Diperbarui Hari ini, HH.mm" for '
@@ -24,18 +21,15 @@ void main() {
       },
     );
 
-    test(
-      'formatGreeting formats DateTime into "Diperbarui Kemarin, HH.mm" for '
-      'yesterday',
-      () {
-        final now = DateTime(2026, 7, 9, 10);
-        final dt = DateTime(2026, 7, 8, 15, 20);
-        expect(
-          AppDateFormat.formatGreeting(dt, now: now),
-          'Diperbarui Kemarin, 15.20',
-        );
-      },
-    );
+    test('formatGreeting formats DateTime into "Diperbarui Kemarin, HH.mm" for '
+        'yesterday', () {
+      final now = DateTime(2026, 7, 9, 10);
+      final dt = DateTime(2026, 7, 8, 15, 20);
+      expect(
+        AppDateFormat.formatGreeting(dt, now: now),
+        'Diperbarui Kemarin, 15.20',
+      );
+    });
 
     test(
       'formatGreeting formats DateTime with date when older in same year',
@@ -62,9 +56,7 @@ void main() {
     );
 
     test('tryParse parses ISO-8601 strings accurately', () {
-      final parsed = AppDateFormat.tryParse(
-        '2026-07-08T15:21:00.000Z',
-      );
+      final parsed = AppDateFormat.tryParse('2026-07-08T15:21:00.000Z');
       expect(parsed, isNotNull);
       expect(parsed!.year, 2026);
       expect(parsed.month, 7);
@@ -89,16 +81,11 @@ void main() {
       expect(AppDateFormat.tryParse('null'), isNull);
     });
 
-    test(
-      'formatRawDate converts raw ISO-8601 string to formatted date',
-      () {
-        final formatted = AppDateFormat.formatRawDate(
-          '2026-07-08T15:21:00.000Z',
-        );
-        expect(formatted, isNot('-'));
-        expect(formatted, isNot('2026-07-08T15:21:00.000Z'));
-      },
-    );
+    test('formatRawDate converts raw ISO-8601 string to formatted date', () {
+      final formatted = AppDateFormat.formatRawDate('2026-07-08T15:21:00.000Z');
+      expect(formatted, isNot('-'));
+      expect(formatted, isNot('2026-07-08T15:21:00.000Z'));
+    });
 
     test('formatRawDate preserves already formatted date string', () {
       expect(

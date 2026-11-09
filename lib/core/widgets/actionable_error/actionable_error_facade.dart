@@ -89,11 +89,7 @@ abstract final class AppActionableError {
           barrierDismissible: barrierDismissible,
         );
       case AppActionableErrorModality.fullScreen:
-        return showFullScreen<T>(
-          context,
-          data: data,
-          isBlocking: isBlocking,
-        );
+        return showFullScreen<T>(context, data: data, isBlocking: isBlocking);
     }
   }
 

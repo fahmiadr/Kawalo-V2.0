@@ -23,10 +23,5 @@ class AuthTokensEntity extends Equatable {
   final int expiresIn;
 
   @override
-  List<Object?> get props => [
-        accessToken,
-        refreshToken,
-        tokenType,
-        expiresIn,
-      ];
+  List<Object?> get props => [accessToken, refreshToken, tokenType, expiresIn];
 }

@@ -364,8 +364,7 @@ class GuestFormState extends Equatable {
           : this.destinationError,
       guestType: guestType ?? this.guestType,
       typeError: typeError != null ? typeError() : this.typeError,
-      identityType:
-          identityType != null ? identityType() : this.identityType,
+      identityType: identityType != null ? identityType() : this.identityType,
       identityNumber: identityNumber ?? this.identityNumber,
       identityNumberError: identityNumberError != null
           ? identityNumberError()
@@ -375,11 +374,9 @@ class GuestFormState extends Equatable {
           ? guestNumberError()
           : this.guestNumberError,
       purpose: purpose ?? this.purpose,
-      purposeError:
-          purposeError != null ? purposeError() : this.purposeError,
+      purposeError: purposeError != null ? purposeError() : this.purposeError,
       address: address ?? this.address,
-      addressError:
-          addressError != null ? addressError() : this.addressError,
+      addressError: addressError != null ? addressError() : this.addressError,
       hostEmail: hostEmail != null ? hostEmail() : this.hostEmail,
       hostEmailError: hostEmailError != null
           ? hostEmailError()
@@ -389,59 +386,55 @@ class GuestFormState extends Equatable {
       photoError: photoError != null ? photoError() : this.photoError,
       category: category ?? this.category,
       masterTypes: masterTypes ?? this.masterTypes,
-      isLoadingMasterTypes:
-          isLoadingMasterTypes ?? this.isLoadingMasterTypes,
+      isLoadingMasterTypes: isLoadingMasterTypes ?? this.isLoadingMasterTypes,
       masterTypesError: masterTypesError != null
           ? masterTypesError()
           : this.masterTypesError,
       masterHosts: masterHosts ?? this.masterHosts,
-      isLoadingMasterHosts:
-          isLoadingMasterHosts ?? this.isLoadingMasterHosts,
+      isLoadingMasterHosts: isLoadingMasterHosts ?? this.isLoadingMasterHosts,
       masterHostsError: masterHostsError != null
           ? masterHostsError()
           : this.masterHostsError,
-      errorMessage:
-          errorMessage != null ? errorMessage() : this.errorMessage,
-      createdOrUpdatedItem:
-          createdOrUpdatedItem ?? this.createdOrUpdatedItem,
+      errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+      createdOrUpdatedItem: createdOrUpdatedItem ?? this.createdOrUpdatedItem,
       validationAttempt: validationAttempt ?? this.validationAttempt,
     );
   }
 
   @override
   List<Object?> get props => [
-        mode,
-        status,
-        initialItem,
-        name,
-        nameError,
-        destination,
-        destinationError,
-        guestType,
-        typeError,
-        identityType,
-        identityNumber,
-        identityNumberError,
-        guestNumber,
-        guestNumberError,
-        purpose,
-        purposeError,
-        address,
-        addressError,
-        hostEmail,
-        hostEmailError,
-        photoUrl,
-        photoMedia,
-        photoError,
-        category,
-        masterTypes,
-        isLoadingMasterTypes,
-        masterTypesError,
-        masterHosts,
-        isLoadingMasterHosts,
-        masterHostsError,
-        errorMessage,
-        createdOrUpdatedItem,
-        validationAttempt,
-      ];
+    mode,
+    status,
+    initialItem,
+    name,
+    nameError,
+    destination,
+    destinationError,
+    guestType,
+    typeError,
+    identityType,
+    identityNumber,
+    identityNumberError,
+    guestNumber,
+    guestNumberError,
+    purpose,
+    purposeError,
+    address,
+    addressError,
+    hostEmail,
+    hostEmailError,
+    photoUrl,
+    photoMedia,
+    photoError,
+    category,
+    masterTypes,
+    isLoadingMasterTypes,
+    masterTypesError,
+    masterHosts,
+    isLoadingMasterHosts,
+    masterHostsError,
+    errorMessage,
+    createdOrUpdatedItem,
+    validationAttempt,
+  ];
 }

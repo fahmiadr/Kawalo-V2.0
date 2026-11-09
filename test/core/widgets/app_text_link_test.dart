@@ -26,10 +26,7 @@ void main() {
   group('AppTextLink Widget Tests', () {
     testWidgets('renders title and linkText correctly', (tester) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          title: 'Pintasan',
-          linkText: 'Edit',
-        ),
+        buildTestWidget(title: 'Pintasan', linkText: 'Edit'),
       );
       await tester.pumpAndSettle();
 
@@ -37,8 +34,9 @@ void main() {
       expect(find.text('Edit'), findsOneWidget);
     });
 
-    testWidgets('triggers onPressed callback when link is tapped',
-        (tester) async {
+    testWidgets('triggers onPressed callback when link is tapped', (
+      tester,
+    ) async {
       var tapped = false;
 
       await tester.pumpWidget(
@@ -61,28 +59,26 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('renders title without action button when linkText is omitted',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: AppTextLink(title: 'Data Laporan'),
+    testWidgets(
+      'renders title without action button when linkText is omitted',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: const Scaffold(body: AppTextLink(title: 'Data Laporan')),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Data Laporan'), findsOneWidget);
-    });
+        expect(find.text('Data Laporan'), findsOneWidget);
+      },
+    );
 
-    testWidgets('renders link as disabled when onPressed is null',
-        (tester) async {
+    testWidgets('renders link as disabled when onPressed is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildTestWidget(
-          title: 'Filter pencarian',
-          linkText: 'Reset',
-        ),
+        buildTestWidget(title: 'Filter pencarian', linkText: 'Reset'),
       );
       await tester.pumpAndSettle();
 

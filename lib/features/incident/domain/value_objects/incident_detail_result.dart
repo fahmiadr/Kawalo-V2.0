@@ -6,10 +6,7 @@ import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_e
 /// thread.
 class IncidentDetailResult extends Equatable {
   /// Membuat instance [IncidentDetailResult].
-  const IncidentDetailResult({
-    required this.incident,
-    required this.replies,
-  });
+  const IncidentDetailResult({required this.incident, required this.replies});
 
   /// Entitas utama header insiden.
   final IncidentEntity incident;

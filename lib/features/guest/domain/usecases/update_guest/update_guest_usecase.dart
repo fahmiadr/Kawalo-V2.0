@@ -24,9 +24,7 @@ class UpdateGuestUseCase
     // 1. Validasi domain invariant: ID wajib diisi dan berupa angka
     if (!params.isValidId) {
       return const Left(
-        ValidationFailure(
-          'ID tamu wajib diisi dan harus berupa angka valid.',
-        ),
+        ValidationFailure('ID tamu wajib diisi dan harus berupa angka valid.'),
       );
     }
 

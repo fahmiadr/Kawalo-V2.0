@@ -31,12 +31,13 @@ final class GuestModule {
     required NetworkInfo networkInfo,
     SyncStorageService? syncStorageService,
     GetGroupMembersUseCase? getGroupMembersUseCase,
-  })  : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
-        _getGroupMembersUseCase = getGroupMembersUseCase ??
-            GroupModule.createGetGroupMembersUseCase(
-              apiClient: apiClient,
-              networkInfo: networkInfo,
-            ) {
+  }) : _syncStorage = syncStorageService ?? SyncStorageService.singleton(),
+       _getGroupMembersUseCase =
+           getGroupMembersUseCase ??
+           GroupModule.createGetGroupMembersUseCase(
+             apiClient: apiClient,
+             networkInfo: networkInfo,
+           ) {
     repository = GuestRepositoryImpl(
       remoteDataSource: GuestRemoteDataSourceImpl(apiClient: apiClient),
       localDataSource: GuestLocalDataSourceImpl(isar: isar),

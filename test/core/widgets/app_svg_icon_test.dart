@@ -30,17 +30,15 @@ void main() {
       expect(svgWidget.semanticsLabel, 'Home icon');
     });
 
-    testWidgets('inherits size and color from IconTheme when not specified',
-        (tester) async {
+    testWidgets('inherits size and color from IconTheme when not specified', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
           home: const Scaffold(
             body: IconTheme(
-              data: IconThemeData(
-                size: 28,
-                color: Colors.green,
-              ),
+              data: IconThemeData(size: 28, color: Colors.green),
               child: AppSvgIcon(KawaloVectors.kanban),
             ),
           ),

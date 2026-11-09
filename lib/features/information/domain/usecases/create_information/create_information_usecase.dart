@@ -25,9 +25,7 @@ class CreateInformationUseCase
     // membuat informasi.
     if (!params.isAuthorized) {
       return const Left(
-        ForbiddenFailure(
-          'Anda tidak memiliki izin untuk membuat informasi.',
-        ),
+        ForbiddenFailure('Anda tidak memiliki izin untuk membuat informasi.'),
       );
     }
 

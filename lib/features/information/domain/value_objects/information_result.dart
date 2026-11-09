@@ -7,10 +7,7 @@ import 'package:kawalo_mobile/features/information/domain/entities/information_i
 /// Berfungsi sebagai Query Result / Read Model wrapper tanpa identitas.
 class InformationResult extends Equatable {
   /// Membuat instance [InformationResult].
-  const InformationResult({
-    required this.items,
-    this.isFromCache = false,
-  });
+  const InformationResult({required this.items, this.isFromCache = false});
 
   /// Daftar data catatan informasi / feed.
   final List<InformationItemEntity> items;

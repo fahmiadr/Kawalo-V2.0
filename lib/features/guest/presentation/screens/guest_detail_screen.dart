@@ -37,7 +37,8 @@ Future<void> navigateToGuestDetailScreen(
   required GuestItemEntity item,
   GuestCubit? cubit,
 }) {
-  final resolvedCubit = cubit ??
+  final resolvedCubit =
+      cubit ??
       (() {
         try {
           return context.read<GuestCubit>();
@@ -46,18 +47,12 @@ Future<void> navigateToGuestDetailScreen(
         }
       })();
 
-  final screen = GuestDetailScreen(
-    item: item,
-    cubit: resolvedCubit,
-  );
+  final screen = GuestDetailScreen(item: item, cubit: resolvedCubit);
 
   return Navigator.of(context).push<void>(
     AppPageRoute.forwardBackward<void>(
       builder: (_) => resolvedCubit != null
-          ? BlocProvider.value(
-              value: resolvedCubit,
-              child: screen,
-            )
+          ? BlocProvider.value(value: resolvedCubit, child: screen)
           : screen,
     ),
   );
@@ -161,10 +156,7 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
     }
 
     if (mounted) {
-      AppSnackbar.show(
-        context,
-        message: 'Data tamu berhasil diperbarui.',
-      );
+      AppSnackbar.show(context, message: 'Data tamu berhasil diperbarui.');
     }
   }
 
@@ -185,7 +177,8 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
     final confirmed = await showAppConfirmationDialog(
       context: context,
       title: 'Hapus data tamu?',
-      message: 'Data tamu "${currentItem.displayGuestName}" akan dihapus '
+      message:
+          'Data tamu "${currentItem.displayGuestName}" akan dihapus '
           'secara permanen.',
     );
 
@@ -206,16 +199,10 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
               setState(() {
                 _isDeleting = false;
               });
-              AppSnackbar.show(
-                context,
-                message: failure.message,
-              );
+              AppSnackbar.show(context, message: failure.message);
             },
             (_) {
-              AppSnackbar.show(
-                context,
-                message: 'Data tamu berhasil dihapus.',
-              );
+              AppSnackbar.show(context, message: 'Data tamu berhasil dihapus.');
               Navigator.of(context).pop();
             },
           );
@@ -241,7 +228,8 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
     final confirmed = await showAppConfirmationDialog(
       context: context,
       title: 'Check-out tamu?',
-      message: 'Tamu "${currentItem.displayGuestName}" '
+      message:
+          'Tamu "${currentItem.displayGuestName}" '
           'akan ditandai telah keluar.',
       confirmText: 'Check-out',
       confirmStyle: AppButtonColor.filled,
@@ -266,15 +254,13 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
           });
           result.fold(
             (failure) {
-              AppSnackbar.show(
-                context,
-                message: failure.message,
-              );
+              AppSnackbar.show(context, message: failure.message);
             },
             (updatedItem) {
               AppSnackbar.show(
                 context,
-                message: 'Tamu "${updatedItem.displayGuestName}" '
+                message:
+                    'Tamu "${updatedItem.displayGuestName}" '
                     'berhasil check-out.',
               );
             },
@@ -286,10 +272,7 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
 
   Future<void> _onCreatePressed(BuildContext context) async {
     final cubit = _resolveCubit(context);
-    await GuestFormDialog.showCreate(
-      context,
-      guestCubit: cubit,
-    );
+    await GuestFormDialog.showCreate(context, guestCubit: cubit);
   }
 
   Future<void> _onEditPressed(
@@ -315,20 +298,20 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
       required GuestItemEntity currentItem,
       required String greeting,
     }) {
-      final canCreate = GuestItemEntity.canBeCreatedBySession(
-        effectiveSession,
-      );
+      final canCreate = GuestItemEntity.canBeCreatedBySession(effectiveSession);
       final canDelete = currentItem.canBeDeletedBySession(effectiveSession);
       final canUpdate = currentItem.canBeUpdatedBySession(effectiveSession);
-      final canCheckout =
-          currentItem.canBeCheckedOutBySession(effectiveSession);
+      final canCheckout = currentItem.canBeCheckedOutBySession(
+        effectiveSession,
+      );
       final hasAnyAction = canCreate || canUpdate || canDelete;
       final isOffline = _resolveIsOffline(context, listen: true);
 
       return AppLoadingOverlay(
         isLoading: _isDeleting || _isCheckingOut,
-        semanticLabel:
-            _isCheckingOut ? 'Memproses check-out tamu' : 'Menghapus data tamu',
+        semanticLabel: _isCheckingOut
+            ? 'Memproses check-out tamu'
+            : 'Menghapus data tamu',
         message: _isCheckingOut
             ? 'Memproses check-out tamu...'
             : 'Menghapus data tamu...',
@@ -342,9 +325,7 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
             isCheckingOut: _isCheckingOut,
             enabled: !isOffline,
           ),
-          bottomNavigationBar: AppBottomOfflineBanner(
-            isOffline: isOffline,
-          ),
+          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
           body: SafeArea(
             top: false,
             bottom: false,
@@ -411,7 +392,8 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
                                 ? null
                                 : () => _onDeletePressed(context, currentItem),
                             tooltip: 'Hapus data tamu',
-                            semanticLabel: 'Hapus data tamu '
+                            semanticLabel:
+                                'Hapus data tamu '
                                 '${currentItem.displayGuestName}',
                             icon: AppSvgIcon(
                               KawaloVectors.delete01,
@@ -449,7 +431,8 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
                                 ? null
                                 : () => _onEditPressed(context, currentItem),
                             tooltip: 'Edit data tamu',
-                            semanticLabel: 'Edit data tamu '
+                            semanticLabel:
+                                'Edit data tamu '
                                 '${currentItem.displayGuestName}',
                             icon: AppSvgIcon(
                               KawaloVectors.edit03,
@@ -483,8 +466,8 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
           final greeting = state.lastSync.isNotEmpty
               ? state.lastSync
               : (cubit.currentGreeting.isNotEmpty
-                  ? cubit.currentGreeting
-                  : AppDateFormat.formatGreeting(DateTime.now()));
+                    ? cubit.currentGreeting
+                    : AppDateFormat.formatGreeting(DateTime.now()));
           return (item, greeting);
         },
         builder: (context, data) {

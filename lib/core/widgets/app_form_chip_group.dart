@@ -76,14 +76,14 @@ class AppFormChipGroup<T> extends StatelessWidget {
     this.labelStyle,
     this.trailing,
     super.key,
-  })  : items = const [],
-        selectedValue = null,
-        onSelected = null,
-        enabled = true,
-        layout = AppFormChipGroupLayout.wrap,
-        chipSpacing = AppSpacing.space100,
-        chipRunSpacing = AppSpacing.space100,
-        _customContent = child;
+  }) : items = const [],
+       selectedValue = null,
+       onSelected = null,
+       enabled = true,
+       layout = AppFormChipGroupLayout.wrap,
+       chipSpacing = AppSpacing.space100,
+       chipRunSpacing = AppSpacing.space100,
+       _customContent = child;
 
   /// Teks label field (misal: "Kategori informasi", "Jenis identitas").
   final String label;
@@ -131,15 +131,14 @@ class AppFormChipGroup<T> extends StatelessWidget {
     final Widget chipsWidget;
 
     if (_customContent != null) {
-      chipsWidget = _customContent!;
+      chipsWidget = _customContent;
     } else if (layout == AppFormChipGroupLayout.horizontalScroll) {
       chipsWidget = SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         child: Row(
           children: items.map((item) {
-            final isSelected =
-                item.selected || item.value == selectedValue;
+            final isSelected = item.selected || item.value == selectedValue;
             final isItemEnabled = enabled && item.enabled && onSelected != null;
             Widget chipWidget = AppChip(
               type: AppChipType.filter,
@@ -166,8 +165,7 @@ class AppFormChipGroup<T> extends StatelessWidget {
         spacing: chipSpacing,
         runSpacing: chipRunSpacing,
         children: items.map((item) {
-          final isSelected =
-              item.selected || item.value == selectedValue;
+          final isSelected = item.selected || item.value == selectedValue;
           final isItemEnabled = enabled && item.enabled && onSelected != null;
           Widget chipWidget = AppChip(
             type: AppChipType.filter,

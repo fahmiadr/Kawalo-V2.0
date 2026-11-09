@@ -47,10 +47,7 @@ void main() {
   ];
 
   const sampleGroupMembers = [
-    GroupMemberEntity(
-      name: 'Wisnu Wijayadi',
-      email: 'wisnu@kawalo.id',
-    ),
+    GroupMemberEntity(name: 'Wisnu Wijayadi', email: 'wisnu@kawalo.id'),
   ];
 
   const sampleGuest = GuestItemEntity(
@@ -74,17 +71,9 @@ void main() {
         guestType: 'TAMU',
       ),
     );
-    registerFallbackValue(
-      const UpdateGuestParams(
-        id: '101',
-      ),
-    );
-    registerFallbackValue(
-      const GetMasterGuestTypesParams(),
-    );
-    registerFallbackValue(
-      const GetGroupMembersParams(),
-    );
+    registerFallbackValue(const UpdateGuestParams(id: '101'));
+    registerFallbackValue(const GetMasterGuestTypesParams());
+    registerFallbackValue(const GetGroupMembersParams());
   });
 
   setUp(() {
@@ -94,10 +83,12 @@ void main() {
     mockGetGroupMembersUseCase = MockGetGroupMembersUseCase();
     mockMediaPicker = MockMediaPickerService();
 
-    when(() => mockGetMasterTypesUseCase(any()))
-        .thenAnswer((_) async => const Right(sampleMasterTypes));
-    when(() => mockGetGroupMembersUseCase(any()))
-        .thenAnswer((_) async => const Right(sampleGroupMembers));
+    when(
+      () => mockGetMasterTypesUseCase(any()),
+    ).thenAnswer((_) async => const Right(sampleMasterTypes));
+    when(
+      () => mockGetGroupMembersUseCase(any()),
+    ).thenAnswer((_) async => const Right(sampleGroupMembers));
   });
 
   GuestFormCubit buildCubit({GuestItemEntity? initialItem}) {
@@ -120,9 +111,9 @@ void main() {
       builder: (context, child) => M3ETheme(
         data: AppTheme.m3eLight(),
         child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScale),
-          ),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
           child: child!,
         ),
       ),
@@ -153,8 +144,9 @@ void main() {
   }
 
   group('GuestFormDialog Widget Tests', () {
-    testWidgets('renders create form with Tambah tamu title and all sections',
-        (tester) async {
+    testWidgets('renders create form with Tambah tamu title and all sections', (
+      tester,
+    ) async {
       final cubit = buildCubit();
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
@@ -171,15 +163,13 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('renders update form with Edit data tamu title and values',
-        (tester) async {
+    testWidgets('renders update form with Edit data tamu title and values', (
+      tester,
+    ) async {
       final cubit = buildCubit(initialItem: sampleGuest);
 
       await tester.pumpWidget(
-        buildTestWidget(
-          cubit: cubit,
-          initialItem: sampleGuest,
-        ),
+        buildTestWidget(cubit: cubit, initialItem: sampleGuest),
       );
       await tester.tap(find.text('Buka Formulir'));
       await tester.pumpAndSettle();
@@ -192,8 +182,9 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('tapping Close button pops dialog when not dirty',
-        (tester) async {
+    testWidgets('tapping Close button pops dialog when not dirty', (
+      tester,
+    ) async {
       final cubit = buildCubit();
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
@@ -212,8 +203,9 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('shows confirmation dialog on close when dirty',
-        (tester) async {
+    testWidgets('shows confirmation dialog on close when dirty', (
+      tester,
+    ) async {
       final cubit = buildCubit();
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
@@ -253,10 +245,12 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('submitting in create mode calls createGuest and closes',
-        (tester) async {
-      when(() => mockCreateGuestUseCase(any()))
-          .thenAnswer((_) async => const Right(sampleGuest));
+    testWidgets('submitting in create mode calls createGuest and closes', (
+      tester,
+    ) async {
+      when(
+        () => mockCreateGuestUseCase(any()),
+      ).thenAnswer((_) async => const Right(sampleGuest));
 
       final cubit = buildCubit();
 
@@ -288,114 +282,116 @@ void main() {
     });
 
     testWidgets(
-        'chip selection adheres to one selection and shows Tanpa Identitas '
-        'as selected initially', (tester) async {
-      final cubit = buildCubit();
+      'chip selection adheres to one selection and shows Tanpa Identitas '
+      'as selected initially',
+      (tester) async {
+        final cubit = buildCubit();
 
-      await tester.pumpWidget(buildTestWidget(cubit: cubit));
-      await tester.tap(find.text('Buka Formulir'));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(buildTestWidget(cubit: cubit));
+        await tester.tap(find.text('Buka Formulir'));
+        await tester.pumpAndSettle();
 
-      // Initially, Tanpa Identitas should be selected
-      final initialTanpaIdChip = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'Tanpa Identitas'),
-      );
-      final initialKtpChip = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'KTP'),
-      );
-      expect(initialTanpaIdChip.selected, isTrue);
-      expect(initialKtpChip.selected, isFalse);
+        // Initially, Tanpa Identitas should be selected
+        final initialTanpaIdChip = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'Tanpa Identitas'),
+        );
+        final initialKtpChip = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'KTP'),
+        );
+        expect(initialTanpaIdChip.selected, isTrue);
+        expect(initialKtpChip.selected, isFalse);
 
-      // Tap KTP
-      await tester.tap(find.text('KTP'));
-      await tester.pumpAndSettle();
+        // Tap KTP
+        await tester.tap(find.text('KTP'));
+        await tester.pumpAndSettle();
 
-      final ktpChipAfterTap = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'KTP'),
-      );
-      final tanpaIdChipAfterTap = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'Tanpa Identitas'),
-      );
-      expect(ktpChipAfterTap.selected, isTrue);
-      expect(tanpaIdChipAfterTap.selected, isFalse);
-      expect(cubit.state.identityType, 'KTP');
+        final ktpChipAfterTap = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'KTP'),
+        );
+        final tanpaIdChipAfterTap = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'Tanpa Identitas'),
+        );
+        expect(ktpChipAfterTap.selected, isTrue);
+        expect(tanpaIdChipAfterTap.selected, isFalse);
+        expect(cubit.state.identityType, 'KTP');
 
-      // Tap KTP again -> should NOT deselect (One Selection behavior)
-      await tester.tap(find.text('KTP'));
-      await tester.pumpAndSettle();
+        // Tap KTP again -> should NOT deselect (One Selection behavior)
+        await tester.tap(find.text('KTP'));
+        await tester.pumpAndSettle();
 
-      final ktpChipAfterSecondTap = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'KTP'),
-      );
-      expect(ktpChipAfterSecondTap.selected, isTrue);
-      expect(cubit.state.identityType, 'KTP');
+        final ktpChipAfterSecondTap = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'KTP'),
+        );
+        expect(ktpChipAfterSecondTap.selected, isTrue);
+        expect(cubit.state.identityType, 'KTP');
 
-      // Enter identity number
-      await tester.enterText(
-        find.widgetWithText(AppTextField, 'Nomor identitas (KTP) *'),
-        '12345678',
-      );
-      await tester.pumpAndSettle();
-      expect(cubit.state.identityNumber, '12345678');
+        // Enter identity number
+        await tester.enterText(
+          find.widgetWithText(AppTextField, 'Nomor identitas (KTP) *'),
+          '12345678',
+        );
+        await tester.pumpAndSettle();
+        expect(cubit.state.identityNumber, '12345678');
 
-      // Tap Tanpa Identitas sentinel -> selects Tanpa Identitas & clears number
-      await tester.tap(find.text('Tanpa Identitas'));
-      await tester.pumpAndSettle();
+        // Tap Tanpa Identitas sentinel -> selects Tanpa Identitas & clears number
+        await tester.tap(find.text('Tanpa Identitas'));
+        await tester.pumpAndSettle();
 
-      final finalTanpaIdChip = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'Tanpa Identitas'),
-      );
-      final finalKtpChip = tester.widget<AppChip>(
-        find.widgetWithText(AppChip, 'KTP'),
-      );
-      expect(finalTanpaIdChip.selected, isTrue);
-      expect(finalKtpChip.selected, isFalse);
-      expect(cubit.state.identityType, isNull);
-      expect(cubit.state.identityNumber, isEmpty);
+        final finalTanpaIdChip = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'Tanpa Identitas'),
+        );
+        final finalKtpChip = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'KTP'),
+        );
+        expect(finalTanpaIdChip.selected, isTrue);
+        expect(finalKtpChip.selected, isFalse);
+        expect(cubit.state.identityType, isNull);
+        expect(cubit.state.identityNumber, isEmpty);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     testWidgets(
-        'dropdown menus do not contain sentinel and support clearing selection',
-        (tester) async {
+      'dropdown menus do not contain sentinel and support clearing selection',
+      (tester) async {
+        final cubit = buildCubit();
+
+        await tester.pumpWidget(buildTestWidget(cubit: cubit));
+        await tester.tap(find.text('Buka Formulir'));
+        await tester.pumpAndSettle();
+
+        // Ensure 'Tanpa Tuan Rumah' sentinel option does not exist
+        expect(find.text('Tanpa Tuan Rumah'), findsNothing);
+
+        // Verify selecting guest type and clearing
+        cubit.onGuestTypeChanged('TAMU');
+        await tester.pumpAndSettle();
+        expect(cubit.state.guestType, 'TAMU');
+
+        cubit.onGuestTypeChanged('');
+        await tester.pumpAndSettle();
+        expect(cubit.state.guestType, isEmpty);
+
+        // Verify selecting host and clearing
+        cubit.onHostEmailChanged('wisnu@veranda.com');
+        await tester.pumpAndSettle();
+        expect(cubit.state.hostEmail, 'wisnu@veranda.com');
+
+        cubit.onHostEmailChanged(null);
+        await tester.pumpAndSettle();
+        expect(cubit.state.hostEmail, isNull);
+
+        await cubit.close();
+      },
+    );
+
+    testWidgets('renders safely under 200% dynamic text scaling', (
+      tester,
+    ) async {
       final cubit = buildCubit();
 
-      await tester.pumpWidget(buildTestWidget(cubit: cubit));
-      await tester.tap(find.text('Buka Formulir'));
-      await tester.pumpAndSettle();
-
-      // Ensure 'Tanpa Tuan Rumah' sentinel option does not exist
-      expect(find.text('Tanpa Tuan Rumah'), findsNothing);
-
-      // Verify selecting guest type and clearing
-      cubit.onGuestTypeChanged('TAMU');
-      await tester.pumpAndSettle();
-      expect(cubit.state.guestType, 'TAMU');
-
-      cubit.onGuestTypeChanged('');
-      await tester.pumpAndSettle();
-      expect(cubit.state.guestType, isEmpty);
-
-      // Verify selecting host and clearing
-      cubit.onHostEmailChanged('wisnu@veranda.com');
-      await tester.pumpAndSettle();
-      expect(cubit.state.hostEmail, 'wisnu@veranda.com');
-
-      cubit.onHostEmailChanged(null);
-      await tester.pumpAndSettle();
-      expect(cubit.state.hostEmail, isNull);
-
-      await cubit.close();
-    });
-
-    testWidgets('renders safely under 200% dynamic text scaling',
-        (tester) async {
-      final cubit = buildCubit();
-
-      await tester.pumpWidget(
-        buildTestWidget(cubit: cubit, textScale: 2),
-      );
+      await tester.pumpWidget(buildTestWidget(cubit: cubit, textScale: 2));
       await tester.tap(find.text('Buka Formulir'));
       await tester.pumpAndSettle();
 

@@ -5,10 +5,7 @@ import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_ite
 /// sumber data (apakah data berasal dari cache lokal Isar atau server remote).
 class AttendanceResult extends Equatable {
   /// Membuat instance [AttendanceResult].
-  const AttendanceResult({
-    required this.items,
-    this.isFromCache = false,
-  });
+  const AttendanceResult({required this.items, this.isFromCache = false});
 
   /// Daftar data catatan absensi.
   final List<AttendanceItemEntity> items;

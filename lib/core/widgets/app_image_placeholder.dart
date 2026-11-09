@@ -53,7 +53,8 @@ class AppImagePlaceholder extends StatelessWidget {
     final effectiveContentColor =
         foregroundColor ?? colorScheme.onSurfaceVariant;
 
-    final effectiveShape = shape ??
+    final effectiveShape =
+        shape ??
         (borderRadius != null
             ? RoundedRectangleBorder(borderRadius: borderRadius!)
             : AppShape.small);
@@ -62,7 +63,8 @@ class AppImagePlaceholder extends StatelessWidget {
         ? iconPath!
         : KawaloVectors.imageNotFound01;
 
-    final visualWidget = icon ??
+    final visualWidget =
+        icon ??
         AppSvgIcon(
           effectiveIconPath,
           size: iconSize,

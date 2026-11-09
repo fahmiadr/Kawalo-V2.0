@@ -45,7 +45,8 @@ class EmojiMetadata {
       fromVersion: json['fromVersion'] as String?,
       glyph: json['glyph'] as String? ?? '',
       group: EmojiGroup.fromLabel(json['group'] as String?),
-      keywords: (json['keywords'] as List<dynamic>?)
+      keywords:
+          (json['keywords'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

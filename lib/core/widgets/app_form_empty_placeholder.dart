@@ -55,9 +55,7 @@ class AppFormEmptyPlaceholder extends StatelessWidget {
       iconContent = const SizedBox(
         width: 32,
         height: 32,
-        child: AppLoadingIndicator(
-          size: AppLoadingIndicatorSize.small,
-        ),
+        child: AppLoadingIndicator(size: AppLoadingIndicatorSize.small),
       );
     } else if (iconWidget != null) {
       iconContent = iconWidget!;
@@ -68,11 +66,7 @@ class AppFormEmptyPlaceholder extends StatelessWidget {
         color: colorScheme.primary,
       );
     } else if (icon != null) {
-      iconContent = Icon(
-        icon,
-        size: 32,
-        color: colorScheme.primary,
-      );
+      iconContent = Icon(icon, size: 32, color: colorScheme.primary);
     } else {
       iconContent = const SizedBox.shrink();
     }

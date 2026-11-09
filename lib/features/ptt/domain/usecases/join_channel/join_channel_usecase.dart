@@ -17,9 +17,7 @@ class JoinChannelUseCase implements UseCase<void, JoinChannelParams> {
         params.groupUid.trim().isEmpty ||
         params.token.trim().isEmpty) {
       return Future.value(
-        const Left(
-          ServerFailure('Parameter saluran PTT tidak boleh kosong.'),
-        ),
+        const Left(ServerFailure('Parameter saluran PTT tidak boleh kosong.')),
       );
     }
 

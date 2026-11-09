@@ -57,18 +57,18 @@ class UserGroupModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        groupUid,
-        groupName,
-        groupOwner,
-        category,
-        status,
-        groupStatus,
-        groupLogo,
-        allowAdmin,
-        allowPatrol,
-        allowMonPatrol,
-        features,
-      ];
+    groupUid,
+    groupName,
+    groupOwner,
+    category,
+    status,
+    groupStatus,
+    groupLogo,
+    allowAdmin,
+    allowPatrol,
+    allowMonPatrol,
+    features,
+  ];
 }
 
 /// Model data profil pengguna untuk pertukaran JSON dengan backend
@@ -105,12 +105,5 @@ class UserModel extends Equatable {
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
   @override
-  List<Object?> get props => [
-        id,
-        email,
-        name,
-        avatarUrl,
-        activeGroup,
-        groups,
-      ];
+  List<Object?> get props => [id, email, name, avatarUrl, activeGroup, groups];
 }

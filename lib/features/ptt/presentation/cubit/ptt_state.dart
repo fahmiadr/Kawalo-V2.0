@@ -3,10 +3,7 @@ import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.da
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
 
 abstract class PttState extends Equatable {
-  const PttState({
-    required this.channel,
-    required this.floorState,
-  });
+  const PttState({required this.channel, required this.floorState});
 
   final PttChannelEntity channel;
   final PttFloorStateEntity floorState;
@@ -18,26 +15,20 @@ abstract class PttState extends Equatable {
 /// Keadaan inisial sebelum saluran diakses.
 class PttInitial extends PttState {
   const PttInitial()
-      : super(
-          channel: const PttChannelEntity(groupUid: ''),
-          floorState: const PttFloorStateEntity.idle(),
-        );
+    : super(
+        channel: const PttChannelEntity(groupUid: ''),
+        floorState: const PttFloorStateEntity.idle(),
+      );
 }
 
 /// Sedang melakukan handshake dan koneksi WebSocket latar belakang.
 class PttConnecting extends PttState {
-  const PttConnecting({
-    required super.channel,
-    required super.floorState,
-  });
+  const PttConnecting({required super.channel, required super.floorState});
 }
 
 /// Saluran terhubung dan siap, tidak ada yang sedang berbicara.
 class PttIdle extends PttState {
-  const PttIdle({
-    required super.channel,
-    required super.floorState,
-  });
+  const PttIdle({required super.channel, required super.floorState});
 }
 
 /// Pengguna menekan tombol dan sedang menunggu balasan arbitrase server.
@@ -100,10 +91,7 @@ class PttFloorDenied extends PttState {
 /// Jaringan seluler terputus dan sedang mencoba menyambung ulang
 /// secara otomatis.
 class PttReconnecting extends PttState {
-  const PttReconnecting({
-    required super.channel,
-    required super.floorState,
-  });
+  const PttReconnecting({required super.channel, required super.floorState});
 }
 
 /// Koneksi terputus total.

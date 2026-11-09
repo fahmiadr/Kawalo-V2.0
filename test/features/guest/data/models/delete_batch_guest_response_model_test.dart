@@ -4,15 +4,17 @@ import 'package:kawalo_mobile/features/guest/data/models/delete_batch_guest_resp
 void main() {
   group('DeleteBatchGuestResponseModel Tests', () {
     test('fromJson deserializes standard backend response correctly', () {
-      final model =
-          DeleteBatchGuestResponseModel.fromJson(const {'deleted_count': 3});
+      final model = DeleteBatchGuestResponseModel.fromJson(const {
+        'deleted_count': 3,
+      });
 
       expect(model.deletedCount, 3);
     });
 
     test('fromJson accepts a decimal deleted_count', () {
-      final model =
-          DeleteBatchGuestResponseModel.fromJson(const {'deleted_count': 3.0});
+      final model = DeleteBatchGuestResponseModel.fromJson(const {
+        'deleted_count': 3.0,
+      });
 
       expect(model.deletedCount, 3);
     });
@@ -20,8 +22,9 @@ void main() {
     test('fromJson defaults a missing or null deleted_count to 0', () {
       expect(DeleteBatchGuestResponseModel.fromJson(const {}).deletedCount, 0);
       expect(
-        DeleteBatchGuestResponseModel.fromJson(const {'deleted_count': null})
-            .deletedCount,
+        DeleteBatchGuestResponseModel.fromJson(const {
+          'deleted_count': null,
+        }).deletedCount,
         0,
       );
     });

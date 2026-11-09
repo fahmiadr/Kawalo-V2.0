@@ -49,10 +49,7 @@ void main() {
         when(
           () => mockApiClient.post(
             '/v1/auth/login',
-            body: {
-              'email': tEmail,
-              'password': tPassword,
-            },
+            body: {'email': tEmail, 'password': tPassword},
           ),
         ).thenAnswer((_) async => tLoginResponse);
 
@@ -65,10 +62,7 @@ void main() {
         verify(
           () => mockApiClient.post(
             '/v1/auth/login',
-            body: {
-              'email': tEmail,
-              'password': tPassword,
-            },
+            body: {'email': tEmail, 'password': tPassword},
           ),
         ).called(1);
       },
@@ -78,9 +72,7 @@ void main() {
       when(
         () => mockApiClient.post(
           '/v1/auth/logout',
-          body: {
-            'refresh_token': 'rft_123',
-          },
+          body: {'refresh_token': 'rft_123'},
         ),
       ).thenAnswer((_) async => {'success': true, 'message': 'Berhasil'});
 
@@ -91,9 +83,7 @@ void main() {
       verify(
         () => mockApiClient.post(
           '/v1/auth/logout',
-          body: {
-            'refresh_token': 'rft_123',
-          },
+          body: {'refresh_token': 'rft_123'},
         ),
       ).called(1);
     });
@@ -104,9 +94,7 @@ void main() {
         when(
           () => mockApiClient.post(
             '/v1/auth/refresh',
-            body: {
-              'refresh_token': 'rft_123',
-            },
+            body: {'refresh_token': 'rft_123'},
           ),
         ).thenAnswer(
           (_) async => {
@@ -130,33 +118,26 @@ void main() {
       },
     );
 
-    test(
-      'switchGroup sends POST /v1/auth/switch-group and parses '
-      'LoginResponseModel',
-      () async {
-        when(
-          () => mockApiClient.post(
-            '/v1/auth/switch-group',
-            body: {
-              'group_uid': 'grp_456',
-            },
-          ),
-        ).thenAnswer((_) async => tLoginResponse);
+    test('switchGroup sends POST /v1/auth/switch-group and parses '
+        'LoginResponseModel', () async {
+      when(
+        () => mockApiClient.post(
+          '/v1/auth/switch-group',
+          body: {'group_uid': 'grp_456'},
+        ),
+      ).thenAnswer((_) async => tLoginResponse);
 
-        final result = await remoteDataSource.switchGroup(
-          const SwitchGroupRequestModel(groupUid: 'grp_456'),
-        );
+      final result = await remoteDataSource.switchGroup(
+        const SwitchGroupRequestModel(groupUid: 'grp_456'),
+      );
 
-        expect(result.user.id, equals('usr_1'));
-        verify(
-          () => mockApiClient.post(
-            '/v1/auth/switch-group',
-            body: {
-              'group_uid': 'grp_456',
-            },
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.user.id, equals('usr_1'));
+      verify(
+        () => mockApiClient.post(
+          '/v1/auth/switch-group',
+          body: {'group_uid': 'grp_456'},
+        ),
+      ).called(1);
+    });
   });
 }

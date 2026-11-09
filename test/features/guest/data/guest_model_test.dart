@@ -41,30 +41,27 @@ void main() {
       expect(model.guestDestination, 'Pos 1');
     });
 
-    test(
-      'fromJson preserves null values for nullable fields without '
-      'empty string fallback',
-      () {
-        final jsonNulls = {
-          'id': '2',
-          'guest_name': null,
-          'guest_number': null,
-          'guest_category': null,
-          'guest_destination': null,
-          'guest_purpose': null,
-          'guest_dt': null,
-        };
-        final model = GuestModel.fromJson(jsonNulls);
+    test('fromJson preserves null values for nullable fields without '
+        'empty string fallback', () {
+      final jsonNulls = {
+        'id': '2',
+        'guest_name': null,
+        'guest_number': null,
+        'guest_category': null,
+        'guest_destination': null,
+        'guest_purpose': null,
+        'guest_dt': null,
+      };
+      final model = GuestModel.fromJson(jsonNulls);
 
-        expect(model.id, '2');
-        expect(model.guestName, isNull);
-        expect(model.guestNumber, isNull);
-        expect(model.guestCategory, isNull);
-        expect(model.guestDestination, isNull);
-        expect(model.guestPurpose, isNull);
-        expect(model.guestDt, isNull);
-      },
-    );
+      expect(model.id, '2');
+      expect(model.guestName, isNull);
+      expect(model.guestNumber, isNull);
+      expect(model.guestCategory, isNull);
+      expect(model.guestDestination, isNull);
+      expect(model.guestPurpose, isNull);
+      expect(model.guestDt, isNull);
+    });
 
     test('props equality works as expected', () {
       const model1 = GuestModel(

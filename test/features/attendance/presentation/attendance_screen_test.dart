@@ -25,12 +25,9 @@ MockAttendanceCubit createMockAttendanceCubit({
   String greeting = 'Diperbarui Hari ini, 15.20',
 }) {
   final mockCubit = MockAttendanceCubit();
-  when(() => mockCubit.state).thenReturn(
-    AttendanceLoaded(
-      attendances: attendances,
-      lastSync: greeting,
-    ),
-  );
+  when(
+    () => mockCubit.state,
+  ).thenReturn(AttendanceLoaded(attendances: attendances, lastSync: greeting));
   when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
   when(() => mockCubit.currentGreeting).thenReturn(greeting);
   when(
@@ -49,10 +46,7 @@ void main() {
     Widget child, {
     ConnectivityCubit? connectivityCubit,
   }) {
-    final app = M3EMaterialApp(
-      data: AppTheme.m3eLight(),
-      home: child,
-    );
+    final app = M3EMaterialApp(data: AppTheme.m3eLight(), home: child);
     if (connectivityCubit != null) {
       return BlocProvider<ConnectivityCubit>.value(
         value: connectivityCubit,
@@ -72,9 +66,7 @@ void main() {
 
         final mockCubit = createMockAttendanceCubit();
         await tester.pumpWidget(
-          buildTestableWidget(
-            AttendanceScreen(cubit: mockCubit),
-          ),
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
         );
         await tester.pumpAndSettle();
 
@@ -92,46 +84,46 @@ void main() {
       'toggles dynamically between Title and Search Bar via Top Bar trailing '
       'button',
       (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() => tester.view.reset());
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() => tester.view.reset());
 
-      final mockCubit = createMockAttendanceCubit();
-      await tester.pumpWidget(
-        buildTestableWidget(
-          AttendanceScreen(cubit: mockCubit),
-        ),
-      );
-      await tester.pumpAndSettle();
+        final mockCubit = createMockAttendanceCubit();
+        await tester.pumpWidget(
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
+        );
+        await tester.pumpAndSettle();
 
-      final searchToggleBtn = find.bySemanticsLabel('Cari data absensi');
-      expect(searchToggleBtn, findsOneWidget);
-      expect(find.text('Data absensi'), findsOneWidget);
-      expect(find.byType(AppSearchBar), findsNothing);
+        final searchToggleBtn = find.bySemanticsLabel('Cari data absensi');
+        expect(searchToggleBtn, findsOneWidget);
+        expect(find.text('Data absensi'), findsOneWidget);
+        expect(find.byType(AppSearchBar), findsNothing);
 
-      // Tap search icon button -> opens search bar
-      await tester.tap(searchToggleBtn);
-      await tester.pumpAndSettle();
+        // Tap search icon button -> opens search bar
+        await tester.tap(searchToggleBtn);
+        await tester.pumpAndSettle();
 
-      expect(find.text('Data absensi'), findsNothing);
-      expect(find.byType(AppSearchBar), findsOneWidget);
-      expect(find.text('Cari data absensi'), findsOneWidget);
-      expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Data absensi'), findsNothing);
+        expect(find.byType(AppSearchBar), findsOneWidget);
+        expect(find.text('Cari data absensi'), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
 
-      final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
-      expect(cancelToggleBtn, findsOneWidget);
+        final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
+        expect(cancelToggleBtn, findsOneWidget);
 
-      // Tap cancel icon button -> restores title
-      await tester.tap(cancelToggleBtn);
-      await tester.pumpAndSettle();
+        // Tap cancel icon button -> restores title
+        await tester.tap(cancelToggleBtn);
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppSearchBar), findsNothing);
-      expect(find.text('Data absensi'), findsOneWidget);
-      expect(find.bySemanticsLabel('Cari data absensi'), findsOneWidget);
-    });
+        expect(find.byType(AppSearchBar), findsNothing);
+        expect(find.text('Data absensi'), findsOneWidget);
+        expect(find.bySemanticsLabel('Cari data absensi'), findsOneWidget);
+      },
+    );
 
-    testWidgets('renders list of attendance cards when data is provided',
-        (tester) async {
+    testWidgets('renders list of attendance cards when data is provided', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() => tester.view.reset());
@@ -162,9 +154,7 @@ void main() {
 
       final mockCubit = createMockAttendanceCubit(attendances: attendances);
       await tester.pumpWidget(
-        buildTestableWidget(
-          AttendanceScreen(cubit: mockCubit),
-        ),
+        buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
       );
       await tester.pumpAndSettle();
 
@@ -174,114 +164,100 @@ void main() {
     });
 
     testWidgets(
-        'typing only whitespace does not trigger fetch when initial query is '
-        'empty', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() => tester.view.reset());
+      'typing only whitespace does not trigger fetch when initial query is '
+      'empty',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() => tester.view.reset());
 
-      final mockCubit = MockAttendanceCubit();
-      when(() => mockCubit.state).thenReturn(
-        const AttendanceLoaded(
-          attendances: [],
-          lastSync: 'Hari ini',
-        ),
-      );
-      when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Hari ini');
-      when(
-        () => mockCubit.fetchAttendances(
-          search: any(named: 'search'),
-          filterPeriod: any(named: 'filterPeriod'),
-          startDate: any(named: 'startDate'),
-          endDate: any(named: 'endDate'),
-        ),
-      ).thenAnswer((_) async => AppFetchResult.success);
+        final mockCubit = MockAttendanceCubit();
+        when(() => mockCubit.state).thenReturn(
+          const AttendanceLoaded(attendances: [], lastSync: 'Hari ini'),
+        );
+        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
+        when(() => mockCubit.currentGreeting).thenReturn('Hari ini');
+        when(
+          () => mockCubit.fetchAttendances(
+            search: any(named: 'search'),
+            filterPeriod: any(named: 'filterPeriod'),
+            startDate: any(named: 'startDate'),
+            endDate: any(named: 'endDate'),
+          ),
+        ).thenAnswer((_) async => AppFetchResult.success);
 
-      await tester.pumpWidget(
-        buildTestableWidget(
-          AttendanceScreen(cubit: mockCubit),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
+        );
+        await tester.pumpAndSettle();
 
-      // Clear the invocation from initState postFrameCallback
-      clearInteractions(mockCubit);
+        // Clear the invocation from initState postFrameCallback
+        clearInteractions(mockCubit);
 
-      // Open search and enter empty spaces
-      await tester.tap(find.bySemanticsLabel('Cari data absensi'));
-      await tester.pumpAndSettle();
+        // Open search and enter empty spaces
+        await tester.tap(find.bySemanticsLabel('Cari data absensi'));
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(AppSearchBar), '   ');
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.enterText(find.byType(AppSearchBar), '   ');
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // Must NOT call fetchAttendances
-      verifyNever(
-        () => mockCubit.fetchAttendances(
-          search: any(named: 'search'),
-          filterPeriod: any(named: 'filterPeriod'),
-          startDate: any(named: 'startDate'),
-          endDate: any(named: 'endDate'),
-        ),
-      );
-    });
+        // Must NOT call fetchAttendances
+        verifyNever(
+          () => mockCubit.fetchAttendances(
+            search: any(named: 'search'),
+            filterPeriod: any(named: 'filterPeriod'),
+            startDate: any(named: 'startDate'),
+            endDate: any(named: 'endDate'),
+          ),
+        );
+      },
+    );
 
-    testWidgets('clearing search text fetches with empty search to reset query',
-        (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() => tester.view.reset());
+    testWidgets(
+      'clearing search text fetches with empty search to reset query',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() => tester.view.reset());
 
-      final mockCubit = MockAttendanceCubit();
-      when(() => mockCubit.state).thenReturn(
-        const AttendanceLoaded(
-          attendances: [],
-          lastSync: 'Hari ini',
-        ),
-      );
-      when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Hari ini');
-      when(
-        () => mockCubit.fetchAttendances(
-          search: any(named: 'search'),
-          filterPeriod: any(named: 'filterPeriod'),
-          startDate: any(named: 'startDate'),
-          endDate: any(named: 'endDate'),
-        ),
-      ).thenAnswer((_) async => AppFetchResult.success);
+        final mockCubit = MockAttendanceCubit();
+        when(() => mockCubit.state).thenReturn(
+          const AttendanceLoaded(attendances: [], lastSync: 'Hari ini'),
+        );
+        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
+        when(() => mockCubit.currentGreeting).thenReturn('Hari ini');
+        when(
+          () => mockCubit.fetchAttendances(
+            search: any(named: 'search'),
+            filterPeriod: any(named: 'filterPeriod'),
+            startDate: any(named: 'startDate'),
+            endDate: any(named: 'endDate'),
+          ),
+        ).thenAnswer((_) async => AppFetchResult.success);
 
-      await tester.pumpWidget(
-        buildTestableWidget(
-          AttendanceScreen(cubit: mockCubit),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
+        );
+        await tester.pumpAndSettle();
 
-      clearInteractions(mockCubit);
+        clearInteractions(mockCubit);
 
-      // Open search and search for 'Budi'
-      await tester.tap(find.bySemanticsLabel('Cari data absensi'));
-      await tester.pumpAndSettle();
+        // Open search and search for 'Budi'
+        await tester.tap(find.bySemanticsLabel('Cari data absensi'));
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(AppSearchBar), 'Budi');
-      await tester.pump(const Duration(milliseconds: 400));
+        await tester.enterText(find.byType(AppSearchBar), 'Budi');
+        await tester.pump(const Duration(milliseconds: 400));
 
-      verify(
-        () => mockCubit.fetchAttendances(
-          search: 'budi',
-        ),
-      ).called(1);
+        verify(() => mockCubit.fetchAttendances(search: 'budi')).called(1);
 
-      // Clear search to empty
-      await tester.enterText(find.byType(AppSearchBar), '');
-      await tester.pump(const Duration(milliseconds: 400));
+        // Clear search to empty
+        await tester.enterText(find.byType(AppSearchBar), '');
+        await tester.pump(const Duration(milliseconds: 400));
 
-      verify(
-        () => mockCubit.fetchAttendances(
-          search: '',
-        ),
-      ).called(1);
-    });
+        verify(() => mockCubit.fetchAttendances(search: '')).called(1);
+      },
+    );
 
     testWidgets(
       'renders empty search state and offline bottom banner when offline and '
@@ -342,10 +318,7 @@ void main() {
 
         final mockCubit = MockAttendanceCubit();
         when(() => mockCubit.state).thenReturn(
-          const AttendanceLoaded(
-            attendances: [],
-            lastSync: 'Hari ini',
-          ),
+          const AttendanceLoaded(attendances: [], lastSync: 'Hari ini'),
         );
         when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
         when(() => mockCubit.currentGreeting).thenReturn('Hari ini');
@@ -359,9 +332,7 @@ void main() {
         ).thenAnswer((_) async => AppFetchResult.success);
 
         await tester.pumpWidget(
-          buildTestableWidget(
-            AttendanceScreen(cubit: mockCubit),
-          ),
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
         );
         await tester.pumpAndSettle();
 
@@ -413,9 +384,7 @@ void main() {
         ).thenAnswer((_) async => AppFetchResult.success);
 
         await tester.pumpWidget(
-          buildTestableWidget(
-            AttendanceScreen(cubit: mockCubit),
-          ),
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
         );
         await tester.pump();
 
@@ -458,9 +427,7 @@ void main() {
         ).thenAnswer((_) async => AppFetchResult.success);
 
         await tester.pumpWidget(
-          buildTestableWidget(
-            AttendanceScreen(cubit: mockCubit),
-          ),
+          buildTestableWidget(AttendanceScreen(cubit: mockCubit)),
         );
         await tester.pumpAndSettle();
 

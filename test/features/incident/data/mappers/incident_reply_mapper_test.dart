@@ -8,7 +8,8 @@ void main() {
     final event = IncidentReplyMapper.parseSseMessage(
       const SseMessage(
         event: 'thread_resolved',
-        data: '{"incident_id":"inc_1","resolved_by":"u2",'
+        data:
+            '{"incident_id":"inc_1","resolved_by":"u2",'
             '"resolved_by_name":"Sari",'
             '"resolved_at":"2026-11-04T11:00:00.000Z"}',
       ),

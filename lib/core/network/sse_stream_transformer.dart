@@ -6,12 +6,7 @@ import 'package:equatable/equatable.dart';
 
 /// Model immutable yang merepresentasikan satu pesan Server-Sent Event (SSE).
 class SseMessage extends Equatable {
-  const SseMessage({
-    required this.data,
-    this.id,
-    this.event,
-    this.retry,
-  });
+  const SseMessage({required this.data, this.id, this.event, this.retry});
 
   /// Identifier event unik yang dikirimkan server melalui field `id:`.
   final String? id;
@@ -41,10 +36,7 @@ class SseStreamTransformer
 
   @override
   Stream<SseMessage> bind(Stream<Uint8List> stream) {
-    return Stream<SseMessage>.eventTransformed(
-      stream,
-      _SseEventSink.new,
-    );
+    return Stream<SseMessage>.eventTransformed(stream, _SseEventSink.new);
   }
 }
 

@@ -81,16 +81,13 @@ void main() {
       expect(entity.glong, isNull);
     });
 
-    test(
-      'toDeleteBatchResult accurately maps deletedCount from DTO '
-      'to Value Object',
-      () {
-        const dto = DeleteBatchInformationResponseModel(deletedCount: 5);
-        final entity = InformationMapper.toDeleteBatchResult(dto);
+    test('toDeleteBatchResult accurately maps deletedCount from DTO '
+        'to Value Object', () {
+      const dto = DeleteBatchInformationResponseModel(deletedCount: 5);
+      final entity = InformationMapper.toDeleteBatchResult(dto);
 
-        expect(entity, isA<DeleteBatchResult>());
-        expect(entity.deletedCount, 5);
-      },
-    );
+      expect(entity, isA<DeleteBatchResult>());
+      expect(entity.deletedCount, 5);
+    });
   });
 }

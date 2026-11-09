@@ -45,13 +45,13 @@ class GetInformationParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        search,
-        limit,
-        offset,
-        startDate,
-        endDate,
-        createdBy,
-        cancelToken,
-        isRefresh,
-      ];
+    search,
+    limit,
+    offset,
+    startDate,
+    endDate,
+    createdBy,
+    cancelToken,
+    isRefresh,
+  ];
 }

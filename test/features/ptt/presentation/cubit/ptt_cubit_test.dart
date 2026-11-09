@@ -46,12 +46,8 @@ void main() {
         token: 'token_1',
       ),
     );
-    registerFallbackValue(
-      const StartTransmissionParams(requestId: 'req_1'),
-    );
-    registerFallbackValue(
-      const StopTransmissionParams(),
-    );
+    registerFallbackValue(const StartTransmissionParams(requestId: 'req_1'));
+    registerFallbackValue(const StopTransmissionParams());
   });
 
   setUp(() {
@@ -63,21 +59,26 @@ void main() {
     floorController = StreamController<PttFloorStateEntity>.broadcast();
     connectionController = StreamController<PttConnectionStatus>.broadcast();
     memberCountController = StreamController<int>.broadcast();
-    transmissionController =
-        StreamController<Map<String, dynamic>>.broadcast();
+    transmissionController = StreamController<Map<String, dynamic>>.broadcast();
 
-    when(() => mockRepository.watchFloorState())
-        .thenAnswer((_) => floorController.stream);
-    when(() => mockRepository.watchConnectionStatus())
-        .thenAnswer((_) => connectionController.stream);
-    when(() => mockRepository.watchMemberCount())
-        .thenAnswer((_) => memberCountController.stream);
-    when(() => mockRepository.watchTransmissionEvents())
-        .thenAnswer((_) => transmissionController.stream);
-    when(() => mockRepository.hasRecordAudioPermission())
-        .thenAnswer((_) async => true);
-    when(() => mockRepository.requestRecordAudioPermission())
-        .thenAnswer((_) async => true);
+    when(
+      () => mockRepository.watchFloorState(),
+    ).thenAnswer((_) => floorController.stream);
+    when(
+      () => mockRepository.watchConnectionStatus(),
+    ).thenAnswer((_) => connectionController.stream);
+    when(
+      () => mockRepository.watchMemberCount(),
+    ).thenAnswer((_) => memberCountController.stream);
+    when(
+      () => mockRepository.watchTransmissionEvents(),
+    ).thenAnswer((_) => transmissionController.stream);
+    when(
+      () => mockRepository.hasRecordAudioPermission(),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockRepository.requestRecordAudioPermission(),
+    ).thenAnswer((_) async => true);
   });
 
   tearDown(() {
@@ -106,8 +107,9 @@ void main() {
     blocTest<PttCubit, PttState>(
       'joinChannel emits PttConnecting when invoked',
       setUp: () {
-        when(() => mockJoinChannel(any()))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          () => mockJoinChannel(any()),
+        ).thenAnswer((_) async => const Right(null));
       },
       build: createCubit,
       act: (cubit) => cubit.joinChannel(
@@ -148,9 +150,7 @@ void main() {
           floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
         ),
         const PttDisconnected(
-          channel: PttChannelEntity(
-            groupUid: 'grp_01',
-          ),
+          channel: PttChannelEntity(groupUid: 'grp_01'),
           floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
           errorMessage: 'Connection refused',
         ),
@@ -160,8 +160,9 @@ void main() {
     blocTest<PttCubit, PttState>(
       'pressPttButton emits PttRequestingFloor and calls usecase',
       setUp: () {
-        when(() => mockStartTransmission(any()))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          () => mockStartTransmission(any()),
+        ).thenAnswer((_) async => const Right(null));
       },
       build: createCubit,
       seed: () => const PttIdle(
@@ -201,8 +202,9 @@ void main() {
     blocTest<PttCubit, PttState>(
       'releasePttButton calls stopTransmission and emits PttIdle',
       setUp: () {
-        when(() => mockStopTransmission(any()))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          () => mockStopTransmission(any()),
+        ).thenAnswer((_) async => const Right(null));
       },
       build: createCubit,
       seed: () => const PttTransmitting(
@@ -218,9 +220,7 @@ void main() {
       ],
       verify: (_) {
         verify(
-          () => mockStopTransmission(
-            const StopTransmissionParams(),
-          ),
+          () => mockStopTransmission(const StopTransmissionParams()),
         ).called(1);
       },
     );
@@ -234,10 +234,7 @@ void main() {
         requestId: 'req_123',
       ),
       act: (_) {
-        transmissionController.add({
-          'state': 'GRANTED',
-          'leaseTtlMs': 2000,
-        });
+        transmissionController.add({'state': 'GRANTED', 'leaseTtlMs': 2000});
       },
       expect: () => [
         const PttTransmitting(
@@ -346,8 +343,9 @@ void main() {
     blocTest<PttCubit, PttState>(
       'leaveChannel invokes repository.leaveChannel and emits PttInitial',
       setUp: () {
-        when(() => mockRepository.leaveChannel())
-            .thenAnswer((_) async => const Right(null));
+        when(
+          () => mockRepository.leaveChannel(),
+        ).thenAnswer((_) async => const Right(null));
       },
       build: createCubit,
       seed: () => const PttIdle(
@@ -355,9 +353,7 @@ void main() {
         floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
       ),
       act: (cubit) => cubit.leaveChannel(),
-      expect: () => [
-        const PttInitial(),
-      ],
+      expect: () => [const PttInitial()],
       verify: (_) {
         verify(() => mockRepository.leaveChannel()).called(1);
       },
@@ -367,10 +363,12 @@ void main() {
       'pressPttButton emits PttFloorDenied when microphone permission '
       'is denied',
       setUp: () {
-        when(() => mockRepository.hasRecordAudioPermission())
-            .thenAnswer((_) async => false);
-        when(() => mockRepository.requestRecordAudioPermission())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepository.hasRecordAudioPermission(),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockRepository.requestRecordAudioPermission(),
+        ).thenAnswer((_) async => false);
       },
       build: createCubit,
       seed: () => const PttIdle(

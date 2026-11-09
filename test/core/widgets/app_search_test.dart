@@ -9,35 +9,35 @@ void main() {
   Widget buildTestApp(Widget child) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: Center(child: child),
-      ),
+      home: Scaffold(body: Center(child: child)),
     );
   }
 
   group('AppSearchBar Pure M3E Tests', () {
     testWidgets(
-        'renders pure M3E search bar with hintText and no leading/trailing by default',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        buildTestApp(
-          const SizedBox(
-            width: 300,
-            child: AppSearchBar(
-              hintText: 'Cari tamu...',
-              constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+      'renders pure M3E search bar with hintText and no leading/trailing by default',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            const SizedBox(
+              width: 300,
+              child: AppSearchBar(
+                hintText: 'Cari tamu...',
+                constraints: BoxConstraints(minHeight: 40, maxHeight: 40),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Cari tamu...'), findsOneWidget);
-      expect(find.byType(M3ESearchBar), findsOneWidget);
-    });
+        expect(find.text('Cari tamu...'), findsOneWidget);
+        expect(find.byType(M3ESearchBar), findsOneWidget);
+      },
+    );
 
-    testWidgets('supports explicit custom leading and trailing widgets',
-        (WidgetTester tester) async {
+    testWidgets('supports explicit custom leading and trailing widgets', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           const AppSearchBar(
@@ -52,8 +52,9 @@ void main() {
       expect(find.text('Filter'), findsOneWidget);
     });
 
-    testWidgets('handles text input with trim and toLowerCase sanitization',
-        (WidgetTester tester) async {
+    testWidgets('handles text input with trim and toLowerCase sanitization', (
+      WidgetTester tester,
+    ) async {
       var submittedQuery = '';
 
       await tester.pumpWidget(
@@ -73,8 +74,9 @@ void main() {
       expect(submittedQuery, equals('ahmad'));
     });
 
-    testWidgets('disallows leading whitespace in real-time',
-        (WidgetTester tester) async {
+    testWidgets('disallows leading whitespace in real-time', (
+      WidgetTester tester,
+    ) async {
       final controller = TextEditingController();
       var changedValue = '';
 
@@ -95,16 +97,13 @@ void main() {
       expect(changedValue, equals('budi'));
     });
 
-    testWidgets('collapses consecutive multi-whitespace in real-time',
-        (WidgetTester tester) async {
+    testWidgets('collapses consecutive multi-whitespace in real-time', (
+      WidgetTester tester,
+    ) async {
       final controller = TextEditingController();
 
       await tester.pumpWidget(
-        buildTestApp(
-          AppSearchBar(
-            controller: controller,
-          ),
-        ),
+        buildTestApp(AppSearchBar(controller: controller)),
       );
       await tester.pumpAndSettle();
 
@@ -115,43 +114,42 @@ void main() {
     });
 
     testWidgets(
-        'onSubmitted trims trailing whitespace and converts to lowercase',
-        (WidgetTester tester) async {
-      final controller = TextEditingController();
-      var submittedValue = '';
+      'onSubmitted trims trailing whitespace and converts to lowercase',
+      (WidgetTester tester) async {
+        final controller = TextEditingController();
+        var submittedValue = '';
 
-      await tester.pumpWidget(
-        buildTestApp(
-          AppSearchBar(
-            controller: controller,
-            onSubmitted: (val) => submittedValue = val,
+        await tester.pumpWidget(
+          buildTestApp(
+            AppSearchBar(
+              controller: controller,
+              onSubmitted: (val) => submittedValue = val,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(AppSearchBar), 'Patroli   ');
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(AppSearchBar), 'Patroli   ');
+        await tester.pumpAndSettle();
 
-      // Submit via IME action
-      await tester.testTextInput.receiveAction(TextInputAction.search);
-      await tester.pumpAndSettle();
+        // Submit via IME action
+        await tester.testTextInput.receiveAction(TextInputAction.search);
+        await tester.pumpAndSettle();
 
-      expect(controller.text, equals('patroli'));
-      expect(submittedValue, equals('patroli'));
-    });
+        expect(controller.text, equals('patroli'));
+        expect(submittedValue, equals('patroli'));
+      },
+    );
 
-    testWidgets('trims trailing whitespace on focus loss',
-        (WidgetTester tester) async {
+    testWidgets('trims trailing whitespace on focus loss', (
+      WidgetTester tester,
+    ) async {
       final controller = TextEditingController();
       final focusNode = FocusNode();
 
       await tester.pumpWidget(
         buildTestApp(
-          AppSearchBar(
-            controller: controller,
-            focusNode: focusNode,
-          ),
+          AppSearchBar(controller: controller, focusNode: focusNode),
         ),
       );
       await tester.pumpAndSettle();
@@ -172,69 +170,73 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('onSearch debounces typed input and dispatches after duration',
-        (WidgetTester tester) async {
-      String? searchedQuery;
-      var dispatchCount = 0;
+    testWidgets(
+      'onSearch debounces typed input and dispatches after duration',
+      (WidgetTester tester) async {
+        String? searchedQuery;
+        var dispatchCount = 0;
 
-      await tester.pumpWidget(
-        buildTestApp(
-          AppSearchBar(
-            debounceDuration: const Duration(milliseconds: 200),
-            onSearch: (val) {
-              searchedQuery = val;
-              dispatchCount++;
-            },
+        await tester.pumpWidget(
+          buildTestApp(
+            AppSearchBar(
+              debounceDuration: const Duration(milliseconds: 200),
+              onSearch: (val) {
+                searchedQuery = val;
+                dispatchCount++;
+              },
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(AppSearchBar), 'Satpam');
-      // Before debounce duration: onSearch not yet dispatched
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(searchedQuery, isNull);
-      expect(dispatchCount, 0);
+        await tester.enterText(find.byType(AppSearchBar), 'Satpam');
+        // Before debounce duration: onSearch not yet dispatched
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(searchedQuery, isNull);
+        expect(dispatchCount, 0);
 
-      // After debounce completes: onSearch dispatched once
-      await tester.pump(const Duration(milliseconds: 150));
-      expect(searchedQuery, 'satpam');
-      expect(dispatchCount, 1);
-    });
+        // After debounce completes: onSearch dispatched once
+        await tester.pump(const Duration(milliseconds: 150));
+        expect(searchedQuery, 'satpam');
+        expect(dispatchCount, 1);
+      },
+    );
 
     testWidgets(
-        'onSearch dispatches immediately on submit and cancels debounce',
-        (WidgetTester tester) async {
-      String? searchedQuery;
-      var dispatchCount = 0;
+      'onSearch dispatches immediately on submit and cancels debounce',
+      (WidgetTester tester) async {
+        String? searchedQuery;
+        var dispatchCount = 0;
 
-      await tester.pumpWidget(
-        buildTestApp(
-          AppSearchBar(
-            onSearch: (val) {
-              searchedQuery = val;
-              dispatchCount++;
-            },
+        await tester.pumpWidget(
+          buildTestApp(
+            AppSearchBar(
+              onSearch: (val) {
+                searchedQuery = val;
+                dispatchCount++;
+              },
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(AppSearchBar), 'Kompleks');
-      // Submit via IME action immediately
-      await tester.testTextInput.receiveAction(TextInputAction.search);
-      await tester.pump();
+        await tester.enterText(find.byType(AppSearchBar), 'Kompleks');
+        // Submit via IME action immediately
+        await tester.testTextInput.receiveAction(TextInputAction.search);
+        await tester.pump();
 
-      expect(searchedQuery, 'kompleks');
-      expect(dispatchCount, 1);
+        expect(searchedQuery, 'kompleks');
+        expect(dispatchCount, 1);
 
-      // Advance clock past debounce time: no duplicate dispatch
-      await tester.pump(const Duration(milliseconds: 400));
-      expect(dispatchCount, 1);
-    });
+        // Advance clock past debounce time: no duplicate dispatch
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(dispatchCount, 1);
+      },
+    );
 
-    testWidgets('onSearch deduplicates consecutive identical queries',
-        (WidgetTester tester) async {
+    testWidgets('onSearch deduplicates consecutive identical queries', (
+      WidgetTester tester,
+    ) async {
       var dispatchCount = 0;
 
       await tester.pumpWidget(

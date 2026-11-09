@@ -33,8 +33,8 @@ class InformationDetailLocationCard extends StatelessWidget {
 
     final locationTitle =
         item.eventLocation != null && item.eventLocation!.isNotEmpty
-            ? item.eventLocation!
-            : 'Lokasi kejadian / informasi';
+        ? item.eventLocation!
+        : 'Lokasi kejadian / informasi';
 
     return AppCard(
       child: Column(
@@ -43,10 +43,7 @@ class InformationDetailLocationCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.location1,
-                size: 24,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.location1, size: 24),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(

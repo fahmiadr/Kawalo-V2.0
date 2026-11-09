@@ -137,43 +137,34 @@ void main() {
       },
     );
 
-    test(
-      'isAuthorized returns true for GUARD when all items are owned',
-      () {
-        const params = DeleteBatchGuestParams(
-          ids: ['1', '2'],
-          session: tSessionGuardCreator,
-          items: [tItem1, tItem2],
-        );
-        expect(params.isAuthorized, isTrue);
-      },
-    );
+    test('isAuthorized returns true for GUARD when all items are owned', () {
+      const params = DeleteBatchGuestParams(
+        ids: ['1', '2'],
+        session: tSessionGuardCreator,
+        items: [tItem1, tItem2],
+      );
+      expect(params.isAuthorized, isTrue);
+    });
 
-    test(
-      'isAuthorized returns false for GUARD when at least one item is not '
-      'owned',
-      () {
-        const params = DeleteBatchGuestParams(
-          ids: ['1', '3'],
-          session: tSessionGuardCreator,
-          items: [tItem1, tItemOther],
-        );
-        expect(params.isAuthorized, isFalse);
-      },
-    );
+    test('isAuthorized returns false for GUARD when at least one item is not '
+        'owned', () {
+      const params = DeleteBatchGuestParams(
+        ids: ['1', '3'],
+        session: tSessionGuardCreator,
+        items: [tItem1, tItemOther],
+      );
+      expect(params.isAuthorized, isFalse);
+    });
 
-    test(
-      'isAuthorized returns false if any id is missing from items list '
-      '(fail-closed)',
-      () {
-        const params = DeleteBatchGuestParams(
-          ids: ['1', '99'],
-          session: tSessionAdmin,
-          items: [tItem1],
-        );
-        expect(params.isAuthorized, isFalse);
-      },
-    );
+    test('isAuthorized returns false if any id is missing from items list '
+        '(fail-closed)', () {
+      const params = DeleteBatchGuestParams(
+        ids: ['1', '99'],
+        session: tSessionAdmin,
+        items: [tItem1],
+      );
+      expect(params.isAuthorized, isFalse);
+    });
 
     test('isAuthorized returns false when session is null', () {
       const params = DeleteBatchGuestParams(
@@ -206,115 +197,89 @@ void main() {
     const tResult = DeleteBatchResult(deletedCount: 2);
     const tValidIds = ['1', '2'];
 
-    test(
-      'returns ValidationFailure without calling repository when ids '
-      'are invalid',
-      () async {
-        final result = await deleteBatchUseCase(
-          const DeleteBatchGuestParams(
-            ids: ['abc'],
-            session: tSessionAdmin,
-            items: [],
-          ),
+    test('returns ValidationFailure without calling repository when ids '
+        'are invalid', () async {
+      final result = await deleteBatchUseCase(
+        const DeleteBatchGuestParams(
+          ids: ['abc'],
+          session: tSessionAdmin,
+          items: [],
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        expect(
+          (failure as ValidationFailure).message,
+          contains('Daftar ID tamu tidak boleh kosong'),
         );
+      }, (_) => fail('Should not succeed'));
+      verifyZeroInteractions(mockRepository);
+    });
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ValidationFailure>());
-            expect(
-              (failure as ValidationFailure).message,
-              contains('Daftar ID tamu tidak boleh kosong'),
-            );
-          },
-          (_) => fail('Should not succeed'),
+    test('returns ForbiddenFailure without calling repository when user is not '
+        'authorized', () async {
+      final result = await deleteBatchUseCase(
+        const DeleteBatchGuestParams(
+          ids: ['1', '3'],
+          session: tSessionGuardOther,
+          items: [tItem1, tItemOther],
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          failure.message,
+          'Anda tidak memiliki izin untuk menghapus salah satu data tamu '
+          'yang dipilih.',
         );
-        verifyZeroInteractions(mockRepository);
-      },
-    );
+      }, (_) => fail('Should not succeed'));
+      verifyZeroInteractions(mockRepository);
+    });
 
-    test(
-      'returns ForbiddenFailure without calling repository when user is not '
-      'authorized',
-      () async {
-        final result = await deleteBatchUseCase(
-          const DeleteBatchGuestParams(
-            ids: ['1', '3'],
-            session: tSessionGuardOther,
-            items: [tItem1, tItemOther],
-          ),
-        );
+    test('delegates to repository when ids are valid and authorized', () async {
+      when(
+        () => mockRepository.deleteBatchGuests(
+          ids: any(named: 'ids'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => const Right(tResult));
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ForbiddenFailure>());
-            expect(
-              failure.message,
-              'Anda tidak memiliki izin untuk menghapus salah satu data tamu '
-              'yang dipilih.',
-            );
-          },
-          (_) => fail('Should not succeed'),
-        );
-        verifyZeroInteractions(mockRepository);
-      },
-    );
+      final result = await deleteBatchUseCase(
+        const DeleteBatchGuestParams(
+          ids: tValidIds,
+          session: tSessionAdmin,
+          items: [tItem1, tItem2],
+        ),
+      );
 
-    test(
-      'delegates to repository when ids are valid and authorized',
-      () async {
-        when(
-          () => mockRepository.deleteBatchGuests(
-            ids: any(named: 'ids'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => const Right(tResult));
+      expect(result, const Right<Failure, DeleteBatchResult>(tResult));
+      verify(() => mockRepository.deleteBatchGuests(ids: tValidIds)).called(1);
+      verifyNoMoreInteractions(mockRepository);
+    });
 
-        final result = await deleteBatchUseCase(
-          const DeleteBatchGuestParams(
-            ids: tValidIds,
-            session: tSessionAdmin,
-            items: [tItem1, tItem2],
-          ),
-        );
+    test('returns Failure when repository returns Left', () async {
+      const failure = ServerFailure('Kesalahan internal server.', 500);
+      when(
+        () => mockRepository.deleteBatchGuests(
+          ids: any(named: 'ids'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => const Left(failure));
 
-        expect(result, const Right<Failure, DeleteBatchResult>(tResult));
-        verify(
-          () => mockRepository.deleteBatchGuests(
-            ids: tValidIds,
-          ),
-        ).called(1);
-        verifyNoMoreInteractions(mockRepository);
-      },
-    );
+      final result = await deleteBatchUseCase(
+        const DeleteBatchGuestParams(
+          ids: tValidIds,
+          session: tSessionAdmin,
+          items: [tItem1, tItem2],
+        ),
+      );
 
-    test(
-      'returns Failure when repository returns Left',
-      () async {
-        const failure = ServerFailure('Kesalahan internal server.', 500);
-        when(
-          () => mockRepository.deleteBatchGuests(
-            ids: any(named: 'ids'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => const Left(failure));
-
-        final result = await deleteBatchUseCase(
-          const DeleteBatchGuestParams(
-            ids: tValidIds,
-            session: tSessionAdmin,
-            items: [tItem1, tItem2],
-          ),
-        );
-
-        expect(result, const Left<Failure, DeleteBatchResult>(failure));
-        verify(
-          () => mockRepository.deleteBatchGuests(
-            ids: tValidIds,
-          ),
-        ).called(1);
-      },
-    );
+      expect(result, const Left<Failure, DeleteBatchResult>(failure));
+      verify(() => mockRepository.deleteBatchGuests(ids: tValidIds)).called(1);
+    });
   });
 }

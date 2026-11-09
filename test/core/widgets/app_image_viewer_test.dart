@@ -8,14 +8,14 @@ import 'package:kawalo_mobile/core/widgets/app_tooltip.dart';
 /// Finder tombol tutup berbasis [AppTooltip] (M3E), karena `byTooltip`
 /// hanya mengenali `Tooltip` Material.
 Finder _closeButtonFinder() => find.byWidgetPredicate(
-      (widget) =>
-          widget is AppTooltip && widget.message == 'Tutup penampil gambar',
-    );
+  (widget) => widget is AppTooltip && widget.message == 'Tutup penampil gambar',
+);
 
 void main() {
   group('AppImageViewer Tests', () {
-    testWidgets('renders PageView, counter, and close button correctly',
-        (tester) async {
+    testWidgets('renders PageView, counter, and close button correctly', (
+      tester,
+    ) async {
       final imageUrls = [
         'https://example.com/1.jpg',
         'https://example.com/2.jpg',
@@ -24,11 +24,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -52,10 +48,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-              initialIndex: 1,
-            ),
+            body: AppImageViewer(imageUrls: imageUrls, initialIndex: 1),
           ),
         ),
       );
@@ -72,11 +65,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -96,10 +85,8 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) => ElevatedButton(
-              onPressed: () => AppImageViewer.show(
-                context,
-                imageUrls: imageUrls,
-              ),
+              onPressed: () =>
+                  AppImageViewer.show(context, imageUrls: imageUrls),
               child: const Text('Open Viewer'),
             ),
           ),
@@ -126,10 +113,8 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) => ElevatedButton(
-              onPressed: () => AppImageViewer.show(
-                context,
-                imageUrls: imageUrls,
-              ),
+              onPressed: () =>
+                  AppImageViewer.show(context, imageUrls: imageUrls),
               child: const Text('Open Viewer'),
             ),
           ),
@@ -156,10 +141,8 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) => ElevatedButton(
-              onPressed: () => AppImageViewer.show(
-                context,
-                imageUrls: imageUrls,
-              ),
+              onPressed: () =>
+                  AppImageViewer.show(context, imageUrls: imageUrls),
               child: const Text('Open Viewer'),
             ),
           ),
@@ -186,10 +169,8 @@ void main() {
         MaterialApp(
           home: Builder(
             builder: (context) => ElevatedButton(
-              onPressed: () => AppImageViewer.show(
-                context,
-                imageUrls: imageUrls,
-              ),
+              onPressed: () =>
+                  AppImageViewer.show(context, imageUrls: imageUrls),
               child: const Text('Open Viewer'),
             ),
           ),
@@ -214,11 +195,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -245,17 +222,14 @@ void main() {
       expect(controller.value.getMaxScaleOnAxis(), closeTo(1, 0.05));
     });
 
-    testWidgets('pinch to zoom at initial scale 1.0 increases scale',
-        (tester) async {
+    testWidgets('pinch to zoom at initial scale 1.0 increases scale', (
+      tester,
+    ) async {
       final imageUrls = ['https://example.com/1.jpg'];
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -278,8 +252,9 @@ void main() {
       expect(controller.value.getMaxScaleOnAxis(), greaterThan(1.05));
     });
 
-    testWidgets('purely horizontal pinch to zoom increases scale',
-        (tester) async {
+    testWidgets('purely horizontal pinch to zoom increases scale', (
+      tester,
+    ) async {
       final imageUrls = [
         'https://example.com/1.jpg',
         'https://example.com/2.jpg',
@@ -287,11 +262,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -315,9 +286,9 @@ void main() {
       expect(controller.value.getMaxScaleOnAxis(), greaterThan(1.05));
     });
 
-    testWidgets(
-        'asymmetric horizontal pinch where one finger moves first',
-        (tester) async {
+    testWidgets('asymmetric horizontal pinch where one finger moves first', (
+      tester,
+    ) async {
       final imageUrls = [
         'https://example.com/1.jpg',
         'https://example.com/2.jpg',
@@ -325,11 +296,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -356,18 +323,14 @@ void main() {
       expect(controller.value.getMaxScaleOnAxis(), greaterThan(1.05));
     });
 
-    testWidgets(
-        'vertical pan when zoomed shifts position without resetting',
-        (tester) async {
+    testWidgets('vertical pan when zoomed shifts position without resetting', (
+      tester,
+    ) async {
       final imageUrls = ['https://example.com/1.jpg'];
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -386,10 +349,7 @@ void main() {
       final initialTy = controller.value.storage[13];
 
       // Pan vertically by -80 pixels (drag upwards)
-      await tester.drag(
-        find.byType(InteractiveViewer),
-        const Offset(0, -80),
-      );
+      await tester.drag(find.byType(InteractiveViewer), const Offset(0, -80));
       await tester.pumpAndSettle();
 
       final newTy = controller.value.storage[13];
@@ -398,17 +358,12 @@ void main() {
       expect(controller.value.getMaxScaleOnAxis(), greaterThan(1.5));
     });
 
-    testWidgets('tapping backdrop or image toggles top chrome',
-        (tester) async {
+    testWidgets('tapping backdrop or image toggles top chrome', (tester) async {
       final imageUrls = ['https://example.com/1.jpg'];
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
-          ),
+          home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
         ),
       );
 
@@ -443,42 +398,35 @@ void main() {
     });
 
     testWidgets(
-        'renders seamlessly with dynamic colors in both Light and Dark themes',
-        (tester) async {
-      final imageUrls = ['https://example.com/1.jpg'];
+      'renders seamlessly with dynamic colors in both Light and Dark themes',
+      (tester) async {
+        final imageUrls = ['https://example.com/1.jpg'];
 
-      // 1. Light Mode
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData.light(),
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
+        // 1. Light Mode
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData.light(),
+            home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppIconButton), findsOneWidget);
-      expect(find.text('1 / 1'), findsOneWidget);
+        expect(find.byType(AppIconButton), findsOneWidget);
+        expect(find.text('1 / 1'), findsOneWidget);
 
-      // 2. Dark Mode
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData.dark(),
-          home: Scaffold(
-            body: AppImageViewer(
-              imageUrls: imageUrls,
-            ),
+        // 2. Dark Mode
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData.dark(),
+            home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppIconButton), findsOneWidget);
-      expect(find.text('1 / 1'), findsOneWidget);
-    });
+        expect(find.byType(AppIconButton), findsOneWidget);
+        expect(find.text('1 / 1'), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'configures light status bar icons for dark background overlay',
@@ -487,88 +435,71 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            home: Scaffold(
-              body: AppImageViewer(
-                imageUrls: imageUrls,
-              ),
-            ),
+            home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
           ),
         );
         await tester.pumpAndSettle();
 
-        final regionFinder = find.byType(
-          AnnotatedRegion<SystemUiOverlayStyle>,
-        );
+        final regionFinder = find.byType(AnnotatedRegion<SystemUiOverlayStyle>);
         expect(regionFinder, findsOneWidget);
 
         final region = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
           regionFinder,
         );
-        expect(
-          region.value.statusBarIconBrightness,
-          equals(Brightness.light),
-        );
-        expect(
-          region.value.statusBarBrightness,
-          equals(Brightness.dark),
-        );
+        expect(region.value.statusBarIconBrightness, equals(Brightness.light));
+        expect(region.value.statusBarBrightness, equals(Brightness.dark));
       },
     );
 
-    testWidgets(
-      'enables immersiveSticky system UI mode on open and restores '
-      'edgeToEdge on dispose',
-      (tester) async {
-        final log = <MethodCall>[];
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          SystemChannels.platform,
-          (MethodCall methodCall) async {
-            log.add(methodCall);
-            return null;
-          },
-        );
+    testWidgets('enables immersiveSticky system UI mode on open and restores '
+        'edgeToEdge on dispose', (tester) async {
+      final log = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (MethodCall methodCall) async {
+          log.add(methodCall);
+          return null;
+        },
+      );
 
-        final imageUrls = ['https://example.com/1.jpg'];
+      final imageUrls = ['https://example.com/1.jpg'];
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => AppImageViewer.show(
-                  context,
-                  imageUrls: imageUrls,
-                ),
-                child: const Text('Open'),
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () =>
+                  AppImageViewer.show(context, imageUrls: imageUrls),
+              child: const Text('Open'),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        expect(
-          log.any(
-            (call) =>
-                call.method == 'SystemChrome.setEnabledSystemUIMode' &&
-                call.arguments == 'SystemUiMode.immersiveSticky',
-          ),
-          isTrue,
-        );
+      expect(
+        log.any(
+          (call) =>
+              call.method == 'SystemChrome.setEnabledSystemUIMode' &&
+              call.arguments == 'SystemUiMode.immersiveSticky',
+        ),
+        isTrue,
+      );
 
-        await tester.tap(_closeButtonFinder());
-        await tester.pumpAndSettle();
+      await tester.tap(_closeButtonFinder());
+      await tester.pumpAndSettle();
 
-        expect(
-          log.any(
-            (call) =>
-                call.method == 'SystemChrome.setEnabledSystemUIMode' &&
-                call.arguments == 'SystemUiMode.edgeToEdge',
-          ),
-          isTrue,
-        );
-      },
-    );
+      expect(
+        log.any(
+          (call) =>
+              call.method == 'SystemChrome.setEnabledSystemUIMode' &&
+              call.arguments == 'SystemUiMode.edgeToEdge',
+        ),
+        isTrue,
+      );
+    });
 
     testWidgets(
       'top chrome fades out quickly during downward swipe-to-dismiss',
@@ -577,11 +508,7 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            home: Scaffold(
-              body: AppImageViewer(
-                imageUrls: imageUrls,
-              ),
-            ),
+            home: Scaffold(body: AppImageViewer(imageUrls: imageUrls)),
           ),
         );
         await tester.pumpAndSettle();

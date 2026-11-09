@@ -99,25 +99,24 @@ void main() {
     });
 
     test(
-        'toEntity falls back to trimmed userEmail when email format is invalid',
-        () {
-      const invalidEmailModel = OperationalModel(
-        id: 'invalid-id',
-        userEmail: 'not-an-email',
-        totalActivities: 0,
-        timeline: [],
-      );
+      'toEntity falls back to trimmed userEmail when email format is invalid',
+      () {
+        const invalidEmailModel = OperationalModel(
+          id: 'invalid-id',
+          userEmail: 'not-an-email',
+          totalActivities: 0,
+          timeline: [],
+        );
 
-      final entity = OperationalMapper.toEntity(invalidEmailModel);
-      expect(entity.userEmail, 'not-an-email');
+        final entity = OperationalMapper.toEntity(invalidEmailModel);
+        expect(entity.userEmail, 'not-an-email');
 
-      const timelineModel = DutyTimelineModel(
-        id: '  N/A  ',
-        duty: 'Patroli',
-      );
-      final timelineEntity =
-          OperationalMapper.toDutyTimelineEntity(timelineModel);
-      expect(timelineEntity.id, 'N/A');
-    });
+        const timelineModel = DutyTimelineModel(id: '  N/A  ', duty: 'Patroli');
+        final timelineEntity = OperationalMapper.toDutyTimelineEntity(
+          timelineModel,
+        );
+        expect(timelineEntity.id, 'N/A');
+      },
+    );
   });
 }

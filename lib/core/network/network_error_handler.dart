@@ -62,8 +62,9 @@ abstract final class NetworkErrorHandler {
   /// Menangani error koneksi fisik / soket.
   static AppException _handleConnectionError(DioException error) {
     final rawError = error.error;
-    final rawString =
-        (rawError ?? error.message ?? '').toString().toLowerCase();
+    final rawString = (rawError ?? error.message ?? '')
+        .toString()
+        .toLowerCase();
 
     // 1. Deteksi koneksi ditolak / port server mati / host unreachable / timeout
     if (rawString.contains('refused') ||
@@ -131,8 +132,8 @@ abstract final class NetworkErrorHandler {
   static AppException _handleUnknownError(DioException error) {
     final rawError = error.error;
     if (rawError is SocketException) {
-      final rawString =
-          (rawError.osError?.message ?? rawError.message).toLowerCase();
+      final rawString = (rawError.osError?.message ?? rawError.message)
+          .toLowerCase();
       if (rawString.contains('network is unreachable') ||
           rawString.contains('no address associated')) {
         return const NoInternetException();

@@ -155,30 +155,29 @@ void main() {
       verifyZeroInteractions(mockRepository);
     });
 
-    test('delegates to repository and returns updated guest on success',
-        () async {
-      when(() => mockRepository.checkoutGuest(any())).thenAnswer(
-        (_) async => const Right<Failure, GuestItemEntity>(tUpdatedGuest),
-      );
+    test(
+      'delegates to repository and returns updated guest on success',
+      () async {
+        when(() => mockRepository.checkoutGuest(any())).thenAnswer(
+          (_) async => const Right<Failure, GuestItemEntity>(tUpdatedGuest),
+        );
 
-      const params = CheckoutGuestParams(
-        id: '42',
-        session: tSessionGuard,
-        item: tActiveGuest,
-        qrUid: 'QR-42',
-      );
+        const params = CheckoutGuestParams(
+          id: '42',
+          session: tSessionGuard,
+          item: tActiveGuest,
+          qrUid: 'QR-42',
+        );
 
-      final result = await checkoutGuestUseCase(params);
+        final result = await checkoutGuestUseCase(params);
 
-      expect(
-        result,
-        const Right<Failure, GuestItemEntity>(tUpdatedGuest),
-      );
-      verify(
-        () => mockRepository.checkoutGuest(
-          const CheckoutGuestData(id: '42', qrUid: 'QR-42'),
-        ),
-      ).called(1);
-    });
+        expect(result, const Right<Failure, GuestItemEntity>(tUpdatedGuest));
+        verify(
+          () => mockRepository.checkoutGuest(
+            const CheckoutGuestData(id: '42', qrUid: 'QR-42'),
+          ),
+        ).called(1);
+      },
+    );
   });
 }

@@ -103,12 +103,10 @@ class InformationPhotoThumbnail extends StatelessWidget {
             borderRadius: BorderRadius.zero,
             width: double.infinity,
             height: double.infinity,
-            icon: AppLoadingIndicator(
-              size: AppLoadingIndicatorSize.small,
-            ),
+            icon: AppLoadingIndicator(size: AppLoadingIndicatorSize.small),
           );
         },
-        errorBuilder: (_, __, ___) => const AppImagePlaceholder(
+        errorBuilder: (_, _, _) => const AppImagePlaceholder(
           borderRadius: BorderRadius.zero,
           width: double.infinity,
           height: double.infinity,
@@ -116,9 +114,7 @@ class InformationPhotoThumbnail extends StatelessWidget {
           iconSize: 24,
         ),
       );
-    } else if (!kIsWeb &&
-        item.path != null &&
-        File(item.path!).existsSync()) {
+    } else if (!kIsWeb && item.path != null && File(item.path!).existsSync()) {
       imageContent = Image.file(
         File(item.path!),
         fit: BoxFit.cover,
@@ -130,12 +126,10 @@ class InformationPhotoThumbnail extends StatelessWidget {
             borderRadius: BorderRadius.zero,
             width: double.infinity,
             height: double.infinity,
-            icon: AppLoadingIndicator(
-              size: AppLoadingIndicatorSize.small,
-            ),
+            icon: AppLoadingIndicator(size: AppLoadingIndicatorSize.small),
           );
         },
-        errorBuilder: (_, __, ___) => const AppImagePlaceholder(
+        errorBuilder: (_, _, _) => const AppImagePlaceholder(
           borderRadius: BorderRadius.zero,
           width: double.infinity,
           height: double.infinity,
@@ -149,15 +143,13 @@ class InformationPhotoThumbnail extends StatelessWidget {
         fit: BoxFit.cover,
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
-        placeholder: (_, __) => const AppImagePlaceholder(
+        placeholder: (_, _) => const AppImagePlaceholder(
           borderRadius: BorderRadius.zero,
           width: double.infinity,
           height: double.infinity,
-          icon: AppLoadingIndicator(
-            size: AppLoadingIndicatorSize.small,
-          ),
+          icon: AppLoadingIndicator(size: AppLoadingIndicatorSize.small),
         ),
-        errorWidget: (_, __, ___) => const AppImagePlaceholder(
+        errorWidget: (_, _, _) => const AppImagePlaceholder(
           borderRadius: BorderRadius.zero,
           width: double.infinity,
           height: double.infinity,
@@ -287,9 +279,7 @@ class InformationPhotoThumbnail extends StatelessWidget {
                         Colors.white,
                       ),
                       side: WidgetStatePropertyAll(
-                        BorderSide(
-                          color: Colors.white.withValues(alpha: 0.30),
-                        ),
+                        BorderSide(color: Colors.white.withValues(alpha: 0.30)),
                       ),
                     ),
                     icon: const AppSvgIcon(
@@ -302,10 +292,7 @@ class InformationPhotoThumbnail extends StatelessWidget {
               ),
           ],
         ),
-        child: Hero(
-          tag: effectiveHeroTag,
-          child: imageContent,
-        ),
+        child: Hero(tag: effectiveHeroTag, child: imageContent),
       ),
     );
   }

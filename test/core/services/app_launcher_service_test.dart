@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 class MockGeolocatorPlatform extends Mock implements GeolocatorPlatform {}
 
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -22,7 +21,6 @@ void main() {
   setUp(() {
     mockGeolocator = MockGeolocatorPlatform();
   });
-
 
   group('DefaultAppLauncherService Unit Tests', () {
     test(
@@ -42,70 +40,71 @@ void main() {
       },
     );
 
-    test('openAppSettings returns false when platform throws exception',
-        () async {
-      when(() => mockGeolocator.openAppSettings())
-          .thenThrow(Exception('Platform error'));
-
-      final service = DefaultAppLauncherService(
-        geolocatorPlatform: mockGeolocator,
-      );
-      final result = await service.openAppSettings();
-
-      expect(result, isFalse);
-    });
-
     test(
-      'openLocationSettings delegates to geolocator and returns true on '
-      'success',
+      'openAppSettings returns false when platform throws exception',
       () async {
         when(
-          () => mockGeolocator.openLocationSettings(),
-        ).thenAnswer((_) async => true);
+          () => mockGeolocator.openAppSettings(),
+        ).thenThrow(Exception('Platform error'));
 
         final service = DefaultAppLauncherService(
           geolocatorPlatform: mockGeolocator,
         );
-        final result = await service.openLocationSettings();
+        final result = await service.openAppSettings();
 
-        expect(result, isTrue);
-        verify(() => mockGeolocator.openLocationSettings()).called(1);
+        expect(result, isFalse);
       },
     );
 
-    test('openLocationSettings returns false when platform throws exception',
-        () async {
-      when(() => mockGeolocator.openLocationSettings())
-          .thenThrow(Exception('Location settings unavailable'));
+    test('openLocationSettings delegates to geolocator and returns true on '
+        'success', () async {
+      when(
+        () => mockGeolocator.openLocationSettings(),
+      ).thenAnswer((_) async => true);
 
       final service = DefaultAppLauncherService(
         geolocatorPlatform: mockGeolocator,
       );
       final result = await service.openLocationSettings();
 
-      expect(result, isFalse);
+      expect(result, isTrue);
+      verify(() => mockGeolocator.openLocationSettings()).called(1);
     });
 
     test(
-      'default constructor uses GeolocatorPlatform.instance cleanly',
-      () {
-        const service = DefaultAppLauncherService();
-        expect(service, isA<DefaultAppLauncherService>());
+      'openLocationSettings returns false when platform throws exception',
+      () async {
+        when(
+          () => mockGeolocator.openLocationSettings(),
+        ).thenThrow(Exception('Location settings unavailable'));
+
+        final service = DefaultAppLauncherService(
+          geolocatorPlatform: mockGeolocator,
+        );
+        final result = await service.openLocationSettings();
+
+        expect(result, isFalse);
       },
     );
+
+    test('default constructor uses GeolocatorPlatform.instance cleanly', () {
+      const service = DefaultAppLauncherService();
+      expect(service, isA<DefaultAppLauncherService>());
+    });
 
     test('openMap launches cleanly when title is not provided', () async {
       Uri? launchedUri;
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => true,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          launchedUri = url;
-          return true;
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              launchedUri = url;
+              return true;
+            },
       );
 
       final result = await service.openMap(
@@ -126,15 +125,16 @@ void main() {
 
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => url.host == 'maps.apple.com',
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          launchedUri = url;
-          launchedMode = mode;
-          return true;
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              launchedUri = url;
+              launchedMode = mode;
+              return true;
+            },
       );
 
       final result = await service.openMap(
@@ -151,40 +151,43 @@ void main() {
       expect(launchedMode, equals(LaunchMode.externalApplication));
     });
 
-    test('openMap launches Android geo intent on Android when available',
-        () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.android;
-      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    test(
+      'openMap launches Android geo intent on Android when available',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      Uri? launchedUri;
-      LaunchMode? launchedMode;
+        Uri? launchedUri;
+        LaunchMode? launchedMode;
 
-      final service = DefaultAppLauncherService(
-        canLaunch: (url) async => url.scheme == 'geo',
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          launchedUri = url;
-          launchedMode = mode;
-          return true;
-        },
-      );
+        final service = DefaultAppLauncherService(
+          canLaunch: (url) async => url.scheme == 'geo',
+          launch:
+              (
+                url, {
+                mode = LaunchMode.platformDefault,
+                webOnlyWindowName,
+              }) async {
+                launchedUri = url;
+                launchedMode = mode;
+                return true;
+              },
+        );
 
-      final result = await service.openMap(
-        latitude: -6.2088,
-        longitude: 106.8456,
-        title: 'Pos 1',
-      );
+        final result = await service.openMap(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          title: 'Pos 1',
+        );
 
-      expect(result, isTrue);
-      expect(launchedUri, isNotNull);
-      expect(launchedUri!.scheme, equals('geo'));
-      expect(launchedUri!.path, equals('-6.2088,106.8456'));
-      expect(launchedUri!.query, contains('q=-6.2088,106.8456'));
-      expect(launchedMode, equals(LaunchMode.externalApplication));
-    });
+        expect(result, isTrue);
+        expect(launchedUri, isNotNull);
+        expect(launchedUri!.scheme, equals('geo'));
+        expect(launchedUri!.path, equals('-6.2088,106.8456'));
+        expect(launchedUri!.query, contains('q=-6.2088,106.8456'));
+        expect(launchedMode, equals(LaunchMode.externalApplication));
+      },
+    );
 
     test(
       'openMap falls back to Google Maps web when native scheme is unavailable',
@@ -196,20 +199,18 @@ void main() {
 
         final service = DefaultAppLauncherService(
           canLaunch: (url) async => url.host == 'www.google.com',
-          launch: (
-            url, {
-            mode = LaunchMode.platformDefault,
-            webOnlyWindowName,
-          }) async {
-            launchedUri = url;
-            return true;
-          },
+          launch:
+              (
+                url, {
+                mode = LaunchMode.platformDefault,
+                webOnlyWindowName,
+              }) async {
+                launchedUri = url;
+                return true;
+              },
         );
 
-        final result = await service.openMap(
-          latitude: -6.2,
-          longitude: 106.8,
-        );
+        final result = await service.openMap(latitude: -6.2, longitude: 106.8);
 
         expect(result, isTrue);
         expect(launchedUri, isNotNull);
@@ -223,10 +224,7 @@ void main() {
         canLaunch: (url) async => throw Exception('Platform error'),
       );
 
-      final result = await service.openMap(
-        latitude: -6.2,
-        longitude: 106.8,
-      );
+      final result = await service.openMap(latitude: -6.2, longitude: 106.8);
 
       expect(result, isFalse);
     });
@@ -245,10 +243,7 @@ void main() {
           isFalse,
         );
         expect(
-          await service.openMap(
-            latitude: double.infinity,
-            longitude: 106.8,
-          ),
+          await service.openMap(latitude: double.infinity, longitude: 106.8),
           isFalse,
         );
         expect(
@@ -274,14 +269,8 @@ void main() {
           await service.openMap(latitude: -90.1, longitude: 106.8),
           isFalse,
         );
-        expect(
-          await service.openMap(latitude: 0, longitude: 180.1),
-          isFalse,
-        );
-        expect(
-          await service.openMap(latitude: 0, longitude: -180.1),
-          isFalse,
-        );
+        expect(await service.openMap(latitude: 0, longitude: 180.1), isFalse);
+        expect(await service.openMap(latitude: 0, longitude: -180.1), isFalse);
       },
     );
 
@@ -291,15 +280,16 @@ void main() {
 
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => true,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          capturedUri = url;
-          capturedMode = mode;
-          return true;
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              capturedUri = url;
+              capturedMode = mode;
+              return true;
+            },
       );
 
       final targetUrl = Uri.parse('https://kawalo.example.com/panduan');
@@ -315,14 +305,15 @@ void main() {
 
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => true,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          capturedMode = mode;
-          return true;
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              capturedMode = mode;
+              return true;
+            },
       );
 
       final url = Uri.parse('https://kawalo.example.com');
@@ -346,14 +337,15 @@ void main() {
         var launchCalled = false;
         final service = DefaultAppLauncherService(
           canLaunch: (url) async => true,
-          launch: (
-            url, {
-            mode = LaunchMode.platformDefault,
-            webOnlyWindowName,
-          }) async {
-            launchCalled = true;
-            return true;
-          },
+          launch:
+              (
+                url, {
+                mode = LaunchMode.platformDefault,
+                webOnlyWindowName,
+              }) async {
+                launchCalled = true;
+                return true;
+              },
         );
 
         final schemeless = Uri(path: 'kawalo.example.com/panduan');
@@ -370,14 +362,15 @@ void main() {
 
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => false,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          launchCalled = true;
-          return true;
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              launchCalled = true;
+              return true;
+            },
       );
 
       final result = await service.openBrowser(
@@ -391,18 +384,17 @@ void main() {
     test('openBrowser returns false when launch throws exception', () async {
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => true,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          throw Exception('ActivityNotFound');
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              throw Exception('ActivityNotFound');
+            },
       );
 
-      final result = await service.openBrowser(
-        Uri.parse('https://broken.url'),
-      );
+      final result = await service.openBrowser(Uri.parse('https://broken.url'));
 
       expect(result, isFalse);
     });
@@ -412,14 +404,15 @@ void main() {
 
       final service = DefaultAppLauncherService(
         canLaunch: (url) async => true,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          capturedUri = url;
-          return true;
-        },
+        launch:
+            (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) async {
+              capturedUri = url;
+              return true;
+            },
       );
 
       final result = await service.openDialer('+62 (021) 555-0199');
@@ -430,63 +423,70 @@ void main() {
       expect(capturedUri!.path, equals('+620215550199'));
     });
 
-    test('openEmail formats and launches mailto: URI with subject and body',
-        () async {
-      Uri? capturedUri;
+    test(
+      'openEmail formats and launches mailto: URI with subject and body',
+      () async {
+        Uri? capturedUri;
 
-      final service = DefaultAppLauncherService(
-        canLaunch: (url) async => true,
-        launch: (
-          url, {
-          mode = LaunchMode.platformDefault,
-          webOnlyWindowName,
-        }) async {
-          capturedUri = url;
-          return true;
-        },
-      );
+        final service = DefaultAppLauncherService(
+          canLaunch: (url) async => true,
+          launch:
+              (
+                url, {
+                mode = LaunchMode.platformDefault,
+                webOnlyWindowName,
+              }) async {
+                capturedUri = url;
+                return true;
+              },
+        );
 
-      final result = await service.openEmail(
-        'bantuan@kawalo.id',
-        subject: 'Laporan Kendala',
-        body: 'Berikut rincian kendala yang terjadi.',
-      );
+        final result = await service.openEmail(
+          'bantuan@kawalo.id',
+          subject: 'Laporan Kendala',
+          body: 'Berikut rincian kendala yang terjadi.',
+        );
 
-      expect(result, isTrue);
-      expect(capturedUri, isNotNull);
-      expect(capturedUri!.scheme, equals('mailto'));
-      expect(capturedUri!.path, equals('bantuan@kawalo.id'));
-      expect(
-        capturedUri!.queryParameters['subject'],
-        equals('Laporan Kendala'),
-      );
-      expect(
-        capturedUri!.queryParameters['body'],
-        equals('Berikut rincian kendala yang terjadi.'),
-      );
-    });
+        expect(result, isTrue);
+        expect(capturedUri, isNotNull);
+        expect(capturedUri!.scheme, equals('mailto'));
+        expect(capturedUri!.path, equals('bantuan@kawalo.id'));
+        expect(
+          capturedUri!.queryParameters['subject'],
+          equals('Laporan Kendala'),
+        );
+        expect(
+          capturedUri!.queryParameters['body'],
+          equals('Berikut rincian kendala yang terjadi.'),
+        );
+      },
+    );
 
-    test('openDialer returns false when sanitized phone number is invalid',
-        () async {
-      const service = DefaultAppLauncherService();
+    test(
+      'openDialer returns false when sanitized phone number is invalid',
+      () async {
+        const service = DefaultAppLauncherService();
 
-      expect(await service.openDialer(''), isFalse);
-      expect(await service.openDialer('   '), isFalse);
-      expect(await service.openDialer('abc-xyz'), isFalse);
-      expect(await service.openDialer('+'), isFalse);
-      expect(await service.openDialer('+++'), isFalse);
-      expect(await service.openDialer('+abc'), isFalse);
-    });
+        expect(await service.openDialer(''), isFalse);
+        expect(await service.openDialer('   '), isFalse);
+        expect(await service.openDialer('abc-xyz'), isFalse);
+        expect(await service.openDialer('+'), isFalse);
+        expect(await service.openDialer('+++'), isFalse);
+        expect(await service.openDialer('+abc'), isFalse);
+      },
+    );
 
-    test('openEmail returns false when email address is blank or invalid',
-        () async {
-      const service = DefaultAppLauncherService();
+    test(
+      'openEmail returns false when email address is blank or invalid',
+      () async {
+        const service = DefaultAppLauncherService();
 
-      expect(await service.openEmail(''), isFalse);
-      expect(await service.openEmail('   '), isFalse);
-      expect(await service.openEmail('bukan-email'), isFalse);
-      expect(await service.openEmail('user@'), isFalse);
-      expect(await service.openEmail('@domain.com'), isFalse);
-    });
+        expect(await service.openEmail(''), isFalse);
+        expect(await service.openEmail('   '), isFalse);
+        expect(await service.openEmail('bukan-email'), isFalse);
+        expect(await service.openEmail('user@'), isFalse);
+        expect(await service.openEmail('@domain.com'), isFalse);
+      },
+    );
   });
 }

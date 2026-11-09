@@ -36,11 +36,11 @@ class NetworkInfoImpl implements NetworkInfo {
     Duration probeTimeout = const Duration(seconds: 2),
     Duration offlineCacheTtl = const Duration(milliseconds: 2000),
     Duration heartbeatInterval = const Duration(seconds: 30),
-  })  : _connectivity = connectivity ?? Connectivity(),
-        _checkConnection = checkConnection ?? _createDefaultProbe(probeTimeout),
-        _retryDelay = retryDelay,
-        _offlineCacheTtl = offlineCacheTtl,
-        _heartbeatInterval = heartbeatInterval;
+  }) : _connectivity = connectivity ?? Connectivity(),
+       _checkConnection = checkConnection ?? _createDefaultProbe(probeTimeout),
+       _retryDelay = retryDelay,
+       _offlineCacheTtl = offlineCacheTtl,
+       _heartbeatInterval = heartbeatInterval;
 
   final Connectivity _connectivity;
   final Future<bool> Function() _checkConnection;
@@ -88,16 +88,18 @@ class NetworkInfoImpl implements NetworkInfo {
 
     // 3. Fallback ketiga: DNS Lookup ringan jika jaringan membatasi HTTP
     try {
-      final result = await InternetAddress.lookup('one.one.one.one')
-          .timeout(timeout);
+      final result = await InternetAddress.lookup(
+        'one.one.one.one',
+      ).timeout(timeout);
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
       }
     } on Object catch (_) {}
 
     try {
-      final fallback = await InternetAddress.lookup('google.com')
-          .timeout(timeout);
+      final fallback = await InternetAddress.lookup(
+        'google.com',
+      ).timeout(timeout);
       return fallback.isNotEmpty && fallback[0].rawAddress.isNotEmpty;
     } on Object catch (_) {
       return false;
@@ -199,7 +201,8 @@ class NetworkInfoImpl implements NetworkInfo {
       await Future<void>.delayed(_retryDelay);
       if (probeId == _currentProbeId) {
         final currentResults = await _connectivity.checkConnectivity();
-        final stillHasInterface = currentResults.isNotEmpty &&
+        final stillHasInterface =
+            currentResults.isNotEmpty &&
             !currentResults.every((r) => r == ConnectivityResult.none);
         if (stillHasInterface) {
           online = await _checkConnection();
@@ -251,7 +254,8 @@ class NetworkInfoImpl implements NetworkInfo {
 
   Future<void> _probeIfInterfaceActive() async {
     final results = await _connectivity.checkConnectivity();
-    final hasActiveInterface = results.isNotEmpty &&
+    final hasActiveInterface =
+        results.isNotEmpty &&
         !results.every((r) => r == ConnectivityResult.none);
     if (hasActiveInterface) {
       await checkConnectivity();
@@ -278,7 +282,8 @@ class NetworkInfoImpl implements NetworkInfo {
 
     // Deteksi apakah terjadi perpindahan tipe antarmuka
     // (handover Wi-Fi <-> Seluler)
-    final isHandover = previousResults == null ||
+    final isHandover =
+        previousResults == null ||
         !listEquals(previousResults, _lastInterfaceResults);
 
     // Jalankan probe pertama
@@ -289,7 +294,8 @@ class NetworkInfoImpl implements NetworkInfo {
       await Future<void>.delayed(_retryDelay);
       if (probeId == _currentProbeId) {
         final currentResults = await _connectivity.checkConnectivity();
-        final stillHasInterface = currentResults.isNotEmpty &&
+        final stillHasInterface =
+            currentResults.isNotEmpty &&
             !currentResults.every((r) => r == ConnectivityResult.none);
         if (stillHasInterface) {
           online = await _checkConnection();

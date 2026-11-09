@@ -18,9 +18,7 @@ class CreateGuestUseCase
   final GuestRepository repository;
 
   @override
-  Future<Either<Failure, GuestItemEntity>> call(
-    CreateGuestParams params,
-  ) {
+  Future<Either<Failure, GuestItemEntity>> call(CreateGuestParams params) {
     if (params.session != null && !params.isAuthorized) {
       return Future.value(
         const Left(

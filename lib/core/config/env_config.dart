@@ -36,8 +36,9 @@ class EnvConfig {
     r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
   );
   static final _trailingSlashRegex = RegExp(r'/+$');
-  static final _privateSubnet172Regex =
-      RegExp(r'^172\.(1[6-9]|2[0-9]|3[0-1])\.');
+  static final _privateSubnet172Regex = RegExp(
+    r'^172\.(1[6-9]|2[0-9]|3[0-1])\.',
+  );
 
   static const Set<String> _nonProdKeywords = {
     'dev',
@@ -135,7 +136,8 @@ class EnvConfig {
       );
     }
 
-    final isValidHost = host == 'localhost' ||
+    final isValidHost =
+        host == 'localhost' ||
         host == '10.0.2.2' ||
         _fqdnRegex.hasMatch(host) ||
         _ipv4Regex.hasMatch(host) ||
@@ -246,29 +248,19 @@ class EnvConfig {
   /// URL dasar API backend Kawalo.
   static String get apiBaseUrl {
     const fromDefine = String.fromEnvironment(_keyApiBaseUrl);
-    final rawUrl = _resolve(
-      fromDefine,
-      _keyApiBaseUrl,
-      defaultValue: '',
-    );
+    final rawUrl = _resolve(fromDefine, _keyApiBaseUrl, defaultValue: '');
     return rawUrl.replaceAll(_trailingSlashRegex, '');
   }
 
   /// Nama tampilan aplikasi.
   static String get appName {
     const fromDefine = String.fromEnvironment(_keyAppName);
-    return _resolve(
-      fromDefine,
-      _keyAppName,
-      defaultValue: _defaultAppName,
-    );
+    return _resolve(fromDefine, _keyAppName, defaultValue: _defaultAppName);
   }
 
   /// Menentukan apakah alur persistensi onboarding diaktifkan.
   static bool get enableOnboardingPersistence {
-    const fromDefine = String.fromEnvironment(
-      _keyEnableOnboardingPersistence,
-    );
+    const fromDefine = String.fromEnvironment(_keyEnableOnboardingPersistence);
     return _resolveBool(
       fromDefine,
       _keyEnableOnboardingPersistence,

@@ -36,16 +36,18 @@ class GuestFormPhotoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = AppTheme.of(context).colorScheme;
 
-    return BlocSelector<GuestFormCubit, GuestFormState,
-        ({InformationFormMediaItem? photoMedia, String? photoUrl})>(
-      selector: (state) => (
-        photoMedia: state.photoMedia,
-        photoUrl: state.photoUrl,
-      ),
+    return BlocSelector<
+      GuestFormCubit,
+      GuestFormState,
+      ({InformationFormMediaItem? photoMedia, String? photoUrl})
+    >(
+      selector: (state) =>
+          (photoMedia: state.photoMedia, photoUrl: state.photoUrl),
       builder: (context, photoState) {
         final photoMedia = photoState.photoMedia;
         final photoUrl = photoState.photoUrl;
-        final hasPhoto = photoMedia != null ||
+        final hasPhoto =
+            photoMedia != null ||
             (photoUrl != null && photoUrl.trim().isNotEmpty);
 
         if (!hasPhoto) {
@@ -58,23 +60,18 @@ class GuestFormPhotoSection extends StatelessWidget {
         }
 
         // Render photo thumbnail with Hero transition to AppImageViewer
-        final displaySource =
-            photoMedia != null ? photoMedia.displaySource : photoUrl!;
+        final displaySource = photoMedia != null
+            ? photoMedia.displaySource
+            : photoUrl!;
 
         Widget imageContent;
         final mediaPath = photoMedia?.path;
         if (photoMedia?.bytes != null) {
-          imageContent = Image.memory(
-            photoMedia!.bytes!,
-            fit: BoxFit.cover,
-          );
+          imageContent = Image.memory(photoMedia!.bytes!, fit: BoxFit.cover);
         } else if (!kIsWeb &&
             mediaPath != null &&
             File(mediaPath).existsSync()) {
-          imageContent = Image.file(
-            File(mediaPath),
-            fit: BoxFit.cover,
-          );
+          imageContent = Image.file(File(mediaPath), fit: BoxFit.cover);
         } else if (displaySource.startsWith('http://') ||
             displaySource.startsWith('https://')) {
           imageContent = CachedNetworkImage(
@@ -82,14 +79,10 @@ class GuestFormPhotoSection extends StatelessWidget {
             fit: BoxFit.cover,
             fadeInDuration: Duration.zero,
             fadeOutDuration: Duration.zero,
-            placeholder: (_, __) => const AppImagePlaceholder(
-              icon: AppLoadingIndicator(
-                size: AppLoadingIndicatorSize.small,
-              ),
+            placeholder: (_, _) => const AppImagePlaceholder(
+              icon: AppLoadingIndicator(size: AppLoadingIndicatorSize.small),
             ),
-            errorWidget: (_, __, ___) => const AppImagePlaceholder(
-              iconSize: 24,
-            ),
+            errorWidget: (_, _, _) => const AppImagePlaceholder(iconSize: 24),
           );
         } else {
           imageContent = const AppImagePlaceholder(
@@ -125,8 +118,9 @@ class GuestFormPhotoSection extends StatelessWidget {
                           width: 32,
                           height: 32,
                           child: AppIconButton(
-                            onPressed:
-                                isSubmitting ? null : cubit.onRemovePhoto,
+                            onPressed: isSubmitting
+                                ? null
+                                : cubit.onRemovePhoto,
                             semanticLabel: 'Hapus foto tamu',
                             size: AppIconButtonSize.xs,
                             decoration: M3EIconButtonDecoration(
@@ -152,10 +146,7 @@ class GuestFormPhotoSection extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Hero(
-                    tag: 'guest_form_photo_0',
-                    child: imageContent,
-                  ),
+                  child: Hero(tag: 'guest_form_photo_0', child: imageContent),
                 ),
               ),
               AppSpacing.vGap150,

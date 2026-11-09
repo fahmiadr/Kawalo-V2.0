@@ -4,11 +4,7 @@ import 'package:kawalo_mobile/features/guest/data/models/master_guest_type_model
 void main() {
   group('MasterGuestTypeModel Tests', () {
     test('fromJson deserializes correctly', () {
-      final json = {
-        'id': '2',
-        'uid': 'GT-002',
-        'name': 'KURIR',
-      };
+      final json = {'id': '2', 'uid': 'GT-002', 'name': 'KURIR'};
 
       final model = MasterGuestTypeModel.fromJson(json);
 

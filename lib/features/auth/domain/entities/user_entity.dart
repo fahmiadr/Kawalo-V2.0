@@ -52,18 +52,18 @@ class UserGroupEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        groupUid,
-        allowAdmin,
-        allowPatrol,
-        allowMonPatrol,
-        features,
-        groupName,
-        groupOwner,
-        groupLogo,
-        groupStatus,
-        category,
-        status,
-      ];
+    groupUid,
+    allowAdmin,
+    allowPatrol,
+    allowMonPatrol,
+    features,
+    groupName,
+    groupOwner,
+    groupLogo,
+    groupStatus,
+    category,
+    status,
+  ];
 }
 
 /// Entitas bisnis domain yang merepresentasikan pengguna terautentikasi.
@@ -97,12 +97,5 @@ class UserEntity extends Equatable {
   final List<UserGroupEntity> groups;
 
   @override
-  List<Object?> get props => [
-        id,
-        email,
-        name,
-        avatarUrl,
-        activeGroup,
-        groups,
-      ];
+  List<Object?> get props => [id, email, name, avatarUrl, activeGroup, groups];
 }

@@ -27,11 +27,11 @@ abstract final class OperationalMapper {
   static OperationalItemEntity toEntity(OperationalModel model) {
     return OperationalItemEntity(
       id: AppSanitizer.cleanString(model.id) ?? model.id.trim(),
-      userEmail: AppSanitizer.cleanEmail(model.userEmail) ??
-          model.userEmail.trim(),
+      userEmail:
+          AppSanitizer.cleanEmail(model.userEmail) ?? model.userEmail.trim(),
       totalActivities:
           AppSanitizer.cleanInteger(model.totalActivities) ??
-              model.totalActivities,
+          model.totalActivities,
       userName: AppSanitizer.cleanString(model.userName),
       userProfilePic: AppSanitizer.cleanString(model.userProfilePic),
       groupName: AppSanitizer.cleanString(model.groupName),
@@ -40,8 +40,9 @@ abstract final class OperationalMapper {
       latestDutyDt: AppSanitizer.cleanDate(model.latestDutyDt),
       latestStateDt: AppSanitizer.cleanDate(model.latestStateDt),
       dutyDate: AppSanitizer.cleanDate(model.dutyDate),
-      timeline:
-          model.timeline.map(toDutyTimelineEntity).toList(growable: false),
+      timeline: model.timeline
+          .map(toDutyTimelineEntity)
+          .toList(growable: false),
     );
   }
 

@@ -34,9 +34,7 @@ class CameraQuotaBadge extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.scrim.withValues(alpha: 0.60),
           borderRadius: AppRadius.borderFull,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.30),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.30)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

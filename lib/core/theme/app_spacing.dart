@@ -175,164 +175,200 @@ abstract final class AppSpacing {
   // -------------------------------------------------------------------------
 
   /// Symmetric horizontal 2.0 dp padding (`space25`).
-  static const EdgeInsets paddingHorizontal25 =
-      EdgeInsets.symmetric(horizontal: space25);
+  static const EdgeInsets paddingHorizontal25 = EdgeInsets.symmetric(
+    horizontal: space25,
+  );
 
   /// Symmetric horizontal 4.0 dp padding (`space50` / `xs`).
-  static const EdgeInsets paddingHorizontal50 =
-      EdgeInsets.symmetric(horizontal: space50);
+  static const EdgeInsets paddingHorizontal50 = EdgeInsets.symmetric(
+    horizontal: space50,
+  );
   static const EdgeInsets paddingHorizontalXs = paddingHorizontal50;
 
   /// Symmetric horizontal 6.0 dp padding (`space75`).
-  static const EdgeInsets paddingHorizontal75 =
-      EdgeInsets.symmetric(horizontal: space75);
+  static const EdgeInsets paddingHorizontal75 = EdgeInsets.symmetric(
+    horizontal: space75,
+  );
 
   /// Symmetric horizontal 8.0 dp padding (`space100` / `sm`).
-  static const EdgeInsets paddingHorizontal100 =
-      EdgeInsets.symmetric(horizontal: space100);
+  static const EdgeInsets paddingHorizontal100 = EdgeInsets.symmetric(
+    horizontal: space100,
+  );
   static const EdgeInsets paddingHorizontalSm = paddingHorizontal100;
 
   /// Symmetric horizontal 10.0 dp padding (`space125`).
-  static const EdgeInsets paddingHorizontal125 =
-      EdgeInsets.symmetric(horizontal: space125);
+  static const EdgeInsets paddingHorizontal125 = EdgeInsets.symmetric(
+    horizontal: space125,
+  );
 
   /// Symmetric horizontal 12.0 dp padding (`space150` / `md`).
-  static const EdgeInsets paddingHorizontal150 =
-      EdgeInsets.symmetric(horizontal: space150);
+  static const EdgeInsets paddingHorizontal150 = EdgeInsets.symmetric(
+    horizontal: space150,
+  );
   static const EdgeInsets paddingHorizontalMd = paddingHorizontal150;
 
   /// Symmetric horizontal 14.0 dp padding (`space175`).
-  static const EdgeInsets paddingHorizontal175 =
-      EdgeInsets.symmetric(horizontal: space175);
+  static const EdgeInsets paddingHorizontal175 = EdgeInsets.symmetric(
+    horizontal: space175,
+  );
 
   /// Symmetric horizontal 16.0 dp padding (`space200` / `lg`).
-  static const EdgeInsets paddingHorizontal200 =
-      EdgeInsets.symmetric(horizontal: space200);
+  static const EdgeInsets paddingHorizontal200 = EdgeInsets.symmetric(
+    horizontal: space200,
+  );
   static const EdgeInsets paddingHorizontalLg = paddingHorizontal200;
 
   /// Symmetric horizontal 20.0 dp padding (`space250`).
-  static const EdgeInsets paddingHorizontal250 =
-      EdgeInsets.symmetric(horizontal: space250);
+  static const EdgeInsets paddingHorizontal250 = EdgeInsets.symmetric(
+    horizontal: space250,
+  );
 
   /// Symmetric horizontal 24.0 dp padding (`space300` / `xl`).
-  static const EdgeInsets paddingHorizontal300 =
-      EdgeInsets.symmetric(horizontal: space300);
+  static const EdgeInsets paddingHorizontal300 = EdgeInsets.symmetric(
+    horizontal: space300,
+  );
   static const EdgeInsets paddingHorizontalXl = paddingHorizontal300;
 
   /// Symmetric horizontal 28.0 dp padding (`space350`).
-  static const EdgeInsets paddingHorizontal350 =
-      EdgeInsets.symmetric(horizontal: space350);
+  static const EdgeInsets paddingHorizontal350 = EdgeInsets.symmetric(
+    horizontal: space350,
+  );
 
   /// Symmetric horizontal 32.0 dp padding (`space400` / `xxl`).
-  static const EdgeInsets paddingHorizontal400 =
-      EdgeInsets.symmetric(horizontal: space400);
+  static const EdgeInsets paddingHorizontal400 = EdgeInsets.symmetric(
+    horizontal: space400,
+  );
   static const EdgeInsets paddingHorizontalXxl = paddingHorizontal400;
 
   /// Symmetric horizontal 36.0 dp padding (`space450`).
-  static const EdgeInsets paddingHorizontal450 =
-      EdgeInsets.symmetric(horizontal: space450);
+  static const EdgeInsets paddingHorizontal450 = EdgeInsets.symmetric(
+    horizontal: space450,
+  );
 
   /// Symmetric horizontal 40.0 dp padding (`space500`).
-  static const EdgeInsets paddingHorizontal500 =
-      EdgeInsets.symmetric(horizontal: space500);
+  static const EdgeInsets paddingHorizontal500 = EdgeInsets.symmetric(
+    horizontal: space500,
+  );
 
   /// Symmetric horizontal 48.0 dp padding (`space600`).
-  static const EdgeInsets paddingHorizontal600 =
-      EdgeInsets.symmetric(horizontal: space600);
+  static const EdgeInsets paddingHorizontal600 = EdgeInsets.symmetric(
+    horizontal: space600,
+  );
 
   /// Symmetric horizontal 56.0 dp padding (`space700`).
-  static const EdgeInsets paddingHorizontal700 =
-      EdgeInsets.symmetric(horizontal: space700);
+  static const EdgeInsets paddingHorizontal700 = EdgeInsets.symmetric(
+    horizontal: space700,
+  );
 
   /// Symmetric horizontal 64.0 dp padding (`space800`).
-  static const EdgeInsets paddingHorizontal800 =
-      EdgeInsets.symmetric(horizontal: space800);
+  static const EdgeInsets paddingHorizontal800 = EdgeInsets.symmetric(
+    horizontal: space800,
+  );
 
   /// Symmetric horizontal 72.0 dp padding (`space900`).
-  static const EdgeInsets paddingHorizontal900 =
-      EdgeInsets.symmetric(horizontal: space900);
+  static const EdgeInsets paddingHorizontal900 = EdgeInsets.symmetric(
+    horizontal: space900,
+  );
 
   // -------------------------------------------------------------------------
   // EdgeInsets Helpers - Vertical Symmetric
   // -------------------------------------------------------------------------
 
   /// Symmetric vertical 2.0 dp padding (`space25`).
-  static const EdgeInsets paddingVertical25 =
-      EdgeInsets.symmetric(vertical: space25);
+  static const EdgeInsets paddingVertical25 = EdgeInsets.symmetric(
+    vertical: space25,
+  );
 
   /// Symmetric vertical 4.0 dp padding (`space50` / `xs`).
-  static const EdgeInsets paddingVertical50 =
-      EdgeInsets.symmetric(vertical: space50);
+  static const EdgeInsets paddingVertical50 = EdgeInsets.symmetric(
+    vertical: space50,
+  );
   static const EdgeInsets paddingVerticalXs = paddingVertical50;
 
   /// Symmetric vertical 6.0 dp padding (`space75`).
-  static const EdgeInsets paddingVertical75 =
-      EdgeInsets.symmetric(vertical: space75);
+  static const EdgeInsets paddingVertical75 = EdgeInsets.symmetric(
+    vertical: space75,
+  );
 
   /// Symmetric vertical 8.0 dp padding (`space100` / `sm`).
-  static const EdgeInsets paddingVertical100 =
-      EdgeInsets.symmetric(vertical: space100);
+  static const EdgeInsets paddingVertical100 = EdgeInsets.symmetric(
+    vertical: space100,
+  );
   static const EdgeInsets paddingVerticalSm = paddingVertical100;
 
   /// Symmetric vertical 10.0 dp padding (`space125`).
-  static const EdgeInsets paddingVertical125 =
-      EdgeInsets.symmetric(vertical: space125);
+  static const EdgeInsets paddingVertical125 = EdgeInsets.symmetric(
+    vertical: space125,
+  );
 
   /// Symmetric vertical 12.0 dp padding (`space150` / `md`).
-  static const EdgeInsets paddingVertical150 =
-      EdgeInsets.symmetric(vertical: space150);
+  static const EdgeInsets paddingVertical150 = EdgeInsets.symmetric(
+    vertical: space150,
+  );
   static const EdgeInsets paddingVerticalMd = paddingVertical150;
 
   /// Symmetric vertical 14.0 dp padding (`space175`).
-  static const EdgeInsets paddingVertical175 =
-      EdgeInsets.symmetric(vertical: space175);
+  static const EdgeInsets paddingVertical175 = EdgeInsets.symmetric(
+    vertical: space175,
+  );
 
   /// Symmetric vertical 16.0 dp padding (`space200` / `lg`).
-  static const EdgeInsets paddingVertical200 =
-      EdgeInsets.symmetric(vertical: space200);
+  static const EdgeInsets paddingVertical200 = EdgeInsets.symmetric(
+    vertical: space200,
+  );
   static const EdgeInsets paddingVerticalLg = paddingVertical200;
 
   /// Symmetric vertical 20.0 dp padding (`space250`).
-  static const EdgeInsets paddingVertical250 =
-      EdgeInsets.symmetric(vertical: space250);
+  static const EdgeInsets paddingVertical250 = EdgeInsets.symmetric(
+    vertical: space250,
+  );
 
   /// Symmetric vertical 24.0 dp padding (`space300` / `xl`).
-  static const EdgeInsets paddingVertical300 =
-      EdgeInsets.symmetric(vertical: space300);
+  static const EdgeInsets paddingVertical300 = EdgeInsets.symmetric(
+    vertical: space300,
+  );
   static const EdgeInsets paddingVerticalXl = paddingVertical300;
 
   /// Symmetric vertical 28.0 dp padding (`space350`).
-  static const EdgeInsets paddingVertical350 =
-      EdgeInsets.symmetric(vertical: space350);
+  static const EdgeInsets paddingVertical350 = EdgeInsets.symmetric(
+    vertical: space350,
+  );
 
   /// Symmetric vertical 32.0 dp padding (`space400` / `xxl`).
-  static const EdgeInsets paddingVertical400 =
-      EdgeInsets.symmetric(vertical: space400);
+  static const EdgeInsets paddingVertical400 = EdgeInsets.symmetric(
+    vertical: space400,
+  );
   static const EdgeInsets paddingVerticalXxl = paddingVertical400;
 
   /// Symmetric vertical 36.0 dp padding (`space450`).
-  static const EdgeInsets paddingVertical450 =
-      EdgeInsets.symmetric(vertical: space450);
+  static const EdgeInsets paddingVertical450 = EdgeInsets.symmetric(
+    vertical: space450,
+  );
 
   /// Symmetric vertical 40.0 dp padding (`space500`).
-  static const EdgeInsets paddingVertical500 =
-      EdgeInsets.symmetric(vertical: space500);
+  static const EdgeInsets paddingVertical500 = EdgeInsets.symmetric(
+    vertical: space500,
+  );
 
   /// Symmetric vertical 48.0 dp padding (`space600`).
-  static const EdgeInsets paddingVertical600 =
-      EdgeInsets.symmetric(vertical: space600);
+  static const EdgeInsets paddingVertical600 = EdgeInsets.symmetric(
+    vertical: space600,
+  );
 
   /// Symmetric vertical 56.0 dp padding (`space700`).
-  static const EdgeInsets paddingVertical700 =
-      EdgeInsets.symmetric(vertical: space700);
+  static const EdgeInsets paddingVertical700 = EdgeInsets.symmetric(
+    vertical: space700,
+  );
 
   /// Symmetric vertical 64.0 dp padding (`space800`).
-  static const EdgeInsets paddingVertical800 =
-      EdgeInsets.symmetric(vertical: space800);
+  static const EdgeInsets paddingVertical800 = EdgeInsets.symmetric(
+    vertical: space800,
+  );
 
   /// Symmetric vertical 72.0 dp padding (`space900`).
-  static const EdgeInsets paddingVertical900 =
-      EdgeInsets.symmetric(vertical: space900);
+  static const EdgeInsets paddingVertical900 = EdgeInsets.symmetric(
+    vertical: space900,
+  );
 
   // -------------------------------------------------------------------------
   // SizedBox Gap Helpers (Square)

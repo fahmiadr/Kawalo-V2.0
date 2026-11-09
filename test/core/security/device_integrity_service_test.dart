@@ -21,10 +21,12 @@ void main() {
 
     // Default mock behavior
     when(() => mockPlatform.isJailbroken()).thenAnswer((_) async => false);
-    when(() => mockPlatform.getInstallerStore())
-        .thenAnswer((_) async => 'com.android.vending');
-    when(() => mockPlatform.getBuildSignature())
-        .thenAnswer((_) async => 'A1:B2:C3:D4');
+    when(
+      () => mockPlatform.getInstallerStore(),
+    ).thenAnswer((_) async => 'com.android.vending');
+    when(
+      () => mockPlatform.getBuildSignature(),
+    ).thenAnswer((_) async => 'A1:B2:C3:D4');
     when(() => mockPlatform.targetPlatform).thenReturn(TargetPlatform.android);
   });
 
@@ -54,8 +56,9 @@ void main() {
       ).thenReturn(TargetPlatform.android);
 
       for (final store in DeviceIntegrityService.officialAndroidStores) {
-        when(() => mockPlatform.getInstallerStore())
-            .thenAnswer((_) async => store);
+        when(
+          () => mockPlatform.getInstallerStore(),
+        ).thenAnswer((_) async => store);
         final result =
             await DeviceIntegrityService.isInstalledFromOfficialStore();
         expect(result, isTrue, reason: 'Failed for store: $store');
@@ -75,8 +78,9 @@ void main() {
       ];
 
       for (final store in unauthorizedStores) {
-        when(() => mockPlatform.getInstallerStore())
-            .thenAnswer((_) async => store);
+        when(
+          () => mockPlatform.getInstallerStore(),
+        ).thenAnswer((_) async => store);
         final result =
             await DeviceIntegrityService.isInstalledFromOfficialStore();
         expect(result, isFalse, reason: 'Should fail for store: $store');
@@ -100,33 +104,37 @@ void main() {
       when(() => mockPlatform.targetPlatform).thenReturn(TargetPlatform.iOS);
 
       for (final store in DeviceIntegrityService.officialIosStores) {
-        when(() => mockPlatform.getInstallerStore())
-            .thenAnswer((_) async => store);
+        when(
+          () => mockPlatform.getInstallerStore(),
+        ).thenAnswer((_) async => store);
         final result =
             await DeviceIntegrityService.isInstalledFromOfficialStore();
         expect(result, isTrue, reason: 'Failed for iOS store: $store');
       }
     });
 
-    test('returns false for unauthorized iOS installer or null receipt',
-        () async {
-      when(() => mockPlatform.targetPlatform).thenReturn(TargetPlatform.iOS);
+    test(
+      'returns false for unauthorized iOS installer or null receipt',
+      () async {
+        when(() => mockPlatform.targetPlatform).thenReturn(TargetPlatform.iOS);
 
-      when(
-        () => mockPlatform.getInstallerStore(),
-      ).thenAnswer((_) async => null);
-      expect(
-        await DeviceIntegrityService.isInstalledFromOfficialStore(),
-        isFalse,
-      );
+        when(
+          () => mockPlatform.getInstallerStore(),
+        ).thenAnswer((_) async => null);
+        expect(
+          await DeviceIntegrityService.isInstalledFromOfficialStore(),
+          isFalse,
+        );
 
-      when(() => mockPlatform.getInstallerStore())
-          .thenAnswer((_) async => 'com.sideload.altstore');
-      expect(
-        await DeviceIntegrityService.isInstalledFromOfficialStore(),
-        isFalse,
-      );
-    });
+        when(
+          () => mockPlatform.getInstallerStore(),
+        ).thenAnswer((_) async => 'com.sideload.altstore');
+        expect(
+          await DeviceIntegrityService.isInstalledFromOfficialStore(),
+          isFalse,
+        );
+      },
+    );
 
     test('returns true on non-mobile desktop or web platforms', () async {
       when(() => mockPlatform.targetPlatform).thenReturn(TargetPlatform.macOS);
@@ -148,8 +156,9 @@ void main() {
       when(
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
-      when(() => mockPlatform.getInstallerStore())
-          .thenThrow(Exception('Platform error'));
+      when(
+        () => mockPlatform.getInstallerStore(),
+      ).thenThrow(Exception('Platform error'));
 
       expect(
         await DeviceIntegrityService.isInstalledFromOfficialStore(),
@@ -173,8 +182,9 @@ void main() {
       when(
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
-      when(() => mockPlatform.getBuildSignature())
-          .thenAnswer((_) async => 'DIFFERENT_HASH');
+      when(
+        () => mockPlatform.getBuildSignature(),
+      ).thenAnswer((_) async => 'DIFFERENT_HASH');
 
       final result = await DeviceIntegrityService.isSignatureValid(
         expectedSignature: 'EXPECTED_HASH',
@@ -188,9 +198,7 @@ void main() {
       ).thenReturn(TargetPlatform.android);
 
       expect(
-        await DeviceIntegrityService.isSignatureValid(
-          enforceInDebug: true,
-        ),
+        await DeviceIntegrityService.isSignatureValid(enforceInDebug: true),
         isTrue,
       );
       expect(
@@ -208,8 +216,9 @@ void main() {
         when(
           () => mockPlatform.targetPlatform,
         ).thenReturn(TargetPlatform.android);
-        when(() => mockPlatform.getBuildSignature())
-            .thenAnswer((_) async => 'AA:BB:CC:DD:EE');
+        when(
+          () => mockPlatform.getBuildSignature(),
+        ).thenAnswer((_) async => 'AA:BB:CC:DD:EE');
 
         final result = await DeviceIntegrityService.isSignatureValid(
           expectedSignature: 'aa:bb:cc:dd:ee',
@@ -219,9 +228,9 @@ void main() {
 
         final resultWithoutColons =
             await DeviceIntegrityService.isSignatureValid(
-          expectedSignature: 'AABBCCDDEE',
-          enforceInDebug: true,
-        );
+              expectedSignature: 'AABBCCDDEE',
+              enforceInDebug: true,
+            );
         expect(resultWithoutColons, isTrue);
       },
     );
@@ -230,8 +239,9 @@ void main() {
       when(
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
-      when(() => mockPlatform.getBuildSignature())
-          .thenAnswer((_) async => 'PLAY_STORE_HASH_123');
+      when(
+        () => mockPlatform.getBuildSignature(),
+      ).thenAnswer((_) async => 'PLAY_STORE_HASH_123');
 
       final result = await DeviceIntegrityService.isSignatureValid(
         expectedSignature: 'UPLOAD_KEY_999, PLAY_STORE_HASH_123',
@@ -244,8 +254,9 @@ void main() {
       when(
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
-      when(() => mockPlatform.getBuildSignature())
-          .thenAnswer((_) async => 'DIFFERENT_HASH');
+      when(
+        () => mockPlatform.getBuildSignature(),
+      ).thenAnswer((_) async => 'DIFFERENT_HASH');
 
       final result = await DeviceIntegrityService.isSignatureValid(
         expectedSignature: 'EXPECTED_HASH',
@@ -271,8 +282,9 @@ void main() {
       when(
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
-      when(() => mockPlatform.getBuildSignature())
-          .thenThrow(Exception('Signature channel error'));
+      when(
+        () => mockPlatform.getBuildSignature(),
+      ).thenThrow(Exception('Signature channel error'));
 
       final result = await DeviceIntegrityService.isSignatureValid(
         expectedSignature: 'EXPECTED_HASH',
@@ -306,8 +318,9 @@ void main() {
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
       when(() => mockPlatform.isJailbroken()).thenAnswer((_) async => false);
-      when(() => mockPlatform.getInstallerStore())
-          .thenAnswer((_) async => 'com.malicious.store');
+      when(
+        () => mockPlatform.getInstallerStore(),
+      ).thenAnswer((_) async => 'com.malicious.store');
 
       final violation = await DeviceIntegrityService.checkIntegrity(
         enforceInDebug: true,
@@ -321,10 +334,12 @@ void main() {
         () => mockPlatform.targetPlatform,
       ).thenReturn(TargetPlatform.android);
       when(() => mockPlatform.isJailbroken()).thenAnswer((_) async => false);
-      when(() => mockPlatform.getInstallerStore())
-          .thenAnswer((_) async => 'com.android.vending');
-      when(() => mockPlatform.getBuildSignature())
-          .thenAnswer((_) async => 'INVALID_SIGNATURE');
+      when(
+        () => mockPlatform.getInstallerStore(),
+      ).thenAnswer((_) async => 'com.android.vending');
+      when(
+        () => mockPlatform.getBuildSignature(),
+      ).thenAnswer((_) async => 'INVALID_SIGNATURE');
 
       final violation = await DeviceIntegrityService.checkIntegrity(
         expectedSignature: 'OFFICIAL_KEY_123',
@@ -333,28 +348,33 @@ void main() {
       expect(violation, SecurityViolationType.unofficialStore);
     });
 
-    test('returns null when device integrity is fully valid in production',
-        () async {
-      EnvConfig.environment = AppEnvironment.prod;
-      when(
-        () => mockPlatform.targetPlatform,
-      ).thenReturn(TargetPlatform.android);
-      when(() => mockPlatform.isJailbroken()).thenAnswer((_) async => false);
-      when(() => mockPlatform.getInstallerStore())
-          .thenAnswer((_) async => 'com.android.vending');
-      when(() => mockPlatform.getBuildSignature())
-          .thenAnswer((_) async => 'OFFICIAL_KEY_123');
+    test(
+      'returns null when device integrity is fully valid in production',
+      () async {
+        EnvConfig.environment = AppEnvironment.prod;
+        when(
+          () => mockPlatform.targetPlatform,
+        ).thenReturn(TargetPlatform.android);
+        when(() => mockPlatform.isJailbroken()).thenAnswer((_) async => false);
+        when(
+          () => mockPlatform.getInstallerStore(),
+        ).thenAnswer((_) async => 'com.android.vending');
+        when(
+          () => mockPlatform.getBuildSignature(),
+        ).thenAnswer((_) async => 'OFFICIAL_KEY_123');
 
-      final violation = await DeviceIntegrityService.checkIntegrity(
-        expectedSignature: 'OFFICIAL_KEY_123',
-        enforceInDebug: true,
-      );
-      expect(violation, isNull);
-    });
+        final violation = await DeviceIntegrityService.checkIntegrity(
+          expectedSignature: 'OFFICIAL_KEY_123',
+          enforceInDebug: true,
+        );
+        expect(violation, isNull);
+      },
+    );
 
     test('handles exceptions gracefully with fail-safe by default', () async {
-      when(() => mockPlatform.isJailbroken())
-          .thenThrow(Exception('Native plugin failure'));
+      when(
+        () => mockPlatform.isJailbroken(),
+      ).thenThrow(Exception('Native plugin failure'));
 
       final violation = await DeviceIntegrityService.checkIntegrity(
         enforceInDebug: true,
@@ -362,16 +382,19 @@ void main() {
       expect(violation, isNull);
     });
 
-    test('returns rootOrJailbreak violation when failClosedOnException is true',
-        () async {
-      when(() => mockPlatform.isJailbroken())
-          .thenThrow(Exception('Tampered hook crashed channel'));
+    test(
+      'returns rootOrJailbreak violation when failClosedOnException is true',
+      () async {
+        when(
+          () => mockPlatform.isJailbroken(),
+        ).thenThrow(Exception('Tampered hook crashed channel'));
 
-      final violation = await DeviceIntegrityService.checkIntegrity(
-        enforceInDebug: true,
-        failClosedOnException: true,
-      );
-      expect(violation, SecurityViolationType.rootOrJailbreak);
-    });
+        final violation = await DeviceIntegrityService.checkIntegrity(
+          enforceInDebug: true,
+          failClosedOnException: true,
+        );
+        expect(violation, SecurityViolationType.rootOrJailbreak);
+      },
+    );
   });
 }

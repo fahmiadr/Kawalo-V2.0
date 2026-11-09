@@ -17,10 +17,6 @@ abstract final class IsarDatabase {
       return existing;
     }
     final path = directory ?? (await getApplicationDocumentsDirectory()).path;
-    return await Isar.open(
-      schemas,
-      directory: path,
-      name: defaultName,
-    );
+    return await Isar.open(schemas, directory: path, name: defaultName);
   }
 }

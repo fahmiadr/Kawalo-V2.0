@@ -25,9 +25,5 @@ class ResolveIncidentParams extends Equatable {
   bool get isAuthorized => incident.canBeResolvedBySession(session);
 
   @override
-  List<Object?> get props => [
-        incident,
-        session,
-        cancelToken,
-      ];
+  List<Object?> get props => [incident, session, cancelToken];
 }

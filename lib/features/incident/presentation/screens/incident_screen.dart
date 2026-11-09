@@ -41,10 +41,7 @@ import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_fo
 /// Bottom sheet filter tanggal, dan remote search.
 class IncidentScreen extends StatefulWidget {
   /// Membuat instance [IncidentScreen].
-  const IncidentScreen({
-    super.key,
-    this.cubit,
-  });
+  const IncidentScreen({super.key, this.cubit});
 
   /// Instance [IncidentListCubit] opsional untuk injeksi pengujian.
   final IncidentListCubit? cubit;
@@ -158,11 +155,9 @@ class _IncidentScreenState extends State<IncidentScreen> {
   }
 
   void _onIncidentTapped(IncidentEntity incident) {
-    Navigator.of(context)
-        .push(
-      IncidentDetailScreen.route(incidentId: incident.id),
-    )
-        .then((result) {
+    Navigator.of(
+      context,
+    ).push(IncidentDetailScreen.route(incidentId: incident.id)).then((result) {
       if (!mounted) return;
       if (result is IncidentEntity) {
         _resolveCubit(context).onIncidentUpdated(result);
@@ -174,10 +169,7 @@ class _IncidentScreenState extends State<IncidentScreen> {
 
   Future<void> _onOpenCreateForm() async {
     final cubit = _resolveCubit(context);
-    await IncidentFormDialog.showCreate(
-      context,
-      incidentListCubit: cubit,
-    );
+    await IncidentFormDialog.showCreate(context, incidentListCubit: cubit);
   }
 
   void _onOpenSearch() {
@@ -187,7 +179,8 @@ class _IncidentScreenState extends State<IncidentScreen> {
   }
 
   void _onCloseSearch() {
-    final hasActiveSearch = _searchController.text.isNotEmpty ||
+    final hasActiveSearch =
+        _searchController.text.isNotEmpty ||
         (_resolveCubit(context).state.searchQuery?.isNotEmpty ?? false);
     _searchController.clear();
     setState(() {
@@ -437,8 +430,7 @@ class _IncidentScreenState extends State<IncidentScreen> {
               type: AppChipType.filter,
               label: 'Semua',
               selected: state.selectedFilter == null,
-              onPressed:
-                  isLoading ? null : () => _onStatusFilterSelected(null),
+              onPressed: isLoading ? null : () => _onStatusFilterSelected(null),
             ),
             AppSpacing.hGapSm,
             AppChip(
@@ -514,8 +506,9 @@ class _IncidentScreenState extends State<IncidentScreen> {
             onPressed: !isInitialLoading
                 ? (_isSearchExpanded ? _onCloseSearch : _onOpenSearch)
                 : null,
-            semanticLabel:
-                _isSearchExpanded ? 'Tutup pencarian' : 'Cari insiden',
+            semanticLabel: _isSearchExpanded
+                ? 'Tutup pencarian'
+                : 'Cari insiden',
             icon: AppSvgIcon(
               _isSearchExpanded
                   ? KawaloVectors.cancel01
@@ -533,15 +526,10 @@ class _IncidentScreenState extends State<IncidentScreen> {
             ? null
             : AppExtendedFab(
                 onPressed: isOffline ? null : _onOpenCreateForm,
-                icon: const AppSvgIcon(
-                  KawaloVectors.add01,
-                  size: 24,
-                ),
+                icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
                 label: 'Insiden',
               ),
-        bottomNavigationBar: AppBottomOfflineBanner(
-          isOffline: isOffline,
-        ),
+        bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
         body: SafeArea(
           top: false,
           child: AppKeyboardInsetsPadding(
@@ -578,8 +566,8 @@ class _IncidentScreenState extends State<IncidentScreen> {
         bottom: AppLayout.fabScrollClearance,
       ),
       itemCount: 4,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
-      itemBuilder: (_, __) => const IncidentCardSkeleton(),
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemBuilder: (_, _) => const IncidentCardSkeleton(),
     );
   }
 
@@ -599,14 +587,12 @@ class _IncidentScreenState extends State<IncidentScreen> {
         bottom: AppLayout.fabScrollClearance,
       ),
       itemCount: totalCount,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
       itemBuilder: (context, index) {
         if (index == incidents.length) {
           return const Padding(
             padding: AppSpacing.paddingVertical200,
-            child: Center(
-              child: AppLoadingIndicator(),
-            ),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
 
@@ -621,11 +607,10 @@ class _IncidentScreenState extends State<IncidentScreen> {
 
   Widget _buildEmptyGroupState(BuildContext context) {
     return const AppEmptyState(
-      icon: AppSvgIcon.color(
-        KawaloColorVectors.incident1,
-      ),
+      icon: AppSvgIcon.color(KawaloColorVectors.incident1),
       title: 'Belum ada laporan insiden',
-      description: 'Belum ada laporan insiden '
+      description:
+          'Belum ada laporan insiden '
           'pada hari ini.',
     );
   }
@@ -633,7 +618,8 @@ class _IncidentScreenState extends State<IncidentScreen> {
   Widget _buildEmptySearchResult(BuildContext context) {
     return AppEmptyState.search(
       title: 'Laporan insiden tidak ditemukan',
-      description: 'Tidak ada laporan insiden yang cocok dengan '
+      description:
+          'Tidak ada laporan insiden yang cocok dengan '
           'pencarian atau filter yang diterapkan.',
       actionLabel: 'Reset filter & pencarian',
       onActionPressed: _resetAllFilters,

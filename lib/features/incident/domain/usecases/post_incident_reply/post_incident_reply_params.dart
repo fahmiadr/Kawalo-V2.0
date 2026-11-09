@@ -45,11 +45,5 @@ class PostIncidentReplyParams extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        incident,
-        message,
-        photos,
-        session,
-        cancelToken,
-      ];
+  List<Object?> get props => [incident, message, photos, session, cancelToken];
 }

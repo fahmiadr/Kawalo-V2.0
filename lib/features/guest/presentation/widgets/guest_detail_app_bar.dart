@@ -61,8 +61,7 @@ class GuestDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (effectiveTrailing == null && onCheckout != null) {
       effectiveTrailingWidth = 96;
       final isInteractive = enabled && !isCheckingOut;
-      final backgroundColor =
-          WidgetStateProperty.resolveWith<Color?>((states) {
+      final backgroundColor = WidgetStateProperty.resolveWith<Color?>((states) {
         if (states.contains(WidgetState.disabled)) {
           return colorScheme.onSurface.withValues(
             alpha: AppStateLayer.disabledContainerOpacity,
@@ -71,8 +70,7 @@ class GuestDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
         return colorScheme.secondaryContainer;
       });
 
-      final foregroundColor =
-          WidgetStateProperty.resolveWith<Color?>((states) {
+      final foregroundColor = WidgetStateProperty.resolveWith<Color?>((states) {
         if (states.contains(WidgetState.disabled)) {
           return colorScheme.onSurface.withValues(
             alpha: AppStateLayer.disabledOpacity,
@@ -94,10 +92,7 @@ class GuestDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             foregroundColor: foregroundColor,
           ),
           onPressed: isInteractive ? onCheckout : null,
-          child: Text(
-            'Check-out',
-            style: typeScale.labelLarge,
-          ),
+          child: Text('Check-out', style: typeScale.labelLarge),
         ),
       );
     }

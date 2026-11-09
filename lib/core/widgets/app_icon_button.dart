@@ -143,10 +143,7 @@ class AppIconButton extends StatelessWidget {
     if (v is bool && v) {
       return IgnorePointer(
         child: ExcludeSemantics(
-          child: Badge(
-            smallSize: 8,
-            backgroundColor: effectiveBg,
-          ),
+          child: Badge(smallSize: 8, backgroundColor: effectiveBg),
         ),
       );
     }
@@ -196,7 +193,8 @@ class AppIconButton extends StatelessWidget {
       };
     }
 
-    final targetDimension = visualSize?.width ??
+    final targetDimension =
+        visualSize?.width ??
         switch (size) {
           AppIconButtonSize.xs || AppIconButtonSize.sm => 48.0,
           AppIconButtonSize.md => 56.0,

@@ -52,15 +52,14 @@ void main() {
   Widget buildTestWidget(OperationalItemEntity item) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: OperationalDetailTimelineCard(item: item),
-      ),
+      home: Scaffold(body: OperationalDetailTimelineCard(item: item)),
     );
   }
 
   group('OperationalDetailTimelineCard Tests', () {
-    testWidgets('renders timeline nodes, states verbatim, and tags',
-        (tester) async {
+    testWidgets('renders timeline nodes, states verbatim, and tags', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(sampleWorkerWithLogs));
       await tester.pumpAndSettle();
 
@@ -80,8 +79,9 @@ void main() {
       expect(find.text('ID: DJOURNEY-888'), findsOneWidget);
     });
 
-    testWidgets('tapping UID copies to clipboard and shows snackbar',
-        (tester) async {
+    testWidgets('tapping UID copies to clipboard and shows snackbar', (
+      tester,
+    ) async {
       String? copiedText;
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         SystemChannels.platform,
@@ -112,10 +112,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Riwayat aktivitas dinas'), findsOneWidget);
-      expect(
-        find.text('Belum ada riwayat aktivitas dinas.'),
-        findsOneWidget,
-      );
+      expect(find.text('Belum ada riwayat aktivitas dinas.'), findsOneWidget);
     });
   });
 }

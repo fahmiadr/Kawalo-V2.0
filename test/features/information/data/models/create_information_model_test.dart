@@ -34,9 +34,7 @@ void main() {
     });
 
     test('toJson omits null optional fields', () {
-      const minimalModel = CreateInformationModel(
-        title: 'Info Singkat',
-      );
+      const minimalModel = CreateInformationModel(title: 'Info Singkat');
 
       final json = minimalModel.toJson();
 

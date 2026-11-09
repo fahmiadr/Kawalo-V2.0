@@ -33,11 +33,7 @@ class _GroundShadowPainter extends CustomPainter {
       );
 
     canvas.drawOval(
-      Rect.fromCenter(
-        center: center,
-        width: radiusX * 2,
-        height: radiusY * 2,
-      ),
+      Rect.fromCenter(center: center, width: radiusX * 2, height: radiusY * 2),
       paint,
     );
   }
@@ -85,10 +81,7 @@ class _MapPinPainter extends CustomPainter {
       // Kurva sisi kiri mengalir mulus ke tepi kiri lingkaran kepala
       ..cubicTo(13.5, 34, 0, 26, 0, 16)
       // Busur setengah lingkaran atas beradius 16dp
-      ..arcToPoint(
-        const Offset(32, 16),
-        radius: const Radius.circular(16),
-      )
+      ..arcToPoint(const Offset(32, 16), radius: const Radius.circular(16))
       // Kurva sisi kanan simetris kembali ke ujung jarum
       ..cubicTo(32, 26, 18.5, 34, 16, 42)
       ..close();
@@ -135,10 +128,7 @@ class _MapPinPainter extends CustomPainter {
 /// dan custom shape pin Material 3 Expressive yang terangkat saat peta
 /// digeser.
 class MapCenterPinMarker extends StatefulWidget {
-  const MapCenterPinMarker({
-    required this.isMovingListenable,
-    super.key,
-  });
+  const MapCenterPinMarker({required this.isMovingListenable, super.key});
 
   final ValueListenable<bool> isMovingListenable;
 

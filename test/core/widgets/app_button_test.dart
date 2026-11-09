@@ -5,8 +5,9 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 
 void main() {
   group('AppButton / M3EButton Tests', () {
-    testWidgets('renders button with label and handles tap',
-        (WidgetTester tester) async {
+    testWidgets('renders button with label and handles tap', (
+      WidgetTester tester,
+    ) async {
       var tapped = false;
 
       await tester.pumpWidget(
@@ -26,8 +27,9 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('renders button with icon and label',
-        (WidgetTester tester) async {
+    testWidgets('renders button with icon and label', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -44,8 +46,9 @@ void main() {
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
-    testWidgets('does not trigger tap when enabled is false',
-        (WidgetTester tester) async {
+    testWidgets('does not trigger tap when enabled is false', (
+      WidgetTester tester,
+    ) async {
       var tapped = false;
 
       await tester.pumpWidget(

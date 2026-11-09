@@ -64,9 +64,8 @@ final class DefaultScreenBrightnessService implements ScreenBrightnessService {
   ///
   /// Parameter opsional [plugin] dapat disuntikkan secara eksplisit pada saat
   /// pengujian unit terisolasi (*Pure Dependency Injection*).
-  const DefaultScreenBrightnessService({
-    ScreenBrightness? plugin,
-  }) : _plugin = plugin;
+  const DefaultScreenBrightnessService({ScreenBrightness? plugin})
+    : _plugin = plugin;
 
   final ScreenBrightness? _plugin;
 

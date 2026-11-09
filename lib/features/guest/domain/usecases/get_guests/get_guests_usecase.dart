@@ -14,9 +14,7 @@ class GetGuestsUseCase implements UseCase<GuestResult, GetGuestsParams> {
   final GuestRepository repository;
 
   @override
-  Future<Either<Failure, GuestResult>> call(
-    GetGuestsParams params,
-  ) {
+  Future<Either<Failure, GuestResult>> call(GetGuestsParams params) {
     return repository.getGuests(params);
   }
 }

@@ -23,10 +23,7 @@ import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_ex
 /// alamat asal, serta kode akses QR dengan aksi salin ke papan klip.
 class GuestDetailProfileCard extends StatelessWidget {
   /// Membuat instance [GuestDetailProfileCard].
-  const GuestDetailProfileCard({
-    required this.item,
-    super.key,
-  });
+  const GuestDetailProfileCard({required this.item, super.key});
 
   /// Data tamu yang ditampilkan.
   final GuestItemEntity item;
@@ -87,7 +84,8 @@ class GuestDetailProfileCard extends StatelessWidget {
                       runSpacing: AppSpacing.space50,
                       children: [
                         AppTag(
-                          label: '${item.displayIdentityType}: '
+                          label:
+                              '${item.displayIdentityType}: '
                               '${item.displayIdNumber}',
                           size: AppTagSize.small,
                         ),
@@ -193,14 +191,16 @@ class GuestDetailProfileCard extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final pic = item.guestPhoto?.trim();
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
       final heroTagPrefix = 'guest_profile_${item.id}';
 
       return AppTappable(
-        semanticLabel: 'Lihat foto profil tamu ${item.displayName} ukuran '
+        semanticLabel:
+            'Lihat foto profil tamu ${item.displayName} ukuran '
             'penuh',
         excludeSemantics: true,
         onTap: () {
@@ -219,8 +219,8 @@ class GuestDetailProfileCard extends StatelessWidget {
               width: 100,
               height: 100,
               fit: BoxFit.cover,
-              placeholder: (_, __) => _buildAvatarFallback(),
-              errorWidget: (_, __, ___) => _buildAvatarFallback(),
+              placeholder: (_, _) => _buildAvatarFallback(),
+              errorWidget: (_, _, _) => _buildAvatarFallback(),
             ),
           ),
         ),

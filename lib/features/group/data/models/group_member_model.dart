@@ -6,11 +6,7 @@ part 'group_member_model.g.dart';
 /// Pure DTO model untuk representasi JSON data anggota grup dari API.
 @JsonSerializable(createToJson: false, checked: true)
 class GroupMemberModel extends Equatable {
-  const GroupMemberModel({
-    required this.email,
-    this.name,
-    this.profilePic,
-  });
+  const GroupMemberModel({required this.email, this.name, this.profilePic});
 
   factory GroupMemberModel.fromJson(Map<String, dynamic> json) =>
       _$GroupMemberModelFromJson(json);

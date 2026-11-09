@@ -23,15 +23,15 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
   }) : super(
-          IncidentInitial(
-            lastSync: SyncStorageService.resolveInitialGreeting(
-              initialGreeting: initialGreeting,
-              featureKey: AppConstants.syncKeyIncident,
-              storageService: syncStorageService,
-            ),
-          ),
-          syncKey: AppConstants.syncKeyIncident,
-        );
+         IncidentInitial(
+           lastSync: SyncStorageService.resolveInitialGreeting(
+             initialGreeting: initialGreeting,
+             featureKey: AppConstants.syncKeyIncident,
+             storageService: syncStorageService,
+           ),
+         ),
+         syncKey: AppConstants.syncKeyIncident,
+       );
 
   /// Use case untuk mengambil data insiden.
   final GetIncidentsUseCase getIncidentsUseCase;
@@ -67,19 +67,18 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     DateTime? endDate,
     String? startDateIso,
     String? endDateIso,
-  }) =>
-      _fetch(
-        session: session,
-        search: search,
-        filterPeriod: filterPeriod,
-        status: status,
-        clearStatusFilter: clearStatusFilter,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        isRefresh: false,
-      );
+  }) => _fetch(
+    session: session,
+    search: search,
+    filterPeriod: filterPeriod,
+    status: status,
+    clearStatusFilter: clearStatusFilter,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    isRefresh: false,
+  );
 
   /// Memperbarui data insiden secara reaktif melalui tarikan pull-to-refresh.
   Future<AppFetchResult> refreshIncidents({
@@ -92,19 +91,18 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     DateTime? endDate,
     String? startDateIso,
     String? endDateIso,
-  }) =>
-      _fetch(
-        session: session,
-        search: search,
-        filterPeriod: filterPeriod,
-        status: status,
-        clearStatusFilter: clearStatusFilter,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        isRefresh: true,
-      );
+  }) => _fetch(
+    session: session,
+    search: search,
+    filterPeriod: filterPeriod,
+    status: status,
+    clearStatusFilter: clearStatusFilter,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    isRefresh: true,
+  );
 
   Future<AppFetchResult> _fetch({
     required AuthSessionEntity? session,
@@ -118,8 +116,9 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     String? startDateIso,
     String? endDateIso,
   }) {
-    final effectiveStatus =
-        clearStatusFilter ? null : (status ?? state.selectedFilter);
+    final effectiveStatus = clearStatusFilter
+        ? null
+        : (status ?? state.selectedFilter);
     final filter = resolveFilter(
       search: search?.trim(),
       filterPeriod: filterPeriod,
@@ -146,8 +145,7 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      ))
-          .map(ListPage.new),
+      )).map(ListPage.new),
       loaded: (page, lastSync, {required hasMore}) => IncidentLoaded(
         incidents: page.items,
         lastSync: lastSync,
@@ -189,8 +187,7 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
             startDate: current.startDateIso,
             endDate: current.endDateIso,
           ),
-        ))
-            .map(ListPage.new),
+        )).map(ListPage.new),
         setLoadingMore: (current, {required loadingMore}) =>
             current.copyWith(isLoadingMore: loadingMore),
         append: (current, newItems, {required hasMore}) => current.copyWith(
@@ -204,27 +201,25 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
   Future<AppFetchResult> setFilter(
     IncidentStatus? filter, {
     required AuthSessionEntity? session,
-  }) =>
-      fetchIncidents(
-        session: session,
-        status: filter,
-        clearStatusFilter: filter == null,
-      );
+  }) => fetchIncidents(
+    session: session,
+    status: filter,
+    clearStatusFilter: filter == null,
+  );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
   Future<AppFetchResult> setDateFilter(
     AppDateFilterResult filterResult, {
     required AuthSessionEntity? session,
-  }) =>
-      fetchIncidents(
-        session: session,
-        search: state.searchQuery,
-        filterPeriod: filterResult.period,
-        startDate: filterResult.startDate,
-        endDate: filterResult.endDate,
-        startDateIso: filterResult.startDateIso,
-        endDateIso: filterResult.endDateIso,
-      );
+  }) => fetchIncidents(
+    session: session,
+    search: state.searchQuery,
+    filterPeriod: filterResult.period,
+    startDate: filterResult.startDate,
+    endDate: filterResult.endDate,
+    startDateIso: filterResult.startDateIso,
+    endDateIso: filterResult.endDateIso,
+  );
 
   /// Mereset filter tanggal menjadi default 'Hari ini'.
   Future<AppFetchResult> resetDateFilter({
@@ -248,10 +243,7 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     required AuthSessionEntity? session,
   }) {
     final sanitized = query.trim();
-    return fetchIncidents(
-      session: session,
-      search: sanitized,
-    );
+    return fetchIncidents(session: session, search: sanitized);
   }
 
   /// Memperbarui kata kunci pencarian lokal insiden (jika tanpa refetch).
@@ -260,8 +252,9 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
     if (currentState is IncidentLoaded) {
       emit(
         currentState.copyWith(
-          searchQuery:
-              query == null || query.trim().isEmpty ? null : query.trim(),
+          searchQuery: query == null || query.trim().isEmpty
+              ? null
+              : query.trim(),
         ),
       );
     }
@@ -291,8 +284,9 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
           created.status != currentState.selectedFilter) {
         return;
       }
-      final existingIndex =
-          currentState.incidents.indexWhere((i) => i.id == created.id);
+      final existingIndex = currentState.incidents.indexWhere(
+        (i) => i.id == created.id,
+      );
       if (existingIndex != -1) {
         final updated = List<IncidentEntity>.from(currentState.incidents);
         updated[existingIndex] = created;
@@ -311,14 +305,16 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
   void onIncidentUpdated(IncidentEntity updated) {
     final currentState = state;
     if (currentState is IncidentLoaded) {
-      final existingIndex =
-          currentState.incidents.indexWhere((i) => i.id == updated.id);
+      final existingIndex = currentState.incidents.indexWhere(
+        (i) => i.id == updated.id,
+      );
       if (existingIndex == -1) return;
 
       if (currentState.selectedFilter != null &&
           updated.status != currentState.selectedFilter) {
-        final filtered =
-            currentState.incidents.where((i) => i.id != updated.id).toList();
+        final filtered = currentState.incidents
+            .where((i) => i.id != updated.id)
+            .toList();
         emit(currentState.copyWith(incidents: filtered));
         return;
       }
@@ -333,8 +329,9 @@ class IncidentListCubit extends ListFetchCubit<IncidentState, IncidentEntity> {
   void onIncidentDeleted(String incidentId) {
     final currentState = state;
     if (currentState is IncidentLoaded) {
-      final updatedList =
-          currentState.incidents.where((i) => i.id != incidentId).toList();
+      final updatedList = currentState.incidents
+          .where((i) => i.id != incidentId)
+          .toList();
       emit(currentState.copyWith(incidents: updatedList));
     }
   }

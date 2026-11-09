@@ -55,13 +55,12 @@ class CameraThumbnailTray extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           clipBehavior: Clip.none,
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.space300,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space300),
           itemCount: photos.length,
           separatorBuilder: (context, sepIndex) {
             // Animasi masuk separator baru (0 -> 8dp) saat foto terbaru masuk
-            final isFirstSepNewest = sepIndex == 0 &&
+            final isFirstSepNewest =
+                sepIndex == 0 &&
                 photos.isNotEmpty &&
                 photos.first.path != null &&
                 photos.first.path == latestCapturedPath;
@@ -71,30 +70,27 @@ class CameraThumbnailTray extends StatelessWidget {
                 tween: Tween<double>(begin: 0, end: 1),
                 duration: AppDuration.medium2,
                 curve: AppMotion.emphasized,
-                builder: (_, val, __) => SizedBox(
-                  width: AppSpacing.space100 * val,
-                ),
+                builder: (_, val, _) =>
+                    SizedBox(width: AppSpacing.space100 * val),
               );
             }
 
             // Animasi keluar separator (8dp -> 0) saat foto di sampingnya
             // sedang dihapus (collapse horizontal mulus)
             if (removingPhotoPath != null && !isReducedMotion) {
-              final isAdjacentToRemoving = (sepIndex < photos.length &&
+              final isAdjacentToRemoving =
+                  (sepIndex < photos.length &&
                       photos[sepIndex].path == removingPhotoPath) ||
                   (sepIndex + 1 < photos.length &&
                       photos[sepIndex + 1].path == removingPhotoPath);
               if (isAdjacentToRemoving) {
                 return TweenAnimationBuilder<double>(
-                  key: ValueKey<String>(
-                    'tray_sep_removing_$removingPhotoPath',
-                  ),
+                  key: ValueKey<String>('tray_sep_removing_$removingPhotoPath'),
                   tween: Tween<double>(begin: 1, end: 0),
                   duration: AppDuration.short4,
                   curve: Curves.easeInCubic,
-                  builder: (_, val, __) => SizedBox(
-                    width: AppSpacing.space100 * val,
-                  ),
+                  builder: (_, val, _) =>
+                      SizedBox(width: AppSpacing.space100 * val),
                 );
               }
             }
@@ -104,9 +100,11 @@ class CameraThumbnailTray extends StatelessWidget {
           itemBuilder: (context, index) {
             final photo = photos[index];
             final isSelected = selectedPhotos.contains(photo);
-            final selectionIndex =
-                isSelected ? selectedPhotos.indexOf(photo) : -1;
-            final isNewest = photo.path != null &&
+            final selectionIndex = isSelected
+                ? selectedPhotos.indexOf(photo)
+                : -1;
+            final isNewest =
+                photo.path != null &&
                 photo.path == latestCapturedPath &&
                 index == 0;
             final photoKey = photo.path ?? '$index';
@@ -140,7 +138,7 @@ class CameraThumbnailTray extends StatelessWidget {
                           ),
                           semanticLabel: isSelected
                               ? 'Foto ke-${index + 1} terpilih '
-                                  '(urutan ke-${selectionIndex + 1})'
+                                    '(urutan ke-${selectionIndex + 1})'
                               : 'Pilih foto ke-${index + 1}',
                           overlay: IgnorePointer(
                             child: AnimatedSwitcher(
@@ -187,14 +185,16 @@ class CameraThumbnailTray extends StatelessWidget {
                                             top: 14,
                                             child: Text(
                                               '${selectionIndex + 1}',
-                                              style: theme.typography.emphasized
+                                              style: theme
+                                                  .typography
+                                                  .emphasized
                                                   .labelMedium
                                                   .copyWith(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w800,
-                                                height: 1,
-                                              ),
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w800,
+                                                    height: 1,
+                                                  ),
                                             ),
                                           ),
                                         ],
@@ -216,32 +216,33 @@ class CameraThumbnailTray extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   gaplessPlayback: true,
                                   excludeFromSemantics: true,
-                                  frameBuilder: (
-                                    context,
-                                    child,
-                                    frame,
-                                    wasSynchronouslyLoaded,
-                                  ) {
-                                    if (wasSynchronouslyLoaded ||
-                                        frame != null) {
-                                      return child;
-                                    }
-                                    return const AppImagePlaceholder(
-                                      borderRadius: BorderRadius.zero,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      iconSize: 24,
-                                      iconPath: KawaloVectors.image02Filled,
-                                    );
-                                  },
+                                  frameBuilder:
+                                      (
+                                        context,
+                                        child,
+                                        frame,
+                                        wasSynchronouslyLoaded,
+                                      ) {
+                                        if (wasSynchronouslyLoaded ||
+                                            frame != null) {
+                                          return child;
+                                        }
+                                        return const AppImagePlaceholder(
+                                          borderRadius: BorderRadius.zero,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          iconSize: 24,
+                                          iconPath: KawaloVectors.image02Filled,
+                                        );
+                                      },
                                   errorBuilder: (context, error, stackTrace) =>
                                       const AppImagePlaceholder(
-                                    borderRadius: BorderRadius.zero,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    iconSize: 24,
-                                    iconPath: KawaloVectors.imageNotFound01,
-                                  ),
+                                        borderRadius: BorderRadius.zero,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        iconSize: 24,
+                                        iconPath: KawaloVectors.imageNotFound01,
+                                      ),
                                 )
                               else
                                 const AppImagePlaceholder(

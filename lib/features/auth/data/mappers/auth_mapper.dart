@@ -17,9 +17,11 @@ abstract final class AuthMapper {
   /// sanitasi data.
   static AuthTokensEntity toTokensEntity(AuthTokensModel model) {
     return AuthTokensEntity(
-      accessToken: AppSanitizer.cleanString(model.accessToken) ??
+      accessToken:
+          AppSanitizer.cleanString(model.accessToken) ??
           model.accessToken.trim(),
-      refreshToken: AppSanitizer.cleanString(model.refreshToken) ??
+      refreshToken:
+          AppSanitizer.cleanString(model.refreshToken) ??
           model.refreshToken.trim(),
       tokenType:
           AppSanitizer.cleanString(model.tokenType) ?? model.tokenType.trim(),
@@ -78,7 +80,8 @@ abstract final class AuthMapper {
   static UserEntity toUserEntity(UserModel model) {
     return UserEntity(
       id: AppSanitizer.cleanString(model.id) ?? model.id.trim(),
-      email: AppSanitizer.cleanEmail(model.email) ??
+      email:
+          AppSanitizer.cleanEmail(model.email) ??
           model.email.trim().toLowerCase(),
       name: AppSanitizer.cleanString(model.name) ?? model.name.trim(),
       groups: model.groups.map(toUserGroupEntity).toList(growable: false),
@@ -108,7 +111,8 @@ abstract final class AuthMapper {
   static AuthSessionEntity toSessionEntity(AuthSessionModel model) {
     return AuthSessionEntity(
       userId: AppSanitizer.cleanString(model.userId) ?? model.userId.trim(),
-      email: AppSanitizer.cleanEmail(model.email) ??
+      email:
+          AppSanitizer.cleanEmail(model.email) ??
           model.email.trim().toLowerCase(),
       name: AppSanitizer.cleanString(model.name) ?? model.name.trim(),
       allowAdmin: model.allowAdmin,

@@ -118,9 +118,7 @@ class AppFileTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
         borderRadius: AppRadius.borderMedium,
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -159,10 +157,7 @@ class AppFileTile extends StatelessWidget {
             ),
           ),
 
-          if (trailing != null) ...[
-            AppSpacing.hGap150,
-            trailing!,
-          ],
+          if (trailing != null) ...[AppSpacing.hGap150, trailing!],
         ],
       ),
     );

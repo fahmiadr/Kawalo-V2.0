@@ -5,15 +5,14 @@ import 'package:kawalo_mobile/core/widgets/app_file_icon.dart';
 
 void main() {
   group('AppFileIcon Core Widget Tests', () {
-    testWidgets('renders badge with correct label and semantics for PDF',
-        (tester) async {
+    testWidgets('renders badge with correct label and semantics for PDF', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
           home: const Scaffold(
-            body: Center(
-              child: AppFileIcon(extension: 'pdf'),
-            ),
+            body: Center(child: AppFileIcon(extension: 'pdf')),
           ),
         ),
       );
@@ -24,15 +23,15 @@ void main() {
       expect(
         find.byWidgetPredicate(
           (w) =>
-              w is Semantics &&
-              w.properties.label == 'Ikon format berkas PDF',
+              w is Semantics && w.properties.label == 'Ikon format berkas PDF',
         ),
         findsOneWidget,
       );
     });
 
-    testWidgets('renders badge with uppercase label for standard formats',
-        (tester) async {
+    testWidgets('renders badge with uppercase label for standard formats', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
@@ -58,15 +57,14 @@ void main() {
       expect(find.text('ZIP'), findsOneWidget);
     });
 
-    testWidgets('renders fallback FILE label when extension is empty',
-        (tester) async {
+    testWidgets('renders fallback FILE label when extension is empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
           home: const Scaffold(
-            body: Center(
-              child: AppFileIcon(extension: ''),
-            ),
+            body: Center(child: AppFileIcon(extension: '')),
           ),
         ),
       );

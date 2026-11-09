@@ -81,8 +81,9 @@ void main() {
       );
     });
 
-    testWidgets('tapping Batal in logout dialog dismisses dialog',
-        (tester) async {
+    testWidgets('tapping Batal in logout dialog dismisses dialog', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -99,14 +100,13 @@ void main() {
       expect(find.byType(AppConfirmationDialog), findsNothing);
     });
 
-    testWidgets('custom onLogoutPressed callback is called when provided',
-        (tester) async {
+    testWidgets('custom onLogoutPressed callback is called when provided', (
+      tester,
+    ) async {
       var logoutTapped = false;
 
       await tester.pumpWidget(
-        buildTestWidget(
-          onLogoutPressed: () => logoutTapped = true,
-        ),
+        buildTestWidget(onLogoutPressed: () => logoutTapped = true),
       );
       await tester.pumpAndSettle();
 

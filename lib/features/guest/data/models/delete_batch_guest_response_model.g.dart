@@ -7,9 +7,9 @@ part of 'delete_batch_guest_response_model.dart';
 // **************************************************************************
 
 DeleteBatchGuestResponseModel _$DeleteBatchGuestResponseModelFromJson(
-        Map<String, dynamic> json) =>
-    DeleteBatchGuestResponseModel(
-      deletedCount: json['deleted_count'] == null
-          ? 0
-          : const IntFromNumConverter().fromJson(json['deleted_count']),
-    );
+  Map<String, dynamic> json,
+) => DeleteBatchGuestResponseModel(
+  deletedCount: json['deleted_count'] == null
+      ? 0
+      : const IntFromNumConverter().fromJson(json['deleted_count']),
+);

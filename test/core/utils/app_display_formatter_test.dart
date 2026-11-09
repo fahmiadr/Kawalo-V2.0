@@ -23,10 +23,7 @@ void main() {
 
     test('toDisplay respects custom fallback parameter', () {
       expect(
-        AppDisplayFormatter.toDisplay(
-          null,
-          fallback: AppDisplayFormatter.dash,
-        ),
+        AppDisplayFormatter.toDisplay(null, fallback: AppDisplayFormatter.dash),
         '-',
       );
       expect(
@@ -36,29 +33,14 @@ void main() {
     });
 
     test('toDisplayNotAvailable returns Tidak tersedia for blank values', () {
-      expect(
-        AppDisplayFormatter.toDisplayNotAvailable(null),
-        'Tidak tersedia',
-      );
-      expect(
-        AppDisplayFormatter.toDisplayNotAvailable('  '),
-        'Tidak tersedia',
-      );
-      expect(
-        AppDisplayFormatter.toDisplayNotAvailable('Ada'),
-        'Ada',
-      );
+      expect(AppDisplayFormatter.toDisplayNotAvailable(null), 'Tidak tersedia');
+      expect(AppDisplayFormatter.toDisplayNotAvailable('  '), 'Tidak tersedia');
+      expect(AppDisplayFormatter.toDisplayNotAvailable('Ada'), 'Ada');
     });
 
     test('toDisplayNotSet returns Belum diatur for blank values', () {
-      expect(
-        AppDisplayFormatter.toDisplayNotSet(null),
-        'Belum diatur',
-      );
-      expect(
-        AppDisplayFormatter.toDisplayNotSet('  '),
-        'Belum diatur',
-      );
+      expect(AppDisplayFormatter.toDisplayNotSet(null), 'Belum diatur');
+      expect(AppDisplayFormatter.toDisplayNotSet('  '), 'Belum diatur');
       expect(
         AppDisplayFormatter.toDisplayNotSet('07:00 - 15:00'),
         '07:00 - 15:00',
@@ -66,14 +48,8 @@ void main() {
     });
 
     test('toDisplayUnrecorded returns Tidak tercatat for blank values', () {
-      expect(
-        AppDisplayFormatter.toDisplayUnrecorded(null),
-        'Tidak tercatat',
-      );
-      expect(
-        AppDisplayFormatter.toDisplayUnrecorded(' '),
-        'Tidak tercatat',
-      );
+      expect(AppDisplayFormatter.toDisplayUnrecorded(null), 'Tidak tercatat');
+      expect(AppDisplayFormatter.toDisplayUnrecorded(' '), 'Tidak tercatat');
       expect(
         AppDisplayFormatter.toDisplayUnrecorded('-6.2088, 106.8456'),
         '-6.2088, 106.8456',
@@ -81,18 +57,9 @@ void main() {
     });
 
     test('toDisplayExplicit returns provided custom fallback for blanks', () {
-      expect(
-        AppDisplayFormatter.toDisplayExplicit(null, 'Khusus'),
-        'Khusus',
-      );
-      expect(
-        AppDisplayFormatter.toDisplayExplicit('  ', 'Khusus'),
-        'Khusus',
-      );
-      expect(
-        AppDisplayFormatter.toDisplayExplicit('Valid', 'Khusus'),
-        'Valid',
-      );
+      expect(AppDisplayFormatter.toDisplayExplicit(null, 'Khusus'), 'Khusus');
+      expect(AppDisplayFormatter.toDisplayExplicit('  ', 'Khusus'), 'Khusus');
+      expect(AppDisplayFormatter.toDisplayExplicit('Valid', 'Khusus'), 'Valid');
     });
 
     test(
@@ -107,10 +74,7 @@ void main() {
         );
 
         expect(
-          AppDisplayFormatter.toDisplayFormat(
-            null,
-            (val) => 'Shift $val',
-          ),
+          AppDisplayFormatter.toDisplayFormat(null, (val) => 'Shift $val'),
           AppDisplayFormatter.emDash,
         );
 
@@ -163,10 +127,7 @@ void main() {
         nullVal.toDisplayFormat((val) => '[$val]'),
         AppDisplayFormatter.emDash,
       );
-      expect(
-        'Petugas'.toDisplayFormat((val) => '[$val]'),
-        '[Petugas]',
-      );
+      expect('Petugas'.toDisplayFormat((val) => '[$val]'), '[Petugas]');
 
       const dateStr = '2026-09-10T07:05:00.000Z';
       expect(

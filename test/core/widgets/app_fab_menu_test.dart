@@ -7,9 +7,7 @@ void main() {
   Widget buildApp(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
-      home: Scaffold(
-        floatingActionButton: child,
-      ),
+      home: Scaffold(floatingActionButton: child),
     );
   }
 
@@ -39,8 +37,9 @@ void main() {
       expect(find.byType(M3EFabMenu), findsOneWidget);
     });
 
-    testWidgets('tapping anchor opens menu and reveals menu items',
-        (tester) async {
+    testWidgets('tapping anchor opens menu and reveals menu items', (
+      tester,
+    ) async {
       var itemTapped = false;
 
       await tester.pumpWidget(
@@ -85,8 +84,9 @@ void main() {
       expect(itemTapped, isTrue);
     });
 
-    testWidgets('supports AppFabColor.error and custom overrides',
-        (tester) async {
+    testWidgets('supports AppFabColor.error and custom overrides', (
+      tester,
+    ) async {
       const customBg = Color(0xFF990000);
       const customFg = Color(0xFFFFFFFF);
 

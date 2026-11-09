@@ -40,10 +40,8 @@ Widget _buildFormTestApp({
   Future<bool> Function()? openLocationSettingsFn,
 }) {
   return MaterialApp(
-    builder: (context, child) => M3ETheme(
-      data: AppTheme.m3eLight(),
-      child: child!,
-    ),
+    builder: (context, child) =>
+        M3ETheme(data: AppTheme.m3eLight(), child: child!),
     home: Scaffold(
       body: InformationFormDialog(
         cubit: cubit,
@@ -108,10 +106,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FakeBuildContext());
     registerFallbackValue(
-      const CreateInformationParams(
-        title: 'Fallback',
-        session: dummySession,
-      ),
+      const CreateInformationParams(title: 'Fallback', session: dummySession),
     );
     registerFallbackValue(
       const UpdateInformationParams(
@@ -139,8 +134,9 @@ void main() {
   }
 
   group('InformationFormDialog Widget Tests', () {
-    testWidgets('renders create form with empty fields and default category',
-        (tester) async {
+    testWidgets('renders create form with empty fields and default category', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
@@ -149,10 +145,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -177,8 +170,9 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('renders update form with populated fields and AppStaticMap',
-        (tester) async {
+    testWidgets('renders update form with populated fields and AppStaticMap', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
@@ -188,10 +182,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -214,10 +205,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -238,8 +226,9 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('entering title updates cubit and clears empty error',
-        (tester) async {
+    testWidgets('entering title updates cubit and clears empty error', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
@@ -248,10 +237,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -267,58 +253,55 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets(
-      'validation UX: no premature error on focus or typing, '
-      'submit triggers error & focuses field, live correction clears error',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('validation UX: no premature error on focus or typing, '
+        'submit triggers error & focuses field, live correction clears error', (
+      tester,
+    ) async {
+      configureTestView(tester);
 
-        final cubit = InformationFormCubit(
-          createInformationUseCase: mockCreateUseCase,
-          updateInformationUseCase: mockUpdateUseCase,
-        );
+      final cubit = InformationFormCubit(
+        createInformationUseCase: mockCreateUseCase,
+        updateInformationUseCase: mockUpdateUseCase,
+      );
 
-        await tester.pumpWidget(
-          _buildFormTestApp(
-            cubit: cubit,
-            mediaPickerService: mockMediaPicker,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
+      );
+      await tester.pumpAndSettle();
 
-        final titleFinder = find.byType(EditableText).first;
+      final titleFinder = find.byType(EditableText).first;
 
-        // 1. Focusing and entering whitespace does NOT trigger error
-        await tester.tap(titleFinder);
-        await tester.pumpAndSettle();
-        expect(find.text('Judul informasi wajib diisi'), findsNothing);
+      // 1. Focusing and entering whitespace does NOT trigger error
+      await tester.tap(titleFinder);
+      await tester.pumpAndSettle();
+      expect(find.text('Judul informasi wajib diisi'), findsNothing);
 
-        await tester.enterText(titleFinder, '   ');
-        await tester.pumpAndSettle();
-        expect(find.text('Judul informasi wajib diisi'), findsNothing);
+      await tester.enterText(titleFinder, '   ');
+      await tester.pumpAndSettle();
+      expect(find.text('Judul informasi wajib diisi'), findsNothing);
 
-        // 2. Submit attempt triggers validation error & focuses title field
-        await cubit.submit(session: dummySession);
-        await tester.pumpAndSettle();
+      // 2. Submit attempt triggers validation error & focuses title field
+      await cubit.submit(session: dummySession);
+      await tester.pumpAndSettle();
 
-        expect(find.text('Judul informasi wajib diisi'), findsOneWidget);
-        final titleEditable = tester.widget<EditableText>(titleFinder);
-        expect(titleEditable.focusNode.hasFocus, isTrue);
+      expect(find.text('Judul informasi wajib diisi'), findsOneWidget);
+      final titleEditable = tester.widget<EditableText>(titleFinder);
+      expect(titleEditable.focusNode.hasFocus, isTrue);
 
-        // 3. Live correction: typing valid text clears error immediately
-        await tester.enterText(titleFinder, 'Informasi Patroli');
-        await tester.pumpAndSettle();
+      // 3. Live correction: typing valid text clears error immediately
+      await tester.enterText(titleFinder, 'Informasi Patroli');
+      await tester.pumpAndSettle();
 
-        expect(find.text('Judul informasi wajib diisi'), findsNothing);
-        expect(cubit.state.title, 'Informasi Patroli');
-        expect(cubit.state.titleError, isNull);
+      expect(find.text('Judul informasi wajib diisi'), findsNothing);
+      expect(cubit.state.title, 'Informasi Patroli');
+      expect(cubit.state.titleError, isNull);
 
-        await cubit.close();
-      },
-    );
+      await cubit.close();
+    });
 
-    testWidgets('opens photo bottom sheet and picks photo from camera',
-        (tester) async {
+    testWidgets('opens photo bottom sheet and picks photo from camera', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       when(
@@ -329,10 +312,7 @@ void main() {
         ),
       ).thenAnswer(
         (_) async => const [
-          AppMediaFile(
-            name: 'foto_kamera.jpg',
-            path: '/path/foto_kamera.jpg',
-          ),
+          AppMediaFile(name: 'foto_kamera.jpg', path: '/path/foto_kamera.jpg'),
         ],
       );
 
@@ -342,10 +322,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -367,61 +344,55 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('opens photo bottom sheet and picks multi photos from gallery',
-        (tester) async {
-      configureTestView(tester);
+    testWidgets(
+      'opens photo bottom sheet and picks multi photos from gallery',
+      (tester) async {
+        configureTestView(tester);
 
-      when(
-        () => mockMediaPicker.pickMultiImagesFromGallery(
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer(
-        (_) async => const [
-          AppMediaFile(
-            name: 'gallery1.jpg',
-            path: '/path/gallery1.jpg',
+        when(
+          () => mockMediaPicker.pickMultiImagesFromGallery(
+            limit: any(named: 'limit'),
           ),
-          AppMediaFile(
-            name: 'gallery2.jpg',
-            path: '/path/gallery2.jpg',
-          ),
-        ],
-      );
+        ).thenAnswer(
+          (_) async => const [
+            AppMediaFile(name: 'gallery1.jpg', path: '/path/gallery1.jpg'),
+            AppMediaFile(name: 'gallery2.jpg', path: '/path/gallery2.jpg'),
+          ],
+        );
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      );
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        );
 
-      await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
+        );
+        await tester.pumpAndSettle();
 
-      // Tap 'Belum ada foto terlampir'
-      await tester.tap(find.text('Belum ada foto terlampir'));
-      await tester.pumpAndSettle();
+        // Tap 'Belum ada foto terlampir'
+        await tester.tap(find.text('Belum ada foto terlampir'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Pilih sumber foto'), findsOneWidget);
-      expect(find.text('Galeri'), findsOneWidget);
+        expect(find.text('Pilih sumber foto'), findsOneWidget);
+        expect(find.text('Galeri'), findsOneWidget);
 
-      // Tap 'Galeri'
-      await tester.tap(find.text('Galeri'));
-      await tester.pumpAndSettle();
+        // Tap 'Galeri'
+        await tester.tap(find.text('Galeri'));
+        await tester.pumpAndSettle();
 
-      expect(cubit.state.photos.length, 2);
-      expect(cubit.state.photos[0].name, 'gallery1.jpg');
-      expect(cubit.state.photos[1].name, 'gallery2.jpg');
-      expect(find.text('Dokumentasi foto (2/4)'), findsOneWidget);
+        expect(cubit.state.photos.length, 2);
+        expect(cubit.state.photos[0].name, 'gallery1.jpg');
+        expect(cubit.state.photos[1].name, 'gallery2.jpg');
+        expect(find.text('Dokumentasi foto (2/4)'), findsOneWidget);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
-    testWidgets('picks document file and renders document tile',
-        (tester) async {
+    testWidgets('picks document file and renders document tile', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       when(() => mockMediaPicker.pickDocumentFile()).thenAnswer(
@@ -437,10 +408,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -454,8 +422,9 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('clearing location coordinates removes AppStaticMap',
-        (tester) async {
+    testWidgets('clearing location coordinates removes AppStaticMap', (
+      tester,
+    ) async {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
@@ -465,10 +434,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -488,90 +454,83 @@ void main() {
     });
 
     testWidgets(
-        'tapping empty location placeholder opens location bottom sheet',
-        (tester) async {
-      configureTestView(tester);
+      'tapping empty location placeholder opens location bottom sheet',
+      (tester) async {
+        configureTestView(tester);
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      );
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        );
 
-      await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Belum ada titik lokasi'), findsOneWidget);
+        expect(find.text('Belum ada titik lokasi'), findsOneWidget);
 
-      await tester.tap(find.text('Belum ada titik lokasi'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Belum ada titik lokasi'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Tentukan titik lokasi'), findsOneWidget);
-      expect(find.text('Lokasi saat ini'), findsOneWidget);
-      expect(find.text('Pilih di peta'), findsOneWidget);
+        expect(find.text('Tentukan titik lokasi'), findsOneWidget);
+        expect(find.text('Lokasi saat ini'), findsOneWidget);
+        expect(find.text('Pilih di peta'), findsOneWidget);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     testWidgets(
-        'renders GridView with 2 columns and opens AppImageViewer on tap',
-        (tester) async {
-      configureTestView(tester);
+      'renders GridView with 2 columns and opens AppImageViewer on tap',
+      (tester) async {
+        configureTestView(tester);
 
-      when(
-        () => mockMediaPicker.captureMultiImagesFromCamera(
-          any(),
-          maxPhotos: any(named: 'maxPhotos'),
-          alreadyAttachedCount: any(named: 'alreadyAttachedCount'),
-        ),
-      ).thenAnswer(
-        (_) async => const [
-          AppMediaFile(
-            name: 'foto1.jpg',
-            path: '/path/foto1.jpg',
+        when(
+          () => mockMediaPicker.captureMultiImagesFromCamera(
+            any(),
+            maxPhotos: any(named: 'maxPhotos'),
+            alreadyAttachedCount: any(named: 'alreadyAttachedCount'),
           ),
-        ],
-      );
+        ).thenAnswer(
+          (_) async => const [
+            AppMediaFile(name: 'foto1.jpg', path: '/path/foto1.jpg'),
+          ],
+        );
 
-      final cubit = InformationFormCubit(
-        createInformationUseCase: mockCreateUseCase,
-        updateInformationUseCase: mockUpdateUseCase,
-      );
+        final cubit = InformationFormCubit(
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+        );
 
-      await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Belum ada foto terlampir'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Belum ada foto terlampir'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Kamera'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Kamera'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(GridView), findsOneWidget);
-      expect(find.text('1'), findsOneWidget);
+        expect(find.byType(GridView), findsOneWidget);
+        expect(find.text('1'), findsOneWidget);
 
-      // Tap thumbnail photo to open AppImageViewer
-      await tester.tap(
-        find.byKey(const ValueKey<String>('photo_thumbnail_0')),
-      );
-      await tester.pumpAndSettle();
+        // Tap thumbnail photo to open AppImageViewer
+        await tester.tap(
+          find.byKey(const ValueKey<String>('photo_thumbnail_0')),
+        );
+        await tester.pumpAndSettle();
 
-      final viewerFinder = find.byType(AppImageViewer);
-      expect(viewerFinder, findsOneWidget);
-      final viewer = tester.widget<AppImageViewer>(viewerFinder);
-      expect(viewer.heroTagPrefix, 'info_form_photo');
+        final viewerFinder = find.byType(AppImageViewer);
+        expect(viewerFinder, findsOneWidget);
+        final viewer = tester.widget<AppImageViewer>(viewerFinder);
+        expect(viewer.heroTagPrefix, 'info_form_photo');
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     testWidgets('shows snackbar error when submit fails', (tester) async {
       configureTestView(tester);
@@ -586,10 +545,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildFormTestApp(
-          cubit: cubit,
-          mediaPickerService: mockMediaPicker,
-        ),
+        _buildFormTestApp(cubit: cubit, mediaPickerService: mockMediaPicker),
       );
       await tester.pumpAndSettle();
 
@@ -758,8 +714,7 @@ void main() {
           _buildFormTestApp(
             cubit: cubit,
             mediaPickerService: mockMediaPicker,
-            locationProvider: () async =>
-                const LocationResult.mockDetected(),
+            locationProvider: () async => const LocationResult.mockDetected(),
           ),
         );
         await tester.pumpAndSettle();
@@ -785,120 +740,112 @@ void main() {
       },
     );
 
-    testWidgets(
-      'forwards injected reverseGeocodeService to '
-      'InformationLocationSection and AppStaticMap',
-      (tester) async {
-        final mockReverseGeocode = MockReverseGeocodeService();
-        when(
-          () => mockReverseGeocode.reverseGeocode(
-            latitude: any(named: 'latitude'),
-            longitude: any(named: 'longitude'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (_) async => const ReverseGeocodeResult.success(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            address: 'Jl. Injeksi DI No. 99',
-          ),
-        );
+    testWidgets('forwards injected reverseGeocodeService to '
+        'InformationLocationSection and AppStaticMap', (tester) async {
+      final mockReverseGeocode = MockReverseGeocodeService();
+      when(
+        () => mockReverseGeocode.reverseGeocode(
+          latitude: any(named: 'latitude'),
+          longitude: any(named: 'longitude'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer(
+        (_) async => const ReverseGeocodeResult.success(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          address: 'Jl. Injeksi DI No. 99',
+        ),
+      );
 
-        final cubit = InformationFormCubit(
-          createInformationUseCase: mockCreateUseCase,
-          updateInformationUseCase: mockUpdateUseCase,
-          initialItem: dummyItem,
-        );
+      final cubit = InformationFormCubit(
+        createInformationUseCase: mockCreateUseCase,
+        updateInformationUseCase: mockUpdateUseCase,
+        initialItem: dummyItem,
+      );
 
-        await tester.pumpWidget(
-          _buildFormTestApp(
-            cubit: cubit,
-            reverseGeocodeService: mockReverseGeocode,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildFormTestApp(
+          cubit: cubit,
+          reverseGeocodeService: mockReverseGeocode,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Verifikasi AppStaticMap menerima instance service yang diinjeksi
-        final staticMapFinder = find.byType(AppStaticMap);
-        expect(staticMapFinder, findsOneWidget);
-        final staticMap = tester.widget<AppStaticMap>(staticMapFinder);
-        expect(staticMap.reverseGeocodeService, equals(mockReverseGeocode));
+      // Verifikasi AppStaticMap menerima instance service yang diinjeksi
+      final staticMapFinder = find.byType(AppStaticMap);
+      expect(staticMapFinder, findsOneWidget);
+      final staticMap = tester.widget<AppStaticMap>(staticMapFinder);
+      expect(staticMap.reverseGeocodeService, equals(mockReverseGeocode));
 
-        verify(
-          () => mockReverseGeocode.reverseGeocode(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
+      verify(
+        () => mockReverseGeocode.reverseGeocode(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
 
-        await cubit.close();
-      },
-    );
+      await cubit.close();
+    });
 
-    testWidgets(
-      'auto-healing: automatically dismisses error sheet and sets '
-      'coordinates on app resume when location becomes available',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('auto-healing: automatically dismisses error sheet and sets '
+        'coordinates on app resume when location becomes available', (
+      tester,
+    ) async {
+      configureTestView(tester);
 
-        var isGpsTurnedOnInSettings = false;
-        var locationCallCount = 0;
+      var isGpsTurnedOnInSettings = false;
+      var locationCallCount = 0;
 
-        final cubit = InformationFormCubit(
-          createInformationUseCase: mockCreateUseCase,
-          updateInformationUseCase: mockUpdateUseCase,
-        );
+      final cubit = InformationFormCubit(
+        createInformationUseCase: mockCreateUseCase,
+        updateInformationUseCase: mockUpdateUseCase,
+      );
 
-        await tester.pumpWidget(
-          _buildFormTestApp(
-            cubit: cubit,
-            mediaPickerService: mockMediaPicker,
-            locationProvider: () async {
-              locationCallCount++;
-              if (isGpsTurnedOnInSettings) {
-                return LocationResult.success(dummyPosition());
-              }
-              return const LocationResult.serviceDisabled();
-            },
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildFormTestApp(
+          cubit: cubit,
+          mediaPickerService: mockMediaPicker,
+          locationProvider: () async {
+            locationCallCount++;
+            if (isGpsTurnedOnInSettings) {
+              return LocationResult.success(dummyPosition());
+            }
+            return const LocationResult.serviceDisabled();
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final locationPlaceholder = find.text('Belum ada titik lokasi');
-        await tester.ensureVisible(locationPlaceholder);
-        await tester.tap(locationPlaceholder);
-        await tester.pumpAndSettle();
+      final locationPlaceholder = find.text('Belum ada titik lokasi');
+      await tester.ensureVisible(locationPlaceholder);
+      await tester.tap(locationPlaceholder);
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Lokasi saat ini'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Lokasi saat ini'));
+      await tester.pumpAndSettle();
 
-        expect(locationCallCount, equals(1));
-        expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
-        expect(cubit.state.hasLocation, isFalse);
-        expect(cubit.state.latitude, isNull);
-        expect(cubit.state.longitude, isNull);
+      expect(locationCallCount, equals(1));
+      expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
+      expect(cubit.state.hasLocation, isFalse);
+      expect(cubit.state.latitude, isNull);
+      expect(cubit.state.longitude, isNull);
 
-        // Simulasi pengguna menyalakan GPS di OS Settings dan kembali ke app
-        isGpsTurnedOnInSettings = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-        await tester.pumpAndSettle();
+      // Simulasi pengguna menyalakan GPS di OS Settings dan kembali ke app
+      isGpsTurnedOnInSettings = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
 
-        // Auto-healing berhasil: error sheet tertutup, koordinat tersimpan
-        expect(locationCallCount, equals(2));
-        expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
-        expect(cubit.state.hasLocation, isTrue);
-        expect(cubit.state.latitude, equals(-6.2088));
-        expect(cubit.state.longitude, equals(106.8456));
-        expect(
-          find.text('Titik lokasi GPS berhasil diperoleh.'),
-          findsOneWidget,
-        );
+      // Auto-healing berhasil: error sheet tertutup, koordinat tersimpan
+      expect(locationCallCount, equals(2));
+      expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
+      expect(cubit.state.hasLocation, isTrue);
+      expect(cubit.state.latitude, equals(-6.2088));
+      expect(cubit.state.longitude, equals(106.8456));
+      expect(find.text('Titik lokasi GPS berhasil diperoleh.'), findsOneWidget);
 
-        await cubit.close();
-      },
-    );
+      await cubit.close();
+    });
 
     testWidgets(
       'auto-healing: leaves error sheet visible on resume if location is '
@@ -937,8 +884,9 @@ void main() {
         expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
 
         // App di-resume tetapi pengguna belum menyalakan GPS
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         expect(locationCallCount, equals(2));
@@ -950,66 +898,62 @@ void main() {
       },
     );
 
-    testWidgets(
-      'auto-healing: does not auto-fetch location on resume after '
-      'manual error sheet dismissal',
-      (tester) async {
-        configureTestView(tester);
+    testWidgets('auto-healing: does not auto-fetch location on resume after '
+        'manual error sheet dismissal', (tester) async {
+      configureTestView(tester);
 
-        var isGpsTurnedOnInSettings = false;
-        var locationCallCount = 0;
+      var isGpsTurnedOnInSettings = false;
+      var locationCallCount = 0;
 
-        final cubit = InformationFormCubit(
-          createInformationUseCase: mockCreateUseCase,
-          updateInformationUseCase: mockUpdateUseCase,
-        );
+      final cubit = InformationFormCubit(
+        createInformationUseCase: mockCreateUseCase,
+        updateInformationUseCase: mockUpdateUseCase,
+      );
 
-        await tester.pumpWidget(
-          _buildFormTestApp(
-            cubit: cubit,
-            mediaPickerService: mockMediaPicker,
-            locationProvider: () async {
-              locationCallCount++;
-              if (isGpsTurnedOnInSettings) {
-                return LocationResult.success(dummyPosition());
-              }
-              return const LocationResult.serviceDisabled();
-            },
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildFormTestApp(
+          cubit: cubit,
+          mediaPickerService: mockMediaPicker,
+          locationProvider: () async {
+            locationCallCount++;
+            if (isGpsTurnedOnInSettings) {
+              return LocationResult.success(dummyPosition());
+            }
+            return const LocationResult.serviceDisabled();
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final locationPlaceholder = find.text('Belum ada titik lokasi');
-        await tester.ensureVisible(locationPlaceholder);
-        await tester.tap(locationPlaceholder);
-        await tester.pumpAndSettle();
+      final locationPlaceholder = find.text('Belum ada titik lokasi');
+      await tester.ensureVisible(locationPlaceholder);
+      await tester.tap(locationPlaceholder);
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Lokasi saat ini'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Lokasi saat ini'));
+      await tester.pumpAndSettle();
 
-        expect(locationCallCount, equals(1));
-        expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
+      expect(locationCallCount, equals(1));
+      expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
 
-        // Pengguna memilih 'Pilih di peta' sehingga error sheet ditutup
-        await tester.tap(find.text('Pilih di peta'));
-        await tester.pumpAndSettle();
+      // Pengguna memilih 'Pilih di peta' sehingga error sheet ditutup
+      await tester.tap(find.text('Pilih di peta'));
+      await tester.pumpAndSettle();
 
-        // Verifikasi dialog peta terbuka dan error sheet tertutup
-        expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
-        expect(find.byType(AppMapPickerDialog), findsOneWidget);
+      // Verifikasi dialog peta terbuka dan error sheet tertutup
+      expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
+      expect(find.byType(AppMapPickerDialog), findsOneWidget);
 
-        // Simulasi app resume saat map picker terbuka
-        isGpsTurnedOnInSettings = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-        await tester.pumpAndSettle();
+      // Simulasi app resume saat map picker terbuka
+      isGpsTurnedOnInSettings = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
 
-        // Form dialog tidak memicu fetch GPS karena error sheet sudah ditutup
-        expect(locationCallCount, equals(1));
-        expect(find.text('Titik lokasi GPS berhasil diperoleh.'), findsNothing);
+      // Form dialog tidak memicu fetch GPS karena error sheet sudah ditutup
+      expect(locationCallCount, equals(1));
+      expect(find.text('Titik lokasi GPS berhasil diperoleh.'), findsNothing);
 
-        await cubit.close();
-      },
-    );
+      await cubit.close();
+    });
   });
 }

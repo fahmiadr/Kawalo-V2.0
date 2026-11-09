@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,12 +54,11 @@ MockInformationCubit createMockInformationCubit({
     ),
   ).thenAnswer((_) async => AppFetchResult.success);
   when(
-    () => mockCubit.refreshInformation(
-      search: any(named: 'search'),
-    ),
+    () => mockCubit.refreshInformation(search: any(named: 'search')),
   ).thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetDateFilter)
-      .thenAnswer((_) async => AppFetchResult.success);
+  when(
+    mockCubit.resetDateFilter,
+  ).thenAnswer((_) async => AppFetchResult.success);
   when(mockCubit.resetFilters).thenAnswer((_) async => AppFetchResult.success);
   when(mockCubit.loadGroupMembers).thenAnswer((_) async => const Right([]));
   return mockCubit;
@@ -128,9 +128,7 @@ void main() {
           MaterialApp(
             theme: AppTheme.lightThemeData(),
             home: InformationScreen(
-              cubit: createMockInformationCubit(
-                items: const [dummyFeed],
-              ),
+              cubit: createMockInformationCubit(items: const [dummyFeed]),
             ),
           ),
         );
@@ -167,9 +165,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: InformationScreen(
-            cubit: createMockInformationCubit(),
-          ),
+          home: InformationScreen(cubit: createMockInformationCubit()),
         ),
       );
       await tester.pumpAndSettle();
@@ -186,28 +182,24 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: InformationScreen(
-            cubit: mockCubit,
-          ),
+          home: InformationScreen(cubit: mockCubit),
         ),
       );
       await tester.pumpAndSettle();
 
-      await tester.fling(
-        find.byType(ListView),
-        const Offset(0, 300),
-        1000,
-      );
+      await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      verify(() => mockCubit.refreshInformation(search: any(named: 'search')))
-          .called(1);
+      verify(
+        () => mockCubit.refreshInformation(search: any(named: 'search')),
+      ).called(1);
     });
 
-    testWidgets('renders greeting when state.lastSync is present',
-        (tester) async {
+    testWidgets('renders greeting when state.lastSync is present', (
+      tester,
+    ) async {
       final mockCubit = MockInformationCubit();
       when(() => mockCubit.state).thenReturn(
         const InformationLoaded(
@@ -338,10 +330,7 @@ void main() {
       (tester) async {
         final mockCubit = MockInformationCubit();
         when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10.00',
-          ),
+          const InformationLoaded(information: [dummyFeed], lastSync: '10.00'),
         );
         when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
         when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
@@ -399,104 +388,95 @@ void main() {
         await tester.pumpAndSettle();
 
         verify(
-          () => mockCubit.deleteMultipleInformation(
-            {'1'},
-            session: any(named: 'session'),
-          ),
+          () => mockCubit.deleteMultipleInformation({
+            '1',
+          }, session: any(named: 'session')),
         ).called(1);
       },
     );
 
-    testWidgets(
-      'GUARD cannot select post authored by another user',
-      (tester) async {
-        final sessionCubit = UserSessionCubit(
-          const AuthSessionEntity(
-            userId: 'guard-1',
-            email: 'satpam.lain@kawalo.id',
-            name: 'Satpam Lain',
-            role: 'GUARD',
-            allowAdmin: false,
-            allowPatrol: true,
-            allowMonPatrol: false,
-          ),
-        );
-
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: sessionCubit,
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: createMockInformationCubit(items: const [dummyFeed]),
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Long press card authored by 'satpam@kawalo.id'
-        await tester.longPress(find.text('Pemeriksaan Pos Jaga Utama'));
-        await tester.pumpAndSettle();
-
-        // Selection mode should NOT activate
-        expect(find.text('Pusat informasi'), findsOneWidget);
-        expect(
-          find.text('Anda hanya dapat memilih informasi yang Anda buat.'),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets(
-      'pull-to-refresh is disabled when in selection mode',
-      (tester) async {
-        final mockCubit = createMockInformationCubit(items: const [dummyFeed]);
-
-        const adminSession = AuthSessionEntity(
-          userId: '1',
-          email: 'admin@kawalo.id',
-          name: 'Super Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
+    testWidgets('GUARD cannot select post authored by another user', (
+      tester,
+    ) async {
+      final sessionCubit = UserSessionCubit(
+        const AuthSessionEntity(
+          userId: 'guard-1',
+          email: 'satpam.lain@kawalo.id',
+          name: 'Satpam Lain',
+          role: 'GUARD',
+          allowAdmin: false,
           allowPatrol: true,
-          allowMonPatrol: true,
-        );
+          allowMonPatrol: false,
+        ),
+      );
 
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(adminSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
+      await tester.pumpWidget(
+        BlocProvider<UserSessionCubit>.value(
+          value: sessionCubit,
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: InformationScreen(
+              cubit: createMockInformationCubit(items: const [dummyFeed]),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Enter selection mode
-        await tester.longPress(find.text('Pemeriksaan Pos Jaga Utama'));
-        await tester.pumpAndSettle();
-        expect(find.text('1'), findsOneWidget);
+      // Long press card authored by 'satpam@kawalo.id'
+      await tester.longPress(find.text('Pemeriksaan Pos Jaga Utama'));
+      await tester.pumpAndSettle();
 
-        // Attempt fling to trigger refresh
-        await tester.fling(
-          find.byType(ListView),
-          const Offset(0, 300),
-          1000,
-        );
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
-        await tester.pumpAndSettle();
+      // Selection mode should NOT activate
+      expect(find.text('Pusat informasi'), findsOneWidget);
+      expect(
+        find.text('Anda hanya dapat memilih informasi yang Anda buat.'),
+        findsOneWidget,
+      );
+    });
 
-        // refreshInformation should NOT be triggered
-        verifyNever(
-          () => mockCubit.refreshInformation(search: any(named: 'search')),
-        );
-      },
-    );
+    testWidgets('pull-to-refresh is disabled when in selection mode', (
+      tester,
+    ) async {
+      final mockCubit = createMockInformationCubit(items: const [dummyFeed]);
+
+      const adminSession = AuthSessionEntity(
+        userId: '1',
+        email: 'admin@kawalo.id',
+        name: 'Super Admin',
+        role: 'ADMIN',
+        allowAdmin: true,
+        allowPatrol: true,
+        allowMonPatrol: true,
+      );
+
+      await tester.pumpWidget(
+        BlocProvider<UserSessionCubit>.value(
+          value: UserSessionCubit(adminSession),
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: InformationScreen(cubit: mockCubit),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Enter selection mode
+      await tester.longPress(find.text('Pemeriksaan Pos Jaga Utama'));
+      await tester.pumpAndSettle();
+      expect(find.text('1'), findsOneWidget);
+
+      // Attempt fling to trigger refresh
+      await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      // refreshInformation should NOT be triggered
+      verifyNever(
+        () => mockCubit.refreshInformation(search: any(named: 'search')),
+      );
+    });
 
     testWidgets(
       'renders filter chips for Tanggal and Dibuat oleh saya for GUARD role',
@@ -511,10 +491,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(
-          find.byType(AppChip),
-          findsNWidgets(2),
-        );
+        expect(find.byType(AppChip), findsNWidgets(2));
         expect(find.text('Tanggal').hitTestable(), findsOneWidget);
         expect(find.text('Dibuat oleh saya').hitTestable(), findsOneWidget);
       },
@@ -536,10 +513,7 @@ void main() {
           ),
         );
         when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10.00',
-          ),
+          const InformationLoaded(information: [dummyFeed], lastSync: '10.00'),
         );
         when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
         when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
@@ -666,290 +640,257 @@ void main() {
       },
     );
 
-    testWidgets(
-      'fetches information on initial load when isActive is true',
-      (tester) async {
-        final mockCubit = MockInformationCubit();
-        when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10.00',
-          ),
-        );
-        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-        when(() => mockCubit.currentGreeting).thenReturn('Selamat Siang');
-        when(
-          () => mockCubit.fetchInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => AppFetchResult.success);
+    testWidgets('fetches information on initial load when isActive is true', (
+      tester,
+    ) async {
+      final mockCubit = MockInformationCubit();
+      when(() => mockCubit.state).thenReturn(
+        const InformationLoaded(information: [dummyFeed], lastSync: '10.00'),
+      );
+      when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
+      when(() => mockCubit.currentGreeting).thenReturn('Selamat Siang');
+      when(
+        () => mockCubit.fetchInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => AppFetchResult.success);
 
-        const adminSession = AuthSessionEntity(
-          userId: '1',
-          email: 'admin@kawalo.id',
-          name: 'Super Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
+      const adminSession = AuthSessionEntity(
+        userId: '1',
+        email: 'admin@kawalo.id',
+        name: 'Super Admin',
+        role: 'ADMIN',
+        allowAdmin: true,
+        allowPatrol: true,
+        allowMonPatrol: true,
+      );
 
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(adminSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        verify(mockCubit.fetchInformation).called(1);
-      },
-    );
-
-    testWidgets(
-      'fetches information each time isActive transitions to true',
-      (tester) async {
-        final mockCubit = MockInformationCubit();
-        when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10.00',
-          ),
-        );
-        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-        when(() => mockCubit.currentGreeting).thenReturn('Selamat Siang');
-        when(
-          () => mockCubit.fetchInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => AppFetchResult.success);
-
-        // Initial mount with isActive: false (seperti tab non-aktif)
-        await tester.pumpWidget(
-          MaterialApp(
+      await tester.pumpWidget(
+        BlocProvider<UserSessionCubit>.value(
+          value: UserSessionCubit(adminSession),
+          child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: InformationScreen(
-              cubit: mockCubit,
-              isActive: false,
-            ),
+            home: InformationScreen(cubit: mockCubit),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Tidak boleh melakukan fetch saat masih tidak aktif
-        verifyNever(
-          () => mockCubit.fetchInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        );
+      verify(mockCubit.fetchInformation).called(1);
+    });
 
-        // Tab dibuka -> isActive menjadi true
-        const adminSession = AuthSessionEntity(
-          userId: '1',
-          email: 'admin@kawalo.id',
-          name: 'Super Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
+    testWidgets('fetches information each time isActive transitions to true', (
+      tester,
+    ) async {
+      final mockCubit = MockInformationCubit();
+      when(() => mockCubit.state).thenReturn(
+        const InformationLoaded(information: [dummyFeed], lastSync: '10.00'),
+      );
+      when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
+      when(() => mockCubit.currentGreeting).thenReturn('Selamat Siang');
+      when(
+        () => mockCubit.fetchInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => AppFetchResult.success);
 
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(adminSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      // Initial mount with isActive: false (seperti tab non-aktif)
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: InformationScreen(cubit: mockCubit, isActive: false),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Melakukan fetch saat dibuka
-        verify(
-          () => mockCubit.fetchInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).called(1);
+      // Tidak boleh melakukan fetch saat masih tidak aktif
+      verifyNever(
+        () => mockCubit.fetchInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      );
 
-        // Tab beralih ke halaman lain -> isActive menjadi false
-        await tester.pumpWidget(
-          MaterialApp(
+      // Tab dibuka -> isActive menjadi true
+      const adminSession = AuthSessionEntity(
+        userId: '1',
+        email: 'admin@kawalo.id',
+        name: 'Super Admin',
+        role: 'ADMIN',
+        allowAdmin: true,
+        allowPatrol: true,
+        allowMonPatrol: true,
+      );
+
+      await tester.pumpWidget(
+        BlocProvider<UserSessionCubit>.value(
+          value: UserSessionCubit(adminSession),
+          child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: InformationScreen(
-              cubit: mockCubit,
-              isActive: false,
-            ),
+            home: InformationScreen(cubit: mockCubit),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Tab dibuka kembali -> isActive menjadi true lagi
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(adminSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
-            ),
+      // Melakukan fetch saat dibuka
+      verify(
+        () => mockCubit.fetchInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).called(1);
+
+      // Tab beralih ke halaman lain -> isActive menjadi false
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: InformationScreen(cubit: mockCubit, isActive: false),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tab dibuka kembali -> isActive menjadi true lagi
+      await tester.pumpWidget(
+        BlocProvider<UserSessionCubit>.value(
+          value: UserSessionCubit(adminSession),
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: InformationScreen(cubit: mockCubit),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Melakukan fetch kembali setiap kali dibuka
-        verify(
-          () => mockCubit.fetchInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
+      // Melakukan fetch kembali setiap kali dibuka
+      verify(
+        () => mockCubit.fetchInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).called(1);
+    });
+
+    testWidgets('delete button is disabled in selection mode when offline', (
+      tester,
+    ) async {
+      const sampleItem = InformationItemEntity(
+        id: '1',
+        photos: [],
+        title: 'Info Judul',
+        text: 'Info Deskripsi',
+        userEmail: 'admin@kawalo.id',
+        userName: 'Admin',
+      );
+      final mockCubit = createMockInformationCubit(
+        items: const [sampleItem],
+        greeting: '10:00',
+      );
+      const adminSession = AuthSessionEntity(
+        userId: '1',
+        email: 'admin@kawalo.id',
+        name: 'Super Admin',
+        role: 'ADMIN',
+        allowAdmin: true,
+        allowPatrol: true,
+        allowMonPatrol: true,
+      );
+      final sessionCubit = UserSessionCubit(adminSession);
+
+      final offlineCubit = ConnectivityCubit(
+        initialState: ConnectivityStatus.offline,
+        autoStart: false,
+      );
+
+      await tester.pumpWidget(
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<UserSessionCubit>.value(value: sessionCubit),
+            BlocProvider<ConnectivityCubit>.value(value: offlineCubit),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: InformationScreen(cubit: mockCubit),
           ),
-        ).called(1);
-      },
-    );
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    testWidgets(
-      'delete button is disabled in selection mode when offline',
-      (tester) async {
-        const sampleItem = InformationItemEntity(
-          id: '1',
-          photos: [],
-          title: 'Info Judul',
-          text: 'Info Deskripsi',
-          userEmail: 'admin@kawalo.id',
-          userName: 'Admin',
-        );
-        final mockCubit = createMockInformationCubit(
-          items: const [sampleItem],
-          greeting: '10:00',
-        );
-        const adminSession = AuthSessionEntity(
-          userId: '1',
-          email: 'admin@kawalo.id',
-          name: 'Super Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-        final sessionCubit = UserSessionCubit(adminSession);
+      // Enter selection mode
+      await tester.longPress(find.text('Info Judul'));
+      await tester.pumpAndSettle();
 
-        final offlineCubit = ConnectivityCubit(
-          initialState: ConnectivityStatus.offline,
-          autoStart: false,
-        );
+      final deleteBtnFinder = find.byWidgetPredicate(
+        (w) =>
+            w is AppIconButton && w.semanticLabel == 'Hapus informasi terpilih',
+      );
+      expect(deleteBtnFinder, findsOneWidget);
 
-        await tester.pumpWidget(
-          MultiBlocProvider(
-            providers: [
-              BlocProvider<UserSessionCubit>.value(value: sessionCubit),
-              BlocProvider<ConnectivityCubit>.value(value: offlineCubit),
-            ],
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
-            ),
+      final iconButton = tester.widget<AppIconButton>(deleteBtnFinder);
+      expect(iconButton.onPressed, isNull);
+    });
+
+    testWidgets('does NOT trigger reactive refresh when coming back online if '
+        'isActive is false', (tester) async {
+      final mockCubit = MockInformationCubit();
+      when(() => mockCubit.state).thenReturn(
+        const InformationLoaded(information: [dummyFeed], lastSync: '10:00'),
+      );
+      when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
+      when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
+      when(
+        () => mockCubit.refreshInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => AppFetchResult.success);
+
+      final connectivityCubit = ConnectivityCubit(
+        initialState: ConnectivityStatus.offline,
+        autoStart: false,
+      );
+
+      await tester.pumpWidget(
+        BlocProvider<ConnectivityCubit>.value(
+          value: connectivityCubit,
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: InformationScreen(cubit: mockCubit, isActive: false),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Enter selection mode
-        await tester.longPress(find.text('Info Judul'));
-        await tester.pumpAndSettle();
+      // Device transitions from offline to online while isActive is false
+      connectivityCubit.setStatus(ConnectivityStatus.online);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-        final deleteBtnFinder = find.byWidgetPredicate(
-          (w) =>
-              w is AppIconButton &&
-              w.semanticLabel == 'Hapus informasi terpilih',
-        );
-        expect(deleteBtnFinder, findsOneWidget);
+      verifyNever(
+        () => mockCubit.refreshInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      );
 
-        final iconButton = tester.widget<AppIconButton>(deleteBtnFinder);
-        expect(iconButton.onPressed, isNull);
-      },
-    );
-
-    testWidgets(
-      'does NOT trigger reactive refresh when coming back online if '
-      'isActive is false',
-      (tester) async {
-        final mockCubit = MockInformationCubit();
-        when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10:00',
-          ),
-        );
-        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-        when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
-        when(
-          () => mockCubit.refreshInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => AppFetchResult.success);
-
-        final connectivityCubit = ConnectivityCubit(
-          initialState: ConnectivityStatus.offline,
-          autoStart: false,
-        );
-
-        await tester.pumpWidget(
-          BlocProvider<ConnectivityCubit>.value(
-            value: connectivityCubit,
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-                isActive: false,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Device transitions from offline to online while isActive is false
-        connectivityCubit.setStatus(ConnectivityStatus.online);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        verifyNever(
-          () => mockCubit.refreshInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        );
-
-        await connectivityCubit.close();
-      },
-    );
+      await connectivityCubit.close();
+    });
 
     testWidgets(
       'triggers reactive refresh when coming back online if isActive is true '
@@ -957,10 +898,7 @@ void main() {
       (tester) async {
         final mockCubit = MockInformationCubit();
         when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10:00',
-          ),
+          const InformationLoaded(information: [dummyFeed], lastSync: '10:00'),
         );
         when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
         when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
@@ -991,9 +929,7 @@ void main() {
             value: connectivityCubit,
             child: MaterialApp(
               theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
+              home: InformationScreen(cubit: mockCubit),
             ),
           ),
         );
@@ -1017,85 +953,77 @@ void main() {
       },
     );
 
-    testWidgets(
-      'does NOT trigger reactive refresh when coming back online if '
-      'another screen is on top',
-      (tester) async {
-        final mockCubit = MockInformationCubit();
-        when(() => mockCubit.state).thenReturn(
-          const InformationLoaded(
-            information: [dummyFeed],
-            lastSync: '10:00',
+    testWidgets('does NOT trigger reactive refresh when coming back online if '
+        'another screen is on top', (tester) async {
+      final mockCubit = MockInformationCubit();
+      when(() => mockCubit.state).thenReturn(
+        const InformationLoaded(information: [dummyFeed], lastSync: '10:00'),
+      );
+      when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
+      when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
+      when(
+        () => mockCubit.fetchInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => AppFetchResult.success);
+      when(
+        () => mockCubit.refreshInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => AppFetchResult.success);
+
+      final connectivityCubit = ConnectivityCubit(
+        initialState: ConnectivityStatus.offline,
+        autoStart: false,
+      );
+
+      final navigatorKey = GlobalKey<NavigatorState>();
+
+      await tester.pumpWidget(
+        BlocProvider<ConnectivityCubit>.value(
+          value: connectivityCubit,
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            theme: AppTheme.lightThemeData(),
+            home: InformationScreen(cubit: mockCubit),
           ),
-        );
-        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-        when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
-        when(
-          () => mockCubit.fetchInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => AppFetchResult.success);
-        when(
-          () => mockCubit.refreshInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => AppFetchResult.success);
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final connectivityCubit = ConnectivityCubit(
-          initialState: ConnectivityStatus.offline,
-          autoStart: false,
-        );
+      // Push another screen on top of InformationScreen
+      navigatorKey.currentState!.push<void>(
+        MaterialPageRoute(
+          builder: (_) => const Scaffold(body: Text('Detail Screen')),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final navigatorKey = GlobalKey<NavigatorState>();
+      expect(find.text('Detail Screen'), findsOneWidget);
 
-        await tester.pumpWidget(
-          BlocProvider<ConnectivityCubit>.value(
-            value: connectivityCubit,
-            child: MaterialApp(
-              navigatorKey: navigatorKey,
-              theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      // Device transitions from offline to online while InformationScreen
+      // is not current route
+      connectivityCubit.setStatus(ConnectivityStatus.online);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-        // Push another screen on top of InformationScreen
-        navigatorKey.currentState!.push<void>(
-          MaterialPageRoute(
-            builder: (_) => const Scaffold(body: Text('Detail Screen')),
-          ),
-        );
-        await tester.pumpAndSettle();
+      verifyNever(
+        () => mockCubit.refreshInformation(
+          search: any(named: 'search'),
+          filterPeriod: any(named: 'filterPeriod'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      );
 
-        expect(find.text('Detail Screen'), findsOneWidget);
-
-        // Device transitions from offline to online while InformationScreen
-        // is not current route
-        connectivityCubit.setStatus(ConnectivityStatus.online);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        verifyNever(
-          () => mockCubit.refreshInformation(
-            search: any(named: 'search'),
-            filterPeriod: any(named: 'filterPeriod'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        );
-
-        await connectivityCubit.close();
-      },
-    );
+      await connectivityCubit.close();
+    });
 
     testWidgets(
       'toggling search bar without query does not trigger fetchInformation',
@@ -1209,9 +1137,7 @@ void main() {
                 viewInsets: EdgeInsets.only(bottom: 300),
                 viewPadding: EdgeInsets.only(bottom: 34),
               ),
-              child: InformationScreen(
-                cubit: mockCubit,
-              ),
+              child: InformationScreen(cubit: mockCubit),
             ),
           ),
         );
@@ -1230,10 +1156,7 @@ void main() {
           ),
         );
         // 300 - (80 + 34) = 186.0
-        expect(
-          (paddingWidget.padding as EdgeInsets).bottom,
-          equals(186.0),
-        );
+        expect((paddingWidget.padding as EdgeInsets).bottom, equals(186.0));
 
         // Test with hasBottomNavigationBar: false
         await tester.pumpWidget(
@@ -1261,10 +1184,7 @@ void main() {
             ),
           ),
         );
-        expect(
-          (standalonePadding.padding as EdgeInsets).bottom,
-          equals(300.0),
-        );
+        expect((standalonePadding.padding as EdgeInsets).bottom, equals(300.0));
       },
     );
 
@@ -1272,9 +1192,7 @@ void main() {
       'renders Tambah informasi Extended FAB when user is ADMIN or GUARD, '
       'and no tambah button in top bar',
       (tester) async {
-        final mockCubit = createMockInformationCubit(
-          items: [dummyFeed],
-        );
+        final mockCubit = createMockInformationCubit(items: [dummyFeed]);
         const adminSession = AuthSessionEntity(
           userId: 'user-1',
           email: 'admin@kawalo.id',
@@ -1291,9 +1209,7 @@ void main() {
             value: sessionCubit,
             child: MaterialApp(
               theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
+              home: InformationScreen(cubit: mockCubit),
             ),
           ),
         );
@@ -1314,9 +1230,7 @@ void main() {
     testWidgets(
       'Posting Extended FAB position remains stationary when keyboard appears',
       (tester) async {
-        final mockCubit = createMockInformationCubit(
-          items: [dummyFeed],
-        );
+        final mockCubit = createMockInformationCubit(items: [dummyFeed]);
         const adminSession = AuthSessionEntity(
           userId: 'user-1',
           email: 'admin@kawalo.id',
@@ -1336,11 +1250,7 @@ void main() {
               home: Scaffold(
                 resizeToAvoidBottomInset: false,
                 body: IndexedStack(
-                  children: [
-                    InformationScreen(
-                      cubit: mockCubit,
-                    ),
-                  ],
+                  children: [InformationScreen(cubit: mockCubit)],
                 ),
                 bottomNavigationBar: const SizedBox(
                   height: 80,
@@ -1358,8 +1268,9 @@ void main() {
         tester.view.viewInsets = const FakeViewPadding(bottom: 300);
         addTearDown(tester.view.resetViewInsets);
         await tester.pumpAndSettle();
-        final fabKeyboardOffset =
-            tester.getTopLeft(find.byType(AppExtendedFab));
+        final fabKeyboardOffset = tester.getTopLeft(
+          find.byType(AppExtendedFab),
+        );
 
         expect(fabKeyboardOffset.dy, equals(fabInitialOffset.dy));
         await sessionCubit.close();
@@ -1369,9 +1280,7 @@ void main() {
     testWidgets(
       'renders Edit button on InformationCard when user can update item',
       (tester) async {
-        final mockCubit = createMockInformationCubit(
-          items: [dummyFeed],
-        );
+        final mockCubit = createMockInformationCubit(items: [dummyFeed]);
         const adminSession = AuthSessionEntity(
           userId: 'user-1',
           email: 'admin@kawalo.id',
@@ -1388,9 +1297,7 @@ void main() {
             value: sessionCubit,
             child: MaterialApp(
               theme: AppTheme.lightThemeData(),
-              home: InformationScreen(
-                cubit: mockCubit,
-              ),
+              home: InformationScreen(cubit: mockCubit),
             ),
           ),
         );

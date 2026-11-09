@@ -21,15 +21,15 @@ class AttendanceCubit
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
   }) : super(
-          AttendanceInitial(
-            lastSync: SyncStorageService.resolveInitialGreeting(
-              initialGreeting: initialGreeting,
-              featureKey: AppConstants.syncKeyAttendance,
-              storageService: syncStorageService,
-            ),
-          ),
-          syncKey: AppConstants.syncKeyAttendance,
-        );
+         AttendanceInitial(
+           lastSync: SyncStorageService.resolveInitialGreeting(
+             initialGreeting: initialGreeting,
+             featureKey: AppConstants.syncKeyAttendance,
+             storageService: syncStorageService,
+           ),
+         ),
+         syncKey: AppConstants.syncKeyAttendance,
+       );
 
   /// Use case untuk mengambil data absensi.
   final GetAttendancesUseCase getAttendancesUseCase;
@@ -55,16 +55,15 @@ class AttendanceCubit
     DateTime? endDate,
     String? startDateIso,
     String? endDateIso,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        isRefresh: false,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    isRefresh: false,
+  );
 
   /// Memperbarui data absensi melalui pull-to-refresh tanpa flicker skeleton.
   Future<AppFetchResult> refreshAttendances({
@@ -74,16 +73,15 @@ class AttendanceCubit
     DateTime? endDate,
     String? startDateIso,
     String? endDateIso,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        isRefresh: true,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    isRefresh: true,
+  );
 
   Future<AppFetchResult> _fetch({
     required bool isRefresh,
@@ -117,8 +115,7 @@ class AttendanceCubit
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      ))
-          .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
       loaded: (page, lastSync, {required hasMore}) => AttendanceLoaded(
         attendances: page.items,
         isFromCache: page.isFromCache,
@@ -148,24 +145,23 @@ class AttendanceCubit
 
   /// Memuat halaman berikutnya untuk infinite scroll.
   Future<void> loadMoreAttendances() => runLoadMore<AttendanceLoaded>(
-        request: (current) async => (await getAttendancesUseCase(
-          GetAttendancesParams(
-            search: current.searchQuery,
-            limit: pageSize,
-            offset: current.attendances.length,
-            startDate: current.startDateIso,
-            endDate: current.endDateIso,
-          ),
-        ))
-            .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
-        setLoadingMore: (current, {required loadingMore}) =>
-            current.copyWith(isLoadingMore: loadingMore),
-        append: (current, newItems, {required hasMore}) => current.copyWith(
-          attendances: [...current.attendances, ...newItems],
-          hasMore: hasMore,
-          isLoadingMore: false,
-        ),
-      );
+    request: (current) async => (await getAttendancesUseCase(
+      GetAttendancesParams(
+        search: current.searchQuery,
+        limit: pageSize,
+        offset: current.attendances.length,
+        startDate: current.startDateIso,
+        endDate: current.endDateIso,
+      ),
+    )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+    setLoadingMore: (current, {required loadingMore}) =>
+        current.copyWith(isLoadingMore: loadingMore),
+    append: (current, newItems, {required hasMore}) => current.copyWith(
+      attendances: [...current.attendances, ...newItems],
+      hasMore: hasMore,
+      isLoadingMore: false,
+    ),
+  );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
   Future<AppFetchResult> setFilter(AppDateFilterResult filterResult) =>

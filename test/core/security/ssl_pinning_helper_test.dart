@@ -13,10 +13,10 @@ class FakeX509Certificate implements X509Certificate {
     required this.der,
     DateTime? startValidity,
     DateTime? endValidity,
-  })  : startValidity = startValidity ??
-            DateTime.now().subtract(const Duration(days: 1)),
-        endValidity =
-            endValidity ?? DateTime.now().add(const Duration(days: 30));
+  }) : startValidity =
+           startValidity ?? DateTime.now().subtract(const Duration(days: 1)),
+       endValidity =
+           endValidity ?? DateTime.now().add(const Duration(days: 30));
 
   @override
   final Uint8List der;
@@ -64,39 +64,31 @@ Uint8List buildMinimalCertDer({
     ...subjectBytes,
     ...spkiBytes,
   ];
-  final tbsDer = [
-    0x30,
-    tbsContent.length,
-    ...tbsContent,
-  ];
+  final tbsDer = [0x30, tbsContent.length, ...tbsContent];
 
   final certSigAlg = [0x30, 0x02, 0x05, 0x00];
   final certSigValue = [0x03, 0x02, 0x00, 0x00];
 
-  final certContent = [
-    ...tbsDer,
-    ...certSigAlg,
-    ...certSigValue,
-  ];
+  final certContent = [...tbsDer, ...certSigAlg, ...certSigValue];
 
-  return Uint8List.fromList([
-    0x30,
-    certContent.length,
-    ...certContent,
-  ]);
+  return Uint8List.fromList([0x30, certContent.length, ...certContent]);
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final sampleSpki = Uint8List.fromList([
-    0x30, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05,
+    0x30,
+    0x05,
+    0x01,
+    0x02,
+    0x03,
+    0x04,
+    0x05,
   ]);
   final sampleCertDer = buildMinimalCertDer(spkiBytes: sampleSpki);
-  final expectedSpkiPin =
-      base64.encode(sha256.convert(sampleSpki).bytes);
-  final expectedCertPin =
-      base64.encode(sha256.convert(sampleCertDer).bytes);
+  final expectedSpkiPin = base64.encode(sha256.convert(sampleSpki).bytes);
+  final expectedCertPin = base64.encode(sha256.convert(sampleCertDer).bytes);
 
   group('SslPinningHelper ASN.1 DER Parser Tests', () {
     test('extractSpkiDer returns null on invalid or empty DER', () {
@@ -105,10 +97,7 @@ void main() {
     });
 
     test('extractSpkiDer returns null on indefinite length (0x80)', () {
-      expect(
-        SslPinningHelper.extractSpkiDer([0x30, 0x80, 0x00, 0x00]),
-        isNull,
-      );
+      expect(SslPinningHelper.extractSpkiDer([0x30, 0x80, 0x00, 0x00]), isNull);
     });
 
     test('extractSpkiDer returns null on excessive length bytes (>4)', () {
@@ -118,37 +107,40 @@ void main() {
       );
     });
 
-    test('extractSpkiDer returns null on non-minimal DER length (leading zero)',
-        () {
-      expect(
-        SslPinningHelper.extractSpkiDer([0x30, 0x82, 0x00, 0x05, 0x01]),
-        isNull,
-      );
-    });
+    test(
+      'extractSpkiDer returns null on non-minimal DER length (leading zero)',
+      () {
+        expect(
+          SslPinningHelper.extractSpkiDer([0x30, 0x82, 0x00, 0x05, 0x01]),
+          isNull,
+        );
+      },
+    );
 
     test('extractSpkiDer returns null on root SEQUENCE buffer overflow', () {
-      expect(
-        SslPinningHelper.extractSpkiDer([0x30, 0x0A, 0x01, 0x02]),
-        isNull,
-      );
+      expect(SslPinningHelper.extractSpkiDer([0x30, 0x0A, 0x01, 0x02]), isNull);
     });
 
-    test('extractSpkiDer returns null on missing or malformed mandatory field',
-        () {
-      // serialNumber bukan INTEGER (0x02)
-      final malformedCert = buildMinimalCertDer(
-        spkiBytes: sampleSpki,
-        serialTag: 0x05,
-      );
-      expect(SslPinningHelper.extractSpkiDer(malformedCert), isNull);
-    });
+    test(
+      'extractSpkiDer returns null on missing or malformed mandatory field',
+      () {
+        // serialNumber bukan INTEGER (0x02)
+        final malformedCert = buildMinimalCertDer(
+          spkiBytes: sampleSpki,
+          serialTag: 0x05,
+        );
+        expect(SslPinningHelper.extractSpkiDer(malformedCert), isNull);
+      },
+    );
 
-    test('extractSpkiDer correctly extracts SPKI from valid DER certificate',
-        () {
-      final extracted = SslPinningHelper.extractSpkiDer(sampleCertDer);
-      expect(extracted, isNotNull);
-      expect(extracted, equals(sampleSpki));
-    });
+    test(
+      'extractSpkiDer correctly extracts SPKI from valid DER certificate',
+      () {
+        final extracted = SslPinningHelper.extractSpkiDer(sampleCertDer);
+        expect(extracted, isNotNull);
+        expect(extracted, equals(sampleSpki));
+      },
+    );
 
     test('extractSpkiDer supports v1 certificates without version field', () {
       final v1Cert = buildMinimalCertDer(
@@ -175,16 +167,18 @@ void main() {
       expect(isValid, isTrue);
     });
 
-    test('returns false (fail-closed) when certificate is null and enforced',
-        () {
-      final isValid = SslPinningHelper.validateCertificate(
-        null,
-        'api.kawalo.com',
-        443,
-        enforceInDebug: true,
-      );
-      expect(isValid, isFalse);
-    });
+    test(
+      'returns false (fail-closed) when certificate is null and enforced',
+      () {
+        final isValid = SslPinningHelper.validateCertificate(
+          null,
+          'api.kawalo.com',
+          443,
+          enforceInDebug: true,
+        );
+        expect(isValid, isFalse);
+      },
+    );
 
     test('returns false when certificate is expired', () {
       final cert = FakeX509Certificate(
@@ -215,19 +209,21 @@ void main() {
       expect(isValid, isFalse);
     });
 
-    test('returns false (fail-closed) when no pins are configured in non-dev',
-        () {
-      final cert = FakeX509Certificate(der: sampleCertDer);
-      final isValid = SslPinningHelper.validateCertificate(
-        cert,
-        'api.kawalo.com',
-        443,
-        primaryPin: '',
-        backupPin: '',
-        enforceInDebug: true,
-      );
-      expect(isValid, isFalse);
-    });
+    test(
+      'returns false (fail-closed) when no pins are configured in non-dev',
+      () {
+        final cert = FakeX509Certificate(der: sampleCertDer);
+        final isValid = SslPinningHelper.validateCertificate(
+          cert,
+          'api.kawalo.com',
+          443,
+          primaryPin: '',
+          backupPin: '',
+          enforceInDebug: true,
+        );
+        expect(isValid, isFalse);
+      },
+    );
 
     test('returns true when SPKI pin matches primaryPin with prefix', () {
       final cert = FakeX509Certificate(der: sampleCertDer);
@@ -260,8 +256,9 @@ void main() {
         spkiBytes: sampleSpki,
         sigTag: 0x05, // rusak sig alg agar extractSpkiDer return null
       );
-      final malformedCertPin =
-          base64.encode(sha256.convert(malformedCert).bytes);
+      final malformedCertPin = base64.encode(
+        sha256.convert(malformedCert).bytes,
+      );
       final cert = FakeX509Certificate(der: malformedCert);
 
       final isValid = SslPinningHelper.validateCertificate(

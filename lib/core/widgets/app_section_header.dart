@@ -49,10 +49,7 @@ class AppSectionHeader extends StatelessWidget {
                   ),
                 ),
               ),
-              if (trailing != null) ...[
-                AppSpacing.hGap150,
-                trailing!,
-              ],
+              if (trailing != null) ...[AppSpacing.hGap150, trailing!],
             ],
           ),
           if (subtitle != null && subtitle!.isNotEmpty) ...[

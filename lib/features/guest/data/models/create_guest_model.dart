@@ -72,16 +72,16 @@ class CreateGuestModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        guestName,
-        guestDestination,
-        guestType,
-        guestPurpose,
-        guestNumber,
-        guestIdentity,
-        guestIdentityType,
-        guestAddress,
-        guestToUserEmail,
-        guestPhoto,
-        guestDt,
-      ];
+    guestName,
+    guestDestination,
+    guestType,
+    guestPurpose,
+    guestNumber,
+    guestIdentity,
+    guestIdentityType,
+    guestAddress,
+    guestToUserEmail,
+    guestPhoto,
+    guestDt,
+  ];
 }

@@ -171,7 +171,7 @@ class InformationFormDialog extends StatefulWidget {
                     ? () {
                         final activeSession =
                             actionContext.read<UserSessionCubit?>()?.state ??
-                                session;
+                            session;
                         resolvedCubit.submit(session: activeSession);
                       }
                     : null,
@@ -229,9 +229,9 @@ class InformationFormDialog extends StatefulWidget {
       return (existing, false);
     } on Object catch (_) {}
 
-    final newCubit = context
-        .read<InformationModule>()
-        .createFormCubit(initialItem: initialItem);
+    final newCubit = context.read<InformationModule>().createFormCubit(
+      initialItem: initialItem,
+    );
     return (newCubit, true);
   }
 
@@ -267,17 +267,16 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     _mediaPicker = widget.mediaPickerService ?? DefaultMediaPickerService();
     _scrollController = ScrollController();
 
-    _lifecycleListener = AppLifecycleListener(
-      onResume: _handleAppResume,
-    );
+    _lifecycleListener = AppLifecycleListener(onResume: _handleAppResume);
 
     final cubit = _resolveCubit(context);
     final initial = cubit.state;
 
     _titleController = TextEditingController(text: initial.title);
     _textController = TextEditingController(text: initial.text);
-    _eventLocationController =
-        TextEditingController(text: initial.eventLocation);
+    _eventLocationController = TextEditingController(
+      text: initial.eventLocation,
+    );
 
     _titleFocusNode = FocusNode();
     _textFocusNode = FocusNode();
@@ -335,8 +334,9 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     if (widget.cubit != null) return widget.cubit!;
     if (_internalCubit != null) return _internalCubit!;
 
-    final (cubit, isOwner) =
-        InformationFormDialog._resolveCubitFromContext(context);
+    final (cubit, isOwner) = InformationFormDialog._resolveCubitFromContext(
+      context,
+    );
     _ownsCubit = isOwner;
     _internalCubit = cubit;
     return _internalCubit!;
@@ -349,7 +349,8 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     if (cubit.state.isPhotoLimitReached) {
       AppSnackbar.show(
         context,
-        message: 'Maksimal '
+        message:
+            'Maksimal '
             '${InformationFormState.maxPhotosLimit} foto dapat dilampirkan.',
       );
       return;
@@ -372,8 +373,9 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
 
       if (files.isEmpty || !mounted) return;
 
-      final mediaItems =
-          files.map(InformationFormMediaItem.fromAppMediaFile).toList();
+      final mediaItems = files
+          .map(InformationFormMediaItem.fromAppMediaFile)
+          .toList();
       final addedCount = cubit.onAddMediaPhotos(mediaItems);
       if (!mounted) return;
 
@@ -385,10 +387,7 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
               : '$addedCount foto berhasil ditambahkan ke lampiran.',
         );
       } else if (cubit.state.photosError != null) {
-        AppSnackbar.show(
-          context,
-          message: cubit.state.photosError!,
-        );
+        AppSnackbar.show(context, message: cubit.state.photosError!);
       }
     } on Exception catch (_) {
       if (mounted) {
@@ -490,10 +489,7 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     if (result.isSuccess && result.coordinates != null) {
       _dismissErrorSheetIfVisible();
       final (lat, lng) = result.coordinates!;
-      cubit.onSetLocationCoordinates(
-        lat: lat,
-        lng: lng,
-      );
+      cubit.onSetLocationCoordinates(lat: lat, lng: lng);
       AppSnackbar.show(
         context,
         message: 'Titik lokasi GPS berhasil diperoleh.',
@@ -524,8 +520,8 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
         result: result,
         secondaryActionLabel:
             result.status == LocationStatus.mockLocationDetected
-                ? 'Kembali'
-                : 'Pilih di peta',
+            ? 'Kembali'
+            : 'Pilih di peta',
         onDismiss: () {
           if (result.status != LocationStatus.mockLocationDetected) {
             shouldPickOnMap = true;
@@ -618,10 +614,7 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
     } else if (state.photosError != null) {
       AppSnackbar.show(context, message: state.photosError!);
     } else if (state.glatError != null || state.glongError != null) {
-      AppSnackbar.show(
-        context,
-        message: state.glatError ?? state.glongError!,
-      );
+      AppSnackbar.show(context, message: state.glatError ?? state.glongError!);
     }
   }
 
@@ -661,161 +654,163 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
             final msg = state.isCreateMode
                 ? 'Informasi "${state.title}" berhasil dipublikasikan.'
                 : 'Informasi "${state.title}" berhasil diperbarui.';
-            AppSnackbar.show(
-              context,
-              message: msg,
-            );
+            AppSnackbar.show(context, message: msg);
             Navigator.of(context).pop(state.createdOrUpdatedItem);
           } else if (state.status == InformationFormStatus.failure &&
               state.errorMessage != null) {
-            AppSnackbar.show(
-              context,
-              message: state.errorMessage!,
-            );
+            AppSnackbar.show(context, message: state.errorMessage!);
           }
         },
-        child: BlocSelector<InformationFormCubit, InformationFormState,
-            ({bool isDirty, bool isSuccess, bool isSubmitting, bool isCreate})>(
-          selector: (state) => (
-            isDirty: state.isDirty,
-            isSuccess: state.status == InformationFormStatus.success,
-            isSubmitting: state.isSubmitting,
-            isCreate: state.isCreateMode,
-          ),
-          builder: (popContext, record) {
-            return PopScope(
-              canPop: _isDiscarding ||
-                  record.isSuccess ||
-                  (!record.isDirty && !record.isSubmitting),
-              onPopInvokedWithResult: (didPop, _) async {
-                if (didPop || record.isSubmitting) return;
-                final confirmed =
-                    await InformationFormDialog._confirmDiscard(popContext);
-                if (confirmed && popContext.mounted) {
-                  setState(() => _isDiscarding = true);
-                  Navigator.of(popContext).pop();
-                }
-              },
-              child: Scaffold(
-                backgroundColor: colorScheme.surface,
-                resizeToAvoidBottomInset: false,
-                body: BlocSelector<InformationFormCubit, InformationFormState,
-                    bool>(
-                  selector: (state) => state.isSubmitting,
-                  builder: (context, isSubmitting) {
-                    final overlayMsg = record.isCreate
-                        ? 'Mempublikasikan informasi...'
-                        : 'Menyimpan perubahan informasi...';
-
-                    return AppLoadingOverlay(
-                      isLoading: isSubmitting,
-                      message: overlayMsg,
-                      child: AppKeyboardInsetsPadding(
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          padding: const EdgeInsets.only(
-                            left: AppSpacing.space200,
-                            right: AppSpacing.space200,
-                            top: AppSpacing.space150,
-                            bottom: AppSpacing.space800 * 2,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // ── SEKSI 1: DETAIL PUBLIKASI & KATEGORI ────
-                              RepaintBoundary(
-                                child: InformationPublicationSection(
-                                  titleController: _titleController,
-                                  textController: _textController,
-                                  titleFocusNode: _titleFocusNode,
-                                  textFocusNode: _textFocusNode,
-                                  isSubmitting: isSubmitting,
-                                  onTitleChanged: cubit.onTitleChanged,
-                                  onTextChanged: cubit.onTextChanged,
-                                  onFeedTypeChanged: cubit.onFeedTypeChanged,
-                                ),
-                              ),
-
-                              AppSpacing.vGap400,
-
-                              // ── SEKSI 2: DOKUMENTASI FOTO ────────────────
-                              RepaintBoundary(
-                                child: InformationPhotosSection(
-                                  isSubmitting: isSubmitting,
-                                  onPickPhoto: () => _handlePickPhoto(cubit),
-                                  onClearAll: () =>
-                                      _handleClearAllPhotos(cubit),
-                                  onTapPhoto: (index) {
-                                    final photos = cubit.state.photos;
-                                    if (index < 0 || index >= photos.length) {
-                                      return;
-                                    }
-                                    if (photos[index].isLoading) return;
-                                    AppImageViewer.show(
-                                      context,
-                                      imageUrls: photos
-                                          .map((p) => p.displaySource)
-                                          .toList(),
-                                      initialIndex: index,
-                                      heroTagPrefix: 'info_form_photo',
-                                    );
-                                  },
-                                  onRemovePhoto: cubit.onRemovePhoto,
-                                  onMoreOptions: (index) =>
-                                      _showPhotoActionMenu(
-                                    context,
-                                    cubit,
-                                    index,
-                                  ),
-                                ),
-                              ),
-
-                              AppSpacing.vGap400,
-
-                              // ── SEKSI 3: DOKUMEN LAMPIRAN ────────
-                              RepaintBoundary(
-                                child: InformationDocumentSection(
-                                  isSubmitting: isSubmitting,
-                                  onPickDocument: () =>
-                                      _handlePickDocument(cubit),
-                                  onClearDocument: cubit.onClearDocumentMedia,
-                                ),
-                              ),
-
-                              AppSpacing.vGap400,
-
-                              // ── SEKSI 4: LOKASI KEJADIAN & PETA ─────────
-                              RepaintBoundary(
-                                child: InformationLocationSection(
-                                  eventLocationController:
-                                      _eventLocationController,
-                                  eventLocationFocusNode:
-                                      _eventLocationFocusNode,
-                                  isSubmitting: isSubmitting,
-                                  isResolvingLocation: _isResolvingLocation,
-                                  onLocationNameChanged:
-                                      cubit.onEventLocationChanged,
-                                  onPickLocation: () =>
-                                      _handlePickLocation(cubit),
-                                  onClearLocation:
-                                      cubit.onClearLocationCoordinates,
-                                  reverseGeocodeService:
-                                      widget.reverseGeocodeService,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+        child:
+            BlocSelector<
+              InformationFormCubit,
+              InformationFormState,
+              ({bool isDirty, bool isSuccess, bool isSubmitting, bool isCreate})
+            >(
+              selector: (state) => (
+                isDirty: state.isDirty,
+                isSuccess: state.status == InformationFormStatus.success,
+                isSubmitting: state.isSubmitting,
+                isCreate: state.isCreateMode,
               ),
-            );
-          },
-        ),
+              builder: (popContext, record) {
+                return PopScope(
+                  canPop:
+                      _isDiscarding ||
+                      record.isSuccess ||
+                      (!record.isDirty && !record.isSubmitting),
+                  onPopInvokedWithResult: (didPop, _) async {
+                    if (didPop || record.isSubmitting) return;
+                    final confirmed =
+                        await InformationFormDialog._confirmDiscard(popContext);
+                    if (confirmed && popContext.mounted) {
+                      setState(() => _isDiscarding = true);
+                      Navigator.of(popContext).pop();
+                    }
+                  },
+                  child: Scaffold(
+                    backgroundColor: colorScheme.surface,
+                    resizeToAvoidBottomInset: false,
+                    body: BlocSelector<InformationFormCubit, InformationFormState, bool>(
+                      selector: (state) => state.isSubmitting,
+                      builder: (context, isSubmitting) {
+                        final overlayMsg = record.isCreate
+                            ? 'Mempublikasikan informasi...'
+                            : 'Menyimpan perubahan informasi...';
+
+                        return AppLoadingOverlay(
+                          isLoading: isSubmitting,
+                          message: overlayMsg,
+                          child: AppKeyboardInsetsPadding(
+                            child: SingleChildScrollView(
+                              controller: _scrollController,
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              padding: const EdgeInsets.only(
+                                left: AppSpacing.space200,
+                                right: AppSpacing.space200,
+                                top: AppSpacing.space150,
+                                bottom: AppSpacing.space800 * 2,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // ── SEKSI 1: DETAIL PUBLIKASI & KATEGORI ────
+                                  RepaintBoundary(
+                                    child: InformationPublicationSection(
+                                      titleController: _titleController,
+                                      textController: _textController,
+                                      titleFocusNode: _titleFocusNode,
+                                      textFocusNode: _textFocusNode,
+                                      isSubmitting: isSubmitting,
+                                      onTitleChanged: cubit.onTitleChanged,
+                                      onTextChanged: cubit.onTextChanged,
+                                      onFeedTypeChanged:
+                                          cubit.onFeedTypeChanged,
+                                    ),
+                                  ),
+
+                                  AppSpacing.vGap400,
+
+                                  // ── SEKSI 2: DOKUMENTASI FOTO ────────────────
+                                  RepaintBoundary(
+                                    child: InformationPhotosSection(
+                                      isSubmitting: isSubmitting,
+                                      onPickPhoto: () =>
+                                          _handlePickPhoto(cubit),
+                                      onClearAll: () =>
+                                          _handleClearAllPhotos(cubit),
+                                      onTapPhoto: (index) {
+                                        final photos = cubit.state.photos;
+                                        if (index < 0 ||
+                                            index >= photos.length) {
+                                          return;
+                                        }
+                                        if (photos[index].isLoading) return;
+                                        AppImageViewer.show(
+                                          context,
+                                          imageUrls: photos
+                                              .map((p) => p.displaySource)
+                                              .toList(),
+                                          initialIndex: index,
+                                          heroTagPrefix: 'info_form_photo',
+                                        );
+                                      },
+                                      onRemovePhoto: cubit.onRemovePhoto,
+                                      onMoreOptions: (index) =>
+                                          _showPhotoActionMenu(
+                                            context,
+                                            cubit,
+                                            index,
+                                          ),
+                                    ),
+                                  ),
+
+                                  AppSpacing.vGap400,
+
+                                  // ── SEKSI 3: DOKUMEN LAMPIRAN ────────
+                                  RepaintBoundary(
+                                    child: InformationDocumentSection(
+                                      isSubmitting: isSubmitting,
+                                      onPickDocument: () =>
+                                          _handlePickDocument(cubit),
+                                      onClearDocument:
+                                          cubit.onClearDocumentMedia,
+                                    ),
+                                  ),
+
+                                  AppSpacing.vGap400,
+
+                                  // ── SEKSI 4: LOKASI KEJADIAN & PETA ─────────
+                                  RepaintBoundary(
+                                    child: InformationLocationSection(
+                                      eventLocationController:
+                                          _eventLocationController,
+                                      eventLocationFocusNode:
+                                          _eventLocationFocusNode,
+                                      isSubmitting: isSubmitting,
+                                      isResolvingLocation: _isResolvingLocation,
+                                      onLocationNameChanged:
+                                          cubit.onEventLocationChanged,
+                                      onPickLocation: () =>
+                                          _handlePickLocation(cubit),
+                                      onClearLocation:
+                                          cubit.onClearLocationCoordinates,
+                                      reverseGeocodeService:
+                                          widget.reverseGeocodeService,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
       ),
     );
   }

@@ -3,8 +3,7 @@ import 'package:kawalo_mobile/features/home/presentation/utils/home_greeting_hel
 
 void main() {
   group('HomeGreetingHelper Tests', () {
-    test(
-        'getTimeOfDayGreeting returns correct greetings according to '
+    test('getTimeOfDayGreeting returns correct greetings according to '
         'Indonesian cultural standard', () {
       // Pagi: 05:00 - 10:59
       expect(
@@ -96,12 +95,14 @@ void main() {
     });
 
     test(
-        'formatGreeting falls back to Personil when name is null or empty', () {
-      final greeting = HomeGreetingHelper.formatGreeting(
-        dateTime: DateTime(2026, 9, 2, 19),
-      );
+      'formatGreeting falls back to Personil when name is null or empty',
+      () {
+        final greeting = HomeGreetingHelper.formatGreeting(
+          dateTime: DateTime(2026, 9, 2, 19),
+        );
 
-      expect(greeting, equals('Selamat malam, Personil!'));
-    });
+        expect(greeting, equals('Selamat malam, Personil!'));
+      },
+    );
   });
 }

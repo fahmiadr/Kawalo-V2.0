@@ -57,15 +57,14 @@ void main() {
   Widget buildTestWidget(OperationalItemEntity item) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: OperationalDetailSummaryCard(item: item),
-      ),
+      home: Scaffold(body: OperationalDetailSummaryCard(item: item)),
     );
   }
 
   group('OperationalDetailSummaryCard Tests', () {
-    testWidgets('renders start of duty and latest update with timeline data',
-        (tester) async {
+    testWidgets('renders start of duty and latest update with timeline data', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(sampleWorkerWithTimeline));
       await tester.pumpAndSettle();
 
@@ -79,8 +78,9 @@ void main() {
       expect(find.text('Patroli Sektor Barat'), findsOneWidget);
     });
 
-    testWidgets('renders fallback status when timeline is empty',
-        (tester) async {
+    testWidgets('renders fallback status when timeline is empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(sampleWorkerEmptyTimeline));
       await tester.pumpAndSettle();
 

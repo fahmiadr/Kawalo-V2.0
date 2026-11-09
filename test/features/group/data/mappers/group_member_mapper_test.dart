@@ -49,15 +49,14 @@ void main() {
       },
     );
 
-    test('toEntityList should map list to fixed-length list (growable: false)',
-        () {
-      final entities = GroupMemberMapper.toEntityList([tModel]);
+    test(
+      'toEntityList should map list to fixed-length list (growable: false)',
+      () {
+        final entities = GroupMemberMapper.toEntityList([tModel]);
 
-      expect(entities, equals([tEntity]));
-      expect(
-        () => entities.add(tEntity),
-        throwsUnsupportedError,
-      );
-    });
+        expect(entities, equals([tEntity]));
+        expect(() => entities.add(tEntity), throwsUnsupportedError);
+      },
+    );
   });
 }

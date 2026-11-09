@@ -13,10 +13,7 @@ import 'package:kawalo_mobile/features/group/domain/repositories/group_repositor
 /// dengan [GroupRemoteDataSource].
 class GroupRepositoryImpl implements GroupRepository {
   /// Membuat instance [GroupRepositoryImpl].
-  const GroupRepositoryImpl({
-    required this.remoteDataSource,
-    this.networkInfo,
-  });
+  const GroupRepositoryImpl({required this.remoteDataSource, this.networkInfo});
 
   /// Sumber data jarak jauh anggota grup.
   final GroupRemoteDataSource remoteDataSource;

@@ -78,21 +78,21 @@ class AttendanceItemEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        category,
-        diffMinutes,
-        userEmail,
-        userName,
-        userProfilePic,
-        userDuty,
-        attendanceDt,
-        attendanceType,
-        latitude,
-        longitude,
-        locationName,
-        shiftName,
-        shiftColor,
-        shiftTimeWindow,
-        groupName,
-      ];
+    id,
+    category,
+    diffMinutes,
+    userEmail,
+    userName,
+    userProfilePic,
+    userDuty,
+    attendanceDt,
+    attendanceType,
+    latitude,
+    longitude,
+    locationName,
+    shiftName,
+    shiftColor,
+    shiftTimeWindow,
+    groupName,
+  ];
 }

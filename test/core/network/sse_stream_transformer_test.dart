@@ -11,8 +11,9 @@ void main() {
           'id: 101\nevent: new_reply\ndata: {"message": "halo"}\n\n';
       final byteStream = Stream.value(Uint8List.fromList(utf8.encode(payload)));
 
-      final messages =
-          await byteStream.transform(const SseStreamTransformer()).toList();
+      final messages = await byteStream
+          .transform(const SseStreamTransformer())
+          .toList();
 
       expect(messages.length, equals(1));
       expect(messages[0].id, equals('101'));
@@ -21,13 +22,15 @@ void main() {
     });
 
     test('ignores keep-alive comment lines starting with colon', () async {
-      const payload = ': ping\n\n'
+      const payload =
+          ': ping\n\n'
           'id: 102\nevent: new_reply\ndata: {"test": true}\n\n'
           ': ping\n\n';
       final byteStream = Stream.value(Uint8List.fromList(utf8.encode(payload)));
 
-      final messages =
-          await byteStream.transform(const SseStreamTransformer()).toList();
+      final messages = await byteStream
+          .transform(const SseStreamTransformer())
+          .toList();
 
       expect(messages.length, equals(1));
       expect(messages[0].id, equals('102'));
@@ -36,15 +39,18 @@ void main() {
     });
 
     test('reassembles fragmented chunks across byte boundaries', () async {
-      final chunk1 =
-          Uint8List.fromList(utf8.encode('id: 103\nevent: thread_res'));
-      final chunk2 =
-          Uint8List.fromList(utf8.encode('olved\ndata: {"ok": 1}\n\n'));
+      final chunk1 = Uint8List.fromList(
+        utf8.encode('id: 103\nevent: thread_res'),
+      );
+      final chunk2 = Uint8List.fromList(
+        utf8.encode('olved\ndata: {"ok": 1}\n\n'),
+      );
 
       final byteStream = Stream.fromIterable([chunk1, chunk2]);
 
-      final messages =
-          await byteStream.transform(const SseStreamTransformer()).toList();
+      final messages = await byteStream
+          .transform(const SseStreamTransformer())
+          .toList();
 
       expect(messages.length, equals(1));
       expect(messages[0].id, equals('103'));
@@ -56,8 +62,9 @@ void main() {
       const payload = 'event: text\ndata: line 1\ndata: line 2\n\n';
       final byteStream = Stream.value(Uint8List.fromList(utf8.encode(payload)));
 
-      final messages =
-          await byteStream.transform(const SseStreamTransformer()).toList();
+      final messages = await byteStream
+          .transform(const SseStreamTransformer())
+          .toList();
 
       expect(messages.length, equals(1));
       expect(messages[0].event, equals('text'));
@@ -68,8 +75,9 @@ void main() {
       const payload = 'retry: 5000\ndata: hello\n\n';
       final byteStream = Stream.value(Uint8List.fromList(utf8.encode(payload)));
 
-      final messages =
-          await byteStream.transform(const SseStreamTransformer()).toList();
+      final messages = await byteStream
+          .transform(const SseStreamTransformer())
+          .toList();
 
       expect(messages.length, equals(1));
       expect(messages[0].retry, equals(5000));

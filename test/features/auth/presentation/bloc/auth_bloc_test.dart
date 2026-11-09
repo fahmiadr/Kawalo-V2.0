@@ -65,13 +65,13 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, Authenticated] when LoginSubmitted succeeds',
       build: () {
-        when(() => mockLoginUseCase(any()))
-            .thenAnswer((_) async => const Right(tUserEntity));
+        when(
+          () => mockLoginUseCase(any()),
+        ).thenAnswer((_) async => const Right(tUserEntity));
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const LoginSubmitted(email: tEmail, password: tPassword),
-      ),
+      act: (bloc) =>
+          bloc.add(const LoginSubmitted(email: tEmail, password: tPassword)),
       expect: () => [
         const AuthLoading(),
         const Authenticated(user: tUserEntity),
@@ -81,14 +81,13 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthFailure] when LoginSubmitted fails',
       build: () {
-        when(() => mockLoginUseCase(any())).thenAnswer(
-          (_) async => const Left(ServerFailure('Invalid Login')),
-        );
+        when(
+          () => mockLoginUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Invalid Login')));
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const LoginSubmitted(email: tEmail, password: tPassword),
-      ),
+      act: (bloc) =>
+          bloc.add(const LoginSubmitted(email: tEmail, password: tPassword)),
       expect: () => [
         const AuthLoading(),
         const AuthFailure(message: 'Invalid Login'),
@@ -122,13 +121,13 @@ void main() {
       'emits [AuthLoading, GroupSelectionRequired] '
       'when LoginSubmitted succeeds with multiple groups',
       build: () {
-        when(() => mockLoginUseCase(any()))
-            .thenAnswer((_) async => const Right(tMultiGroupUser));
+        when(
+          () => mockLoginUseCase(any()),
+        ).thenAnswer((_) async => const Right(tMultiGroupUser));
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const LoginSubmitted(email: tEmail, password: tPassword),
-      ),
+      act: (bloc) =>
+          bloc.add(const LoginSubmitted(email: tEmail, password: tPassword)),
       expect: () => [
         const AuthLoading(),
         const GroupSelectionRequired(user: tMultiGroupUser),
@@ -155,13 +154,12 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, Authenticated] when SwitchGroupSubmitted succeeds',
       build: () {
-        when(() => mockSwitchGroupUseCase(any()))
-            .thenAnswer((_) async => const Right(tSwitchedUser));
+        when(
+          () => mockSwitchGroupUseCase(any()),
+        ).thenAnswer((_) async => const Right(tSwitchedUser));
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const SwitchGroupSubmitted(groupUid: 'GRP-2'),
-      ),
+      act: (bloc) => bloc.add(const SwitchGroupSubmitted(groupUid: 'GRP-2')),
       expect: () => [
         const AuthLoading(),
         const Authenticated(user: tSwitchedUser),
@@ -176,9 +174,7 @@ void main() {
         );
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const SwitchGroupSubmitted(groupUid: 'GRP-2'),
-      ),
+      act: (bloc) => bloc.add(const SwitchGroupSubmitted(groupUid: 'GRP-2')),
       expect: () => [
         const AuthLoading(),
         const AuthFailure(message: 'Gagal beralih grup'),
@@ -190,15 +186,13 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, Unauthenticated] when LogoutRequested succeeds',
       build: () {
-        when(() => mockLogoutUseCase(any()))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          () => mockLogoutUseCase(any()),
+        ).thenAnswer((_) async => const Right(null));
         return authBloc;
       },
       act: (bloc) => bloc.add(const LogoutRequested()),
-      expect: () => [
-        const AuthLoading(),
-        const Unauthenticated(),
-      ],
+      expect: () => [const AuthLoading(), const Unauthenticated()],
     );
   });
 
@@ -206,8 +200,9 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, Authenticated] when active session is found',
       build: () {
-        when(() => mockGetCurrentUserUseCase(any()))
-            .thenAnswer((_) async => const Right(tUserEntity));
+        when(
+          () => mockGetCurrentUserUseCase(any()),
+        ).thenAnswer((_) async => const Right(tUserEntity));
         return authBloc;
       },
       act: (bloc) => bloc.add(const AuthCheckRequested()),
@@ -220,15 +215,13 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, Unauthenticated] when no session is found',
       build: () {
-        when(() => mockGetCurrentUserUseCase(any()))
-            .thenAnswer((_) async => const Right(null));
+        when(
+          () => mockGetCurrentUserUseCase(any()),
+        ).thenAnswer((_) async => const Right(null));
         return authBloc;
       },
       act: (bloc) => bloc.add(const AuthCheckRequested()),
-      expect: () => [
-        const AuthLoading(),
-        const Unauthenticated(),
-      ],
+      expect: () => [const AuthLoading(), const Unauthenticated()],
     );
 
     const tMultiGroupUser = UserEntity(
@@ -259,8 +252,9 @@ void main() {
       'emits [AuthLoading, GroupSelectionRequired] when user has multiple '
       'groups but no active group',
       build: () {
-        when(() => mockGetCurrentUserUseCase(any()))
-            .thenAnswer((_) async => const Right(tMultiGroupUser));
+        when(
+          () => mockGetCurrentUserUseCase(any()),
+        ).thenAnswer((_) async => const Right(tMultiGroupUser));
         return authBloc;
       },
       act: (bloc) => bloc.add(const AuthCheckRequested()),

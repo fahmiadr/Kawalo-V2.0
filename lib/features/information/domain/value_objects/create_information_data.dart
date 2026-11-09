@@ -53,14 +53,14 @@ class CreateInformationData extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        text,
-        feedFile,
-        photos,
-        feedType,
-        eventLocation,
-        glat,
-        glong,
-        cancelToken,
-      ];
+    title,
+    text,
+    feedFile,
+    photos,
+    feedType,
+    eventLocation,
+    glat,
+    glong,
+    cancelToken,
+  ];
 }

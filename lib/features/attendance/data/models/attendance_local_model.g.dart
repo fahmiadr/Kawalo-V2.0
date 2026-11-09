@@ -43,11 +43,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
       name: r'groupName',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(
-      id: 5,
-      name: r'id',
-      type: IsarType.string,
-    ),
+    r'id': PropertySchema(id: 5, name: r'id', type: IsarType.string),
     r'latitude': PropertySchema(
       id: 6,
       name: r'latitude',
@@ -97,7 +93,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
       id: 15,
       name: r'userProfilePic',
       type: IsarType.string,
-    )
+    ),
   },
   estimateSize: _attendanceLocalModelEstimateSize,
   serialize: _attendanceLocalModelSerialize,
@@ -115,7 +111,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'id',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'userEmail': IndexSchema(
@@ -128,7 +124,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'userEmail',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'userName': IndexSchema(
@@ -141,7 +137,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'userName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'attendanceDt': IndexSchema(
@@ -154,7 +150,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'attendanceDt',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'attendanceType': IndexSchema(
@@ -167,7 +163,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'attendanceType',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'locationName': IndexSchema(
@@ -180,7 +176,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'locationName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'shiftName': IndexSchema(
@@ -193,9 +189,9 @@ const AttendanceLocalModelSchema = CollectionSchema(
           name: r'shiftName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
@@ -394,12 +390,16 @@ Id _attendanceLocalModelGetId(AttendanceLocalModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _attendanceLocalModelGetLinks(
-    AttendanceLocalModel object) {
+  AttendanceLocalModel object,
+) {
   return [];
 }
 
 void _attendanceLocalModelAttach(
-    IsarCollection<dynamic> col, Id id, AttendanceLocalModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  AttendanceLocalModel object,
+) {
   object.isarId = id;
 }
 
@@ -452,8 +452,10 @@ extension AttendanceLocalModelByIndex on IsarCollection<AttendanceLocalModel> {
     return putAllByIndex(r'id', objects);
   }
 
-  List<Id> putAllByIdSync(List<AttendanceLocalModel> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByIdSync(
+    List<AttendanceLocalModel> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
   }
 }
@@ -461,7 +463,7 @@ extension AttendanceLocalModelByIndex on IsarCollection<AttendanceLocalModel> {
 extension AttendanceLocalModelQueryWhereSort
     on QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QWhere> {
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhere>
-      anyIsarId() {
+  anyIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -471,17 +473,16 @@ extension AttendanceLocalModelQueryWhereSort
 extension AttendanceLocalModelQueryWhere
     on QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QWhereClause> {
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      isarIdEqualTo(Id isarId) {
+  isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: isarId, upper: isarId),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
+  isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -504,7 +505,7 @@ extension AttendanceLocalModelQueryWhere
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
+  isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -513,7 +514,7 @@ extension AttendanceLocalModelQueryWhere
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
+  isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -522,538 +523,636 @@ extension AttendanceLocalModelQueryWhere
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      isarIdBetween(
+  isarIdBetween(
     Id lowerIsarId,
     Id upperIsarId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerIsarId,
+          includeLower: includeLower,
+          upper: upperIsarId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      idEqualTo(String id) {
+  idEqualTo(String id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'id',
-        value: [id],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'id', value: [id]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      idNotEqualTo(String id) {
+  idNotEqualTo(String id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userEmailIsNull() {
+  userEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'userEmail',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'userEmail', value: [null]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userEmailIsNotNull() {
+  userEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'userEmail',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'userEmail',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userEmailEqualTo(String? userEmail) {
+  userEmailEqualTo(String? userEmail) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'userEmail',
-        value: [userEmail],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'userEmail', value: [userEmail]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userEmailNotEqualTo(String? userEmail) {
+  userEmailNotEqualTo(String? userEmail) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userEmail',
-              lower: [],
-              upper: [userEmail],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userEmail',
-              lower: [userEmail],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userEmail',
+                lower: [],
+                upper: [userEmail],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userEmail',
+                lower: [userEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userEmail',
-              lower: [userEmail],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userEmail',
-              lower: [],
-              upper: [userEmail],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userEmail',
+                lower: [userEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userEmail',
+                lower: [],
+                upper: [userEmail],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userNameIsNull() {
+  userNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'userName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'userName', value: [null]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userNameIsNotNull() {
+  userNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'userName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'userName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userNameEqualTo(String? userName) {
+  userNameEqualTo(String? userName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'userName',
-        value: [userName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'userName', value: [userName]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      userNameNotEqualTo(String? userName) {
+  userNameNotEqualTo(String? userName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userName',
-              lower: [],
-              upper: [userName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userName',
-              lower: [userName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userName',
+                lower: [],
+                upper: [userName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userName',
+                lower: [userName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userName',
-              lower: [userName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'userName',
-              lower: [],
-              upper: [userName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userName',
+                lower: [userName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'userName',
+                lower: [],
+                upper: [userName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceDtIsNull() {
+  attendanceDtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'attendanceDt',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'attendanceDt', value: [null]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceDtIsNotNull() {
+  attendanceDtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'attendanceDt',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'attendanceDt',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceDtEqualTo(String? attendanceDt) {
+  attendanceDtEqualTo(String? attendanceDt) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'attendanceDt',
-        value: [attendanceDt],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'attendanceDt',
+          value: [attendanceDt],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceDtNotEqualTo(String? attendanceDt) {
+  attendanceDtNotEqualTo(String? attendanceDt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceDt',
-              lower: [],
-              upper: [attendanceDt],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceDt',
-              lower: [attendanceDt],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceDt',
+                lower: [],
+                upper: [attendanceDt],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceDt',
+                lower: [attendanceDt],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceDt',
-              lower: [attendanceDt],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceDt',
-              lower: [],
-              upper: [attendanceDt],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceDt',
+                lower: [attendanceDt],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceDt',
+                lower: [],
+                upper: [attendanceDt],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceTypeIsNull() {
+  attendanceTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'attendanceType',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'attendanceType', value: [null]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceTypeIsNotNull() {
+  attendanceTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'attendanceType',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'attendanceType',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceTypeEqualTo(String? attendanceType) {
+  attendanceTypeEqualTo(String? attendanceType) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'attendanceType',
-        value: [attendanceType],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'attendanceType',
+          value: [attendanceType],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      attendanceTypeNotEqualTo(String? attendanceType) {
+  attendanceTypeNotEqualTo(String? attendanceType) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceType',
-              lower: [],
-              upper: [attendanceType],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceType',
-              lower: [attendanceType],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceType',
+                lower: [],
+                upper: [attendanceType],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceType',
+                lower: [attendanceType],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceType',
-              lower: [attendanceType],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'attendanceType',
-              lower: [],
-              upper: [attendanceType],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceType',
+                lower: [attendanceType],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'attendanceType',
+                lower: [],
+                upper: [attendanceType],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      locationNameIsNull() {
+  locationNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'locationName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'locationName', value: [null]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      locationNameIsNotNull() {
+  locationNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'locationName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'locationName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      locationNameEqualTo(String? locationName) {
+  locationNameEqualTo(String? locationName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'locationName',
-        value: [locationName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'locationName',
+          value: [locationName],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      locationNameNotEqualTo(String? locationName) {
+  locationNameNotEqualTo(String? locationName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationName',
-              lower: [],
-              upper: [locationName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationName',
-              lower: [locationName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'locationName',
+                lower: [],
+                upper: [locationName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'locationName',
+                lower: [locationName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationName',
-              lower: [locationName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationName',
-              lower: [],
-              upper: [locationName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'locationName',
+                lower: [locationName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'locationName',
+                lower: [],
+                upper: [locationName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      shiftNameIsNull() {
+  shiftNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'shiftName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'shiftName', value: [null]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      shiftNameIsNotNull() {
+  shiftNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'shiftName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'shiftName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      shiftNameEqualTo(String? shiftName) {
+  shiftNameEqualTo(String? shiftName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'shiftName',
-        value: [shiftName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'shiftName', value: [shiftName]),
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterWhereClause>
-      shiftNameNotEqualTo(String? shiftName) {
+  shiftNameNotEqualTo(String? shiftName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'shiftName',
-              lower: [],
-              upper: [shiftName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'shiftName',
-              lower: [shiftName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'shiftName',
+                lower: [],
+                upper: [shiftName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'shiftName',
+                lower: [shiftName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'shiftName',
-              lower: [shiftName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'shiftName',
-              lower: [],
-              upper: [shiftName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'shiftName',
+                lower: [shiftName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'shiftName',
+                lower: [],
+                upper: [shiftName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 }
 
-extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
-    AttendanceLocalModel, QFilterCondition> {
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtIsNull() {
+extension AttendanceLocalModelQueryFilter
+    on
+        QueryBuilder<
+          AttendanceLocalModel,
+          AttendanceLocalModel,
+          QFilterCondition
+        > {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'attendanceDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'attendanceDt'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'attendanceDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'attendanceDt'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'attendanceDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'attendanceDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'attendanceDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'attendanceDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'attendanceDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'attendanceDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1061,155 +1160,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'attendanceDt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'attendanceDt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'attendanceDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'attendanceDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'attendanceDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'attendanceDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      attendanceDtContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'attendanceDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'attendanceDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      attendanceDtMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'attendanceDt',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'attendanceDt',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'attendanceDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'attendanceDt', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceDtIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceDtIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'attendanceDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'attendanceDt', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'attendanceType',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'attendanceType'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'attendanceType',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'attendanceType'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'attendanceType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'attendanceType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'attendanceType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'attendanceType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'attendanceType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'attendanceType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1217,137 +1367,180 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'attendanceType',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'attendanceType',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'attendanceType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'attendanceType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'attendanceType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'attendanceType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      attendanceTypeContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'attendanceType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'attendanceType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      attendanceTypeMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'attendanceType',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'attendanceType',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'attendanceType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'attendanceType', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> attendanceTypeIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  attendanceTypeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'attendanceType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'attendanceType', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'category',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'category',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'category',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1355,211 +1548,277 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'category',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'category',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'category',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'category',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      categoryContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'category',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      categoryMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'category',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'category',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'category',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'category', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> categoryIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  categoryIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'category',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'category', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> diffMinutesEqualTo(int value) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  diffMinutesEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'diffMinutes',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'diffMinutes', value: value),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> diffMinutesGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  diffMinutesGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'diffMinutes',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'diffMinutes',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> diffMinutesLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  diffMinutesLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'diffMinutes',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'diffMinutes',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> diffMinutesBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  diffMinutesBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'diffMinutes',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'diffMinutes',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'groupName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'groupName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'groupName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'groupName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1567,137 +1826,176 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'groupName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'groupName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      groupNameContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      groupNameMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'groupName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'groupName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'groupName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'groupName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> groupNameIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  groupNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'groupName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'groupName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idLessThan(String value, {bool include = false, bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1705,211 +2003,277 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      idContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      idMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> idIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> isarIdEqualTo(Id value) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isarId', value: value),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  isarIdGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  isarIdLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> isarIdBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'isarId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'latitude',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'latitude'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'latitude',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'latitude'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'latitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'latitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'latitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'latitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'latitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'latitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1917,155 +2281,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'latitude',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'latitude',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'latitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'latitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'latitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'latitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      latitudeContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'latitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'latitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      latitudeMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'latitude',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'latitude',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'latitude',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'latitude', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> latitudeIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  latitudeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'latitude',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'latitude', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'locationName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'locationName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'locationName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'locationName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'locationName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'locationName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'locationName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'locationName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'locationName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'locationName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2073,155 +2488,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'locationName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'locationName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'locationName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'locationName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'locationName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'locationName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      locationNameContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'locationName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'locationName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      locationNameMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'locationName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'locationName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'locationName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'locationName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> locationNameIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  locationNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'locationName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'locationName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'longitude',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'longitude'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'longitude',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'longitude'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'longitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'longitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'longitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'longitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'longitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'longitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2229,155 +2695,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'longitude',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'longitude',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'longitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'longitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'longitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'longitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      longitudeContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'longitude',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'longitude',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      longitudeMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'longitude',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'longitude',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'longitude',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'longitude', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> longitudeIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  longitudeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'longitude',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'longitude', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'shiftColor',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'shiftColor'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'shiftColor',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'shiftColor'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'shiftColor',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'shiftColor',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'shiftColor',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'shiftColor',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'shiftColor',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'shiftColor',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2385,155 +2902,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'shiftColor',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'shiftColor',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'shiftColor',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'shiftColor',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'shiftColor',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'shiftColor',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      shiftColorContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'shiftColor',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'shiftColor',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      shiftColorMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'shiftColor',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'shiftColor',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'shiftColor',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'shiftColor', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftColorIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftColorIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'shiftColor',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'shiftColor', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'shiftName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'shiftName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'shiftName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'shiftName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'shiftName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'shiftName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'shiftName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'shiftName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'shiftName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'shiftName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2541,155 +3109,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'shiftName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'shiftName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'shiftName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'shiftName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'shiftName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'shiftName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      shiftNameContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'shiftName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'shiftName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      shiftNameMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'shiftName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'shiftName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'shiftName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'shiftName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftNameIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'shiftName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'shiftName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'shiftTimeWindow',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'shiftTimeWindow'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'shiftTimeWindow',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'shiftTimeWindow'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'shiftTimeWindow',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'shiftTimeWindow',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'shiftTimeWindow',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'shiftTimeWindow',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'shiftTimeWindow',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'shiftTimeWindow',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2697,155 +3316,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'shiftTimeWindow',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'shiftTimeWindow',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'shiftTimeWindow',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'shiftTimeWindow',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'shiftTimeWindow',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'shiftTimeWindow',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      shiftTimeWindowContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'shiftTimeWindow',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'shiftTimeWindow',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      shiftTimeWindowMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'shiftTimeWindow',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'shiftTimeWindow',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'shiftTimeWindow',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'shiftTimeWindow', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> shiftTimeWindowIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  shiftTimeWindowIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'shiftTimeWindow',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'shiftTimeWindow', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'userDuty',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'userDuty'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'userDuty',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'userDuty'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userDuty',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'userDuty',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'userDuty',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'userDuty',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'userDuty',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'userDuty',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2853,155 +3523,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'userDuty',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'userDuty',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'userDuty',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'userDuty',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'userDuty',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'userDuty',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userDutyContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'userDuty',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'userDuty',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userDutyMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'userDuty',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'userDuty',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userDuty',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'userDuty', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userDutyIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userDutyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'userDuty',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'userDuty', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'userEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'userEmail'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'userEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'userEmail'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'userEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'userEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'userEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'userEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'userEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3009,155 +3730,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'userEmail',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'userEmail',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'userEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'userEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'userEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'userEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userEmailContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'userEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'userEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userEmailMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'userEmail',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'userEmail',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'userEmail', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userEmailIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userEmailIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'userEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'userEmail', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'userName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'userName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'userName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'userName'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'userName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'userName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'userName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'userName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'userName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3165,155 +3937,206 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'userName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'userName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'userName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'userName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'userName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'userName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userNameContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'userName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'userName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userNameMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'userName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'userName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'userName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userNameIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'userName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'userName', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicIsNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'userProfilePic',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'userProfilePic'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicIsNotNull() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'userProfilePic',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'userProfilePic'),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userProfilePic',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'userProfilePic',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicGreaterThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'userProfilePic',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'userProfilePic',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicLessThan(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'userProfilePic',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'userProfilePic',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicBetween(
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3321,317 +4144,351 @@ extension AttendanceLocalModelQueryFilter on QueryBuilder<AttendanceLocalModel,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'userProfilePic',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'userProfilePic',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'userProfilePic',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'userProfilePic',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'userProfilePic',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'userProfilePic',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userProfilePicContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'userProfilePic',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'userProfilePic',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-          QAfterFilterCondition>
-      userProfilePicMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'userProfilePic',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'userProfilePic',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicIsEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'userProfilePic',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'userProfilePic', value: ''),
+      );
     });
   }
 
-  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel,
-      QAfterFilterCondition> userProfilePicIsNotEmpty() {
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  userProfilePicIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'userProfilePic',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'userProfilePic', value: ''),
+      );
     });
   }
 }
 
-extension AttendanceLocalModelQueryObject on QueryBuilder<AttendanceLocalModel,
-    AttendanceLocalModel, QFilterCondition> {}
+extension AttendanceLocalModelQueryObject
+    on
+        QueryBuilder<
+          AttendanceLocalModel,
+          AttendanceLocalModel,
+          QFilterCondition
+        > {}
 
-extension AttendanceLocalModelQueryLinks on QueryBuilder<AttendanceLocalModel,
-    AttendanceLocalModel, QFilterCondition> {}
+extension AttendanceLocalModelQueryLinks
+    on
+        QueryBuilder<
+          AttendanceLocalModel,
+          AttendanceLocalModel,
+          QFilterCondition
+        > {}
 
 extension AttendanceLocalModelQuerySortBy
     on QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QSortBy> {
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByAttendanceDt() {
+  sortByAttendanceDt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceDt', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByAttendanceDtDesc() {
+  sortByAttendanceDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceDt', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByAttendanceType() {
+  sortByAttendanceType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceType', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByAttendanceTypeDesc() {
+  sortByAttendanceTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceType', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByCategory() {
+  sortByCategory() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'category', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByCategoryDesc() {
+  sortByCategoryDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'category', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByDiffMinutes() {
+  sortByDiffMinutes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'diffMinutes', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByDiffMinutesDesc() {
+  sortByDiffMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'diffMinutes', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByGroupName() {
+  sortByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByGroupNameDesc() {
+  sortByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortById() {
+  sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByIdDesc() {
+  sortByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByLatitude() {
+  sortByLatitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'latitude', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByLatitudeDesc() {
+  sortByLatitudeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'latitude', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByLocationName() {
+  sortByLocationName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'locationName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByLocationNameDesc() {
+  sortByLocationNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'locationName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByLongitude() {
+  sortByLongitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'longitude', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByLongitudeDesc() {
+  sortByLongitudeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'longitude', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByShiftColor() {
+  sortByShiftColor() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftColor', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByShiftColorDesc() {
+  sortByShiftColorDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftColor', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByShiftName() {
+  sortByShiftName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByShiftNameDesc() {
+  sortByShiftNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByShiftTimeWindow() {
+  sortByShiftTimeWindow() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftTimeWindow', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByShiftTimeWindowDesc() {
+  sortByShiftTimeWindowDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftTimeWindow', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserDuty() {
+  sortByUserDuty() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userDuty', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserDutyDesc() {
+  sortByUserDutyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userDuty', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserEmail() {
+  sortByUserEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userEmail', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserEmailDesc() {
+  sortByUserEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userEmail', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserName() {
+  sortByUserName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserNameDesc() {
+  sortByUserNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserProfilePic() {
+  sortByUserProfilePic() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userProfilePic', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      sortByUserProfilePicDesc() {
+  sortByUserProfilePicDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userProfilePic', Sort.desc);
     });
@@ -3641,238 +4498,238 @@ extension AttendanceLocalModelQuerySortBy
 extension AttendanceLocalModelQuerySortThenBy
     on QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QSortThenBy> {
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByAttendanceDt() {
+  thenByAttendanceDt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceDt', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByAttendanceDtDesc() {
+  thenByAttendanceDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceDt', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByAttendanceType() {
+  thenByAttendanceType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceType', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByAttendanceTypeDesc() {
+  thenByAttendanceTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'attendanceType', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByCategory() {
+  thenByCategory() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'category', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByCategoryDesc() {
+  thenByCategoryDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'category', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByDiffMinutes() {
+  thenByDiffMinutes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'diffMinutes', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByDiffMinutesDesc() {
+  thenByDiffMinutesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'diffMinutes', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByGroupName() {
+  thenByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByGroupNameDesc() {
+  thenByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenById() {
+  thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByIdDesc() {
+  thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByIsarId() {
+  thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByIsarIdDesc() {
+  thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByLatitude() {
+  thenByLatitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'latitude', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByLatitudeDesc() {
+  thenByLatitudeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'latitude', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByLocationName() {
+  thenByLocationName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'locationName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByLocationNameDesc() {
+  thenByLocationNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'locationName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByLongitude() {
+  thenByLongitude() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'longitude', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByLongitudeDesc() {
+  thenByLongitudeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'longitude', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByShiftColor() {
+  thenByShiftColor() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftColor', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByShiftColorDesc() {
+  thenByShiftColorDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftColor', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByShiftName() {
+  thenByShiftName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByShiftNameDesc() {
+  thenByShiftNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByShiftTimeWindow() {
+  thenByShiftTimeWindow() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftTimeWindow', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByShiftTimeWindowDesc() {
+  thenByShiftTimeWindowDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'shiftTimeWindow', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserDuty() {
+  thenByUserDuty() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userDuty', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserDutyDesc() {
+  thenByUserDutyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userDuty', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserEmail() {
+  thenByUserEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userEmail', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserEmailDesc() {
+  thenByUserEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userEmail', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserName() {
+  thenByUserName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userName', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserNameDesc() {
+  thenByUserNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userName', Sort.desc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserProfilePic() {
+  thenByUserProfilePic() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userProfilePic', Sort.asc);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
-      thenByUserProfilePicDesc() {
+  thenByUserProfilePicDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userProfilePic', Sort.desc);
     });
@@ -3882,123 +4739,134 @@ extension AttendanceLocalModelQuerySortThenBy
 extension AttendanceLocalModelQueryWhereDistinct
     on QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct> {
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByAttendanceDt({bool caseSensitive = true}) {
+  distinctByAttendanceDt({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'attendanceDt', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByAttendanceType({bool caseSensitive = true}) {
+  distinctByAttendanceType({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'attendanceType',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'attendanceType',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByCategory({bool caseSensitive = true}) {
+  distinctByCategory({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'category', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByDiffMinutes() {
+  distinctByDiffMinutes() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'diffMinutes');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByGroupName({bool caseSensitive = true}) {
+  distinctByGroupName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'groupName', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctById({bool caseSensitive = true}) {
+  distinctById({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByLatitude({bool caseSensitive = true}) {
+  distinctByLatitude({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'latitude', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByLocationName({bool caseSensitive = true}) {
+  distinctByLocationName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'locationName', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByLongitude({bool caseSensitive = true}) {
+  distinctByLongitude({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'longitude', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByShiftColor({bool caseSensitive = true}) {
+  distinctByShiftColor({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'shiftColor', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByShiftName({bool caseSensitive = true}) {
+  distinctByShiftName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'shiftName', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByShiftTimeWindow({bool caseSensitive = true}) {
+  distinctByShiftTimeWindow({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'shiftTimeWindow',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'shiftTimeWindow',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByUserDuty({bool caseSensitive = true}) {
+  distinctByUserDuty({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'userDuty', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByUserEmail({bool caseSensitive = true}) {
+  distinctByUserEmail({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'userEmail', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByUserName({bool caseSensitive = true}) {
+  distinctByUserName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'userName', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
-      distinctByUserProfilePic({bool caseSensitive = true}) {
+  distinctByUserProfilePic({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'userProfilePic',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'userProfilePic',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 }
 
-extension AttendanceLocalModelQueryProperty on QueryBuilder<
-    AttendanceLocalModel, AttendanceLocalModel, QQueryProperty> {
+extension AttendanceLocalModelQueryProperty
+    on
+        QueryBuilder<
+          AttendanceLocalModel,
+          AttendanceLocalModel,
+          QQueryProperty
+        > {
   QueryBuilder<AttendanceLocalModel, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
@@ -4006,35 +4874,35 @@ extension AttendanceLocalModelQueryProperty on QueryBuilder<
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      attendanceDtProperty() {
+  attendanceDtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'attendanceDt');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      attendanceTypeProperty() {
+  attendanceTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'attendanceType');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String, QQueryOperations>
-      categoryProperty() {
+  categoryProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'category');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, int, QQueryOperations>
-      diffMinutesProperty() {
+  diffMinutesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'diffMinutes');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      groupNameProperty() {
+  groupNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'groupName');
     });
@@ -4047,70 +4915,70 @@ extension AttendanceLocalModelQueryProperty on QueryBuilder<
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      latitudeProperty() {
+  latitudeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'latitude');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      locationNameProperty() {
+  locationNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'locationName');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      longitudeProperty() {
+  longitudeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'longitude');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      shiftColorProperty() {
+  shiftColorProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'shiftColor');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      shiftNameProperty() {
+  shiftNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'shiftName');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      shiftTimeWindowProperty() {
+  shiftTimeWindowProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'shiftTimeWindow');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      userDutyProperty() {
+  userDutyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'userDuty');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      userEmailProperty() {
+  userEmailProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'userEmail');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      userNameProperty() {
+  userNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'userName');
     });
   }
 
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
-      userProfilePicProperty() {
+  userProfilePicProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'userProfilePic');
     });

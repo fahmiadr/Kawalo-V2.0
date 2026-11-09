@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_shape.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -352,13 +353,13 @@ class _AppSearchBarState extends State<AppSearchBar> {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final effectiveBg = widget.backgroundColor ??
+    final effectiveBg =
+        widget.backgroundColor ??
         WidgetStatePropertyAll<Color?>(colorScheme.surfaceContainerHigh);
 
-    final effectiveShape = widget.shape ??
-        const WidgetStatePropertyAll<OutlinedBorder?>(
-          AppShape.full,
-        );
+    final effectiveShape =
+        widget.shape ??
+        const WidgetStatePropertyAll<OutlinedBorder?>(AppShape.full);
 
     final effectiveElevation =
         widget.elevation ?? const WidgetStatePropertyAll<double?>(0);

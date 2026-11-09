@@ -19,10 +19,7 @@ class OnboardingHeroImage extends StatelessWidget {
       fit: BoxFit.contain,
       excludeFromSemantics: true,
       errorBuilder: (context, error, stackTrace) {
-        return const AppImagePlaceholder(
-          label: 'Illustration',
-          iconSize: 48,
-        );
+        return const AppImagePlaceholder(label: 'Illustration', iconSize: 48);
       },
     );
 
@@ -34,9 +31,6 @@ class OnboardingHeroImage extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      width: double.infinity,
-      child: imageWidget,
-    );
+    return SizedBox(width: double.infinity, child: imageWidget);
   }
 }

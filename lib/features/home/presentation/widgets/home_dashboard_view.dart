@@ -58,10 +58,7 @@ class HomeDashboardView extends StatelessWidget {
   Future<void> _defaultOnRefresh(BuildContext context) async {
     await Future<void>.delayed(const Duration(milliseconds: 800));
     if (context.mounted) {
-      AppSnackbar.show(
-        context,
-        message: 'Data beranda berhasil diperbarui.',
-      );
+      AppSnackbar.show(context, message: 'Data beranda berhasil diperbarui.');
     }
   }
 
@@ -90,7 +87,8 @@ class HomeDashboardView extends StatelessWidget {
                   onTapItem: (item) {
                     AppSnackbar.show(
                       context,
-                      message: 'Detail tamu: ${item.identifier} '
+                      message:
+                          'Detail tamu: ${item.identifier} '
                           '(${item.location})',
                     );
                   },

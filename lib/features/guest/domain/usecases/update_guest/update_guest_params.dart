@@ -115,20 +115,20 @@ class UpdateGuestParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        guestName,
-        guestDestination,
-        guestType,
-        guestPurpose,
-        guestNumber,
-        guestIdentity,
-        guestIdentityType,
-        guestAddress,
-        guestToUserEmail,
-        guestPhoto,
-        includeNulls,
-        session,
-        item,
-        cancelToken,
-      ];
+    id,
+    guestName,
+    guestDestination,
+    guestType,
+    guestPurpose,
+    guestNumber,
+    guestIdentity,
+    guestIdentityType,
+    guestAddress,
+    guestToUserEmail,
+    guestPhoto,
+    includeNulls,
+    session,
+    item,
+    cancelToken,
+  ];
 }

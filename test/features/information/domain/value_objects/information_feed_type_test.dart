@@ -25,10 +25,13 @@ void main() {
     });
 
     test('allowedCodes returns all valid backend codes', () {
-      expect(
-        InformationFeedType.allowedCodes,
-        ['GENERAL', 'JOIN', 'INCIDENT', 'EVENT', 'OTHER'],
-      );
+      expect(InformationFeedType.allowedCodes, [
+        'GENERAL',
+        'JOIN',
+        'INCIDENT',
+        'EVENT',
+        'OTHER',
+      ]);
     });
 
     test('tryFromCode parses codes correctly', () {
@@ -36,10 +39,7 @@ void main() {
         InformationFeedType.tryFromCode('GENERAL'),
         InformationFeedType.general,
       );
-      expect(
-        InformationFeedType.tryFromCode('join'),
-        InformationFeedType.join,
-      );
+      expect(InformationFeedType.tryFromCode('join'), InformationFeedType.join);
       expect(
         InformationFeedType.tryFromCode(' INCIDENT '),
         InformationFeedType.incident,

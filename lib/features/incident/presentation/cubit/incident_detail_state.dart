@@ -4,12 +4,7 @@ import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_e
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 
 /// Status siklus hidup tampilan detail insiden.
-enum IncidentDetailStatus {
-  initial,
-  loading,
-  success,
-  failure,
-}
+enum IncidentDetailStatus { initial, loading, success, failure }
 
 /// State representasi layar detail insiden dan thread realtime.
 class IncidentDetailState extends Equatable {
@@ -112,27 +107,28 @@ class IncidentDetailState extends Equatable {
       draftMessage: draftMessage ?? this.draftMessage,
       draftPhotos: draftPhotos ?? this.draftPhotos,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
-      conflictNotice:
-          conflictNotice != null ? conflictNotice() : this.conflictNotice,
+      conflictNotice: conflictNotice != null
+          ? conflictNotice()
+          : this.conflictNotice,
       infoNotice: infoNotice != null ? infoNotice() : this.infoNotice,
     );
   }
 
   @override
   List<Object?> get props => [
-        status,
-        incident,
-        replies,
-        isReconnecting,
-        isPostingReply,
-        isResolving,
-        isDeleting,
-        isReadOnly,
-        isTerminated,
-        draftMessage,
-        draftPhotos,
-        errorMessage,
-        conflictNotice,
-        infoNotice,
-      ];
+    status,
+    incident,
+    replies,
+    isReconnecting,
+    isPostingReply,
+    isResolving,
+    isDeleting,
+    isReadOnly,
+    isTerminated,
+    draftMessage,
+    draftPhotos,
+    errorMessage,
+    conflictNotice,
+    infoNotice,
+  ];
 }

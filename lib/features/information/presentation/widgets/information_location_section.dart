@@ -66,136 +66,131 @@ class InformationLocationSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // ── Input Nama Lokasi ───────────────────────────────────────
-            BlocSelector<InformationFormCubit, InformationFormState, String?>(
-              selector: (state) => state.eventLocationError,
-              builder: (context, eventLocationError) {
-                return AppTextField(
-                  label: 'Nama lokasi atau tempat acara',
-                  variant: AppTextFieldVariant.outlined,
-                  controller: eventLocationController,
-                  focusNode: eventLocationFocusNode,
-                  enabled: !isSubmitting,
-                  errorText: eventLocationError,
-                  maxLength: 128,
-                  textInputAction: TextInputAction.done,
-                  onChanged: onLocationNameChanged,
-                );
-              },
+          BlocSelector<InformationFormCubit, InformationFormState, String?>(
+            selector: (state) => state.eventLocationError,
+            builder: (context, eventLocationError) {
+              return AppTextField(
+                label: 'Nama lokasi atau tempat acara',
+                variant: AppTextFieldVariant.outlined,
+                controller: eventLocationController,
+                focusNode: eventLocationFocusNode,
+                enabled: !isSubmitting,
+                errorText: eventLocationError,
+                maxLength: 128,
+                textInputAction: TextInputAction.done,
+                onChanged: onLocationNameChanged,
+              );
+            },
+          ),
+          AppSpacing.vGap200,
+
+          // ── Pratinjau Titik Lokasi & Peta Statis ────────────────────
+          BlocSelector<
+            InformationFormCubit,
+            InformationFormState,
+            ({double? lat, double? lng, bool hasLocation})
+          >(
+            selector: (state) => (
+              lat: state.latitude,
+              lng: state.longitude,
+              hasLocation: state.hasLocation,
             ),
-            AppSpacing.vGap200,
+            builder: (context, data) {
+              if (!data.hasLocation) {
+                return AppFormEmptyPlaceholder(
+                  title: 'Belum ada titik lokasi',
+                  subtitle:
+                      'Ketuk untuk menentukan lokasi saat ini atau '
+                      'pilih di peta',
+                  vectorIcon: KawaloVectors.mapPin,
+                  isLoading: isResolvingLocation,
+                  onTap: (isSubmitting || isResolvingLocation)
+                      ? null
+                      : onPickLocation,
+                );
+              }
 
-            // ── Pratinjau Titik Lokasi & Peta Statis ────────────────────
-            BlocSelector<
-                InformationFormCubit,
-                InformationFormState,
-                ({
-                  double? lat,
-                  double? lng,
-                  bool hasLocation,
-                })>(
-              selector: (state) => (
-                lat: state.latitude,
-                lng: state.longitude,
-                hasLocation: state.hasLocation,
-              ),
-              builder: (context, data) {
-                if (!data.hasLocation) {
-                  return AppFormEmptyPlaceholder(
-                    title: 'Belum ada titik lokasi',
-                    subtitle: 'Ketuk untuk menentukan lokasi saat ini atau '
-                        'pilih di peta',
-                    vectorIcon: KawaloVectors.mapPin,
-                    isLoading: isResolvingLocation,
-                    onTap: (isSubmitting || isResolvingLocation)
-                        ? null
-                        : onPickLocation,
-                  );
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Pratinjau AppStaticMap murni berdasarkan koordinat GPS
-                    ClipRRect(
-                      borderRadius: AppRadius.borderMedium,
-                      child: AppStaticMap(
-                        latitude: data.lat,
-                        longitude: data.lng,
-                        markerStyle: AppStaticMapMarkerStyle.dot,
-                        reverseGeocodeService: reverseGeocodeService,
-                      ),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Pratinjau AppStaticMap murni berdasarkan koordinat GPS
+                  ClipRRect(
+                    borderRadius: AppRadius.borderMedium,
+                    child: AppStaticMap(
+                      latitude: data.lat,
+                      longitude: data.lng,
+                      markerStyle: AppStaticMapMarkerStyle.dot,
+                      reverseGeocodeService: reverseGeocodeService,
                     ),
-                    AppSpacing.vGap150,
+                  ),
+                  AppSpacing.vGap150,
 
-                    // Tombol Aksi: Ubah & Hapus
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Wrap(
-                        alignment: WrapAlignment.end,
-                        spacing: AppSpacing.space150,
-                        runSpacing: AppSpacing.space100,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          AppButton(
-                            style: AppButtonColor.outlined,
-                            onPressed: (isSubmitting || isResolvingLocation)
-                                ? null
-                                : onPickLocation,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isResolvingLocation)
-                                  const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: AppLoadingIndicator(
-                                      size: AppLoadingIndicatorSize.small,
-                                    ),
-                                  )
-                                else
-                                  const AppSvgIcon(
-                                    KawaloVectors.edit03,
-                                    size: 16,
+                  // Tombol Aksi: Ubah & Hapus
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: AppSpacing.space150,
+                      runSpacing: AppSpacing.space100,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        AppButton(
+                          style: AppButtonColor.outlined,
+                          onPressed: (isSubmitting || isResolvingLocation)
+                              ? null
+                              : onPickLocation,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isResolvingLocation)
+                                const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: AppLoadingIndicator(
+                                    size: AppLoadingIndicatorSize.small,
                                   ),
-                                AppSpacing.hGapXs,
-                                Text(
-                                  isResolvingLocation
-                                      ? 'Mencari lokasi...'
-                                      : 'Ubah lokasi',
-                                ),
-                              ],
-                            ),
-                          ),
-                          AppButton(
-                            style: AppButtonColor.text,
-                            onPressed: isSubmitting ? null : onClearLocation,
-                            semanticLabel: 'Hapus titik lokasi',
-                            decoration: AppButtonDecoration(
-                              foregroundColor: WidgetStatePropertyAll<Color?>(
-                                colorScheme.error,
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                AppSvgIcon(
-                                  KawaloVectors.delete01,
+                                )
+                              else
+                                const AppSvgIcon(
+                                  KawaloVectors.edit03,
                                   size: 16,
                                 ),
-                                AppSpacing.hGapXs,
-                                Text('Hapus titik'),
-                              ],
+                              AppSpacing.hGapXs,
+                              Text(
+                                isResolvingLocation
+                                    ? 'Mencari lokasi...'
+                                    : 'Ubah lokasi',
+                              ),
+                            ],
+                          ),
+                        ),
+                        AppButton(
+                          style: AppButtonColor.text,
+                          onPressed: isSubmitting ? null : onClearLocation,
+                          semanticLabel: 'Hapus titik lokasi',
+                          decoration: AppButtonDecoration(
+                            foregroundColor: WidgetStatePropertyAll<Color?>(
+                              colorScheme.error,
                             ),
                           ),
-                        ],
-                      ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppSvgIcon(KawaloVectors.delete01, size: 16),
+                              AppSpacing.hGapXs,
+                              Text('Hapus titik'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-      );
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 }

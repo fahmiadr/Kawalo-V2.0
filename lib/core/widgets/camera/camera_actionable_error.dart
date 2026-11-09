@@ -89,7 +89,8 @@ class CameraActionableError {
     final code = e.code;
     final desc = e.description?.toLowerCase() ?? '';
     final codeLower = code.toLowerCase();
-    final isPermissionDenied = code == 'CameraAccessDenied' ||
+    final isPermissionDenied =
+        code == 'CameraAccessDenied' ||
         code == 'CameraAccessDeniedWithoutPrompt' ||
         code == 'cameraPermission' ||
         code == 'permissionDenied' ||
@@ -106,7 +107,8 @@ class CameraActionableError {
       );
     }
 
-    final isCameraInUse = code == 'CameraInUse' ||
+    final isCameraInUse =
+        code == 'CameraInUse' ||
         code == 'cameraInUse' ||
         code == 'cameraExclusiveAccessFailed';
 
@@ -114,7 +116,8 @@ class CameraActionableError {
       return AppActionableErrorData(
         icon: KawaloVectors.alert02Filled,
         title: 'Kamera sedang digunakan',
-        message: 'Sensor kamera sedang diakses atau dikunci oleh '
+        message:
+            'Sensor kamera sedang diakses atau dikunci oleh '
             'aplikasi lain di perangkat Anda.',
         troubleshootingTips: const [
           'Tutup panggilan video atau aplikasi kamera lain yang sedang aktif.',
@@ -182,7 +185,8 @@ class CameraActionableError {
     }
 
     final errorStr = error.toString().toLowerCase();
-    final isPermissionDenied = errorStr.contains('permission') ||
+    final isPermissionDenied =
+        errorStr.contains('permission') ||
         errorStr.contains('denied') ||
         errorStr.contains('cameraaccessdenied');
 
@@ -280,7 +284,8 @@ class CameraActionableError {
     return AppActionableErrorData(
       icon: KawaloVectors.alertCircleFilled,
       title: 'Gagal menyimpan foto',
-      message: 'Terjadi kendala saat memproses atau menyimpan berkas foto. '
+      message:
+          'Terjadi kendala saat memproses atau menyimpan berkas foto. '
           'Foto sebelumnya tetap aman.',
       technicalDetails: formatTechnicalDetails(
         error,

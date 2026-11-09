@@ -9,11 +9,7 @@ import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 // with full design token integration and extended color support.
 
 export 'package:material_3_expressive/material_3_expressive.dart'
-    show
-        M3EFabMenu,
-        M3EFabMenuItem,
-        M3EFabMenuPosition,
-        M3EFabMenuTheme;
+    show M3EFabMenu, M3EFabMenuItem, M3EFabMenuPosition, M3EFabMenuTheme;
 
 /// Alias for [M3EFabMenuItem] to maintain standard project naming.
 typedef AppFabMenuItem = M3EFabMenuItem;
@@ -73,10 +69,12 @@ class AppFabMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = AppTheme.colorSchemeOf(context);
-    final errorBg =
-        color == AppFabColor.error ? colorScheme.errorContainer : null;
-    final errorFg =
-        color == AppFabColor.error ? colorScheme.onErrorContainer : null;
+    final errorBg = color == AppFabColor.error
+        ? colorScheme.errorContainer
+        : null;
+    final errorFg = color == AppFabColor.error
+        ? colorScheme.onErrorContainer
+        : null;
 
     final effectiveBg = backgroundColor ?? errorBg;
     final effectiveFg = foregroundColor ?? errorFg;

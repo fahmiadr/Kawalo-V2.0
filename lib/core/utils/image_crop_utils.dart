@@ -95,13 +95,13 @@ class CropImagePayload extends Equatable {
 
   @override
   List<Object?> get props => [
-        bytes,
-        orientation,
-        quality,
-        maxWidth,
-        maxHeight,
-        isFrontCamera,
-      ];
+    bytes,
+    orientation,
+    quality,
+    maxWidth,
+    maxHeight,
+    isFrontCamera,
+  ];
 }
 
 /// Kontrak abstraksi layanan pemotongan citra berbasis GoF Strategy.
@@ -171,15 +171,14 @@ class DefaultImageCropper extends Equatable implements ImageCropper {
     double maxHeight = CropImagePayload.defaultMaxHeight,
     int quality = CropImagePayload.defaultQuality,
     bool isFrontCamera = false,
-  }) =>
-      ImageCropUtils.cropFileTo9x16(
-        filePath,
-        orientation: orientation,
-        maxWidth: maxWidth,
-        maxHeight: maxHeight,
-        quality: quality,
-        isFrontCamera: isFrontCamera,
-      );
+  }) => ImageCropUtils.cropFileTo9x16(
+    filePath,
+    orientation: orientation,
+    maxWidth: maxWidth,
+    maxHeight: maxHeight,
+    quality: quality,
+    isFrontCamera: isFrontCamera,
+  );
 
   @override
   List<Object?> get props => const [];
@@ -225,15 +224,14 @@ abstract final class ImageCropUtils {
     required DeviceOrientation orientation,
     required bool isHeightGreaterThanWidth,
     bool isFrontCamera = false,
-  }) =>
-      switch (orientation) {
-        DeviceOrientation.portraitDown => 180,
-        DeviceOrientation.landscapeLeft when isHeightGreaterThanWidth =>
-          isFrontCamera ? 90 : 270,
-        DeviceOrientation.landscapeRight when isHeightGreaterThanWidth =>
-          isFrontCamera ? 270 : 90,
-        _ => null,
-      };
+  }) => switch (orientation) {
+    DeviceOrientation.portraitDown => 180,
+    DeviceOrientation.landscapeLeft when isHeightGreaterThanWidth =>
+      isFrontCamera ? 90 : 270,
+    DeviceOrientation.landscapeRight when isHeightGreaterThanWidth =>
+      isFrontCamera ? 270 : 90,
+    _ => null,
+  };
 
   /// Menentukan rasio aspek target pemotongan citra.
   ///
@@ -246,10 +244,10 @@ abstract final class ImageCropUtils {
     required int height,
   }) =>
       (orientation == DeviceOrientation.landscapeLeft ||
-              orientation == DeviceOrientation.landscapeRight ||
-              width > height)
-          ? aspect16x9
-          : aspect9x16;
+          orientation == DeviceOrientation.landscapeRight ||
+          width > height)
+      ? aspect16x9
+      : aspect9x16;
 
   /// Menghitung koordinat pemotongan di tengah (*center crop*) dari dimensi
   /// sumber.
@@ -265,30 +263,26 @@ abstract final class ImageCropUtils {
     final currentAspect = sourceWidth / sourceHeight;
     if (currentAspect > targetAspect) {
       final cropHeight = sourceHeight;
-      final cropWidth =
-          (sourceHeight * targetAspect).round().clamp(1, sourceWidth);
-      final cropX = ((sourceWidth - cropWidth) / 2)
-          .round()
-          .clamp(0, sourceWidth - cropWidth);
-      return CropRect(
-        x: cropX,
-        y: 0,
-        width: cropWidth,
-        height: cropHeight,
+      final cropWidth = (sourceHeight * targetAspect).round().clamp(
+        1,
+        sourceWidth,
       );
+      final cropX = ((sourceWidth - cropWidth) / 2).round().clamp(
+        0,
+        sourceWidth - cropWidth,
+      );
+      return CropRect(x: cropX, y: 0, width: cropWidth, height: cropHeight);
     } else {
       final cropWidth = sourceWidth;
-      final cropHeight =
-          (sourceWidth / targetAspect).round().clamp(1, sourceHeight);
-      final cropY = ((sourceHeight - cropHeight) / 2)
-          .round()
-          .clamp(0, sourceHeight - cropHeight);
-      return CropRect(
-        x: 0,
-        y: cropY,
-        width: cropWidth,
-        height: cropHeight,
+      final cropHeight = (sourceWidth / targetAspect).round().clamp(
+        1,
+        sourceHeight,
       );
+      final cropY = ((sourceHeight - cropHeight) / 2).round().clamp(
+        0,
+        sourceHeight - cropHeight,
+      );
+      return CropRect(x: 0, y: cropY, width: cropWidth, height: cropHeight);
     }
   }
 
@@ -310,10 +304,7 @@ abstract final class ImageCropUtils {
     if (currentHeight <= maxHeight && currentWidth <= maxWidth) {
       return null;
     }
-    final scale = math.min(
-      maxHeight / currentHeight,
-      maxWidth / currentWidth,
-    );
+    final scale = math.min(maxHeight / currentHeight, maxWidth / currentWidth);
     return (
       width: (currentWidth * scale).round(),
       height: (currentHeight * scale).round(),

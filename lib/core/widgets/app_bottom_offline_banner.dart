@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
@@ -212,9 +213,7 @@ class _AppBottomOfflineBannerState extends State<AppBottomOfflineBanner>
         return SizedBox(
           width: double.infinity,
           height: bottomInset,
-          child: ColoredBox(
-            color: effectiveSafeAreaColor,
-          ),
+          child: ColoredBox(color: effectiveSafeAreaColor),
         );
       }
       return const SizedBox.shrink();
@@ -228,8 +227,8 @@ class _AppBottomOfflineBannerState extends State<AppBottomOfflineBanner>
     final backgroundColor = isOfflineState
         ? colorScheme.errorContainer.withValues(alpha: 0.95)
         : (_mode == _BannerMode.onlineRestored
-            ? colorScheme.primaryContainer.withValues(alpha: 0.95)
-            : effectiveSafeAreaColor);
+              ? colorScheme.primaryContainer.withValues(alpha: 0.95)
+              : effectiveSafeAreaColor);
 
     final foregroundColor = isOfflineState
         ? colorScheme.onErrorContainer
@@ -283,10 +282,7 @@ class _AppBottomOfflineBannerState extends State<AppBottomOfflineBanner>
                 alignment: Alignment.bottomCenter,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Semantics(
-                    liveRegion: true,
-                    child: content,
-                  ),
+                  child: Semantics(liveRegion: true, child: content),
                 ),
               ),
             ),

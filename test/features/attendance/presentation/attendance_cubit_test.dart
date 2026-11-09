@@ -22,9 +22,7 @@ void main() {
 
   setUp(() {
     mockUseCase = MockGetAttendancesUseCase();
-    cubit = AttendanceCubit(
-      getAttendancesUseCase: mockUseCase,
-    );
+    cubit = AttendanceCubit(getAttendancesUseCase: mockUseCase);
   });
 
   tearDown(() {
@@ -42,9 +40,7 @@ void main() {
     locationName: 'Pos Gerbang Utama',
   );
 
-  const sampleResult = AttendanceResult(
-    items: [sampleItem],
-  );
+  const sampleResult = AttendanceResult(items: [sampleItem]);
 
   const sampleCachedResult = AttendanceResult(
     items: [sampleItem],
@@ -63,9 +59,9 @@ void main() {
     blocTest<AttendanceCubit, AttendanceState>(
       'emits [AttendanceLoading, AttendanceLoaded] when fetch succeeds',
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleResult));
         return cubit;
       },
       act: (c) => c.fetchAttendances(),
@@ -86,9 +82,9 @@ void main() {
       'emits [AttendanceLoading, AttendanceLoaded] with isFromCache true '
       'when serving cached fallback',
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleCachedResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleCachedResult));
         return cubit;
       },
       act: (c) => c.fetchAttendances(),
@@ -105,12 +101,8 @@ void main() {
       'refresh and does not retain previous attendances',
       build: () {
         when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            AttendanceResult(
-              items: [],
-              isFromCache: true,
-            ),
-          ),
+          (_) async =>
+              const Right(AttendanceResult(items: [], isFromCache: true)),
         );
         return cubit;
       },
@@ -137,8 +129,11 @@ void main() {
       act: (c) => c.fetchAttendances(),
       expect: () => [
         const AttendanceLoading(),
-        isA<AttendanceError>()
-            .having((s) => s.message, 'message', 'Gagal memuat data'),
+        isA<AttendanceError>().having(
+          (s) => s.message,
+          'message',
+          'Gagal memuat data',
+        ),
       ],
     );
 
@@ -189,9 +184,9 @@ void main() {
     blocTest<AttendanceCubit, AttendanceState>(
       'refreshAttendances updates without emitting AttendanceLoading',
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleResult));
         return cubit;
       },
       seed: () => const AttendanceLoaded(
@@ -200,17 +195,20 @@ void main() {
       ),
       act: (c) => c.refreshAttendances(),
       expect: () => [
-        isA<AttendanceLoaded>()
-            .having((s) => s.attendances.length, 'attendances.length', 1),
+        isA<AttendanceLoaded>().having(
+          (s) => s.attendances.length,
+          'attendances.length',
+          1,
+        ),
       ],
     );
 
     blocTest<AttendanceCubit, AttendanceState>(
       'resetFilters fetches with default today period and null searchQuery',
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleResult));
         return cubit;
       },
       act: (c) => c.resetFilters(),
@@ -230,9 +228,9 @@ void main() {
       'fetchAttendances with empty search sets searchQuery to null and '
       'passes null to usecase',
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleResult));
         return cubit;
       },
       act: (c) => c.fetchAttendances(search: ''),
@@ -251,8 +249,11 @@ void main() {
       },
       expect: () => [
         const AttendanceLoading(),
-        isA<AttendanceLoaded>()
-            .having((s) => s.searchQuery, 'searchQuery', isNull),
+        isA<AttendanceLoaded>().having(
+          (s) => s.searchQuery,
+          'searchQuery',
+          isNull,
+        ),
       ],
     );
 
@@ -260,9 +261,9 @@ void main() {
       'setFilter passes sanitized ISO strings and updates AttendanceLoaded '
       'state with filter dates',
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleResult));
         return cubit;
       },
       act: (c) => c.setFilter(
@@ -328,9 +329,9 @@ void main() {
         searchQuery: 'satpam',
       ),
       build: () {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(sampleResult),
-        );
+        when(
+          () => mockUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleResult));
         return cubit;
       },
       act: (c) => c.resetDateFilter(),
@@ -354,68 +355,59 @@ void main() {
       },
     );
 
-    test(
-      'refreshAttendances reuses in-flight background fetch with same key '
-      'without duplicating request',
-      () async {
-        final backgroundCompleter =
-            Completer<Either<Failure, AttendanceResult>>();
+    test('refreshAttendances reuses in-flight background fetch with same key '
+        'without duplicating request', () async {
+      final backgroundCompleter =
+          Completer<Either<Failure, AttendanceResult>>();
 
-        var callCount = 0;
-        when(() => mockUseCase(any())).thenAnswer((_) {
-          callCount++;
-          return backgroundCompleter.future;
-        });
+      var callCount = 0;
+      when(() => mockUseCase(any())).thenAnswer((_) {
+        callCount++;
+        return backgroundCompleter.future;
+      });
 
-        final backgroundFuture = cubit.fetchAttendances();
-        expect(cubit.state, const AttendanceLoading());
+      final backgroundFuture = cubit.fetchAttendances();
+      expect(cubit.state, const AttendanceLoading());
 
-        final refreshFuture = cubit.refreshAttendances();
+      final refreshFuture = cubit.refreshAttendances();
 
-        // Tidak memicu duplicate request ke server (di-reuse)
-        expect(callCount, 1);
+      // Tidak memicu duplicate request ke server (di-reuse)
+      expect(callCount, 1);
 
-        backgroundCompleter.complete(const Right(sampleResult));
-        await Future.wait([backgroundFuture, refreshFuture]);
+      backgroundCompleter.complete(const Right(sampleResult));
+      await Future.wait([backgroundFuture, refreshFuture]);
 
-        expect(cubit.state, isA<AttendanceLoaded>());
-        final loaded = cubit.state as AttendanceLoaded;
-        expect(loaded.attendances.length, 1);
-        expect(loaded.isFromCache, isFalse);
-        expect(callCount, 1);
-      },
-    );
+      expect(cubit.state, isA<AttendanceLoaded>());
+      final loaded = cubit.state as AttendanceLoaded;
+      expect(loaded.attendances.length, 1);
+      expect(loaded.isFromCache, isFalse);
+      expect(callCount, 1);
+    });
 
-    test(
-      'fetchAttendances drops duplicate concurrent call with same key when '
-      'not refresh',
-      () async {
-        final completer = Completer<Either<Failure, AttendanceResult>>();
-        when(() => mockUseCase(any())).thenAnswer((_) => completer.future);
+    test('fetchAttendances drops duplicate concurrent call with same key when '
+        'not refresh', () async {
+      final completer = Completer<Either<Failure, AttendanceResult>>();
+      when(() => mockUseCase(any())).thenAnswer((_) => completer.future);
 
-        final firstFuture = cubit.fetchAttendances();
-        final secondFuture = cubit.fetchAttendances();
+      final firstFuture = cubit.fetchAttendances();
+      final secondFuture = cubit.fetchAttendances();
 
-        completer.complete(const Right(sampleResult));
-        await Future.wait([firstFuture, secondFuture]);
+      completer.complete(const Right(sampleResult));
+      await Future.wait([firstFuture, secondFuture]);
 
-        verify(() => mockUseCase(any())).called(1);
-      },
-    );
+      verify(() => mockUseCase(any())).called(1);
+    });
 
-    test(
-      'fetchAttendances returns AppFetchResult.cancelled when cancelled '
-      'and does not emit error state',
-      () async {
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Left(RequestCancelledFailure()),
-        );
+    test('fetchAttendances returns AppFetchResult.cancelled when cancelled '
+        'and does not emit error state', () async {
+      when(
+        () => mockUseCase(any()),
+      ).thenAnswer((_) async => const Left(RequestCancelledFailure()));
 
-        final result = await cubit.fetchAttendances();
+      final result = await cubit.fetchAttendances();
 
-        expect(result, AppFetchResult.cancelled);
-        expect(cubit.state, const AttendanceLoading());
-      },
-    );
+      expect(result, AppFetchResult.cancelled);
+      expect(cubit.state, const AttendanceLoading());
+    });
   });
 }

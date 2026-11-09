@@ -25,10 +25,7 @@ class HomeQuickActions extends StatelessWidget {
   final VoidCallback? onCheckpointPressed;
 
   void _defaultOnAbsensi(BuildContext context) {
-    AppSnackbar.show(
-      context,
-      message: 'Membuka pemindai Absensi...',
-    );
+    AppSnackbar.show(context, message: 'Membuka pemindai Absensi...');
   }
 
   void _defaultOnCheckpoint(BuildContext context) {
@@ -65,11 +62,7 @@ class HomeQuickActions extends StatelessWidget {
             return Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                absensiBtn,
-                AppSpacing.vGapSm,
-                checkpointBtn,
-              ],
+              children: [absensiBtn, AppSpacing.vGapSm, checkpointBtn],
             );
           }
 
@@ -109,18 +102,12 @@ class _QuickActionButton extends StatelessWidget {
       label: semanticLabel,
       child: AppButton(
         style: AppButtonColor.elevated,
-        size: AppButtonSize.custom(
-          height: 72,
-          hPadding: AppSpacing.space200,
-        ),
+        size: AppButtonSize.custom(height: 72, hPadding: AppSpacing.space200),
         onPressed: onPressed,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppSvgIcon.color(
-              iconPath,
-              size: 40,
-            ),
+            AppSvgIcon.color(iconPath, size: 40),
             AppSpacing.hGapSm,
             Flexible(
               child: Text(

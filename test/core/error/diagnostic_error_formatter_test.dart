@@ -76,15 +76,17 @@ void main() {
         expect(result.contains(sensitivePath), isFalse);
       });
 
-      test('handles FileSystemException without OSError cleanly without paths',
-          () {
-        const sensitivePath = '/storage/emulated/0/DCIM/photo.jpg';
-        const error = FileSystemException('Write failed', sensitivePath);
+      test(
+        'handles FileSystemException without OSError cleanly without paths',
+        () {
+          const sensitivePath = '/storage/emulated/0/DCIM/photo.jpg';
+          const error = FileSystemException('Write failed', sensitivePath);
 
-        final result = formatter.format(error);
-        expect(result, equals('Kode: STORAGE_IO_ERROR (Write failed)'));
-        expect(result.contains('/storage/emulated/0'), isFalse);
-      });
+          final result = formatter.format(error);
+          expect(result, equals('Kode: STORAGE_IO_ERROR (Write failed)'));
+          expect(result.contains('/storage/emulated/0'), isFalse);
+        },
+      );
 
       test(
         'sanitizes PlatformException and masks internal paths in message',
@@ -141,17 +143,11 @@ void main() {
         );
       });
 
-      test(
-        'formats ServerException with empty errorCode without trailing '
-        'underscore',
-        () {
-          const error = ServerException('Internal server error', 500, '');
-          expect(
-            formatter.format(error),
-            equals('Kode: SRV [500]'),
-          );
-        },
-      );
+      test('formats ServerException with empty errorCode without trailing '
+          'underscore', () {
+        const error = ServerException('Internal server error', 500, '');
+        expect(formatter.format(error), equals('Kode: SRV [500]'));
+      });
 
       test('formats Network exceptions to appropriate domain tokens', () {
         expect(
@@ -184,10 +180,7 @@ void main() {
 
       test('formats ConfigurationSecurityException to SEC_CONFIG_ERROR', () {
         const error = ConfigurationSecurityException('Insecure SSL pinned');
-        expect(
-          formatter.format(error),
-          equals('Kode: SEC_CONFIG_ERROR'),
-        );
+        expect(formatter.format(error), equals('Kode: SEC_CONFIG_ERROR'));
       });
 
       test('formats CacheException to STORAGE_CACHE_ERROR', () {
@@ -242,27 +235,23 @@ void main() {
         test(
           'resolves to DevDiagnosticErrorFormatter when isProduction is false',
           () {
-            const formatter =
-                DefaultDiagnosticErrorFormatter(isProduction: false);
+            const formatter = DefaultDiagnosticErrorFormatter(
+              isProduction: false,
+            );
             final error = StateError('Debug info');
             expect(formatter.format(error), equals('Bad state: Debug info'));
           },
         );
 
-        test(
-          'resolves to ProductionDiagnosticErrorFormatter when isProduction '
-          'is true',
-          () {
-            const formatter =
-                DefaultDiagnosticErrorFormatter(isProduction: true);
-            final error = StateError('Debug info');
-            expect(
-              formatter.format(error, domainPrefix: 'CAM'),
-              equals('Kode: CAM_UNEXPECTED (StateError)'),
-            );
-          },
-        );
-
+        test('resolves to ProductionDiagnosticErrorFormatter when isProduction '
+            'is true', () {
+          const formatter = DefaultDiagnosticErrorFormatter(isProduction: true);
+          final error = StateError('Debug info');
+          expect(
+            formatter.format(error, domainPrefix: 'CAM'),
+            equals('Kode: CAM_UNEXPECTED (StateError)'),
+          );
+        });
       },
     );
 
@@ -285,14 +274,16 @@ void main() {
         expect(result, equals('Bad state: Dev trace'));
       });
 
-      test('respects formatter when provided to formatError (Pure DI / DIP)',
-          () {
-        final result = DiagnosticErrorFormatter.formatError(
-          Exception('Any error'),
-          formatter: const _StubDiagnosticFormatter(),
-        );
-        expect(result, equals('CUSTOM_STUB_TOKEN'));
-      });
+      test(
+        'respects formatter when provided to formatError (Pure DI / DIP)',
+        () {
+          final result = DiagnosticErrorFormatter.formatError(
+            Exception('Any error'),
+            formatter: const _StubDiagnosticFormatter(),
+          );
+          expect(result, equals('CUSTOM_STUB_TOKEN'));
+        },
+      );
     });
   });
 }

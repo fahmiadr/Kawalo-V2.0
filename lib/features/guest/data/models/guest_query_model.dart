@@ -46,6 +46,12 @@ class GuestQueryModel extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [search, limit, offset, startDate, endDate, createdBy];
+  List<Object?> get props => [
+    search,
+    limit,
+    offset,
+    startDate,
+    endDate,
+    createdBy,
+  ];
 }

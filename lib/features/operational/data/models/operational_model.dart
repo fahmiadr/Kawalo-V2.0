@@ -42,14 +42,7 @@ class DutyTimelineModel extends Equatable {
   final String? stateDt;
 
   @override
-  List<Object?> get props => [
-        id,
-        journeyUid,
-        duty,
-        state,
-        dutyDt,
-        stateDt,
-      ];
+  List<Object?> get props => [id, journeyUid, duty, state, dutyDt, stateDt];
 }
 
 /// Model data personil tenaga kerja operasional yang menangani parsing
@@ -121,17 +114,17 @@ class OperationalModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userEmail,
-        totalActivities,
-        userName,
-        userProfilePic,
-        groupName,
-        latestDuty,
-        latestState,
-        latestDutyDt,
-        latestStateDt,
-        dutyDate,
-        timeline,
-      ];
+    id,
+    userEmail,
+    totalActivities,
+    userName,
+    userProfilePic,
+    groupName,
+    latestDuty,
+    latestState,
+    latestDutyDt,
+    latestStateDt,
+    dutyDate,
+    timeline,
+  ];
 }

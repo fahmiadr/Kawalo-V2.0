@@ -9,9 +9,7 @@ void main() {
   Widget buildTestWidget(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
-      home: Scaffold(
-        body: child,
-      ),
+      home: Scaffold(body: child),
     );
   }
 
@@ -46,31 +44,33 @@ void main() {
     testWidgets(
       'renders action button via actionLabel in default AppEmptyState',
       (tester) async {
-      var actionTriggered = false;
+        var actionTriggered = false;
 
-      await tester.pumpWidget(
-        buildTestWidget(
-          AppEmptyState(
-            icon: const Icon(Icons.inbox),
-            title: 'Kotak masuk kosong',
-            description: 'Pesan Anda akan muncul di sini.',
-            actionLabel: 'Perbarui',
-            onActionPressed: () => actionTriggered = true,
+        await tester.pumpWidget(
+          buildTestWidget(
+            AppEmptyState(
+              icon: const Icon(Icons.inbox),
+              title: 'Kotak masuk kosong',
+              description: 'Pesan Anda akan muncul di sini.',
+              actionLabel: 'Perbarui',
+              onActionPressed: () => actionTriggered = true,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Perbarui'), findsOneWidget);
-      expect(find.byType(AppButton), findsOneWidget);
-      await tester.tap(find.text('Perbarui'));
-      await tester.pumpAndSettle();
+        expect(find.text('Perbarui'), findsOneWidget);
+        expect(find.byType(AppButton), findsOneWidget);
+        await tester.tap(find.text('Perbarui'));
+        await tester.pumpAndSettle();
 
-      expect(actionTriggered, isTrue);
-    });
+        expect(actionTriggered, isTrue);
+      },
+    );
 
-    testWidgets('renders custom action widget in default AppEmptyState',
-        (tester) async {
+    testWidgets('renders custom action widget in default AppEmptyState', (
+      tester,
+    ) async {
       var actionTriggered = false;
 
       await tester.pumpWidget(
@@ -95,39 +95,42 @@ void main() {
       expect(actionTriggered, isTrue);
     });
 
-    testWidgets('renders AppEmptyState.search with search icon and actionLabel',
-        (tester) async {
-      var resetTapped = false;
+    testWidgets(
+      'renders AppEmptyState.search with search icon and actionLabel',
+      (tester) async {
+        var resetTapped = false;
 
-      await tester.pumpWidget(
-        buildTestWidget(
-          AppEmptyState.search(
-            title: 'Tidak ada hasil ditemukan',
-            description: 'Coba ubah kata kunci pencarian Anda.',
-            actionLabel: 'Reset Filter & Pencarian',
-            onActionPressed: () => resetTapped = true,
+        await tester.pumpWidget(
+          buildTestWidget(
+            AppEmptyState.search(
+              title: 'Tidak ada hasil ditemukan',
+              description: 'Coba ubah kata kunci pencarian Anda.',
+              actionLabel: 'Reset Filter & Pencarian',
+              onActionPressed: () => resetTapped = true,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppSvgIcon), findsOneWidget);
-      expect(find.text('Tidak ada hasil ditemukan'), findsOneWidget);
-      expect(
-        find.text('Coba ubah kata kunci pencarian Anda.'),
-        findsOneWidget,
-      );
-      expect(find.text('Reset Filter & Pencarian'), findsOneWidget);
-      expect(find.byType(AppButton), findsOneWidget);
+        expect(find.byType(AppSvgIcon), findsOneWidget);
+        expect(find.text('Tidak ada hasil ditemukan'), findsOneWidget);
+        expect(
+          find.text('Coba ubah kata kunci pencarian Anda.'),
+          findsOneWidget,
+        );
+        expect(find.text('Reset Filter & Pencarian'), findsOneWidget);
+        expect(find.byType(AppButton), findsOneWidget);
 
-      await tester.tap(find.text('Reset Filter & Pencarian'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Reset Filter & Pencarian'));
+        await tester.pumpAndSettle();
 
-      expect(resetTapped, isTrue);
-    });
+        expect(resetTapped, isTrue);
+      },
+    );
 
-    testWidgets('renders AppEmptyState.search with custom action widget',
-        (tester) async {
+    testWidgets('renders AppEmptyState.search with custom action widget', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           const AppEmptyState.search(
@@ -142,8 +145,9 @@ void main() {
       expect(find.text('Aksi Kustom'), findsOneWidget);
     });
 
-    testWidgets('renders AppEmptyState.error with alert icon and retryLabel',
-        (tester) async {
+    testWidgets('renders AppEmptyState.error with alert icon and retryLabel', (
+      tester,
+    ) async {
       var retryTapped = false;
 
       await tester.pumpWidget(

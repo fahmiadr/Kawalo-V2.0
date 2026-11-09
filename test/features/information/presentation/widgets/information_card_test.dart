@@ -13,16 +13,11 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/informat
 
 Widget _buildCardTestApp(InformationItemEntity item, {VoidCallback? onTap}) {
   return MaterialApp(
-    builder: (context, child) => M3ETheme(
-      data: AppTheme.m3eLight(),
-      child: child!,
-    ),
+    builder: (context, child) =>
+        M3ETheme(data: AppTheme.m3eLight(), child: child!),
     home: Scaffold(
       body: SingleChildScrollView(
-        child: InformationCard(
-          item: item,
-          onTap: onTap,
-        ),
+        child: InformationCard(item: item, onTap: onTap),
       ),
     ),
   );
@@ -31,28 +26,30 @@ Widget _buildCardTestApp(InformationItemEntity item, {VoidCallback? onTap}) {
 void main() {
   group('InformationCard Tests', () {
     testWidgets(
-        'renders basic information metadata without collage when no photos',
-        (tester) async {
-      const item = InformationItemEntity(
-        id: 'info-1',
-        title: 'Pengumuman Penting',
-        text: 'Ini adalah deskripsi pengumuman penting.',
-        feedType: 'GENERAL',
-        feedDt: '2026-09-30 08:00:00',
-        userName: 'Ahmad Santoso',
-        photos: [],
-      );
+      'renders basic information metadata without collage when no photos',
+      (tester) async {
+        const item = InformationItemEntity(
+          id: 'info-1',
+          title: 'Pengumuman Penting',
+          text: 'Ini adalah deskripsi pengumuman penting.',
+          feedType: 'GENERAL',
+          feedDt: '2026-09-30 08:00:00',
+          userName: 'Ahmad Santoso',
+          photos: [],
+        );
 
-      await tester.pumpWidget(_buildCardTestApp(item));
+        await tester.pumpWidget(_buildCardTestApp(item));
 
-      expect(find.text('Pengumuman Penting'), findsOneWidget);
-      expect(find.text('Ahmad Santoso'), findsOneWidget);
-      expect(find.text('Informasi Umum'), findsOneWidget);
-      expect(find.byType(AppImageCollage), findsNothing);
-    });
+        expect(find.text('Pengumuman Penting'), findsOneWidget);
+        expect(find.text('Ahmad Santoso'), findsOneWidget);
+        expect(find.text('Informasi Umum'), findsOneWidget);
+        expect(find.byType(AppImageCollage), findsNothing);
+      },
+    );
 
-    testWidgets('renders file attachment tag when hasFileAttachment is true',
-        (tester) async {
+    testWidgets('renders file attachment tag when hasFileAttachment is true', (
+      tester,
+    ) async {
       const item = InformationItemEntity(
         id: 'info-2',
         title: 'Laporan Kerusakan',
@@ -68,75 +65,75 @@ void main() {
     });
 
     testWidgets(
-        'renders AppImageCollage when photos exist and opens AppImageViewer',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      const item = InformationItemEntity(
-        id: 'info-3',
-        title: 'Foto Kegiatan Patroli',
-        photos: [
-          'https://example.com/p1.jpg',
-          'https://example.com/p2.jpg',
-          'https://example.com/p3.jpg',
-        ],
-      );
+      'renders AppImageCollage when photos exist and opens AppImageViewer',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        const item = InformationItemEntity(
+          id: 'info-3',
+          title: 'Foto Kegiatan Patroli',
+          photos: [
+            'https://example.com/p1.jpg',
+            'https://example.com/p2.jpg',
+            'https://example.com/p3.jpg',
+          ],
+        );
 
-      await tester.pumpWidget(_buildCardTestApp(item));
+        await tester.pumpWidget(_buildCardTestApp(item));
 
-      expect(find.byType(AppImageCollage), findsOneWidget);
+        expect(find.byType(AppImageCollage), findsOneWidget);
 
-      // Tap on image in collage to open AppImageViewer
-      await tester.tap(find.bySemanticsLabel('Foto 1 dari 3'));
-      await tester.pumpAndSettle();
+        // Tap on image in collage to open AppImageViewer
+        await tester.tap(find.bySemanticsLabel('Foto 1 dari 3'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppImageViewer), findsOneWidget);
-      expect(find.text('1 / 3'), findsOneWidget);
+        expect(find.byType(AppImageViewer), findsOneWidget);
+        expect(find.text('1 / 3'), findsOneWidget);
 
-      // Tap close button in viewer
-      await tester.tap(find.byType(AppIconButton));
-      await tester.pumpAndSettle();
+        // Tap close button in viewer
+        await tester.tap(find.byType(AppIconButton));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppImageViewer), findsNothing);
-      handle.dispose();
-    });
-
-    testWidgets('renders selected state with checkmark when isSelected is true',
-        (tester) async {
-      const item = InformationItemEntity(
-        id: 'info-4',
-        title: 'Laporan Ronda Malam',
-        feedType: 'GENERAL',
-        photos: [],
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          builder: (context, child) => M3ETheme(
-            data: AppTheme.m3eLight(),
-            child: child!,
-          ),
-          home: const Scaffold(
-            body: InformationCard(
-              item: item,
-              isSelectionMode: true,
-              isSelected: true,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AppSelectionLeading), findsOneWidget);
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.check,
-        ),
-        findsWidgets,
-      );
-    });
+        expect(find.byType(AppImageViewer), findsNothing);
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'renders disabled locked state with 38% opacity '
+      'renders selected state with checkmark when isSelected is true',
+      (tester) async {
+        const item = InformationItemEntity(
+          id: 'info-4',
+          title: 'Laporan Ronda Malam',
+          feedType: 'GENERAL',
+          photos: [],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
+            home: const Scaffold(
+              body: InformationCard(
+                item: item,
+                isSelectionMode: true,
+                isSelected: true,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AppSelectionLeading), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.check,
+          ),
+          findsWidgets,
+        );
+      },
+    );
+
+    testWidgets('renders disabled locked state with 38% opacity '
         'when isSelectable is false', (tester) async {
       const item = InformationItemEntity(
         id: 'info-5',
@@ -147,10 +144,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          builder: (context, child) => M3ETheme(
-            data: AppTheme.m3eLight(),
-            child: child!,
-          ),
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
           home: const Scaffold(
             body: InformationCard(
               item: item,
@@ -176,8 +171,9 @@ void main() {
       );
     });
 
-    testWidgets('triggers onLongPress callback when long pressed',
-        (tester) async {
+    testWidgets('triggers onLongPress callback when long pressed', (
+      tester,
+    ) async {
       var longPressed = false;
       const item = InformationItemEntity(
         id: 'info-6',
@@ -188,10 +184,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          builder: (context, child) => M3ETheme(
-            data: AppTheme.m3eLight(),
-            child: child!,
-          ),
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
           home: Scaffold(
             body: InformationCard(
               item: item,
@@ -210,8 +204,9 @@ void main() {
       expect(longPressed, isTrue);
     });
 
-    testWidgets('does NOT render arrow chevron icon on InformationCard',
-        (tester) async {
+    testWidgets('does NOT render arrow chevron icon on InformationCard', (
+      tester,
+    ) async {
       const item = InformationItemEntity(
         id: 'info-7',
         title: 'Pengumuman Tanpa Arrow',
@@ -257,10 +252,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: Scaffold(
               body: InformationCard(
                 item: item,
@@ -312,10 +305,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: const Scaffold(
               body: InformationCard(
                 item: ownItem,
@@ -359,10 +350,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: const Scaffold(
               body: InformationCard(
                 item: otherItem,
@@ -409,10 +398,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: const Scaffold(
               body: InformationCard(
                 item: item,
@@ -457,10 +444,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: const Scaffold(
               body: InformationCard(
                 item: item,
@@ -508,10 +493,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
+            builder: (context, child) =>
+                M3ETheme(data: AppTheme.m3eLight(), child: child!),
             home: const Scaffold(
               body: InformationCard(
                 item: item,

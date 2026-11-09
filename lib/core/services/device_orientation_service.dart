@@ -181,10 +181,9 @@ class DefaultDeviceOrientationSensorService
     DeviceOrientation initialOrientation = DeviceOrientation.portraitUp,
     this.strategy = const AospDeviceOrientationStrategy(),
   }) : _currentOrientation = initialOrientation {
-    final stream = accelerometerStream ??
-        accelerometerEventStream(
-          samplingPeriod: SensorInterval.uiInterval,
-        );
+    final stream =
+        accelerometerStream ??
+        accelerometerEventStream(samplingPeriod: SensorInterval.uiInterval);
     _subscription = stream.listen(
       _handleAccelerometerEvent,
       onError: (_) {

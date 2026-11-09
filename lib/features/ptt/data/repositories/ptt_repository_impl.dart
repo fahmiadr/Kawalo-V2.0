@@ -110,9 +110,9 @@ class PttRepositoryImpl implements PttRepository {
     return dataSource.eventStream
         .where((event) => event.eventType == 'floorStateChanged')
         .map((event) {
-      final dto = PttFloorStateDto.fromMap(event.rawMap);
-      return PttMapper.toFloorStateEntity(dto);
-    });
+          final dto = PttFloorStateDto.fromMap(event.rawMap);
+          return PttMapper.toFloorStateEntity(dto);
+        });
   }
 
   @override
@@ -120,9 +120,10 @@ class PttRepositoryImpl implements PttRepository {
     return dataSource.eventStream
         .where((event) => event.eventType == 'connectionStatusChanged')
         .map((event) {
-      final statusStr = event.rawMap['status']?.toString() ?? 'DISCONNECTED';
-      return PttMapper.toConnectionStatus(statusStr);
-    });
+          final statusStr =
+              event.rawMap['status']?.toString() ?? 'DISCONNECTED';
+          return PttMapper.toConnectionStatus(statusStr);
+        });
   }
 
   @override
@@ -130,8 +131,8 @@ class PttRepositoryImpl implements PttRepository {
     return dataSource.eventStream
         .where((event) => event.eventType == 'memberCountChanged')
         .map((event) {
-      return (event.rawMap['memberCount'] as num?)?.toInt() ?? 1;
-    });
+          return (event.rawMap['memberCount'] as num?)?.toInt() ?? 1;
+        });
   }
 
   @override

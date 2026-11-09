@@ -5,45 +5,48 @@ import 'package:kawalo_mobile/core/widgets/app_filter_bottom_sheet.dart';
 
 void main() {
   group('AppFilterBottomSheet Generic Slot Widget Tests', () {
-    testWidgets('renders title, subtitle, reset, custom slot, and apply button',
-        (tester) async {
-      var resetCalled = false;
-      var applyCalled = false;
+    testWidgets(
+      'renders title, subtitle, reset, custom slot, and apply button',
+      (tester) async {
+        var resetCalled = false;
+        var applyCalled = false;
 
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: Scaffold(
-            body: AppFilterBottomSheet(
-              title: 'Filter Kategori',
-              subtitle: 'Pilih kategori item',
-              isResetEnabled: true,
-              onReset: () => resetCalled = true,
-              onApply: () => applyCalled = true,
-              child: const Text('Slot Konten Filter Khusus'),
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: Scaffold(
+              body: AppFilterBottomSheet(
+                title: 'Filter Kategori',
+                subtitle: 'Pilih kategori item',
+                isResetEnabled: true,
+                onReset: () => resetCalled = true,
+                onApply: () => applyCalled = true,
+                child: const Text('Slot Konten Filter Khusus'),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Filter Kategori'), findsOneWidget);
-      expect(find.text('Pilih kategori item'), findsOneWidget);
-      expect(find.text('Reset'), findsOneWidget);
-      expect(find.text('Slot Konten Filter Khusus'), findsOneWidget);
-      expect(find.text('Terapkan'), findsOneWidget);
+        expect(find.text('Filter Kategori'), findsOneWidget);
+        expect(find.text('Pilih kategori item'), findsOneWidget);
+        expect(find.text('Reset'), findsOneWidget);
+        expect(find.text('Slot Konten Filter Khusus'), findsOneWidget);
+        expect(find.text('Terapkan'), findsOneWidget);
 
-      await tester.tap(find.text('Reset'));
-      await tester.pumpAndSettle();
-      expect(resetCalled, isTrue);
+        await tester.tap(find.text('Reset'));
+        await tester.pumpAndSettle();
+        expect(resetCalled, isTrue);
 
-      await tester.tap(find.text('Terapkan'));
-      await tester.pumpAndSettle();
-      expect(applyCalled, isTrue);
-    });
+        await tester.tap(find.text('Terapkan'));
+        await tester.pumpAndSettle();
+        expect(applyCalled, isTrue);
+      },
+    );
 
-    testWidgets('disables reset button when isResetEnabled is false',
-        (tester) async {
+    testWidgets('disables reset button when isResetEnabled is false', (
+      tester,
+    ) async {
       var resetCalled = false;
 
       await tester.pumpWidget(
@@ -66,8 +69,9 @@ void main() {
       expect(resetCalled, isFalse);
     });
 
-    testWidgets('respects isScrollable false without SingleChildScrollView',
-        (tester) async {
+    testWidgets('respects isScrollable false without SingleChildScrollView', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -87,8 +91,9 @@ void main() {
       expect(find.byType(SingleChildScrollView), findsNothing);
     });
 
-    testWidgets('respects isRoot false without outer SafeArea or ClipRect',
-        (tester) async {
+    testWidgets('respects isRoot false without outer SafeArea or ClipRect', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -158,8 +163,9 @@ void main() {
       expect(find.text('Terapkan'), findsOneWidget);
     });
 
-    testWidgets('keeps apply button sticky and visible when child is tall',
-        (tester) async {
+    testWidgets('keeps apply button sticky and visible when child is tall', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 600);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -173,10 +179,7 @@ void main() {
               child: Column(
                 children: List.generate(
                   30,
-                  (i) => SizedBox(
-                    height: 50,
-                    child: Text('Item $i'),
-                  ),
+                  (i) => SizedBox(height: 50, child: Text('Item $i')),
                 ),
               ),
             ),
@@ -209,10 +212,7 @@ void main() {
                   constraints: const BoxConstraints(maxHeight: 500),
                   child: const AppFilterBottomSheet(
                     title: 'Wrap Test',
-                    child: SizedBox(
-                      height: 80,
-                      child: Text('Small Content'),
-                    ),
+                    child: SizedBox(height: 80, child: Text('Small Content')),
                   ),
                 ),
               ),
@@ -237,10 +237,7 @@ void main() {
                   child: const AppFilterBottomSheet(
                     title: 'Expand Test',
                     expand: true,
-                    child: SizedBox(
-                      height: 80,
-                      child: Text('Small Content'),
-                    ),
+                    child: SizedBox(height: 80, child: Text('Small Content')),
                   ),
                 ),
               ),

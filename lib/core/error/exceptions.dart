@@ -53,19 +53,12 @@ class ConnectionRefusedException extends NetworkException {
 }
 
 /// Jenis batas waktu permintaan jaringan.
-enum TimeoutType {
-  connect,
-  send,
-  receive,
-}
+enum TimeoutType { connect, send, receive }
 
 /// Exception saat terjadi batas waktu (timeout) pada koneksi, pengiriman,
 /// atau penerimaan.
 class TimeoutException extends NetworkException {
-  const TimeoutException(
-    super.message, {
-    this.type,
-  });
+  const TimeoutException(super.message, {this.type});
 
   final TimeoutType? type;
 
@@ -96,9 +89,7 @@ class CacheException extends AppException {
 /// Exception saat permintaan jaringan dibatalkan secara eksplisit oleh klien
 /// (misal karena request baru menggantikan pencarian lama via CancelToken).
 class RequestCancelledException extends AppException {
-  const RequestCancelledException([
-    super.message = 'Permintaan dibatalkan.',
-  ]);
+  const RequestCancelledException([super.message = 'Permintaan dibatalkan.']);
 }
 
 /// Exception yang dilempar ketika konfigurasi lingkungan melanggar

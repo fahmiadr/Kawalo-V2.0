@@ -27,6 +27,7 @@ import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.d
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:mocktail/mocktail.dart';
+
 import '../../fixtures/guest_fixtures.dart';
 
 class MockGetGuestsUseCase extends Mock implements GetGuestsUseCase {}
@@ -62,12 +63,11 @@ MockGuestCubit createMockGuestCubit({
     ),
   ).thenAnswer((_) async => AppFetchResult.success);
   when(
-    () => mockCubit.refreshGuests(
-      search: any(named: 'search'),
-    ),
+    () => mockCubit.refreshGuests(search: any(named: 'search')),
   ).thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetDateFilter)
-      .thenAnswer((_) async => AppFetchResult.success);
+  when(
+    mockCubit.resetDateFilter,
+  ).thenAnswer((_) async => AppFetchResult.success);
   when(mockCubit.resetFilters).thenAnswer((_) async => AppFetchResult.success);
   when(mockCubit.loadGroupMembers).thenAnswer((_) async => const Right([]));
   return mockCubit;
@@ -90,16 +90,12 @@ void main() {
     GuestCubit? cubit,
     AuthSessionEntity? session = defaultSession,
   }) {
-    final effectiveCubit = cubit ??
-        createMockGuestCubit(
-          guests: initialGuests,
-          greeting: initialGreeting,
-        );
+    final effectiveCubit =
+        cubit ??
+        createMockGuestCubit(guests: initialGuests, greeting: initialGreeting);
     Widget app = M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: GuestScreen(
-        cubit: effectiveCubit,
-      ),
+      home: GuestScreen(cubit: effectiveCubit),
     );
     if (session != null) {
       app = BlocProvider<UserSessionCubit>.value(
@@ -129,46 +125,48 @@ void main() {
     );
 
     testWidgets(
-        'toggles dynamically between Title and Search Bar via Top Bar trailing '
-        'button', (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+      'toggles dynamically between Title and Search Bar via Top Bar trailing '
+      'button',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      final searchToggleBtn = find.bySemanticsLabel('Cari data tamu');
-      expect(searchToggleBtn, findsOneWidget);
-      expect(find.text('Data tamu'), findsOneWidget);
-      expect(find.byType(AppSearchBar), findsNothing);
+        final searchToggleBtn = find.bySemanticsLabel('Cari data tamu');
+        expect(searchToggleBtn, findsOneWidget);
+        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.byType(AppSearchBar), findsNothing);
 
-      final titleRect = tester.getRect(find.text('Data tamu'));
-      final backRect = tester.getRect(find.bySemanticsLabel('Kembali'));
-      expect(titleRect.left - backRect.right, equals(8));
+        final titleRect = tester.getRect(find.text('Data tamu'));
+        final backRect = tester.getRect(find.bySemanticsLabel('Kembali'));
+        expect(titleRect.left - backRect.right, equals(8));
 
-      // Tap search icon button -> opens search bar
-      await tester.tap(searchToggleBtn);
-      await tester.pumpAndSettle();
+        // Tap search icon button -> opens search bar
+        await tester.tap(searchToggleBtn);
+        await tester.pumpAndSettle();
 
-      expect(find.text('Data tamu'), findsNothing);
-      expect(find.byType(AppSearchBar), findsOneWidget);
-      expect(find.text('Cari data tamu'), findsOneWidget);
-      expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Data tamu'), findsNothing);
+        expect(find.byType(AppSearchBar), findsOneWidget);
+        expect(find.text('Cari data tamu'), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
 
-      final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
-      expect(cancelToggleBtn, findsOneWidget);
+        final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
+        expect(cancelToggleBtn, findsOneWidget);
 
-      final searchBarRect = tester.getRect(find.byType(AppSearchBar));
-      final cancelRect = tester.getRect(cancelToggleBtn);
-      expect(searchBarRect.left, equals(titleRect.left));
-      expect(searchBarRect.left - backRect.right, equals(8));
-      expect(cancelRect.left - searchBarRect.right, equals(8));
+        final searchBarRect = tester.getRect(find.byType(AppSearchBar));
+        final cancelRect = tester.getRect(cancelToggleBtn);
+        expect(searchBarRect.left, equals(titleRect.left));
+        expect(searchBarRect.left - backRect.right, equals(8));
+        expect(cancelRect.left - searchBarRect.right, equals(8));
 
-      // Tap cancel icon button -> restores title
-      await tester.tap(cancelToggleBtn);
-      await tester.pumpAndSettle();
+        // Tap cancel icon button -> restores title
+        await tester.tap(cancelToggleBtn);
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppSearchBar), findsNothing);
-      expect(find.text('Data tamu'), findsOneWidget);
-      expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
-    });
+        expect(find.byType(AppSearchBar), findsNothing);
+        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
+      },
+    );
 
     testWidgets('renders WITHOUT navigation bar', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
@@ -177,8 +175,9 @@ void main() {
       expect(find.byType(AppNavigationBar), findsNothing);
     });
 
-    testWidgets('renders with surface background color matching M3 standard',
-        (WidgetTester tester) async {
+    testWidgets('renders with surface background color matching M3 standard', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -187,8 +186,9 @@ void main() {
       expect(scaffold.backgroundColor, colorScheme.surface);
     });
 
-    testWidgets('renders guest cards and allows filtering via search',
-        (WidgetTester tester) async {
+    testWidgets('renders guest cards and allows filtering via search', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -266,8 +266,9 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('tapping guest card opens standard M3E guest detail screen',
-        (WidgetTester tester) async {
+    testWidgets('tapping guest card opens standard M3E guest detail screen', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -278,8 +279,9 @@ void main() {
       expect(find.text('Detail kunjungan'), findsOneWidget);
     });
 
-    testWidgets('pull-to-refresh triggers data refresh indicator',
-        (WidgetTester tester) async {
+    testWidgets('pull-to-refresh triggers data refresh indicator', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -288,9 +290,7 @@ void main() {
       });
 
       final mockCubit = createMockGuestCubit();
-      await tester.pumpWidget(
-        buildTestWidget(cubit: mockCubit),
-      );
+      await tester.pumpWidget(buildTestWidget(cubit: mockCubit));
       await tester.pumpAndSettle();
 
       expect(find.byType(AppRefreshIndicator), findsOneWidget);
@@ -303,13 +303,15 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      verify(() => mockCubit.refreshGuests(search: any(named: 'search')))
-          .called(1);
+      verify(
+        () => mockCubit.refreshGuests(search: any(named: 'search')),
+      ).called(1);
       expect(find.byType(GuestCard), findsNWidgets(5));
     });
 
-    testWidgets('pull-to-refresh reactively updates greeting and guest data',
-        (WidgetTester tester) async {
+    testWidgets('pull-to-refresh reactively updates greeting and guest data', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -334,8 +336,9 @@ void main() {
       expect(find.text('Data tamu berhasil diperbarui.'), findsOneWidget);
     });
 
-    testWidgets('renders Extended FAB Tambah tamu',
-        (WidgetTester tester) async {
+    testWidgets('renders Extended FAB Tambah tamu', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -345,28 +348,31 @@ void main() {
     });
 
     testWidgets(
-        'renders safely under 200% dynamic text scaling without overflow',
-        (WidgetTester tester) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      'renders safely under 200% dynamic text scaling without overflow',
+      (WidgetTester tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('Data tamu'), findsOneWidget);
-      expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
-      expect(find.byType(GuestCard), findsWidgets);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
+        expect(find.byType(GuestCard), findsWidgets);
+      },
+    );
 
-    testWidgets('renders Belum ada data tamu when list is empty without filter',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget(initialGuests: []));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'renders Belum ada data tamu when list is empty without filter',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(initialGuests: []));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Belum ada data tamu'), findsOneWidget);
-      expect(find.text('Data tamu tidak ditemukan'), findsNothing);
-    });
+        expect(find.text('Belum ada data tamu'), findsOneWidget);
+        expect(find.text('Data tamu tidak ditemukan'), findsNothing);
+      },
+    );
 
     testWidgets(
       'renders Data tamu tidak ditemukan with reset button when search yields '
@@ -448,9 +454,7 @@ void main() {
             value: connectivityCubit,
             child: M3EMaterialApp(
               data: AppTheme.m3eLight(),
-              home: GuestScreen(
-                cubit: guestCubit,
-              ),
+              home: GuestScreen(cubit: guestCubit),
             ),
           ),
         );
@@ -488,61 +492,55 @@ void main() {
       },
     );
 
-    testWidgets(
-      'focusing search bar does NOT trigger remote fetchGuests',
-      (WidgetTester tester) async {
-        registerFallbackValue(const GetGuestsParams());
-        final mockUseCase = MockGetGuestsUseCase();
-        when(() => mockUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            GuestResult(items: GuestFixtures.defaultGuestEntities),
-          ),
-        );
+    testWidgets('focusing search bar does NOT trigger remote fetchGuests', (
+      WidgetTester tester,
+    ) async {
+      registerFallbackValue(const GetGuestsParams());
+      final mockUseCase = MockGetGuestsUseCase();
+      when(() => mockUseCase(any())).thenAnswer(
+        (_) async =>
+            const Right(GuestResult(items: GuestFixtures.defaultGuestEntities)),
+      );
 
-        final guestCubit = GuestCubit(
-          getGuestsUseCase: mockUseCase,
-          deleteGuestUseCase: MockDeleteGuestUseCase(),
-          deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
-        );
+      final guestCubit = GuestCubit(
+        getGuestsUseCase: mockUseCase,
+        deleteGuestUseCase: MockDeleteGuestUseCase(),
+        deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
+      );
 
-        await tester.pumpWidget(
-          M3EMaterialApp(
-            data: AppTheme.m3eLight(),
-            home: GuestScreen(
-              cubit: guestCubit,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          home: GuestScreen(cubit: guestCubit),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Initial fetch on mount called once
-        verify(() => mockUseCase(any())).called(1);
+      // Initial fetch on mount called once
+      verify(() => mockUseCase(any())).called(1);
 
-        // Open and tap/focus search bar without changing text
-        await tester.tap(find.bySemanticsLabel('Cari data tamu'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byType(AppSearchBar));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
+      // Open and tap/focus search bar without changing text
+      await tester.tap(find.bySemanticsLabel('Cari data tamu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(AppSearchBar));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
-        // Must NOT trigger another fetchGuests call
-        verifyNever(() => mockUseCase(any()));
+      // Must NOT trigger another fetchGuests call
+      verifyNever(() => mockUseCase(any()));
 
-        // Entering text DOES trigger search after debounce
-        await tester.enterText(find.byType(AppSearchBar), 'Bambang');
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 400));
-        verify(
-          () => mockUseCase(
-            any(
-              that: predicate<GetGuestsParams>((p) => p.search == 'bambang'),
-            ),
-          ),
-        ).called(1);
+      // Entering text DOES trigger search after debounce
+      await tester.enterText(find.byType(AppSearchBar), 'Bambang');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      verify(
+        () => mockUseCase(
+          any(that: predicate<GetGuestsParams>((p) => p.search == 'bambang')),
+        ),
+      ).called(1);
 
-        await guestCubit.close();
-      },
-    );
+      await guestCubit.close();
+    });
 
     testWidgets(
       'tapping Reset Filter & Pencarian triggers remote fetchGuests exactly '
@@ -668,11 +666,7 @@ void main() {
 
         verify(
           () => mockUseCase(
-            any(
-              that: predicate<GetGuestsParams>(
-                (p) => p.search == 'Bambang',
-              ),
-            ),
+            any(that: predicate<GetGuestsParams>((p) => p.search == 'Bambang')),
           ),
         ).called(1);
 
@@ -715,8 +709,9 @@ void main() {
 
         // Expect search bar to contain 'Bambang' and filter chip to display
         // 'Pekan ini'
-        final searchBar =
-            tester.widget<AppSearchBar>(find.byType(AppSearchBar));
+        final searchBar = tester.widget<AppSearchBar>(
+          find.byType(AppSearchBar),
+        );
         expect(searchBar.controller?.text, 'Bambang');
         expect(find.text('Pekan ini'), findsOneWidget);
 

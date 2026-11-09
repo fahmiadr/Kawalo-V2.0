@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/features/auth/data/datasources/auth_local_data_source.dart';
@@ -47,10 +48,12 @@ void main() {
     test(
       'saveTokens delegates writing access and refresh tokens to storage',
       () async {
-        when(() => mockStorage.saveAccessToken(any()))
-            .thenAnswer((_) async => {});
-        when(() => mockStorage.saveRefreshToken(any()))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockStorage.saveAccessToken(any()),
+        ).thenAnswer((_) async => {});
+        when(
+          () => mockStorage.saveRefreshToken(any()),
+        ).thenAnswer((_) async => {});
         when(
           () => mockStorage.setOnboardingCompleted(
             completed: any(named: 'completed'),
@@ -59,19 +62,20 @@ void main() {
 
         await localDataSource.saveTokens(tTokens);
 
-        verify(() => mockStorage.saveAccessToken('test_access_token'))
-            .called(1);
-        verify(() => mockStorage.saveRefreshToken('test_refresh_token'))
-            .called(1);
         verify(
-          () => mockStorage.setOnboardingCompleted(),
+          () => mockStorage.saveAccessToken('test_access_token'),
         ).called(1);
+        verify(
+          () => mockStorage.saveRefreshToken('test_refresh_token'),
+        ).called(1);
+        verify(() => mockStorage.setOnboardingCompleted()).called(1);
       },
     );
 
     test('getAccessToken retrieves token from storage', () async {
-      when(() => mockStorage.getAccessToken())
-          .thenAnswer((_) async => 'cached_at');
+      when(
+        () => mockStorage.getAccessToken(),
+      ).thenAnswer((_) async => 'cached_at');
 
       final result = await localDataSource.getAccessToken();
 
@@ -79,24 +83,22 @@ void main() {
       verify(() => mockStorage.getAccessToken()).called(1);
     });
 
-    test(
-      'saveUser writes serialized user data to storage',
-      () async {
-        when(() => mockStorage.saveUserData(any())).thenAnswer((_) async => {});
+    test('saveUser writes serialized user data to storage', () async {
+      when(() => mockStorage.saveUserData(any())).thenAnswer((_) async => {});
 
-        await localDataSource.saveUser(tUser);
+      await localDataSource.saveUser(tUser);
 
-        verify(
-          () => mockStorage.saveUserData(jsonEncode(tUser.toJson())),
-        ).called(1);
-      },
-    );
+      verify(
+        () => mockStorage.saveUserData(jsonEncode(tUser.toJson())),
+      ).called(1);
+    });
 
     test(
       'getUser parses and returns UserModel when valid json exists',
       () async {
-        when(() => mockStorage.getUserData())
-            .thenAnswer((_) async => jsonEncode(tUser.toJson()));
+        when(
+          () => mockStorage.getUserData(),
+        ).thenAnswer((_) async => jsonEncode(tUser.toJson()));
 
         final result = await localDataSource.getUser();
 
@@ -106,8 +108,9 @@ void main() {
     );
 
     test('saveSession writes serialized auth session to storage', () async {
-      when(() => mockStorage.saveAuthSession(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockStorage.saveAuthSession(any()),
+      ).thenAnswer((_) async => {});
 
       await localDataSource.saveSession(tSession);
 
@@ -119,8 +122,9 @@ void main() {
     test(
       'getSession parses and returns AuthSessionModel when valid json exists',
       () async {
-        when(() => mockStorage.getAuthSession())
-            .thenAnswer((_) async => jsonEncode(tSession.toJson()));
+        when(
+          () => mockStorage.getAuthSession(),
+        ).thenAnswer((_) async => jsonEncode(tSession.toJson()));
 
         final result = await localDataSource.getSession();
 

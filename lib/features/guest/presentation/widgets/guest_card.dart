@@ -68,10 +68,7 @@ class GuestCard extends StatelessWidget {
       semanticLabel: semanticLabel,
       color: isSelected ? colorScheme.surfaceContainerHighest : null,
       border: isSelected
-          ? BorderSide(
-              color: colorScheme.primary,
-              width: 2,
-            )
+          ? BorderSide(color: colorScheme.primary, width: 2)
           : null,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space200,
@@ -104,10 +101,7 @@ class GuestCard extends StatelessWidget {
                           ),
                         ),
                         AppSpacing.hGapXs,
-                        const AppSvgIcon(
-                          KawaloVectors.arrowRight01,
-                          size: 24,
-                        ),
+                        const AppSvgIcon(KawaloVectors.arrowRight01, size: 24),
                       ],
                     ),
                     Text(
@@ -127,10 +121,7 @@ class GuestCard extends StatelessWidget {
           AppSpacing.vGapSm,
 
           // ── Tag Kategori Tamu ───────────────────────────────────────────
-          AppTag(
-            label: item.displayCategory,
-            variant: AppTagVariant.secondary,
-          ),
+          AppTag(label: item.displayCategory, variant: AppTagVariant.secondary),
 
           // ── Garis Pemisah (AppDivider) ───────────────────────────────────
           const Padding(
@@ -151,9 +142,7 @@ class GuestCard extends StatelessWidget {
             text: item.displayPurpose,
           ),
           AppSpacing.vGap50,
-          _buildTimestampAndStatusRow(
-            context: context,
-          ),
+          _buildTimestampAndStatusRow(context: context),
         ],
       ),
     );
@@ -218,10 +207,7 @@ class GuestCard extends StatelessWidget {
   Widget _buildDefaultAvatar(BuildContext context) {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.cardTag2,
-        size: 40,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.cardTag2, size: 40),
     );
   }
 
@@ -236,10 +222,7 @@ class GuestCard extends StatelessWidget {
 
     return Row(
       children: [
-        AppSvgIcon.color(
-          iconPath,
-          size: 20,
-        ),
+        AppSvgIcon.color(iconPath, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(
@@ -255,9 +238,7 @@ class GuestCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTimestampAndStatusRow({
-    required BuildContext context,
-  }) {
+  Widget _buildTimestampAndStatusRow({required BuildContext context}) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
@@ -273,10 +254,7 @@ class GuestCard extends StatelessWidget {
 
     return Row(
       children: [
-        const AppSvgIcon.color(
-          KawaloColorVectors.timeRotation,
-          size: 20,
-        ),
+        const AppSvgIcon.color(KawaloColorVectors.timeRotation, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(

@@ -62,11 +62,7 @@ const GuestLocalModelSchema = CollectionSchema(
       name: r'guestDestination',
       type: IsarType.string,
     ),
-    r'guestDt': PropertySchema(
-      id: 9,
-      name: r'guestDt',
-      type: IsarType.string,
-    ),
+    r'guestDt': PropertySchema(id: 9, name: r'guestDt', type: IsarType.string),
     r'guestIdentity': PropertySchema(
       id: 10,
       name: r'guestIdentity',
@@ -117,16 +113,8 @@ const GuestLocalModelSchema = CollectionSchema(
       name: r'guestType',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(
-      id: 20,
-      name: r'id',
-      type: IsarType.string,
-    ),
-    r'qrUid': PropertySchema(
-      id: 21,
-      name: r'qrUid',
-      type: IsarType.string,
-    )
+    r'id': PropertySchema(id: 20, name: r'id', type: IsarType.string),
+    r'qrUid': PropertySchema(id: 21, name: r'qrUid', type: IsarType.string),
   },
   estimateSize: _guestLocalModelEstimateSize,
   serialize: _guestLocalModelSerialize,
@@ -144,7 +132,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'id',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'guestName': IndexSchema(
@@ -157,7 +145,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestNumber': IndexSchema(
@@ -170,7 +158,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestNumber',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestIdentity': IndexSchema(
@@ -183,7 +171,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestIdentity',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestIdentityType': IndexSchema(
@@ -196,7 +184,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestIdentityType',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestDt': IndexSchema(
@@ -209,7 +197,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestDt',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'guestPurpose': IndexSchema(
@@ -222,7 +210,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestPurpose',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestDestination': IndexSchema(
@@ -235,7 +223,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestDestination',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestToUserEmail': IndexSchema(
@@ -248,7 +236,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestToUserEmail',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestToUserName': IndexSchema(
@@ -261,7 +249,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestToUserName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestCreatorEmail': IndexSchema(
@@ -274,7 +262,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestCreatorEmail',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestCreatorName': IndexSchema(
@@ -287,7 +275,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestCreatorName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestCategory': IndexSchema(
@@ -300,7 +288,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestCategory',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'qrUid': IndexSchema(
@@ -313,7 +301,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'qrUid',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestAddress': IndexSchema(
@@ -326,7 +314,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestAddress',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestType': IndexSchema(
@@ -339,7 +327,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestType',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestCheckoutByEmail': IndexSchema(
@@ -352,7 +340,7 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestCheckoutByEmail',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
     ),
     r'guestCheckoutByName': IndexSchema(
@@ -365,9 +353,9 @@ const GuestLocalModelSchema = CollectionSchema(
           name: r'guestCheckoutByName',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
@@ -641,7 +629,10 @@ List<IsarLinkBase<dynamic>> _guestLocalModelGetLinks(GuestLocalModel object) {
 }
 
 void _guestLocalModelAttach(
-    IsarCollection<dynamic> col, Id id, GuestLocalModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  GuestLocalModel object,
+) {
   object.isarId = id;
 }
 
@@ -694,8 +685,10 @@ extension GuestLocalModelByIndex on IsarCollection<GuestLocalModel> {
     return putAllByIndex(r'id', objects);
   }
 
-  List<Id> putAllByIdSync(List<GuestLocalModel> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByIdSync(
+    List<GuestLocalModel> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
   }
 }
@@ -712,17 +705,16 @@ extension GuestLocalModelQueryWhereSort
 extension GuestLocalModelQueryWhere
     on QueryBuilder<GuestLocalModel, GuestLocalModel, QWhereClause> {
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      isarIdEqualTo(Id isarId) {
+  isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: isarId, upper: isarId),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
+  isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -745,7 +737,7 @@ extension GuestLocalModelQueryWhere
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
+  isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -754,7 +746,7 @@ extension GuestLocalModelQueryWhere
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
+  isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -763,1202 +755,1399 @@ extension GuestLocalModelQueryWhere
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      isarIdBetween(
+  isarIdBetween(
     Id lowerIsarId,
     Id upperIsarId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerIsarId,
+          includeLower: includeLower,
+          upper: upperIsarId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause> idEqualTo(
-      String id) {
+    String id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'id',
-        value: [id],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'id', value: [id]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      idNotEqualTo(String id) {
+  idNotEqualTo(String id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNameIsNull() {
+  guestNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestName', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNameIsNotNull() {
+  guestNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNameEqualTo(String? guestName) {
+  guestNameEqualTo(String? guestName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestName',
-        value: [guestName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestName', value: [guestName]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNameNotEqualTo(String? guestName) {
+  guestNameNotEqualTo(String? guestName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestName',
-              lower: [],
-              upper: [guestName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestName',
-              lower: [guestName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestName',
+                lower: [],
+                upper: [guestName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestName',
+                lower: [guestName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestName',
-              lower: [guestName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestName',
-              lower: [],
-              upper: [guestName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestName',
+                lower: [guestName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestName',
+                lower: [],
+                upper: [guestName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNumberIsNull() {
+  guestNumberIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestNumber',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestNumber', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNumberIsNotNull() {
+  guestNumberIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestNumber',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestNumber',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNumberEqualTo(String? guestNumber) {
+  guestNumberEqualTo(String? guestNumber) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestNumber',
-        value: [guestNumber],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestNumber',
+          value: [guestNumber],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestNumberNotEqualTo(String? guestNumber) {
+  guestNumberNotEqualTo(String? guestNumber) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestNumber',
-              lower: [],
-              upper: [guestNumber],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestNumber',
-              lower: [guestNumber],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestNumber',
+                lower: [],
+                upper: [guestNumber],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestNumber',
+                lower: [guestNumber],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestNumber',
-              lower: [guestNumber],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestNumber',
-              lower: [],
-              upper: [guestNumber],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestNumber',
+                lower: [guestNumber],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestNumber',
+                lower: [],
+                upper: [guestNumber],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityIsNull() {
+  guestIdentityIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestIdentity',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestIdentity', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityIsNotNull() {
+  guestIdentityIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestIdentity',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestIdentity',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityEqualTo(String? guestIdentity) {
+  guestIdentityEqualTo(String? guestIdentity) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestIdentity',
-        value: [guestIdentity],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestIdentity',
+          value: [guestIdentity],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityNotEqualTo(String? guestIdentity) {
+  guestIdentityNotEqualTo(String? guestIdentity) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentity',
-              lower: [],
-              upper: [guestIdentity],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentity',
-              lower: [guestIdentity],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentity',
+                lower: [],
+                upper: [guestIdentity],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentity',
+                lower: [guestIdentity],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentity',
-              lower: [guestIdentity],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentity',
-              lower: [],
-              upper: [guestIdentity],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentity',
+                lower: [guestIdentity],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentity',
+                lower: [],
+                upper: [guestIdentity],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityTypeIsNull() {
+  guestIdentityTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestIdentityType',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestIdentityType',
+          value: [null],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityTypeIsNotNull() {
+  guestIdentityTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestIdentityType',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestIdentityType',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityTypeEqualTo(String? guestIdentityType) {
+  guestIdentityTypeEqualTo(String? guestIdentityType) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestIdentityType',
-        value: [guestIdentityType],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestIdentityType',
+          value: [guestIdentityType],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestIdentityTypeNotEqualTo(String? guestIdentityType) {
+  guestIdentityTypeNotEqualTo(String? guestIdentityType) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentityType',
-              lower: [],
-              upper: [guestIdentityType],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentityType',
-              lower: [guestIdentityType],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentityType',
+                lower: [],
+                upper: [guestIdentityType],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentityType',
+                lower: [guestIdentityType],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentityType',
-              lower: [guestIdentityType],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestIdentityType',
-              lower: [],
-              upper: [guestIdentityType],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentityType',
+                lower: [guestIdentityType],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestIdentityType',
+                lower: [],
+                upper: [guestIdentityType],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDtIsNull() {
+  guestDtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestDt',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestDt', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDtIsNotNull() {
+  guestDtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestDt',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestDt',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDtEqualTo(String? guestDt) {
+  guestDtEqualTo(String? guestDt) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestDt',
-        value: [guestDt],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestDt', value: [guestDt]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDtNotEqualTo(String? guestDt) {
+  guestDtNotEqualTo(String? guestDt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDt',
-              lower: [],
-              upper: [guestDt],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDt',
-              lower: [guestDt],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDt',
+                lower: [],
+                upper: [guestDt],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDt',
+                lower: [guestDt],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDt',
-              lower: [guestDt],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDt',
-              lower: [],
-              upper: [guestDt],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDt',
+                lower: [guestDt],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDt',
+                lower: [],
+                upper: [guestDt],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestPurposeIsNull() {
+  guestPurposeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestPurpose',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestPurpose', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestPurposeIsNotNull() {
+  guestPurposeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestPurpose',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestPurpose',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestPurposeEqualTo(String? guestPurpose) {
+  guestPurposeEqualTo(String? guestPurpose) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestPurpose',
-        value: [guestPurpose],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestPurpose',
+          value: [guestPurpose],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestPurposeNotEqualTo(String? guestPurpose) {
+  guestPurposeNotEqualTo(String? guestPurpose) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestPurpose',
-              lower: [],
-              upper: [guestPurpose],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestPurpose',
-              lower: [guestPurpose],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestPurpose',
+                lower: [],
+                upper: [guestPurpose],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestPurpose',
+                lower: [guestPurpose],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestPurpose',
-              lower: [guestPurpose],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestPurpose',
-              lower: [],
-              upper: [guestPurpose],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestPurpose',
+                lower: [guestPurpose],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestPurpose',
+                lower: [],
+                upper: [guestPurpose],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDestinationIsNull() {
+  guestDestinationIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestDestination',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestDestination', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDestinationIsNotNull() {
+  guestDestinationIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestDestination',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestDestination',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDestinationEqualTo(String? guestDestination) {
+  guestDestinationEqualTo(String? guestDestination) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestDestination',
-        value: [guestDestination],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestDestination',
+          value: [guestDestination],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestDestinationNotEqualTo(String? guestDestination) {
+  guestDestinationNotEqualTo(String? guestDestination) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDestination',
-              lower: [],
-              upper: [guestDestination],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDestination',
-              lower: [guestDestination],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDestination',
+                lower: [],
+                upper: [guestDestination],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDestination',
+                lower: [guestDestination],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDestination',
-              lower: [guestDestination],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestDestination',
-              lower: [],
-              upper: [guestDestination],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDestination',
+                lower: [guestDestination],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestDestination',
+                lower: [],
+                upper: [guestDestination],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserEmailIsNull() {
+  guestToUserEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestToUserEmail',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestToUserEmail', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserEmailIsNotNull() {
+  guestToUserEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestToUserEmail',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestToUserEmail',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserEmailEqualTo(String? guestToUserEmail) {
+  guestToUserEmailEqualTo(String? guestToUserEmail) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestToUserEmail',
-        value: [guestToUserEmail],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestToUserEmail',
+          value: [guestToUserEmail],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserEmailNotEqualTo(String? guestToUserEmail) {
+  guestToUserEmailNotEqualTo(String? guestToUserEmail) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserEmail',
-              lower: [],
-              upper: [guestToUserEmail],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserEmail',
-              lower: [guestToUserEmail],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserEmail',
+                lower: [],
+                upper: [guestToUserEmail],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserEmail',
+                lower: [guestToUserEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserEmail',
-              lower: [guestToUserEmail],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserEmail',
-              lower: [],
-              upper: [guestToUserEmail],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserEmail',
+                lower: [guestToUserEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserEmail',
+                lower: [],
+                upper: [guestToUserEmail],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserNameIsNull() {
+  guestToUserNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestToUserName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestToUserName', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserNameIsNotNull() {
+  guestToUserNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestToUserName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestToUserName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserNameEqualTo(String? guestToUserName) {
+  guestToUserNameEqualTo(String? guestToUserName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestToUserName',
-        value: [guestToUserName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestToUserName',
+          value: [guestToUserName],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestToUserNameNotEqualTo(String? guestToUserName) {
+  guestToUserNameNotEqualTo(String? guestToUserName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserName',
-              lower: [],
-              upper: [guestToUserName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserName',
-              lower: [guestToUserName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserName',
+                lower: [],
+                upper: [guestToUserName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserName',
+                lower: [guestToUserName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserName',
-              lower: [guestToUserName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestToUserName',
-              lower: [],
-              upper: [guestToUserName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserName',
+                lower: [guestToUserName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestToUserName',
+                lower: [],
+                upper: [guestToUserName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorEmailIsNull() {
+  guestCreatorEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCreatorEmail',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCreatorEmail',
+          value: [null],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorEmailIsNotNull() {
+  guestCreatorEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestCreatorEmail',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestCreatorEmail',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorEmailEqualTo(String? guestCreatorEmail) {
+  guestCreatorEmailEqualTo(String? guestCreatorEmail) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCreatorEmail',
-        value: [guestCreatorEmail],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCreatorEmail',
+          value: [guestCreatorEmail],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorEmailNotEqualTo(String? guestCreatorEmail) {
+  guestCreatorEmailNotEqualTo(String? guestCreatorEmail) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorEmail',
-              lower: [],
-              upper: [guestCreatorEmail],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorEmail',
-              lower: [guestCreatorEmail],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorEmail',
+                lower: [],
+                upper: [guestCreatorEmail],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorEmail',
+                lower: [guestCreatorEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorEmail',
-              lower: [guestCreatorEmail],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorEmail',
-              lower: [],
-              upper: [guestCreatorEmail],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorEmail',
+                lower: [guestCreatorEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorEmail',
+                lower: [],
+                upper: [guestCreatorEmail],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorNameIsNull() {
+  guestCreatorNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCreatorName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestCreatorName', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorNameIsNotNull() {
+  guestCreatorNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestCreatorName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestCreatorName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorNameEqualTo(String? guestCreatorName) {
+  guestCreatorNameEqualTo(String? guestCreatorName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCreatorName',
-        value: [guestCreatorName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCreatorName',
+          value: [guestCreatorName],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCreatorNameNotEqualTo(String? guestCreatorName) {
+  guestCreatorNameNotEqualTo(String? guestCreatorName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorName',
-              lower: [],
-              upper: [guestCreatorName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorName',
-              lower: [guestCreatorName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorName',
+                lower: [],
+                upper: [guestCreatorName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorName',
+                lower: [guestCreatorName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorName',
-              lower: [guestCreatorName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCreatorName',
-              lower: [],
-              upper: [guestCreatorName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorName',
+                lower: [guestCreatorName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCreatorName',
+                lower: [],
+                upper: [guestCreatorName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCategoryIsNull() {
+  guestCategoryIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCategory',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestCategory', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCategoryIsNotNull() {
+  guestCategoryIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestCategory',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestCategory',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCategoryEqualTo(String? guestCategory) {
+  guestCategoryEqualTo(String? guestCategory) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCategory',
-        value: [guestCategory],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCategory',
+          value: [guestCategory],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCategoryNotEqualTo(String? guestCategory) {
+  guestCategoryNotEqualTo(String? guestCategory) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCategory',
-              lower: [],
-              upper: [guestCategory],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCategory',
-              lower: [guestCategory],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCategory',
+                lower: [],
+                upper: [guestCategory],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCategory',
+                lower: [guestCategory],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCategory',
-              lower: [guestCategory],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCategory',
-              lower: [],
-              upper: [guestCategory],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCategory',
+                lower: [guestCategory],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCategory',
+                lower: [],
+                upper: [guestCategory],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      qrUidIsNull() {
+  qrUidIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'qrUid',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'qrUid', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      qrUidIsNotNull() {
+  qrUidIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'qrUid',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'qrUid',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      qrUidEqualTo(String? qrUid) {
+  qrUidEqualTo(String? qrUid) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'qrUid',
-        value: [qrUid],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'qrUid', value: [qrUid]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      qrUidNotEqualTo(String? qrUid) {
+  qrUidNotEqualTo(String? qrUid) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'qrUid',
-              lower: [],
-              upper: [qrUid],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'qrUid',
-              lower: [qrUid],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'qrUid',
+                lower: [],
+                upper: [qrUid],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'qrUid',
+                lower: [qrUid],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'qrUid',
-              lower: [qrUid],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'qrUid',
-              lower: [],
-              upper: [qrUid],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'qrUid',
+                lower: [qrUid],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'qrUid',
+                lower: [],
+                upper: [qrUid],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestAddressIsNull() {
+  guestAddressIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestAddress',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestAddress', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestAddressIsNotNull() {
+  guestAddressIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestAddress',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestAddress',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestAddressEqualTo(String? guestAddress) {
+  guestAddressEqualTo(String? guestAddress) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestAddress',
-        value: [guestAddress],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestAddress',
+          value: [guestAddress],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestAddressNotEqualTo(String? guestAddress) {
+  guestAddressNotEqualTo(String? guestAddress) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestAddress',
-              lower: [],
-              upper: [guestAddress],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestAddress',
-              lower: [guestAddress],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestAddress',
+                lower: [],
+                upper: [guestAddress],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestAddress',
+                lower: [guestAddress],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestAddress',
-              lower: [guestAddress],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestAddress',
-              lower: [],
-              upper: [guestAddress],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestAddress',
+                lower: [guestAddress],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestAddress',
+                lower: [],
+                upper: [guestAddress],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestTypeIsNull() {
+  guestTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestType',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestType', value: [null]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestTypeIsNotNull() {
+  guestTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestType',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestType',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestTypeEqualTo(String? guestType) {
+  guestTypeEqualTo(String? guestType) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestType',
-        value: [guestType],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'guestType', value: [guestType]),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestTypeNotEqualTo(String? guestType) {
+  guestTypeNotEqualTo(String? guestType) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestType',
-              lower: [],
-              upper: [guestType],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestType',
-              lower: [guestType],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestType',
+                lower: [],
+                upper: [guestType],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestType',
+                lower: [guestType],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestType',
-              lower: [guestType],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestType',
-              lower: [],
-              upper: [guestType],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestType',
+                lower: [guestType],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestType',
+                lower: [],
+                upper: [guestType],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByEmailIsNull() {
+  guestCheckoutByEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCheckoutByEmail',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCheckoutByEmail',
+          value: [null],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByEmailIsNotNull() {
+  guestCheckoutByEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestCheckoutByEmail',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestCheckoutByEmail',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByEmailEqualTo(String? guestCheckoutByEmail) {
+  guestCheckoutByEmailEqualTo(String? guestCheckoutByEmail) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCheckoutByEmail',
-        value: [guestCheckoutByEmail],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCheckoutByEmail',
+          value: [guestCheckoutByEmail],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByEmailNotEqualTo(String? guestCheckoutByEmail) {
+  guestCheckoutByEmailNotEqualTo(String? guestCheckoutByEmail) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByEmail',
-              lower: [],
-              upper: [guestCheckoutByEmail],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByEmail',
-              lower: [guestCheckoutByEmail],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByEmail',
+                lower: [],
+                upper: [guestCheckoutByEmail],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByEmail',
+                lower: [guestCheckoutByEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByEmail',
-              lower: [guestCheckoutByEmail],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByEmail',
-              lower: [],
-              upper: [guestCheckoutByEmail],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByEmail',
+                lower: [guestCheckoutByEmail],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByEmail',
+                lower: [],
+                upper: [guestCheckoutByEmail],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByNameIsNull() {
+  guestCheckoutByNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCheckoutByName',
-        value: [null],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCheckoutByName',
+          value: [null],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByNameIsNotNull() {
+  guestCheckoutByNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'guestCheckoutByName',
-        lower: [null],
-        includeLower: false,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'guestCheckoutByName',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByNameEqualTo(String? guestCheckoutByName) {
+  guestCheckoutByNameEqualTo(String? guestCheckoutByName) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'guestCheckoutByName',
-        value: [guestCheckoutByName],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'guestCheckoutByName',
+          value: [guestCheckoutByName],
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterWhereClause>
-      guestCheckoutByNameNotEqualTo(String? guestCheckoutByName) {
+  guestCheckoutByNameNotEqualTo(String? guestCheckoutByName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByName',
-              lower: [],
-              upper: [guestCheckoutByName],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByName',
-              lower: [guestCheckoutByName],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByName',
+                lower: [],
+                upper: [guestCheckoutByName],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByName',
+                lower: [guestCheckoutByName],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByName',
-              lower: [guestCheckoutByName],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'guestCheckoutByName',
-              lower: [],
-              upper: [guestCheckoutByName],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByName',
+                lower: [guestCheckoutByName],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'guestCheckoutByName',
+                lower: [],
+                upper: [guestCheckoutByName],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -1967,71 +2156,74 @@ extension GuestLocalModelQueryWhere
 extension GuestLocalModelQueryFilter
     on QueryBuilder<GuestLocalModel, GuestLocalModel, QFilterCondition> {
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameIsNull() {
+  groupNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'groupName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'groupName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameIsNotNull() {
+  groupNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'groupName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'groupName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  groupNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameLessThan(
+  groupNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameBetween(
+  groupNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  groupNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2039,153 +2231,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'groupName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'groupName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  groupNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  groupNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameContains(String value, {bool caseSensitive = true}) {
+  groupNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'groupName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'groupName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameMatches(String pattern, {bool caseSensitive = true}) {
+  groupNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'groupName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'groupName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameIsEmpty() {
+  groupNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'groupName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'groupName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      groupNameIsNotEmpty() {
+  groupNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'groupName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'groupName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtIsNull() {
+  guestAckDtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestAckDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestAckDt'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtIsNotNull() {
+  guestAckDtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestAckDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestAckDt'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestAckDtEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestAckDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestAckDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestAckDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtLessThan(
+  guestAckDtGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestAckDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestAckDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtBetween(
+  guestAckDtLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestAckDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestAckDtBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2193,153 +2390,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestAckDt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestAckDt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestAckDtStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestAckDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestAckDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestAckDtEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestAckDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestAckDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtContains(String value, {bool caseSensitive = true}) {
+  guestAckDtContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestAckDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestAckDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtMatches(String pattern, {bool caseSensitive = true}) {
+  guestAckDtMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestAckDt',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestAckDt',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtIsEmpty() {
+  guestAckDtIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestAckDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestAckDt', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAckDtIsNotEmpty() {
+  guestAckDtIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestAckDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestAckDt', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressIsNull() {
+  guestAddressIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestAddress',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestAddress'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressIsNotNull() {
+  guestAddressIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestAddress',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestAddress'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestAddressEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestAddress',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestAddress',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestAddress',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressLessThan(
+  guestAddressGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestAddress',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestAddress',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressBetween(
+  guestAddressLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestAddress',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestAddressBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2347,153 +2549,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestAddress',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestAddress',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestAddressStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestAddress',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestAddress',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestAddressEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestAddress',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestAddress',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressContains(String value, {bool caseSensitive = true}) {
+  guestAddressContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestAddress',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestAddress',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressMatches(String pattern, {bool caseSensitive = true}) {
+  guestAddressMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestAddress',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestAddress',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressIsEmpty() {
+  guestAddressIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestAddress',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestAddress', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestAddressIsNotEmpty() {
+  guestAddressIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestAddress',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestAddress', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryIsNull() {
+  guestCategoryIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestCategory',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestCategory'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryIsNotNull() {
+  guestCategoryIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestCategory',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestCategory'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestCategoryEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCategory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestCategory',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestCategory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryLessThan(
+  guestCategoryGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestCategory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestCategory',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryBetween(
+  guestCategoryLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestCategory',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestCategoryBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2501,153 +2708,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestCategory',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestCategory',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCategoryStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestCategory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestCategory',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCategoryEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestCategory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestCategory',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryContains(String value, {bool caseSensitive = true}) {
+  guestCategoryContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestCategory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestCategory',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryMatches(String pattern, {bool caseSensitive = true}) {
+  guestCategoryMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestCategory',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestCategory',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryIsEmpty() {
+  guestCategoryIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCategory',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestCategory', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCategoryIsNotEmpty() {
+  guestCategoryIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestCategory',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestCategory', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailIsNull() {
+  guestCheckoutByEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestCheckoutByEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestCheckoutByEmail'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailIsNotNull() {
+  guestCheckoutByEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestCheckoutByEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestCheckoutByEmail'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestCheckoutByEmailEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCheckoutByEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestCheckoutByEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestCheckoutByEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailLessThan(
+  guestCheckoutByEmailGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestCheckoutByEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestCheckoutByEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailBetween(
+  guestCheckoutByEmailLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestCheckoutByEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestCheckoutByEmailBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2655,153 +2867,161 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestCheckoutByEmail',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestCheckoutByEmail',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCheckoutByEmailStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestCheckoutByEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestCheckoutByEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCheckoutByEmailEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestCheckoutByEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestCheckoutByEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailContains(String value, {bool caseSensitive = true}) {
+  guestCheckoutByEmailContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestCheckoutByEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestCheckoutByEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailMatches(String pattern, {bool caseSensitive = true}) {
+  guestCheckoutByEmailMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestCheckoutByEmail',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestCheckoutByEmail',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailIsEmpty() {
+  guestCheckoutByEmailIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCheckoutByEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestCheckoutByEmail', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByEmailIsNotEmpty() {
+  guestCheckoutByEmailIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestCheckoutByEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          property: r'guestCheckoutByEmail',
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameIsNull() {
+  guestCheckoutByNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestCheckoutByName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestCheckoutByName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameIsNotNull() {
+  guestCheckoutByNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestCheckoutByName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestCheckoutByName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestCheckoutByNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCheckoutByName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestCheckoutByName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestCheckoutByName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameLessThan(
+  guestCheckoutByNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestCheckoutByName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestCheckoutByName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameBetween(
+  guestCheckoutByNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestCheckoutByName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestCheckoutByNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2809,153 +3029,161 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestCheckoutByName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestCheckoutByName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCheckoutByNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestCheckoutByName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestCheckoutByName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCheckoutByNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestCheckoutByName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestCheckoutByName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameContains(String value, {bool caseSensitive = true}) {
+  guestCheckoutByNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestCheckoutByName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestCheckoutByName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameMatches(String pattern, {bool caseSensitive = true}) {
+  guestCheckoutByNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestCheckoutByName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestCheckoutByName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameIsEmpty() {
+  guestCheckoutByNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCheckoutByName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestCheckoutByName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCheckoutByNameIsNotEmpty() {
+  guestCheckoutByNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestCheckoutByName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          property: r'guestCheckoutByName',
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailIsNull() {
+  guestCreatorEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestCreatorEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestCreatorEmail'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailIsNotNull() {
+  guestCreatorEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestCreatorEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestCreatorEmail'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestCreatorEmailEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCreatorEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestCreatorEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestCreatorEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailLessThan(
+  guestCreatorEmailGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestCreatorEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestCreatorEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailBetween(
+  guestCreatorEmailLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestCreatorEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestCreatorEmailBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2963,153 +3191,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestCreatorEmail',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestCreatorEmail',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCreatorEmailStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestCreatorEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestCreatorEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCreatorEmailEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestCreatorEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestCreatorEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailContains(String value, {bool caseSensitive = true}) {
+  guestCreatorEmailContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestCreatorEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestCreatorEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailMatches(String pattern, {bool caseSensitive = true}) {
+  guestCreatorEmailMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestCreatorEmail',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestCreatorEmail',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailIsEmpty() {
+  guestCreatorEmailIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCreatorEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestCreatorEmail', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorEmailIsNotEmpty() {
+  guestCreatorEmailIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestCreatorEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestCreatorEmail', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameIsNull() {
+  guestCreatorNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestCreatorName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestCreatorName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameIsNotNull() {
+  guestCreatorNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestCreatorName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestCreatorName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestCreatorNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCreatorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestCreatorName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestCreatorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameLessThan(
+  guestCreatorNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestCreatorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestCreatorName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameBetween(
+  guestCreatorNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestCreatorName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestCreatorNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3117,153 +3350,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestCreatorName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestCreatorName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCreatorNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestCreatorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestCreatorName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestCreatorNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestCreatorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestCreatorName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameContains(String value, {bool caseSensitive = true}) {
+  guestCreatorNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestCreatorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestCreatorName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameMatches(String pattern, {bool caseSensitive = true}) {
+  guestCreatorNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestCreatorName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestCreatorName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameIsEmpty() {
+  guestCreatorNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestCreatorName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestCreatorName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestCreatorNameIsNotEmpty() {
+  guestCreatorNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestCreatorName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestCreatorName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationIsNull() {
+  guestDestinationIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestDestination',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestDestination'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationIsNotNull() {
+  guestDestinationIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestDestination',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestDestination'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestDestinationEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestDestination',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestDestination',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestDestination',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationLessThan(
+  guestDestinationGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestDestination',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestDestination',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationBetween(
+  guestDestinationLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestDestination',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestDestinationBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3271,153 +3509,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestDestination',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestDestination',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestDestinationStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestDestination',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestDestination',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestDestinationEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestDestination',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestDestination',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationContains(String value, {bool caseSensitive = true}) {
+  guestDestinationContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestDestination',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestDestination',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationMatches(String pattern, {bool caseSensitive = true}) {
+  guestDestinationMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestDestination',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestDestination',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationIsEmpty() {
+  guestDestinationIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestDestination',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestDestination', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDestinationIsNotEmpty() {
+  guestDestinationIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestDestination',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestDestination', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtIsNull() {
+  guestDtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestDt'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtIsNotNull() {
+  guestDtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestDt'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestDtEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtLessThan(
+  guestDtGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtBetween(
+  guestDtLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestDtBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3425,153 +3668,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestDt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestDt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestDtStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestDtEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtContains(String value, {bool caseSensitive = true}) {
+  guestDtContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtMatches(String pattern, {bool caseSensitive = true}) {
+  guestDtMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestDt',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestDt',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtIsEmpty() {
+  guestDtIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestDt', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestDtIsNotEmpty() {
+  guestDtIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestDt', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityIsNull() {
+  guestIdentityIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestIdentity',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestIdentity'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityIsNotNull() {
+  guestIdentityIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestIdentity',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestIdentity'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestIdentityEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestIdentity',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestIdentity',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestIdentity',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityLessThan(
+  guestIdentityGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestIdentity',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestIdentity',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityBetween(
+  guestIdentityLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestIdentity',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestIdentityBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3579,153 +3827,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestIdentity',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestIdentity',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestIdentityStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestIdentity',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestIdentity',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestIdentityEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestIdentity',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestIdentity',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityContains(String value, {bool caseSensitive = true}) {
+  guestIdentityContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestIdentity',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestIdentity',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityMatches(String pattern, {bool caseSensitive = true}) {
+  guestIdentityMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestIdentity',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestIdentity',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityIsEmpty() {
+  guestIdentityIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestIdentity',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestIdentity', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityIsNotEmpty() {
+  guestIdentityIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestIdentity',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestIdentity', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeIsNull() {
+  guestIdentityTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestIdentityType',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestIdentityType'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeIsNotNull() {
+  guestIdentityTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestIdentityType',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestIdentityType'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestIdentityTypeEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestIdentityType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestIdentityType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestIdentityType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeLessThan(
+  guestIdentityTypeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestIdentityType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestIdentityType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeBetween(
+  guestIdentityTypeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestIdentityType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestIdentityTypeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3733,153 +3986,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestIdentityType',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestIdentityType',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestIdentityTypeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestIdentityType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestIdentityType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestIdentityTypeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestIdentityType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestIdentityType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeContains(String value, {bool caseSensitive = true}) {
+  guestIdentityTypeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestIdentityType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestIdentityType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeMatches(String pattern, {bool caseSensitive = true}) {
+  guestIdentityTypeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestIdentityType',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestIdentityType',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeIsEmpty() {
+  guestIdentityTypeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestIdentityType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestIdentityType', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestIdentityTypeIsNotEmpty() {
+  guestIdentityTypeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestIdentityType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestIdentityType', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameIsNull() {
+  guestNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameIsNotNull() {
+  guestNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameLessThan(
+  guestNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameBetween(
+  guestNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -3887,153 +4145,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameContains(String value, {bool caseSensitive = true}) {
+  guestNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameMatches(String pattern, {bool caseSensitive = true}) {
+  guestNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameIsEmpty() {
+  guestNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNameIsNotEmpty() {
+  guestNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberIsNull() {
+  guestNumberIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestNumber',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestNumber'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberIsNotNull() {
+  guestNumberIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestNumber',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestNumber'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestNumberEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestNumber',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestNumber',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestNumber',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberLessThan(
+  guestNumberGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestNumber',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestNumber',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberBetween(
+  guestNumberLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestNumber',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestNumberBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4041,153 +4304,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestNumber',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestNumber',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestNumberStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestNumber',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestNumber',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestNumberEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestNumber',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestNumber',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberContains(String value, {bool caseSensitive = true}) {
+  guestNumberContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestNumber',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestNumber',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberMatches(String pattern, {bool caseSensitive = true}) {
+  guestNumberMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestNumber',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestNumber',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberIsEmpty() {
+  guestNumberIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestNumber',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestNumber', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestNumberIsNotEmpty() {
+  guestNumberIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestNumber',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestNumber', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtIsNull() {
+  guestOutDtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestOutDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestOutDt'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtIsNotNull() {
+  guestOutDtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestOutDt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestOutDt'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestOutDtEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestOutDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestOutDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestOutDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtLessThan(
+  guestOutDtGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestOutDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestOutDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtBetween(
+  guestOutDtLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestOutDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestOutDtBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4195,153 +4463,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestOutDt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestOutDt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestOutDtStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestOutDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestOutDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestOutDtEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestOutDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestOutDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtContains(String value, {bool caseSensitive = true}) {
+  guestOutDtContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestOutDt',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestOutDt',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtMatches(String pattern, {bool caseSensitive = true}) {
+  guestOutDtMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestOutDt',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestOutDt',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtIsEmpty() {
+  guestOutDtIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestOutDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestOutDt', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestOutDtIsNotEmpty() {
+  guestOutDtIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestOutDt',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestOutDt', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoIsNull() {
+  guestPhotoIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestPhoto',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestPhoto'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoIsNotNull() {
+  guestPhotoIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestPhoto',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestPhoto'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestPhotoEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestPhoto',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestPhoto',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestPhoto',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoLessThan(
+  guestPhotoGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestPhoto',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestPhoto',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoBetween(
+  guestPhotoLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestPhoto',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestPhotoBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4349,153 +4622,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestPhoto',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestPhoto',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestPhotoStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestPhoto',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestPhoto',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestPhotoEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestPhoto',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestPhoto',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoContains(String value, {bool caseSensitive = true}) {
+  guestPhotoContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestPhoto',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestPhoto',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoMatches(String pattern, {bool caseSensitive = true}) {
+  guestPhotoMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestPhoto',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestPhoto',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoIsEmpty() {
+  guestPhotoIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestPhoto',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestPhoto', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPhotoIsNotEmpty() {
+  guestPhotoIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestPhoto',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestPhoto', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeIsNull() {
+  guestPurposeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestPurpose',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestPurpose'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeIsNotNull() {
+  guestPurposeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestPurpose',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestPurpose'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestPurposeEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestPurpose',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestPurpose',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestPurpose',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeLessThan(
+  guestPurposeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestPurpose',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestPurpose',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeBetween(
+  guestPurposeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestPurpose',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestPurposeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4503,153 +4781,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestPurpose',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestPurpose',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestPurposeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestPurpose',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestPurpose',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestPurposeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestPurpose',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestPurpose',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeContains(String value, {bool caseSensitive = true}) {
+  guestPurposeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestPurpose',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestPurpose',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeMatches(String pattern, {bool caseSensitive = true}) {
+  guestPurposeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestPurpose',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestPurpose',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeIsEmpty() {
+  guestPurposeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestPurpose',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestPurpose', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestPurposeIsNotEmpty() {
+  guestPurposeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestPurpose',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestPurpose', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailIsNull() {
+  guestToUserEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestToUserEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestToUserEmail'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailIsNotNull() {
+  guestToUserEmailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestToUserEmail',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestToUserEmail'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestToUserEmailEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestToUserEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestToUserEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestToUserEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailLessThan(
+  guestToUserEmailGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestToUserEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestToUserEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailBetween(
+  guestToUserEmailLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestToUserEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToUserEmailBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4657,153 +4940,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestToUserEmail',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestToUserEmail',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestToUserEmailStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestToUserEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestToUserEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestToUserEmailEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestToUserEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestToUserEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailContains(String value, {bool caseSensitive = true}) {
+  guestToUserEmailContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestToUserEmail',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestToUserEmail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailMatches(String pattern, {bool caseSensitive = true}) {
+  guestToUserEmailMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestToUserEmail',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestToUserEmail',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailIsEmpty() {
+  guestToUserEmailIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestToUserEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestToUserEmail', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserEmailIsNotEmpty() {
+  guestToUserEmailIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestToUserEmail',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestToUserEmail', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameIsNull() {
+  guestToUserNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestToUserName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestToUserName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameIsNotNull() {
+  guestToUserNameIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestToUserName',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestToUserName'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestToUserNameEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestToUserName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestToUserName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestToUserName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameLessThan(
+  guestToUserNameGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestToUserName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestToUserName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameBetween(
+  guestToUserNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestToUserName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToUserNameBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4811,153 +5099,158 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestToUserName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestToUserName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestToUserNameStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestToUserName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestToUserName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestToUserNameEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestToUserName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestToUserName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameContains(String value, {bool caseSensitive = true}) {
+  guestToUserNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestToUserName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestToUserName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameMatches(String pattern, {bool caseSensitive = true}) {
+  guestToUserNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestToUserName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestToUserName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameIsEmpty() {
+  guestToUserNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestToUserName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestToUserName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestToUserNameIsNotEmpty() {
+  guestToUserNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestToUserName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestToUserName', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeIsNull() {
+  guestTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'guestType',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestType'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeIsNotNull() {
+  guestTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'guestType',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestType'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  guestTypeEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'guestType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeLessThan(
+  guestTypeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'guestType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeBetween(
+  guestTypeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestTypeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -4965,135 +5258,136 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'guestType',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestType',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestTypeStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'guestType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  guestTypeEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'guestType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeContains(String value, {bool caseSensitive = true}) {
+  guestTypeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'guestType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeMatches(String pattern, {bool caseSensitive = true}) {
+  guestTypeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'guestType',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestType',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeIsEmpty() {
+  guestTypeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'guestType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestType', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      guestTypeIsNotEmpty() {
+  guestTypeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'guestType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestType', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idLessThan(
+  idGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idBetween(
+  idLessThan(String value, {bool include = false, bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  idBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -5101,209 +5395,213 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idContains(String value, {bool caseSensitive = true}) {
+  idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idMatches(String pattern, {bool caseSensitive = true}) {
+  idMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idIsEmpty() {
+  idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      idIsNotEmpty() {
+  idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
+  isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isarId', value: value),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  isarIdGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  isarIdLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      isarIdBetween(
+  isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'isarId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidIsNull() {
+  qrUidIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'qrUid',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'qrUid'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidIsNotNull() {
+  qrUidIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'qrUid',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'qrUid'),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  qrUidEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'qrUid',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'qrUid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'qrUid',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidLessThan(
+  qrUidGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'qrUid',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'qrUid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidBetween(
+  qrUidLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'qrUid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  qrUidBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -5311,84 +5609,86 @@ extension GuestLocalModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'qrUid',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'qrUid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  qrUidStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'qrUid',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'qrUid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  qrUidEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'qrUid',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'qrUid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidContains(String value, {bool caseSensitive = true}) {
+  qrUidContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'qrUid',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'qrUid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidMatches(String pattern, {bool caseSensitive = true}) {
+  qrUidMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'qrUid',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'qrUid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidIsEmpty() {
+  qrUidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'qrUid',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'qrUid', value: ''),
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
-      qrUidIsNotEmpty() {
+  qrUidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'qrUid',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'qrUid', value: ''),
+      );
     });
   }
 }
@@ -5402,126 +5702,126 @@ extension GuestLocalModelQueryLinks
 extension GuestLocalModelQuerySortBy
     on QueryBuilder<GuestLocalModel, GuestLocalModel, QSortBy> {
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGroupName() {
+  sortByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGroupNameDesc() {
+  sortByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestAckDt() {
+  sortByGuestAckDt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAckDt', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestAckDtDesc() {
+  sortByGuestAckDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAckDt', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestAddress() {
+  sortByGuestAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAddress', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestAddressDesc() {
+  sortByGuestAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAddress', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCategory() {
+  sortByGuestCategory() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCategory', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCategoryDesc() {
+  sortByGuestCategoryDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCategory', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCheckoutByEmail() {
+  sortByGuestCheckoutByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByEmail', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCheckoutByEmailDesc() {
+  sortByGuestCheckoutByEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByEmail', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCheckoutByName() {
+  sortByGuestCheckoutByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCheckoutByNameDesc() {
+  sortByGuestCheckoutByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCreatorEmail() {
+  sortByGuestCreatorEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorEmail', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCreatorEmailDesc() {
+  sortByGuestCreatorEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorEmail', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCreatorName() {
+  sortByGuestCreatorName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestCreatorNameDesc() {
+  sortByGuestCreatorNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestDestination() {
+  sortByGuestDestination() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestDestination', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestDestinationDesc() {
+  sortByGuestDestinationDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestDestination', Sort.desc);
     });
@@ -5534,147 +5834,147 @@ extension GuestLocalModelQuerySortBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestDtDesc() {
+  sortByGuestDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestDt', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestIdentity() {
+  sortByGuestIdentity() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentity', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestIdentityDesc() {
+  sortByGuestIdentityDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentity', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestIdentityType() {
+  sortByGuestIdentityType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentityType', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestIdentityTypeDesc() {
+  sortByGuestIdentityTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentityType', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestName() {
+  sortByGuestName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestNameDesc() {
+  sortByGuestNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestNumber() {
+  sortByGuestNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestNumber', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestNumberDesc() {
+  sortByGuestNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestNumber', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestOutDt() {
+  sortByGuestOutDt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestOutDt', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestOutDtDesc() {
+  sortByGuestOutDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestOutDt', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestPhoto() {
+  sortByGuestPhoto() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPhoto', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestPhotoDesc() {
+  sortByGuestPhotoDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPhoto', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestPurpose() {
+  sortByGuestPurpose() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPurpose', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestPurposeDesc() {
+  sortByGuestPurposeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPurpose', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestToUserEmail() {
+  sortByGuestToUserEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserEmail', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestToUserEmailDesc() {
+  sortByGuestToUserEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserEmail', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestToUserName() {
+  sortByGuestToUserName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestToUserNameDesc() {
+  sortByGuestToUserNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestType() {
+  sortByGuestType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestType', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByGuestTypeDesc() {
+  sortByGuestTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestType', Sort.desc);
     });
@@ -5699,7 +5999,7 @@ extension GuestLocalModelQuerySortBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      sortByQrUidDesc() {
+  sortByQrUidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'qrUid', Sort.desc);
     });
@@ -5709,126 +6009,126 @@ extension GuestLocalModelQuerySortBy
 extension GuestLocalModelQuerySortThenBy
     on QueryBuilder<GuestLocalModel, GuestLocalModel, QSortThenBy> {
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGroupName() {
+  thenByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGroupNameDesc() {
+  thenByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestAckDt() {
+  thenByGuestAckDt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAckDt', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestAckDtDesc() {
+  thenByGuestAckDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAckDt', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestAddress() {
+  thenByGuestAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAddress', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestAddressDesc() {
+  thenByGuestAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestAddress', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCategory() {
+  thenByGuestCategory() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCategory', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCategoryDesc() {
+  thenByGuestCategoryDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCategory', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCheckoutByEmail() {
+  thenByGuestCheckoutByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByEmail', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCheckoutByEmailDesc() {
+  thenByGuestCheckoutByEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByEmail', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCheckoutByName() {
+  thenByGuestCheckoutByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCheckoutByNameDesc() {
+  thenByGuestCheckoutByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCheckoutByName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCreatorEmail() {
+  thenByGuestCreatorEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorEmail', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCreatorEmailDesc() {
+  thenByGuestCreatorEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorEmail', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCreatorName() {
+  thenByGuestCreatorName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestCreatorNameDesc() {
+  thenByGuestCreatorNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestCreatorName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestDestination() {
+  thenByGuestDestination() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestDestination', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestDestinationDesc() {
+  thenByGuestDestinationDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestDestination', Sort.desc);
     });
@@ -5841,147 +6141,147 @@ extension GuestLocalModelQuerySortThenBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestDtDesc() {
+  thenByGuestDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestDt', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestIdentity() {
+  thenByGuestIdentity() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentity', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestIdentityDesc() {
+  thenByGuestIdentityDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentity', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestIdentityType() {
+  thenByGuestIdentityType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentityType', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestIdentityTypeDesc() {
+  thenByGuestIdentityTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestIdentityType', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestName() {
+  thenByGuestName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestNameDesc() {
+  thenByGuestNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestNumber() {
+  thenByGuestNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestNumber', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestNumberDesc() {
+  thenByGuestNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestNumber', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestOutDt() {
+  thenByGuestOutDt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestOutDt', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestOutDtDesc() {
+  thenByGuestOutDtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestOutDt', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestPhoto() {
+  thenByGuestPhoto() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPhoto', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestPhotoDesc() {
+  thenByGuestPhotoDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPhoto', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestPurpose() {
+  thenByGuestPurpose() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPurpose', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestPurposeDesc() {
+  thenByGuestPurposeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestPurpose', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestToUserEmail() {
+  thenByGuestToUserEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserEmail', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestToUserEmailDesc() {
+  thenByGuestToUserEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserEmail', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestToUserName() {
+  thenByGuestToUserName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserName', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestToUserNameDesc() {
+  thenByGuestToUserNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserName', Sort.desc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestType() {
+  thenByGuestType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestType', Sort.asc);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByGuestTypeDesc() {
+  thenByGuestTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestType', Sort.desc);
     });
@@ -6006,7 +6306,7 @@ extension GuestLocalModelQuerySortThenBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByIsarIdDesc() {
+  thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
@@ -6019,7 +6319,7 @@ extension GuestLocalModelQuerySortThenBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
-      thenByQrUidDesc() {
+  thenByQrUidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'qrUid', Sort.desc);
     });
@@ -6028,165 +6328,188 @@ extension GuestLocalModelQuerySortThenBy
 
 extension GuestLocalModelQueryWhereDistinct
     on QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> {
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByGroupName(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
+  distinctByGroupName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'groupName', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestAckDt({bool caseSensitive = true}) {
+  distinctByGuestAckDt({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestAckDt', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestAddress({bool caseSensitive = true}) {
+  distinctByGuestAddress({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestAddress', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestCategory({bool caseSensitive = true}) {
+  distinctByGuestCategory({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestCategory',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestCategory',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestCheckoutByEmail({bool caseSensitive = true}) {
+  distinctByGuestCheckoutByEmail({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestCheckoutByEmail',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestCheckoutByEmail',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestCheckoutByName({bool caseSensitive = true}) {
+  distinctByGuestCheckoutByName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestCheckoutByName',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestCheckoutByName',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestCreatorEmail({bool caseSensitive = true}) {
+  distinctByGuestCreatorEmail({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestCreatorEmail',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestCreatorEmail',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestCreatorName({bool caseSensitive = true}) {
+  distinctByGuestCreatorName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestCreatorName',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestCreatorName',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestDestination({bool caseSensitive = true}) {
+  distinctByGuestDestination({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestDestination',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestDestination',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByGuestDt(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByGuestDt({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestDt', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestIdentity({bool caseSensitive = true}) {
+  distinctByGuestIdentity({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestIdentity',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestIdentity',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestIdentityType({bool caseSensitive = true}) {
+  distinctByGuestIdentityType({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestIdentityType',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestIdentityType',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByGuestName(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
+  distinctByGuestName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestName', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestNumber({bool caseSensitive = true}) {
+  distinctByGuestNumber({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestNumber', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestOutDt({bool caseSensitive = true}) {
+  distinctByGuestOutDt({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestOutDt', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestPhoto({bool caseSensitive = true}) {
+  distinctByGuestPhoto({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestPhoto', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestPurpose({bool caseSensitive = true}) {
+  distinctByGuestPurpose({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestPurpose', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestToUserEmail({bool caseSensitive = true}) {
+  distinctByGuestToUserEmail({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestToUserEmail',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestToUserEmail',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
-      distinctByGuestToUserName({bool caseSensitive = true}) {
+  distinctByGuestToUserName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'guestToUserName',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'guestToUserName',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByGuestType(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
+  distinctByGuestType({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'guestType', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctById({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByQrUid(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct> distinctByQrUid({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'qrUid', caseSensitive: caseSensitive);
     });
@@ -6208,56 +6531,56 @@ extension GuestLocalModelQueryProperty
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestAckDtProperty() {
+  guestAckDtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestAckDt');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestAddressProperty() {
+  guestAddressProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestAddress');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestCategoryProperty() {
+  guestCategoryProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestCategory');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestCheckoutByEmailProperty() {
+  guestCheckoutByEmailProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestCheckoutByEmail');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestCheckoutByNameProperty() {
+  guestCheckoutByNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestCheckoutByName');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestCreatorEmailProperty() {
+  guestCreatorEmailProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestCreatorEmail');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestCreatorNameProperty() {
+  guestCreatorNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestCreatorName');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestDestinationProperty() {
+  guestDestinationProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestDestination');
     });
@@ -6270,14 +6593,14 @@ extension GuestLocalModelQueryProperty
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestIdentityProperty() {
+  guestIdentityProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestIdentity');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestIdentityTypeProperty() {
+  guestIdentityTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestIdentityType');
     });
@@ -6290,42 +6613,42 @@ extension GuestLocalModelQueryProperty
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestNumberProperty() {
+  guestNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestNumber');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestOutDtProperty() {
+  guestOutDtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestOutDt');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestPhotoProperty() {
+  guestPhotoProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestPhoto');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestPurposeProperty() {
+  guestPurposeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestPurpose');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestToUserEmailProperty() {
+  guestToUserEmailProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestToUserEmail');
     });
   }
 
   QueryBuilder<GuestLocalModel, String?, QQueryOperations>
-      guestToUserNameProperty() {
+  guestToUserNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestToUserName');
     });

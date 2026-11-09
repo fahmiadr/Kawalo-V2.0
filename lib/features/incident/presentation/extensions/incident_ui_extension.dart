@@ -18,20 +18,20 @@ extension IncidentUiExtension on IncidentEntity {
   /// Penjelasan atau deskripsi insiden yang aman untuk tampilan UI.
   String get displayDescription =>
       (description != null && description!.trim().isNotEmpty)
-          ? description!.trim()
-          : '-';
+      ? description!.trim()
+      : '-';
 
   /// Nama pembuat/pelapor laporan insiden.
   String get displayReporter =>
       (createdByName != null && createdByName!.isNotEmpty)
-          ? createdByName!
-          : 'Petugas';
+      ? createdByName!
+      : 'Petugas';
 
   /// Nama resolver/penyelesai insiden.
   String get displayResolver =>
       (resolvedByName != null && resolvedByName!.isNotEmpty)
-          ? resolvedByName!
-          : 'Petugas';
+      ? resolvedByName!
+      : 'Petugas';
 
   /// Format tanggal pembuatan laporan insiden (dd MMM yyyy, HH:mm).
   String get displayCreatedAt => AppDateFormat.formatDate(createdAt);

@@ -6,29 +6,31 @@ import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 
 void main() {
   group('AppConfirmationDialog Tests', () {
-    testWidgets('renders title, message, cancel, and confirm buttons correctly',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: AppConfirmationDialog(
-              title: 'Hapus Manajemen',
-              message: 'Manajemen bisa ditambahkan kembali nanti.',
+    testWidgets(
+      'renders title, message, cancel, and confirm buttons correctly',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: const Scaffold(
+              body: AppConfirmationDialog(
+                title: 'Hapus Manajemen',
+                message: 'Manajemen bisa ditambahkan kembali nanti.',
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Hapus Manajemen'), findsOneWidget);
-      expect(
-        find.text('Manajemen bisa ditambahkan kembali nanti.'),
-        findsOneWidget,
-      );
-      expect(find.text('Batal'), findsOneWidget);
-      expect(find.text('Hapus'), findsOneWidget);
-    });
+        expect(find.text('Hapus Manajemen'), findsOneWidget);
+        expect(
+          find.text('Manajemen bisa ditambahkan kembali nanti.'),
+          findsOneWidget,
+        );
+        expect(find.text('Batal'), findsOneWidget);
+        expect(find.text('Hapus'), findsOneWidget);
+      },
+    );
 
     testWidgets('tapping cancel triggers onCancel callback', (tester) async {
       var cancelCalled = false;
@@ -76,8 +78,9 @@ void main() {
       expect(confirmCalled, isTrue);
     });
 
-    testWidgets('showAppConfirmationDialog pops false when cancel is tapped',
-        (tester) async {
+    testWidgets('showAppConfirmationDialog pops false when cancel is tapped', (
+      tester,
+    ) async {
       bool? result;
 
       await tester.pumpWidget(
@@ -115,8 +118,9 @@ void main() {
       expect(find.text('Hapus Manajemen'), findsNothing);
     });
 
-    testWidgets('showAppConfirmationDialog pops true when confirm is tapped',
-        (tester) async {
+    testWidgets('showAppConfirmationDialog pops true when confirm is tapped', (
+      tester,
+    ) async {
       bool? result;
 
       await tester.pumpWidget(
@@ -172,8 +176,7 @@ void main() {
       expect(find.byKey(const Key('dialog_icon')), findsOneWidget);
     });
 
-    testWidgets(
-        'confirm button decorator uses error foreground '
+    testWidgets('confirm button decorator uses error foreground '
         'when isDestructive is true', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -200,73 +203,76 @@ void main() {
     });
 
     testWidgets(
-        'confirm button decorator is null when isDestructive is false and '
-        'confirmTextColor is omitted', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: AppConfirmationDialog(
-              title: 'Simpan',
-              message: 'Pesan',
-              confirmText: 'Lanjutkan',
-              isDestructive: false,
+      'confirm button decorator is null when isDestructive is false and '
+      'confirmTextColor is omitted',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: const Scaffold(
+              body: AppConfirmationDialog(
+                title: 'Simpan',
+                message: 'Pesan',
+                confirmText: 'Lanjutkan',
+                isDestructive: false,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final confirmButton = tester.widget<AppButton>(
-        find.widgetWithText(AppButton, 'Lanjutkan'),
-      );
-      expect(confirmButton.decoration, isNull);
-    });
+        final confirmButton = tester.widget<AppButton>(
+          find.widgetWithText(AppButton, 'Lanjutkan'),
+        );
+        expect(confirmButton.decoration, isNull);
+      },
+    );
 
     testWidgets(
-        'cancel and confirm decorators apply custom colors when specified',
-        (tester) async {
-      const customCancelBg = Color(0xFFEEEEEE);
-      const customCancelText = Color(0xFF333333);
-      const customConfirmText = Color(0xFF990000);
+      'cancel and confirm decorators apply custom colors when specified',
+      (tester) async {
+        const customCancelBg = Color(0xFFEEEEEE);
+        const customCancelText = Color(0xFF333333);
+        const customConfirmText = Color(0xFF990000);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: AppConfirmationDialog(
-              title: 'Ubah Data',
-              message: 'Pesan',
-              cancelText: 'Kembali',
-              confirmText: 'Kirim',
-              cancelButtonColor: customCancelBg,
-              cancelTextColor: customCancelText,
-              confirmTextColor: customConfirmText,
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: const Scaffold(
+              body: AppConfirmationDialog(
+                title: 'Ubah Data',
+                message: 'Pesan',
+                cancelText: 'Kembali',
+                confirmText: 'Kirim',
+                cancelButtonColor: customCancelBg,
+                cancelTextColor: customCancelText,
+                confirmTextColor: customConfirmText,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final cancelButton = tester.widget<AppButton>(
-        find.widgetWithText(AppButton, 'Kembali'),
-      );
-      final confirmButton = tester.widget<AppButton>(
-        find.widgetWithText(AppButton, 'Kirim'),
-      );
+        final cancelButton = tester.widget<AppButton>(
+          find.widgetWithText(AppButton, 'Kembali'),
+        );
+        final confirmButton = tester.widget<AppButton>(
+          find.widgetWithText(AppButton, 'Kirim'),
+        );
 
-      expect(
-        cancelButton.decoration?.backgroundColor?.resolve({}),
-        customCancelBg,
-      );
-      expect(
-        cancelButton.decoration?.foregroundColor?.resolve({}),
-        customCancelText,
-      );
-      expect(
-        confirmButton.decoration?.foregroundColor?.resolve({}),
-        customConfirmText,
-      );
-    });
+        expect(
+          cancelButton.decoration?.backgroundColor?.resolve({}),
+          customCancelBg,
+        );
+        expect(
+          cancelButton.decoration?.foregroundColor?.resolve({}),
+          customCancelText,
+        );
+        expect(
+          confirmButton.decoration?.foregroundColor?.resolve({}),
+          customConfirmText,
+        );
+      },
+    );
   });
 }

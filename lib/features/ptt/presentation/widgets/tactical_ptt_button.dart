@@ -10,10 +10,7 @@ import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 /// patroli, mematuhi standar aksesibilitas WCAG AA, dan mengimplementasikan
 /// animasi pegas M3 Expressive.
 class TacticalPttButton extends StatefulWidget {
-  const TacticalPttButton({
-    super.key,
-    this.size = 120.0,
-  });
+  const TacticalPttButton({super.key, this.size = 120.0});
 
   final double size;
 
@@ -117,10 +114,9 @@ class _TacticalPttButtonState extends State<TacticalPttButton>
           icon = Icons.mic_none_rounded;
         }
 
-        final targetSize =
-            widget.size < AppStateLayer.minTouchTarget
-                ? AppStateLayer.minTouchTarget
-                : widget.size;
+        final targetSize = widget.size < AppStateLayer.minTouchTarget
+            ? AppStateLayer.minTouchTarget
+            : widget.size;
 
         return Semantics(
           button: true,
@@ -141,10 +137,7 @@ class _TacticalPttButtonState extends State<TacticalPttButton>
                     final scale = AppMotion.isReducedMotion(context)
                         ? 1.0
                         : _scaleAnimation.value;
-                    return Transform.scale(
-                      scale: scale,
-                      child: child,
-                    );
+                    return Transform.scale(scale: scale, child: child);
                   },
                   child: Container(
                     width: targetSize,
@@ -164,11 +157,7 @@ class _TacticalPttButtonState extends State<TacticalPttButton>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            icon,
-                            size: targetSize * 0.38,
-                            color: iconColor,
-                          ),
+                          Icon(icon, size: targetSize * 0.38, color: iconColor),
                           const SizedBox(height: 4),
                           Text(
                             state is PttTransmitting ? 'BICARA' : 'PTT',

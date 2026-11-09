@@ -101,7 +101,8 @@ void main() {
     String kid = 'test-key-1',
     bool isExpired = false,
   }) {
-    final exp = (DateTime.now().millisecondsSinceEpoch ~/ 1000) +
+    final exp =
+        (DateTime.now().millisecondsSinceEpoch ~/ 1000) +
         (isExpired ? -3600 : 3600);
     return JWT(
       {
@@ -111,11 +112,7 @@ void main() {
         'role': 'ADMIN',
         'exp': exp,
       },
-      header: {
-        'alg': 'RS256',
-        'typ': 'JWT',
-        'kid': kid,
-      },
+      header: {'alg': 'RS256', 'typ': 'JWT', 'kid': kid},
       issuer: 'https://api.kawalo.com',
     ).sign(testRsaKey, algorithm: JWTAlgorithm.RS256);
   }
@@ -133,7 +130,8 @@ void main() {
   setUp(() {
     final escapedPem = _testPublicKeyPem.trim().replaceAll('\n', r'\n');
     dotenv.loadFromString(
-      envString: '''
+      envString:
+          '''
 API_BASE_URL=http://localhost:3000/api
 APP_NAME=Kawalo Test
 JWT_PUBLIC_KEY="$escapedPem"
@@ -143,8 +141,8 @@ JWT_PUBLIC_KEY="$escapedPem"
     mockDio = MockDio();
     mockTokenDio = MockDio();
     mockStorage = MockSecureStorageService();
-    jwksService =
-        JwksService()..cacheKey('test-key-1', _testPublicKeyPem.trim());
+    jwksService = JwksService()
+      ..cacheKey('test-key-1', _testPublicKeyPem.trim());
 
     interceptor = AuthInterceptor(
       dio: mockDio,
@@ -156,43 +154,48 @@ JWT_PUBLIC_KEY="$escapedPem"
 
   group('AuthInterceptor Tests', () {
     test(
-        'onRequest adds Authorization header when token exists and is fresh',
-        () async {
-      final validFreshToken = generateTestToken();
-      when(() => mockStorage.getAccessToken())
-          .thenAnswer((_) async => validFreshToken);
+      'onRequest adds Authorization header when token exists and is fresh',
+      () async {
+        final validFreshToken = generateTestToken();
+        when(
+          () => mockStorage.getAccessToken(),
+        ).thenAnswer((_) async => validFreshToken);
 
-      final options = RequestOptions(path: '/api/v1/profile');
-      final handler = MockRequestInterceptorHandler();
+        final options = RequestOptions(path: '/api/v1/profile');
+        final handler = MockRequestInterceptorHandler();
 
-      await interceptor.onRequest(options, handler);
+        await interceptor.onRequest(options, handler);
 
-      expect(options.headers['Authorization'], 'Bearer $validFreshToken');
-      expect(options.headers['Accept'], 'application/json');
-      verify(() => handler.next(options)).called(1);
-      // Tidak perlu refresh karena token masih baru
-      verifyNever(
-        () => mockTokenDio.post<Map<String, dynamic>>(
-          any(),
-          data: any(named: 'data'),
-        ),
-      );
-    });
+        expect(options.headers['Authorization'], 'Bearer $validFreshToken');
+        expect(options.headers['Accept'], 'application/json');
+        verify(() => handler.next(options)).called(1);
+        // Tidak perlu refresh karena token masih baru
+        verifyNever(
+          () => mockTokenDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        );
+      },
+    );
 
-    test(
-        'onRequest proactively refreshes token when token is expired or '
+    test('onRequest proactively refreshes token when token is expired or '
         'near expiry (<60s)', () async {
       final expiredToken = generateTestToken(isExpired: true);
       final newProactiveToken = generateTestToken();
 
-      when(() => mockStorage.getAccessToken())
-          .thenAnswer((_) async => expiredToken);
-      when(() => mockStorage.getRefreshToken())
-          .thenAnswer((_) async => 'current_refresh_token');
-      when(() => mockStorage.saveAccessToken(newProactiveToken))
-          .thenAnswer((_) async {});
-      when(() => mockStorage.saveRefreshToken('new_rotated_refresh_token'))
-          .thenAnswer((_) async {});
+      when(
+        () => mockStorage.getAccessToken(),
+      ).thenAnswer((_) async => expiredToken);
+      when(
+        () => mockStorage.getRefreshToken(),
+      ).thenAnswer((_) async => 'current_refresh_token');
+      when(
+        () => mockStorage.saveAccessToken(newProactiveToken),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockStorage.saveRefreshToken('new_rotated_refresh_token'),
+      ).thenAnswer((_) async {});
 
       when(
         () => mockTokenDio.post<Map<String, dynamic>>(
@@ -221,17 +224,19 @@ JWT_PUBLIC_KEY="$escapedPem"
       verify(() => handler.next(options)).called(1);
     });
 
-    test(
-        'onError on 401 refreshes, verifies and saves both access and '
+    test('onError on 401 refreshes, verifies and saves both access and '
         'refresh token (RTR)', () async {
       final validRefreshedAccessToken = generateTestToken();
 
-      when(() => mockStorage.getRefreshToken())
-          .thenAnswer((_) async => 'current_refresh_token');
-      when(() => mockStorage.saveAccessToken(validRefreshedAccessToken))
-          .thenAnswer((_) async {});
-      when(() => mockStorage.saveRefreshToken('new_rotated_refresh_token'))
-          .thenAnswer((_) async {});
+      when(
+        () => mockStorage.getRefreshToken(),
+      ).thenAnswer((_) async => 'current_refresh_token');
+      when(
+        () => mockStorage.saveAccessToken(validRefreshedAccessToken),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockStorage.saveRefreshToken('new_rotated_refresh_token'),
+      ).thenAnswer((_) async {});
 
       when(
         () => mockTokenDio.post<Map<String, dynamic>>(
@@ -254,10 +259,7 @@ JWT_PUBLIC_KEY="$escapedPem"
       final originalRequest = RequestOptions(path: '/api/v1/dashboard');
       final err = DioException(
         requestOptions: originalRequest,
-        response: Response(
-          requestOptions: originalRequest,
-          statusCode: 401,
-        ),
+        response: Response(requestOptions: originalRequest, statusCode: 401),
       );
 
       when(() => mockDio.fetch<dynamic>(any())).thenAnswer(
@@ -271,21 +273,23 @@ JWT_PUBLIC_KEY="$escapedPem"
       final handler = MockErrorInterceptorHandler();
       await interceptor.onError(err, handler);
 
-      verify(() => mockStorage.saveAccessToken(validRefreshedAccessToken))
-          .called(1);
-      verify(() => mockStorage.saveRefreshToken('new_rotated_refresh_token'))
-          .called(1);
+      verify(
+        () => mockStorage.saveAccessToken(validRefreshedAccessToken),
+      ).called(1);
+      verify(
+        () => mockStorage.saveRefreshToken('new_rotated_refresh_token'),
+      ).called(1);
       verify(() => handler.resolve(any())).called(1);
     });
 
-    test(
-        'onError on 401 clears session if refreshed token fails '
+    test('onError on 401 clears session if refreshed token fails '
         'cryptographic verification', () async {
       SessionExpiredReason? reportedReason;
       interceptor.onSessionExpired = (reason) => reportedReason = reason;
 
-      when(() => mockStorage.getRefreshToken())
-          .thenAnswer((_) async => 'current_refresh_token');
+      when(
+        () => mockStorage.getRefreshToken(),
+      ).thenAnswer((_) async => 'current_refresh_token');
       when(() => mockStorage.clearAuthSession()).thenAnswer((_) async {});
 
       // Backend returns an invalid / tampered token
@@ -310,10 +314,7 @@ JWT_PUBLIC_KEY="$escapedPem"
       final originalRequest = RequestOptions(path: '/api/v1/dashboard');
       final err = DioException(
         requestOptions: originalRequest,
-        response: Response(
-          requestOptions: originalRequest,
-          statusCode: 401,
-        ),
+        response: Response(requestOptions: originalRequest, statusCode: 401),
       );
 
       final handler = MockErrorInterceptorHandler();
@@ -325,47 +326,46 @@ JWT_PUBLIC_KEY="$escapedPem"
       verify(() => handler.next(err)).called(1);
     });
 
-    test('onError does NOT clear auth session on network/timeout error',
-        () async {
-      when(() => mockStorage.getRefreshToken())
-          .thenAnswer((_) async => 'current_refresh_token');
-
-      // Endpoint refresh mengalami timeout jaringan
-      when(
-        () => mockTokenDio.post<Map<String, dynamic>>(
-          '/v1/auth/refresh',
-          data: {'refresh_token': 'current_refresh_token'},
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(path: '/v1/auth/refresh'),
-          type: DioExceptionType.connectionTimeout,
-        ),
-      );
-
-      final originalRequest = RequestOptions(path: '/api/v1/dashboard');
-      final err = DioException(
-        requestOptions: originalRequest,
-        response: Response(
-          requestOptions: originalRequest,
-          statusCode: 401,
-        ),
-      );
-
-      final handler = MockErrorInterceptorHandler();
-      await interceptor.onError(err, handler);
-
-      // Pastikan storage TIDAK dibersihkan saat masalah jaringan
-      verifyNever(
-        () => mockStorage.clearAuthSession(
-          preserveEmail: any(named: 'preserveEmail'),
-        ),
-      );
-      verify(() => handler.next(err)).called(1);
-    });
-
     test(
-        'refreshAccessToken performs single-flight deduplication on '
+      'onError does NOT clear auth session on network/timeout error',
+      () async {
+        when(
+          () => mockStorage.getRefreshToken(),
+        ).thenAnswer((_) async => 'current_refresh_token');
+
+        // Endpoint refresh mengalami timeout jaringan
+        when(
+          () => mockTokenDio.post<Map<String, dynamic>>(
+            '/v1/auth/refresh',
+            data: {'refresh_token': 'current_refresh_token'},
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/v1/auth/refresh'),
+            type: DioExceptionType.connectionTimeout,
+          ),
+        );
+
+        final originalRequest = RequestOptions(path: '/api/v1/dashboard');
+        final err = DioException(
+          requestOptions: originalRequest,
+          response: Response(requestOptions: originalRequest, statusCode: 401),
+        );
+
+        final handler = MockErrorInterceptorHandler();
+        await interceptor.onError(err, handler);
+
+        // Pastikan storage TIDAK dibersihkan saat masalah jaringan
+        verifyNever(
+          () => mockStorage.clearAuthSession(
+            preserveEmail: any(named: 'preserveEmail'),
+          ),
+        );
+        verify(() => handler.next(err)).called(1);
+      },
+    );
+
+    test('refreshAccessToken performs single-flight deduplication on '
         'concurrent calls', () async {
       final validRefreshedToken = generateTestToken();
 
@@ -374,31 +374,33 @@ JWT_PUBLIC_KEY="$escapedPem"
           '/v1/auth/refresh',
           data: {'refresh_token': 'shared_rft'},
         ),
-      ).thenAnswer(
-        (_) async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-          return Response<Map<String, dynamic>>(
-            requestOptions: RequestOptions(path: '/v1/auth/refresh'),
-            data: {
-              'success': true,
-              'data': {
-                'access_token': validRefreshedToken,
-                'refresh_token': 'deduped_refresh_token',
-              },
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        return Response<Map<String, dynamic>>(
+          requestOptions: RequestOptions(path: '/v1/auth/refresh'),
+          data: {
+            'success': true,
+            'data': {
+              'access_token': validRefreshedToken,
+              'refresh_token': 'deduped_refresh_token',
             },
-          );
-        },
-      );
-      when(() => mockStorage.saveAccessToken(validRefreshedToken))
-          .thenAnswer((_) async {});
-      when(() => mockStorage.saveRefreshToken('deduped_refresh_token'))
-          .thenAnswer((_) async {});
+          },
+        );
+      });
+      when(
+        () => mockStorage.saveAccessToken(validRefreshedToken),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockStorage.saveRefreshToken('deduped_refresh_token'),
+      ).thenAnswer((_) async {});
 
       // Panggil refresh secara bersamaan dari dua pemanggil paralel
-      final future1 =
-          interceptor.refreshAccessToken(customRefreshToken: 'shared_rft');
-      final future2 =
-          interceptor.refreshAccessToken(customRefreshToken: 'shared_rft');
+      final future1 = interceptor.refreshAccessToken(
+        customRefreshToken: 'shared_rft',
+      );
+      final future2 = interceptor.refreshAccessToken(
+        customRefreshToken: 'shared_rft',
+      );
 
       final results = await Future.wait([future1, future2]);
 
@@ -413,29 +415,31 @@ JWT_PUBLIC_KEY="$escapedPem"
       ).called(1);
     });
 
-    test('onRequest ignores /v1/auth/logout without proactive token refresh',
-        () async {
-      when(() => mockStorage.getAccessToken())
-          .thenAnswer((_) async => 'logout_access_token');
-
-      final options = RequestOptions(path: '/v1/auth/logout');
-      final handler = MockRequestInterceptorHandler();
-
-      await interceptor.onRequest(options, handler);
-
-      expect(options.headers['Accept'], 'application/json');
-      expect(options.headers['Authorization'], 'Bearer logout_access_token');
-      verify(() => handler.next(options)).called(1);
-      verifyNever(
-        () => mockTokenDio.post<Map<String, dynamic>>(
-          any(),
-          data: any(named: 'data'),
-        ),
-      );
-    });
-
     test(
-        'onError does not intercept 401 error on /v1/auth/logout and skips '
+      'onRequest ignores /v1/auth/logout without proactive token refresh',
+      () async {
+        when(
+          () => mockStorage.getAccessToken(),
+        ).thenAnswer((_) async => 'logout_access_token');
+
+        final options = RequestOptions(path: '/v1/auth/logout');
+        final handler = MockRequestInterceptorHandler();
+
+        await interceptor.onRequest(options, handler);
+
+        expect(options.headers['Accept'], 'application/json');
+        expect(options.headers['Authorization'], 'Bearer logout_access_token');
+        verify(() => handler.next(options)).called(1);
+        verifyNever(
+          () => mockTokenDio.post<Map<String, dynamic>>(
+            any(),
+            data: any(named: 'data'),
+          ),
+        );
+      },
+    );
+
+    test('onError does not intercept 401 error on /v1/auth/logout and skips '
         'refresh', () async {
       final err = DioException(
         requestOptions: RequestOptions(path: '/v1/auth/logout'),
@@ -458,8 +462,7 @@ JWT_PUBLIC_KEY="$escapedPem"
       );
     });
 
-    test(
-        'onRequest rejects request when proactive refresh fails because '
+    test('onRequest rejects request when proactive refresh fails because '
         'session was cleared', () async {
       final expiredToken = generateTestToken(isExpired: true);
 
@@ -468,8 +471,9 @@ JWT_PUBLIC_KEY="$escapedPem"
         getAccessTokenCalls++;
         return getAccessTokenCalls == 1 ? expiredToken : null;
       });
-      when(() => mockStorage.getRefreshToken())
-          .thenAnswer((_) async => 'revoked_token');
+      when(
+        () => mockStorage.getRefreshToken(),
+      ).thenAnswer((_) async => 'revoked_token');
       when(
         () => mockTokenDio.post<Map<String, dynamic>>(
           '/v1/auth/refresh',

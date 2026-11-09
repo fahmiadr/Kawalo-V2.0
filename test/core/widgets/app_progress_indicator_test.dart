@@ -7,9 +7,7 @@ void main() {
     testWidgets('renders circular progress indicator', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: AppProgressIndicator.circular(value: 0.5),
-          ),
+          home: Scaffold(body: AppProgressIndicator.circular(value: 0.5)),
         ),
       );
 
@@ -19,9 +17,7 @@ void main() {
     testWidgets('renders linear progress indicator', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: AppProgressIndicator.linear(value: 0.75),
-          ),
+          home: Scaffold(body: AppProgressIndicator.linear(value: 0.75)),
         ),
       );
 

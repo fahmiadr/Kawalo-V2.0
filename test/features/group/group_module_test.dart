@@ -27,16 +27,13 @@ void main() {
       expect(repository, isNotNull);
     });
 
-    test(
-      'createGetGroupMembersUseCase creates UseCase instance correctly',
-      () {
-        final useCase = GroupModule.createGetGroupMembersUseCase(
-          apiClient: mockApiClient,
-          networkInfo: mockNetworkInfo,
-        );
+    test('createGetGroupMembersUseCase creates UseCase instance correctly', () {
+      final useCase = GroupModule.createGetGroupMembersUseCase(
+        apiClient: mockApiClient,
+        networkInfo: mockNetworkInfo,
+      );
 
-        expect(useCase, isNotNull);
-      },
-    );
+      expect(useCase, isNotNull);
+    });
   });
 }

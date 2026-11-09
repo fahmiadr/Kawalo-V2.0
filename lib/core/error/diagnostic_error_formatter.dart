@@ -91,10 +91,10 @@ final class DevDiagnosticErrorFormatter implements DiagnosticErrorFormatter {
 
   @override
   String format(Object error, {String? domainPrefix}) => switch (error) {
-        CameraException(:final code, :final description) =>
-          'CameraException(code: $code, description: ${description ?? "-"})',
-        _ => error.toString(),
-      };
+    CameraException(:final code, :final description) =>
+      'CameraException(code: $code, description: ${description ?? "-"})',
+    _ => error.toString(),
+  };
 }
 
 /// Strategi pemformatan lingkungan Production.
@@ -121,11 +121,7 @@ final class ProductionDiagnosticErrorFormatter
   static final RegExp _separatorRegex = RegExp(r'[\s\-_.:/]+');
 
   // Menyusun string token berstandar proyek dengan pembersihan path otomatis.
-  static String _renderToken(
-    String code, {
-    int? numericCode,
-    String? detail,
-  }) {
+  static String _renderToken(String code, {int? numericCode, String? detail}) {
     final numPart = numericCode != null ? ' [$numericCode]' : '';
     final cleanDetail = AppSanitizer.stripFilePaths(detail).trim();
     final detailPart = cleanDetail.isNotEmpty ? ' ($cleanDetail)' : '';
@@ -135,12 +131,10 @@ final class ProductionDiagnosticErrorFormatter
   // Memformat ServerException menjadi token SRV terstandarisasi.
   static String _renderServerToken(ServerException error) {
     final srvCode = AppSanitizer.cleanString(error.errorCode);
-    final codeSuffix =
-        srvCode != null ? '_${_normalizeGeneralCode(srvCode)}' : '';
-    return _renderToken(
-      'SRV$codeSuffix',
-      numericCode: error.statusCode,
-    );
+    final codeSuffix = srvCode != null
+        ? '_${_normalizeGeneralCode(srvCode)}'
+        : '';
+    return _renderToken('SRV$codeSuffix', numericCode: error.statusCode);
   }
 
   @override
@@ -152,50 +146,51 @@ final class ProductionDiagnosticErrorFormatter
 
     return switch (error) {
       // 1. Galat Modul Kamera Resmi
-      CameraException(:final code) =>
-        _renderToken('CAM_${_normalizeCameraCode(code)}'),
+      CameraException(:final code) => _renderToken(
+        'CAM_${_normalizeCameraCode(code)}',
+      ),
 
       // 2. Galat I/O Penyimpanan Berkas & Direktori (Zero Path Leakage)
       FileSystemException(:final osError, :final message) => _renderToken(
-          'STORAGE_IO_ERROR',
-          numericCode: osError?.errorCode,
-          detail: osError?.message ?? message,
-        ),
+        'STORAGE_IO_ERROR',
+        numericCode: osError?.errorCode,
+        detail: osError?.message ?? message,
+      ),
 
       // 3. Galat Method Channel Platform Native OS
       PlatformException(:final code, :final message) => _renderToken(
-          'PLATFORM_${_normalizeGeneralCode(code)}',
-          detail: message,
-        ),
+        'PLATFORM_${_normalizeGeneralCode(code)}',
+        detail: message,
+      ),
 
       // 4. Galat Keamanan Sertifikat TLS/SSL & Konfigurasi
       SecurityException() => _renderToken('SEC_TLS_ERROR'),
       ConfigurationSecurityException() => _renderToken('SEC_CONFIG_ERROR'),
 
       // 5. Galat Jaringan & Waktu Habis (Timeout Kawalo & dart:async)
-      TimeoutException() || async.TimeoutException() =>
-        _renderToken('NET_TIMEOUT'),
+      TimeoutException() ||
+      async.TimeoutException() => _renderToken('NET_TIMEOUT'),
 
       // 6. Galat Bisnis Internal Aplikasi Kawalo (AppException)
       AuthException(:final statusCode) => _renderToken(
-          'AUTH_SESSION_EXPIRED',
-          numericCode: statusCode,
-        ),
+        'AUTH_SESSION_EXPIRED',
+        numericCode: statusCode,
+      ),
       CacheException() => _renderToken('STORAGE_CACHE_ERROR'),
       RequestCancelledException() => _renderToken('NET_CANCELLED'),
       ServerException() => _renderServerToken(error),
       NoInternetException() => _renderToken('NET_NO_INTERNET'),
       ConnectionRefusedException() => _renderToken('NET_CONN_REFUSED'),
       NetworkException(:final statusCode) => _renderToken(
-          'NET_ERROR',
-          numericCode: statusCode,
-        ),
+        'NET_ERROR',
+        numericCode: statusCode,
+      ),
 
       // 7. Galat Umum / Tak Terduga (Fallback Aman)
       _ => _renderToken(
-          '${prefix}_UNEXPECTED',
-          detail: _normalizeTypeName(error.runtimeType),
-        ),
+        '${prefix}_UNEXPECTED',
+        detail: _normalizeTypeName(error.runtimeType),
+      ),
     };
   }
 
@@ -250,9 +245,7 @@ final class DefaultDiagnosticErrorFormatter
   /// Argumen [isProduction] dapat disuntikkan secara eksplisit pada saat
   /// pengujian unit tanpa memodifikasi konfigurasi lingkungan global
   /// (*Pure DI*).
-  const DefaultDiagnosticErrorFormatter({
-    this.isProduction,
-  });
+  const DefaultDiagnosticErrorFormatter({this.isProduction});
 
   /// Apakah strategi lingkungan produksi dipaksakan secara eksplisit.
   ///

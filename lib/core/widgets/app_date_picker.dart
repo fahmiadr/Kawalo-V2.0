@@ -44,9 +44,7 @@ DatePickerThemeData buildExpressiveDatePickerTheme(BuildContext context) {
     backgroundColor: colorScheme.surfaceContainerHigh,
     elevation: 6,
     surfaceTintColor: Colors.transparent,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     headerBackgroundColor: colorScheme.primary,
     headerForegroundColor: colorScheme.onPrimary,
     headerHeadlineStyle: m3eTheme.typography.emphasized.headlineSmall,
@@ -99,10 +97,7 @@ DatePickerThemeData buildExpressiveDatePickerTheme(BuildContext context) {
       }
       return colorScheme.primary;
     }),
-    todayBorder: BorderSide(
-      color: colorScheme.primary,
-      width: 1.5,
-    ),
+    todayBorder: BorderSide(color: colorScheme.primary, width: 1.5),
     yearStyle: m3eTheme.typeScale.bodyMedium,
     yearForegroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
@@ -150,8 +145,7 @@ DatePickerThemeData buildExpressiveDatePickerTheme(BuildContext context) {
     rangePickerHeaderHelpStyle: m3eTheme.typeScale.labelMedium.copyWith(
       color: colorScheme.onPrimary.withValues(alpha: 0.85),
     ),
-    rangeSelectionBackgroundColor:
-        colorScheme.primary.withValues(alpha: 0.15),
+    rangeSelectionBackgroundColor: colorScheme.primary.withValues(alpha: 0.15),
     rangeSelectionOverlayColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.pressed)) {
         return colorScheme.primary.withValues(alpha: 0.12);
@@ -202,8 +196,9 @@ ThemeData buildExpressiveDatePickerDialogTheme(BuildContext context) {
   final m3eTheme = AppTheme.of(context);
   final baseTheme = Theme.of(context);
   final isDark = baseTheme.brightness == Brightness.dark;
-  final colorScheme =
-      isDark ? AppTheme.darkColorScheme() : AppTheme.lightColorScheme();
+  final colorScheme = isDark
+      ? AppTheme.darkColorScheme()
+      : AppTheme.lightColorScheme();
 
   return baseTheme.copyWith(
     colorScheme: colorScheme,
@@ -261,9 +256,7 @@ ThemeData buildExpressiveDatePickerDialogTheme(BuildContext context) {
     highlightColor: Colors.transparent,
     hoverColor: colorScheme.primary.withValues(alpha: 0.08),
     focusColor: colorScheme.primary.withValues(alpha: 0.12),
-    iconTheme: IconThemeData(
-      color: colorScheme.onSurfaceVariant,
-    ),
+    iconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
     // Icon button styles for month chevrons and mode toggle
     iconButtonTheme: IconButtonThemeData(
       style: ButtonStyle(
@@ -348,8 +341,8 @@ Future<DateTime?> showAppDatePicker({
   final safeInitialDate = normalizedInitial.isBefore(normalizedFirstDate)
       ? normalizedFirstDate
       : (normalizedInitial.isAfter(normalizedLastDate)
-          ? normalizedLastDate
-          : normalizedInitial);
+            ? normalizedLastDate
+            : normalizedInitial);
 
   return showDatePicker(
     context: context,
@@ -369,16 +362,14 @@ Future<DateTime?> showAppDatePicker({
     fieldLabelText: fieldLabelText,
     keyboardType: keyboardType,
     barrierDismissible: barrierDismissible,
-    routeSettings:
-        restorationId != null ? RouteSettings(name: restorationId) : null,
+    routeSettings: restorationId != null
+        ? RouteSettings(name: restorationId)
+        : null,
     onDatePickerModeChange: onDatePickerModeChange,
     useRootNavigator: useRootNavigator,
     builder: (context, child) {
       final dialogTheme = buildExpressiveDatePickerDialogTheme(context);
-      return Theme(
-        data: dialogTheme,
-        child: child!,
-      );
+      return Theme(data: dialogTheme, child: child!);
     },
   );
 }
@@ -441,15 +432,13 @@ Future<AppDateRange?> showAppDateRangePicker({
     fieldStartLabelText: fieldStartLabelText,
     fieldEndLabelText: fieldEndLabelText,
     barrierDismissible: barrierDismissible,
-    routeSettings:
-        restorationId != null ? RouteSettings(name: restorationId) : null,
+    routeSettings: restorationId != null
+        ? RouteSettings(name: restorationId)
+        : null,
     useRootNavigator: useRootNavigator,
     builder: (context, child) {
       final dialogTheme = buildExpressiveDatePickerDialogTheme(context);
-      return Theme(
-        data: dialogTheme,
-        child: child!,
-      );
+      return Theme(data: dialogTheme, child: child!);
     },
   );
 }

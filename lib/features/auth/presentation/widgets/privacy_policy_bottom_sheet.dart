@@ -44,7 +44,8 @@ void showPrivacyPolicyBottomSheet(BuildContext context) {
                   _buildSection(
                     context,
                     title: '1. Pengumpulan data',
-                    content: 'Kawalo mengumpulkan informasi akun seperti nama, '
+                    content:
+                        'Kawalo mengumpulkan informasi akun seperti nama, '
                         'email, serta lokasi GPS perangkat untuk '
                         'memverifikasi kehadiran personil saat check-in '
                         'absensi dan patroli di lapangan.',
@@ -63,7 +64,8 @@ void showPrivacyPolicyBottomSheet(BuildContext context) {
                   _buildSection(
                     context,
                     title: '3. Keamanan data',
-                    content: 'Kami berkomitmen menjaga kerahasiaan data Anda '
+                    content:
+                        'Kami berkomitmen menjaga kerahasiaan data Anda '
                         'dengan mengimplementasikan enkripsi SSL/TLS dan '
                         'penyimpanan kredensial terenkripsi aman.',
                   ),
@@ -71,7 +73,8 @@ void showPrivacyPolicyBottomSheet(BuildContext context) {
                   _buildSection(
                     context,
                     title: '4. Hak pengguna',
-                    content: 'Anda dapat memperbarui informasi akun atau '
+                    content:
+                        'Anda dapat memperbarui informasi akun atau '
                         'menghubungi administrator operasional Kawalo jika '
                         'memerlukan bantuan terkait privasi data Anda.',
                   ),
@@ -90,10 +93,7 @@ void showPrivacyPolicyBottomSheet(BuildContext context) {
               size: AppButtonSize.md,
               semanticLabel: 'Saya mengerti',
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Saya mengerti',
-                style: typeScale.titleMedium,
-              ),
+              child: Text('Saya mengerti', style: typeScale.titleMedium),
             ),
           ),
         ],

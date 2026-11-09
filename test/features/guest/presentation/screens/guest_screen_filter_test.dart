@@ -16,6 +16,7 @@ import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dart';
 import 'package:mocktail/mocktail.dart';
+
 import '../../fixtures/guest_fixtures.dart';
 
 class MockGetGuestsUseCase extends Mock implements GetGuestsUseCase {}
@@ -51,16 +52,13 @@ MockGuestCubit createMockGuestCubit({
     ),
   ).thenAnswer((_) async => AppFetchResult.success);
   when(
-    () => mockCubit.refreshGuests(
-      search: any(named: 'search'),
-    ),
+    () => mockCubit.refreshGuests(search: any(named: 'search')),
   ).thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetDateFilter)
-      .thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetFilters)
-      .thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.loadGroupMembers)
-      .thenAnswer((_) async => const Right([]));
+  when(
+    mockCubit.resetDateFilter,
+  ).thenAnswer((_) async => AppFetchResult.success);
+  when(mockCubit.resetFilters).thenAnswer((_) async => AppFetchResult.success);
+  when(mockCubit.loadGroupMembers).thenAnswer((_) async => const Right([]));
   return mockCubit;
 }
 
@@ -69,37 +67,28 @@ void main() {
     List<GuestItemEntity>? initialGuests,
     GuestCubit? cubit,
   }) {
-    final effectiveCubit = cubit ??
-        createMockGuestCubit(
-          guests: initialGuests,
-        );
+    final effectiveCubit = cubit ?? createMockGuestCubit(guests: initialGuests);
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: GuestScreen(
-        cubit: effectiveCubit,
-      ),
+      home: GuestScreen(cubit: effectiveCubit),
     );
   }
 
   group('GuestScreen Filter & Empty State Tests', () {
-    testWidgets(
-        'renders "Belum ada data tamu" empty state when active group '
+    testWidgets('renders "Belum ada data tamu" empty state when active group '
         'has no data', (tester) async {
       await tester.pumpWidget(buildTestWidget(initialGuests: const []));
       await tester.pumpAndSettle();
 
       expect(find.text('Belum ada data tamu'), findsOneWidget);
       expect(
-        find.text(
-          'Belum ada kunjungan tamu pada hari ini.',
-        ),
+        find.text('Belum ada kunjungan tamu pada hari ini.'),
         findsOneWidget,
       );
       expect(find.text('Atur Ulang Filter'), findsNothing);
     });
 
-    testWidgets(
-        'renders "Data tamu tidak ditemukan" and resets via button '
+    testWidgets('renders "Data tamu tidak ditemukan" and resets via button '
         'when no match', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -158,8 +147,7 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets(
-        'tapping Tanggal filter chip opens bottom sheet and updates '
+    testWidgets('tapping Tanggal filter chip opens bottom sheet and updates '
         'filter chip label when active', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -171,9 +159,8 @@ void main() {
       registerFallbackValue(const GetGuestsParams());
       final mockUseCase = MockGetGuestsUseCase();
       when(() => mockUseCase(any())).thenAnswer(
-        (_) async => const Right(
-          GuestResult(items: GuestFixtures.defaultGuestEntities),
-        ),
+        (_) async =>
+            const Right(GuestResult(items: GuestFixtures.defaultGuestEntities)),
       );
 
       final cubit = GuestCubit(
@@ -214,52 +201,54 @@ void main() {
     });
 
     testWidgets(
-        'filter "Hari ini" applies correctly and filters out past guests',
-        (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+      'filter "Hari ini" applies correctly and filters out past guests',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      registerFallbackValue(const GetGuestsParams());
-      final mockUseCase = MockGetGuestsUseCase();
-      when(() => mockUseCase(any())).thenAnswer((invocation) async {
-        final params = invocation.positionalArguments.first as GetGuestsParams;
-        if (params.startDate != null) {
+        registerFallbackValue(const GetGuestsParams());
+        final mockUseCase = MockGetGuestsUseCase();
+        when(() => mockUseCase(any())).thenAnswer((invocation) async {
+          final params =
+              invocation.positionalArguments.first as GetGuestsParams;
+          if (params.startDate != null) {
+            return const Right(
+              GuestResult(items: [GuestFixtures.sampleExitedGuest]),
+            );
+          }
           return const Right(
-            GuestResult(items: [GuestFixtures.sampleExitedGuest]),
+            GuestResult(
+              items: [
+                GuestFixtures.sampleExitedGuest,
+                GuestFixtures.samplePastGuest,
+              ],
+            ),
           );
-        }
-        return const Right(
-          GuestResult(
-            items: [
-              GuestFixtures.sampleExitedGuest,
-              GuestFixtures.samplePastGuest,
-            ],
-          ),
+        });
+
+        final cubit = GuestCubit(
+          getGuestsUseCase: mockUseCase,
+          deleteGuestUseCase: MockDeleteGuestUseCase(),
+          deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
         );
-      });
 
-      final cubit = GuestCubit(
-        getGuestsUseCase: mockUseCase,
-        deleteGuestUseCase: MockDeleteGuestUseCase(),
-        deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
-      );
+        await cubit.fetchGuests(filterPeriod: AppDateFilterPeriod.today);
 
-      await cubit.fetchGuests(filterPeriod: AppDateFilterPeriod.today);
+        await tester.pumpWidget(buildTestWidget(cubit: cubit));
+        await tester.pumpAndSettle();
 
-      await tester.pumpWidget(buildTestWidget(cubit: cubit));
-      await tester.pumpAndSettle();
+        // Tamu hari ini ditampilkan
+        expect(find.text('Bambang Sudarsono'), findsOneWidget);
+        // Tamu masa lalu (2020) terfilter keluar oleh filter Hari ini
+        expect(find.text('Tamu Masa Lalu'), findsNothing);
+        expect(find.byType(GuestCard), findsOneWidget);
 
-      // Tamu hari ini ditampilkan
-      expect(find.text('Bambang Sudarsono'), findsOneWidget);
-      // Tamu masa lalu (2020) terfilter keluar oleh filter Hari ini
-      expect(find.text('Tamu Masa Lalu'), findsNothing);
-      expect(find.byType(GuestCard), findsOneWidget);
-
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
   });
 }

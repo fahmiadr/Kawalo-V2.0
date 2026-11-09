@@ -36,8 +36,11 @@ class InformationDocumentSection extends StatelessWidget {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return BlocSelector<InformationFormCubit, InformationFormState,
-        ({InformationFormMediaItem? doc, String feedFile, String? error})>(
+    return BlocSelector<
+      InformationFormCubit,
+      InformationFormState,
+      ({InformationFormMediaItem? doc, String feedFile, String? error})
+    >(
       selector: (state) => (
         doc: state.documentMedia,
         feedFile: state.feedFile,
@@ -56,15 +59,14 @@ class InformationDocumentSection extends StatelessWidget {
               if (!hasDocument)
                 AppFormEmptyPlaceholder(
                   title: 'Belum ada dokumen',
-                  subtitle: 'Ketuk untuk memilih dokumen pendukung '
+                  subtitle:
+                      'Ketuk untuk memilih dokumen pendukung '
                       '(PDF, Word, Excel)',
                   vectorIcon: KawaloVectors.documentAttachment,
                   onTap: isSubmitting ? null : onPickDocument,
                 )
               else ...[
-                AppFileTile(
-                  fileName: docName,
-                ),
+                AppFileTile(fileName: docName),
                 AppSpacing.vGap150,
 
                 // Tombol Aksi: Ubah & Hapus
@@ -82,10 +84,7 @@ class InformationDocumentSection extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            AppSvgIcon(
-                              KawaloVectors.edit03,
-                              size: 16,
-                            ),
+                            AppSvgIcon(KawaloVectors.edit03, size: 16),
                             AppSpacing.hGapXs,
                             Text('Ubah berkas'),
                           ],
@@ -103,10 +102,7 @@ class InformationDocumentSection extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            AppSvgIcon(
-                              KawaloVectors.delete01,
-                              size: 16,
-                            ),
+                            AppSvgIcon(KawaloVectors.delete01, size: 16),
                             AppSpacing.hGapXs,
                             Text('Hapus berkas'),
                           ],

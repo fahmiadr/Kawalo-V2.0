@@ -11,15 +11,16 @@ void main() {
   group('NetworkInfoImpl Unit Tests', () {
     late MockConnectivity mockConnectivity;
     late StreamController<List<ConnectivityResult>>
-        connectivityStreamController;
+    connectivityStreamController;
 
     setUp(() {
       mockConnectivity = MockConnectivity();
       connectivityStreamController =
           StreamController<List<ConnectivityResult>>.broadcast();
 
-      when(() => mockConnectivity.onConnectivityChanged)
-          .thenAnswer((_) => connectivityStreamController.stream);
+      when(
+        () => mockConnectivity.onConnectivityChanged,
+      ).thenAnswer((_) => connectivityStreamController.stream);
     });
 
     tearDown(() {
@@ -29,8 +30,9 @@ void main() {
     test(
       'isConnected returns false immediately if no network interface',
       () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.none]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.none]);
 
         var checkProbeCalled = false;
         final networkInfo = NetworkInfoImpl(
@@ -51,8 +53,9 @@ void main() {
     test(
       'isConnected runs active check probe when interface is available',
       () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
         var checkProbeCalled = false;
         final networkInfo = NetworkInfoImpl(
@@ -73,8 +76,9 @@ void main() {
     test(
       'isConnected returns false if active probe fails even with interface',
       () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.mobile]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.mobile]);
 
         final networkInfo = NetworkInfoImpl(
           connectivity: mockConnectivity,
@@ -91,8 +95,9 @@ void main() {
       'isConnected fast-path returns false without probe when offline is known',
       () async {
         var probeCount = 0;
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
         final networkInfo = NetworkInfoImpl(
           connectivity: mockConnectivity,
@@ -166,8 +171,9 @@ void main() {
           },
         );
 
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.mobile]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.mobile]);
 
         final emittedStates = <bool>[];
         final subscription = networkInfo.onConnectivityChanged.listen(
@@ -196,8 +202,9 @@ void main() {
           checkConnection: () async => false,
         );
 
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
         final result = await networkInfo.checkReachability();
         expect(result, isFalse);
@@ -208,8 +215,9 @@ void main() {
     test(
       'checkConnectivity deduplicates concurrent in-flight probes',
       () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+        when(
+          () => mockConnectivity.checkConnectivity(),
+        ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
         var activeProbes = 0;
         final networkInfo = NetworkInfoImpl(
@@ -234,47 +242,45 @@ void main() {
       },
     );
 
-    test(
-      'isConnected re-probes after offlineCacheTtl expires and detects '
-      'recovery',
-      () async {
-        when(() => mockConnectivity.checkConnectivity())
-            .thenAnswer((_) async => [ConnectivityResult.wifi]);
+    test('isConnected re-probes after offlineCacheTtl expires and detects '
+        'recovery', () async {
+      when(
+        () => mockConnectivity.checkConnectivity(),
+      ).thenAnswer((_) async => [ConnectivityResult.wifi]);
 
-        var isActuallyOnline = false;
-        var probeCount = 0;
-        final networkInfo = NetworkInfoImpl(
-          connectivity: mockConnectivity,
-          retryDelay: Duration.zero,
-          offlineCacheTtl: const Duration(milliseconds: 30),
-          checkConnection: () async {
-            probeCount++;
-            return isActuallyOnline;
-          },
-        );
+      var isActuallyOnline = false;
+      var probeCount = 0;
+      final networkInfo = NetworkInfoImpl(
+        connectivity: mockConnectivity,
+        retryDelay: Duration.zero,
+        offlineCacheTtl: const Duration(milliseconds: 30),
+        checkConnection: () async {
+          probeCount++;
+          return isActuallyOnline;
+        },
+      );
 
-        // Panggilan 1: Probe offline
-        final initialStatus = await networkInfo.isConnected;
-        expect(initialStatus, isFalse);
-        expect(probeCount, 1);
+      // Panggilan 1: Probe offline
+      final initialStatus = await networkInfo.isConnected;
+      expect(initialStatus, isFalse);
+      expect(probeCount, 1);
 
-        // Panggilan 2 (seketika): masih dalam jendela TTL, fast-path
-        final cachedStatus = await networkInfo.isConnected;
-        expect(cachedStatus, isFalse);
-        expect(probeCount, 1);
+      // Panggilan 2 (seketika): masih dalam jendela TTL, fast-path
+      final cachedStatus = await networkInfo.isConnected;
+      expect(cachedStatus, isFalse);
+      expect(probeCount, 1);
 
-        // Internet kembali pulih di access point yang sama
-        isActuallyOnline = true;
-        await Future<void>.delayed(const Duration(milliseconds: 40));
+      // Internet kembali pulih di access point yang sama
+      isActuallyOnline = true;
+      await Future<void>.delayed(const Duration(milliseconds: 40));
 
-        // Panggilan 3: TTL sudah expire, harus probe ulang dan mendeteksi
-        // status internet yang pulih
-        final recoveredStatus = await networkInfo.isConnected;
-        expect(recoveredStatus, isTrue);
-        expect(probeCount, 2);
+      // Panggilan 3: TTL sudah expire, harus probe ulang dan mendeteksi
+      // status internet yang pulih
+      final recoveredStatus = await networkInfo.isConnected;
+      expect(recoveredStatus, isTrue);
+      expect(probeCount, 2);
 
-        networkInfo.dispose();
-      },
-    );
+      networkInfo.dispose();
+    });
   });
 }

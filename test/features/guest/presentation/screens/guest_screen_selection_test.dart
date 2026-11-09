@@ -38,12 +38,9 @@ MockGuestCubit createMockGuestCubit({
   String greeting = 'Diperbarui Hari ini, 15.20',
 }) {
   final mockCubit = MockGuestCubit();
-  when(() => mockCubit.state).thenReturn(
-    GuestLoaded(
-      guests: guests ?? const [],
-      lastSync: greeting,
-    ),
-  );
+  when(
+    () => mockCubit.state,
+  ).thenReturn(GuestLoaded(guests: guests ?? const [], lastSync: greeting));
   when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
   when(() => mockCubit.currentGreeting).thenReturn(greeting);
   when(
@@ -57,16 +54,13 @@ MockGuestCubit createMockGuestCubit({
     ),
   ).thenAnswer((_) async => AppFetchResult.success);
   when(
-    () => mockCubit.refreshGuests(
-      search: any(named: 'search'),
-    ),
+    () => mockCubit.refreshGuests(search: any(named: 'search')),
   ).thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetDateFilter)
-      .thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.resetFilters)
-      .thenAnswer((_) async => AppFetchResult.success);
-  when(mockCubit.loadGroupMembers)
-      .thenAnswer((_) async => const Right([]));
+  when(
+    mockCubit.resetDateFilter,
+  ).thenAnswer((_) async => AppFetchResult.success);
+  when(mockCubit.resetFilters).thenAnswer((_) async => AppFetchResult.success);
+  when(mockCubit.loadGroupMembers).thenAnswer((_) async => const Right([]));
   return mockCubit;
 }
 
@@ -147,15 +141,14 @@ void main() {
     GuestCubit? cubit,
     ConnectivityCubit? connectivityCubit,
   }) {
-    final effectiveCubit = cubit ??
+    final effectiveCubit =
+        cubit ??
         createMockGuestCubit(
           guests: initialGuests ?? const [guest1, guest2, guest3],
         );
     Widget app = M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: GuestScreen(
-        cubit: effectiveCubit,
-      ),
+      home: GuestScreen(cubit: effectiveCubit),
     );
 
     if (connectivityCubit != null) {
@@ -175,9 +168,7 @@ void main() {
     testWidgets(
       'renders AppSelectionAppBar and hides create FAB on long press',
       (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: guardSession),
-        );
+        await tester.pumpWidget(buildTestWidget(session: guardSession));
         await tester.pumpAndSettle();
 
         expect(find.text('Data tamu'), findsOneWidget);
@@ -203,9 +194,7 @@ void main() {
     testWidgets(
       'GUARD cannot select guest card authored by another user on long-press',
       (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: guardSession),
-        );
+        await tester.pumpWidget(buildTestWidget(session: guardSession));
         await tester.pumpAndSettle();
 
         // Long press non-owned card (Reni - created by Dani)
@@ -226,9 +215,7 @@ void main() {
       'GUARD cannot select non-owned guest card on tap when selection '
       'is active',
       (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: guardSession),
-        );
+        await tester.pumpWidget(buildTestWidget(session: guardSession));
         await tester.pumpAndSettle();
 
         // Enter selection mode on owned card
@@ -249,74 +236,65 @@ void main() {
       },
     );
 
-    testWidgets(
-      'ADMIN can select any guest regardless of author',
-      (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: adminSession),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('ADMIN can select any guest regardless of author', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(session: adminSession));
+      await tester.pumpAndSettle();
 
-        // Admin long-presses non-owned card (Reni)
-        await tester.longPress(find.text('Reni Marsiti'));
-        await tester.pumpAndSettle();
+      // Admin long-presses non-owned card (Reni)
+      await tester.longPress(find.text('Reni Marsiti'));
+      await tester.pumpAndSettle();
 
-        // Selection mode activates
-        expect(find.text('1'), findsOneWidget);
+      // Selection mode activates
+      expect(find.text('1'), findsOneWidget);
 
-        // Admin taps Bambang
-        await tester.tap(find.text('Bambang Sudarsono'));
-        await tester.pumpAndSettle();
+      // Admin taps Bambang
+      await tester.tap(find.text('Bambang Sudarsono'));
+      await tester.pumpAndSettle();
 
-        // Both selected
-        expect(find.text('2'), findsOneWidget);
-      },
-    );
+      // Both selected
+      expect(find.text('2'), findsOneWidget);
+    });
 
-    testWidgets(
-      'Smart "Pilih semua" selects only owned guests for GUARD',
-      (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: guardSession),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('Smart "Pilih semua" selects only owned guests for GUARD', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(session: guardSession));
+      await tester.pumpAndSettle();
 
-        // Long press Bambang to enter selection
-        await tester.longPress(find.text('Bambang Sudarsono'));
-        await tester.pumpAndSettle();
-        expect(find.text('1'), findsOneWidget);
+      // Long press Bambang to enter selection
+      await tester.longPress(find.text('Bambang Sudarsono'));
+      await tester.pumpAndSettle();
+      expect(find.text('1'), findsOneWidget);
 
-        // Tap "Pilih semua"
-        await tester.tap(find.text('Pilih semua'));
-        await tester.pumpAndSettle();
+      // Tap "Pilih semua"
+      await tester.tap(find.text('Pilih semua'));
+      await tester.pumpAndSettle();
 
-        // Only guest1 and guest3 (created by satpam.budi) are selected: 2 items
-        expect(find.text('2'), findsOneWidget);
-        expect(find.text('3'), findsNothing);
-      },
-    );
+      // Only guest1 and guest3 (created by satpam.budi) are selected: 2 items
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('3'), findsNothing);
+    });
 
-    testWidgets(
-      'Smart "Pilih semua" selects all guests for ADMIN',
-      (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: adminSession),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('Smart "Pilih semua" selects all guests for ADMIN', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(session: adminSession));
+      await tester.pumpAndSettle();
 
-        // Long press Bambang
-        await tester.longPress(find.text('Bambang Sudarsono'));
-        await tester.pumpAndSettle();
-        expect(find.text('1'), findsOneWidget);
+      // Long press Bambang
+      await tester.longPress(find.text('Bambang Sudarsono'));
+      await tester.pumpAndSettle();
+      expect(find.text('1'), findsOneWidget);
 
-        // Tap "Pilih semua"
-        await tester.tap(find.text('Pilih semua'));
-        await tester.pumpAndSettle();
+      // Tap "Pilih semua"
+      await tester.tap(find.text('Pilih semua'));
+      await tester.pumpAndSettle();
 
-        // All 3 items are selected for ADMIN
-        expect(find.text('3'), findsOneWidget);
-      },
-    );
+      // All 3 items are selected for ADMIN
+      expect(find.text('3'), findsOneWidget);
+    });
 
     testWidgets(
       'Batch deletion flow: confirmation dialog -> confirm -> invokes cubit',
@@ -333,14 +311,11 @@ void main() {
         final mockDeleteBatchUseCase = MockDeleteBatchGuestUseCase();
 
         when(() => mockGetGuestsUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            GuestResult(items: [guest1, guest2, guest3]),
-          ),
+          (_) async =>
+              const Right(GuestResult(items: [guest1, guest2, guest3])),
         );
         when(() => mockDeleteBatchUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            DeleteBatchResult(deletedCount: 2),
-          ),
+          (_) async => const Right(DeleteBatchResult(deletedCount: 2)),
         );
 
         final cubit = GuestCubit(
@@ -350,10 +325,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          buildTestWidget(
-            session: guardSession,
-            cubit: cubit,
-          ),
+          buildTestWidget(session: guardSession, cubit: cubit),
         );
         await tester.pumpAndSettle();
 
@@ -415,9 +387,7 @@ void main() {
     testWidgets(
       'PopScope dismisses selection mode when back navigation is triggered',
       (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(session: guardSession),
-        );
+        await tester.pumpWidget(buildTestWidget(session: guardSession));
         await tester.pumpAndSettle();
 
         // Enter selection mode
@@ -441,73 +411,58 @@ void main() {
       },
     );
 
-    testWidgets(
-      'pull-to-refresh is disabled when in selection mode',
-      (tester) async {
-        final mockCubit = createMockGuestCubit(
-          guests: const [guest1, guest2, guest3],
-        );
+    testWidgets('pull-to-refresh is disabled when in selection mode', (
+      tester,
+    ) async {
+      final mockCubit = createMockGuestCubit(
+        guests: const [guest1, guest2, guest3],
+      );
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            session: guardSession,
-            cubit: mockCubit,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        buildTestWidget(session: guardSession, cubit: mockCubit),
+      );
+      await tester.pumpAndSettle();
 
-        // Enter selection mode
-        await tester.longPress(find.text('Bambang Sudarsono'));
-        await tester.pumpAndSettle();
-        expect(find.text('1'), findsOneWidget);
+      // Enter selection mode
+      await tester.longPress(find.text('Bambang Sudarsono'));
+      await tester.pumpAndSettle();
+      expect(find.text('1'), findsOneWidget);
 
-        // Attempt fling to trigger refresh
-        await tester.fling(
-          find.byType(ListView),
-          const Offset(0, 300),
-          1000,
-        );
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
-        await tester.pumpAndSettle();
+      // Attempt fling to trigger refresh
+      await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
 
-        // refreshGuests should NOT be called
-        verifyNever(
-          () => mockCubit.refreshGuests(search: any(named: 'search')),
-        );
-      },
-    );
+      // refreshGuests should NOT be called
+      verifyNever(() => mockCubit.refreshGuests(search: any(named: 'search')));
+    });
 
-    testWidgets(
-      'delete button is disabled when offline in selection mode',
-      (tester) async {
-        final offlineCubit = ConnectivityCubit(
-          initialState: ConnectivityStatus.offline,
-          autoStart: false,
-        );
+    testWidgets('delete button is disabled when offline in selection mode', (
+      tester,
+    ) async {
+      final offlineCubit = ConnectivityCubit(
+        initialState: ConnectivityStatus.offline,
+        autoStart: false,
+      );
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            session: guardSession,
-            connectivityCubit: offlineCubit,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        buildTestWidget(session: guardSession, connectivityCubit: offlineCubit),
+      );
+      await tester.pumpAndSettle();
 
-        // Enter selection mode
-        await tester.longPress(find.text('Bambang Sudarsono'));
-        await tester.pumpAndSettle();
+      // Enter selection mode
+      await tester.longPress(find.text('Bambang Sudarsono'));
+      await tester.pumpAndSettle();
 
-        final deleteBtnFinder = find.byWidgetPredicate(
-          (w) =>
-              w is AppIconButton &&
-              w.semanticLabel == 'Hapus data tamu terpilih',
-        );
-        expect(deleteBtnFinder, findsOneWidget);
+      final deleteBtnFinder = find.byWidgetPredicate(
+        (w) =>
+            w is AppIconButton && w.semanticLabel == 'Hapus data tamu terpilih',
+      );
+      expect(deleteBtnFinder, findsOneWidget);
 
-        final iconButton = tester.widget<AppIconButton>(deleteBtnFinder);
-        expect(iconButton.onPressed, isNull);
-      },
-    );
+      final iconButton = tester.widget<AppIconButton>(deleteBtnFinder);
+      expect(iconButton.onPressed, isNull);
+    });
   });
 }

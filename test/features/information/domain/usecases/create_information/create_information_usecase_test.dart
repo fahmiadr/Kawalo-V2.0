@@ -89,9 +89,7 @@ void main() {
     });
 
     test('isAuthorized returns false for null session or other roles', () {
-      const nullSessionParams = CreateInformationParams(
-        title: 'Info',
-      );
+      const nullSessionParams = CreateInformationParams(title: 'Info');
       expect(nullSessionParams.isAuthorized, isFalse);
 
       const citizenParams = CreateInformationParams(
@@ -112,22 +110,20 @@ void main() {
       final result = await useCase(unauthorizedParams);
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ForbiddenFailure>());
-          expect(
-            failure.message,
-            'Anda tidak memiliki izin untuk membuat informasi.',
-          );
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          failure.message,
+          'Anda tidak memiliki izin untuk membuat informasi.',
+        );
+      }, (_) => fail('Should be Left'));
       verifyZeroInteractions(mockRepository);
     });
 
     test('delegates to repository and returns entity on success', () async {
-      when(() => mockRepository.createInformation(any()))
-          .thenAnswer((_) async => const Right(tResultEntity));
+      when(
+        () => mockRepository.createInformation(any()),
+      ).thenAnswer((_) async => const Right(tResultEntity));
 
       final result = await useCase(tParams);
 
@@ -150,22 +146,25 @@ void main() {
         session: tSessionAdmin,
         cancelToken: token,
       );
-      when(() => mockRepository.createInformation(any()))
-          .thenAnswer((_) async => const Right(tResultEntity));
+      when(
+        () => mockRepository.createInformation(any()),
+      ).thenAnswer((_) async => const Right(tResultEntity));
 
       final result = await useCase(tParamsWithToken);
 
       expect(result.isRight(), isTrue);
       verify(
-        () => mockRepository
-            .createInformation(tParamsWithToken.toRepositoryData()),
+        () => mockRepository.createInformation(
+          tParamsWithToken.toRepositoryData(),
+        ),
       ).called(1);
     });
 
     test('returns failure when repository fails', () async {
       const tFailure = ServerFailure('Koneksi database bermasalah.');
-      when(() => mockRepository.createInformation(any()))
-          .thenAnswer((_) async => const Left(tFailure));
+      when(
+        () => mockRepository.createInformation(any()),
+      ).thenAnswer((_) async => const Left(tFailure));
 
       final result = await useCase(tParams);
 

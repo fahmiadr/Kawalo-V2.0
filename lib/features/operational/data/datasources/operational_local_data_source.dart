@@ -57,8 +57,9 @@ class OperationalLocalDataSourceImpl implements OperationalLocalDataSource {
     }
 
     if (startDate != null) {
-      final startStr =
-          startDate.length >= 10 ? startDate.substring(0, 10) : startDate;
+      final startStr = startDate.length >= 10
+          ? startDate.substring(0, 10)
+          : startDate;
       query = query.and().dutyDateGreaterThan(startStr, include: true);
     }
 

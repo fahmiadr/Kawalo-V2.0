@@ -9,10 +9,7 @@ void main() {
   group('InformationDetailPostCard Widget Tests', () {
     const feed = InformationItemEntity(
       id: 'post-1',
-      photos: [
-        'https://example.com/1.jpg',
-        'https://example.com/2.jpg',
-      ],
+      photos: ['https://example.com/1.jpg', 'https://example.com/2.jpg'],
       title: 'Patroli Lingkungan Blok A',
       text: 'Situasi aman terkendali tidak ada indikasi kejanggalan.',
       userName: 'Komandan Regu',
@@ -27,43 +24,44 @@ void main() {
     );
 
     testWidgets(
-        'renders user avatar, name, email, meta, title, text, and collage',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: SingleChildScrollView(
-              child: InformationDetailPostCard(item: feed),
+      'renders user avatar, name, email, meta, title, text, and collage',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: const Scaffold(
+              body: SingleChildScrollView(
+                child: InformationDetailPostCard(item: feed),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Header: Avatar, Name, Email
-      expect(find.text('Komandan Regu'), findsOneWidget);
-      expect(find.text('danru@kawalo.id'), findsOneWidget);
+        // Header: Avatar, Name, Email
+        expect(find.text('Komandan Regu'), findsOneWidget);
+        expect(find.text('danru@kawalo.id'), findsOneWidget);
 
-      // Meta: Category & Date
-      expect(find.text('Informasi Umum'), findsOneWidget);
-      expect(find.text('01 Okt 2026 14:00'), findsOneWidget);
+        // Meta: Category & Date
+        expect(find.text('Informasi Umum'), findsOneWidget);
+        expect(find.text('01 Okt 2026 14:00'), findsOneWidget);
 
-      // Content: Title & Full text
-      expect(find.text('Patroli Lingkungan Blok A'), findsOneWidget);
-      expect(
-        find.text('Situasi aman terkendali tidak ada indikasi kejanggalan.'),
-        findsOneWidget,
-      );
+        // Content: Title & Full text
+        expect(find.text('Patroli Lingkungan Blok A'), findsOneWidget);
+        expect(
+          find.text('Situasi aman terkendali tidak ada indikasi kejanggalan.'),
+          findsOneWidget,
+        );
 
-      // Media: Collage pattern
-      expect(find.byType(AppImageCollage), findsOneWidget);
+        // Media: Collage pattern
+        expect(find.byType(AppImageCollage), findsOneWidget);
 
-      // Explicitly excluded by design requirements:
-      // NO unit/kawasan
-      expect(find.text('Cluster Magnolia'), findsNothing);
-      // NO jadwal acara
-      expect(find.text('Jadwal Acara'), findsNothing);
-    });
+        // Explicitly excluded by design requirements:
+        // NO unit/kawasan
+        expect(find.text('Cluster Magnolia'), findsNothing);
+        // NO jadwal acara
+        expect(find.text('Jadwal Acara'), findsNothing);
+      },
+    );
   });
 }

@@ -64,11 +64,7 @@ class _AttendanceCardSkeletonState extends State<AttendanceCardSkeleton>
             : LinearGradient(
                 begin: Alignment(-2.0 + 4.0 * _controller.value, -0.3),
                 end: Alignment(-1.0 + 4.0 * _controller.value, 0.3),
-                colors: [
-                  baseColor,
-                  highlightColor,
-                  baseColor,
-                ],
+                colors: [baseColor, highlightColor, baseColor],
                 stops: const [0.0, 0.5, 1.0],
               );
 

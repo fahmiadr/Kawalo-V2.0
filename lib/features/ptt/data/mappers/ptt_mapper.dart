@@ -7,11 +7,7 @@ class PttMapper {
   const PttMapper._();
 
   static PttSpeakerEntity toSpeakerEntity(PttSpeakerDto dto) {
-    return PttSpeakerEntity(
-      userId: dto.userId,
-      name: dto.name,
-      role: dto.role,
-    );
+    return PttSpeakerEntity(userId: dto.userId, name: dto.name, role: dto.role);
   }
 
   static PttFloorStateEntity toFloorStateEntity(PttFloorStateDto dto) {

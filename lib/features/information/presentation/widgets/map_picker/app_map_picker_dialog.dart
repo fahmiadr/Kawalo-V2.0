@@ -186,7 +186,8 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
     _centerNotifier = ValueNotifier<LatLng>(initialCenter);
     _isMovingNotifier = ValueNotifier<bool>(false);
 
-    final shouldGeocodeInitial = _hasInitialCoordinates &&
+    final shouldGeocodeInitial =
+        _hasInitialCoordinates &&
         (widget.initialAddress == null ||
             widget.initialAddress!.trim().isEmpty);
 
@@ -201,9 +202,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
     );
 
     // Layer 2: Lifecycle-Driven Auto-Recovery (Self-Healing)
-    _lifecycleListener = AppLifecycleListener(
-      onResume: _handleAppResume,
-    );
+    _lifecycleListener = AppLifecycleListener(onResume: _handleAppResume);
 
     if (_hasInitialCoordinates) {
       if (shouldGeocodeInitial) {
@@ -320,7 +319,8 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
 
   Future<void> _applyLastKnownViewportHint() async {
     try {
-      final fetchLastKnown = widget.lastKnownLocationProvider ??
+      final fetchLastKnown =
+          widget.lastKnownLocationProvider ??
           widget.locationService.getLastKnownPosition;
       final lastKnown = await fetchLastKnown();
       final state = _overlayStateNotifier.value;
@@ -346,9 +346,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
     if (state.isLocatingUser) return;
 
     final generation = ++_gpsGeneration;
-    _overlayStateNotifier.value = state.copyWith(
-      isLocatingUser: true,
-    );
+    _overlayStateNotifier.value = state.copyWith(isLocatingUser: true);
 
     try {
       final fetchPosition =
@@ -483,10 +481,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
               if (!_hasInitialCoordinates &&
                   !state.hasUserInteracted &&
                   center != _defaultCoordinate) {
-                _mapController.move(
-                  center,
-                  state.hasConfirmedFix ? 18 : 17,
-                );
+                _mapController.move(center, state.hasConfirmedFix ? 18 : 17);
               }
             },
             onPositionChanged: (camera, hasGesture) {
@@ -508,9 +503,7 @@ class _AppMapPickerDialogState extends State<AppMapPickerDialog> {
           ),
 
           // ── Penanda Titik Tengah Presisi (Molecule) ──────────────
-          MapCenterPinMarker(
-            isMovingListenable: _isMovingNotifier,
-          ),
+          MapCenterPinMarker(isMovingListenable: _isMovingNotifier),
 
           // ── Kontrol Melayang Bawah & Kartu Konfirmasi (Targeted Rebuild) ──
           ValueListenableBuilder<MapPickerOverlayState>(
@@ -570,10 +563,7 @@ abstract final class _LocationFeedbackPresenter {
           launcherService: launcherService,
         );
       case LocationStatus.timeout:
-        LocationActionableError.showTimeoutSnackbar(
-          context,
-          onRetry: onRetry,
-        );
+        LocationActionableError.showTimeoutSnackbar(context, onRetry: onRetry);
       case LocationStatus.success:
         break;
     }

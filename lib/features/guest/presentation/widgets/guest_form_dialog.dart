@@ -33,11 +33,7 @@ import 'package:kawalo_mobile/features/information/presentation/models/informati
 /// berbasis Material 3 Expressive Fullscreen Dialog.
 class GuestFormDialog extends StatefulWidget {
   /// Membuat instance [GuestFormDialog].
-  const GuestFormDialog({
-    super.key,
-    this.cubit,
-    this.mediaPickerService,
-  });
+  const GuestFormDialog({super.key, this.cubit, this.mediaPickerService});
 
   /// Instance [GuestFormCubit] opsional untuk injeksi atau pengujian.
   final GuestFormCubit? cubit;
@@ -112,7 +108,7 @@ class GuestFormDialog extends StatefulWidget {
                     ? () {
                         final activeSession =
                             actionContext.read<UserSessionCubit?>()?.state ??
-                                session;
+                            session;
                         resolvedCubit.submit(session: activeSession);
                       }
                     : null,
@@ -152,9 +148,9 @@ class GuestFormDialog extends StatefulWidget {
       final existing = context.read<GuestFormCubit>();
       return (existing, false);
     } on Object catch (_) {
-      final created = context
-          .read<GuestModule>()
-          .createGuestFormCubit(initialItem: initialItem);
+      final created = context.read<GuestModule>().createGuestFormCubit(
+        initialItem: initialItem,
+      );
       return (created, true);
     }
   }
@@ -294,8 +290,9 @@ class _GuestFormDialogState extends State<GuestFormDialog>
     if (widget.cubit != null) return widget.cubit!;
     if (_internalCubit != null) return _internalCubit!;
 
-    final (cubit, isInternal) =
-        GuestFormDialog._resolveCubitFromContext(context);
+    final (cubit, isInternal) = GuestFormDialog._resolveCubitFromContext(
+      context,
+    );
     if (isInternal) {
       _internalCubit = cubit;
     }
@@ -313,9 +310,7 @@ class _GuestFormDialogState extends State<GuestFormDialog>
         maxPhotos: 1,
       );
     } else {
-      picked = await _mediaPicker.pickMultiImagesFromGallery(
-        limit: 1,
-      );
+      picked = await _mediaPicker.pickMultiImagesFromGallery(limit: 1);
     }
 
     if (picked.isNotEmpty && mounted) {
@@ -362,94 +357,98 @@ class _GuestFormDialogState extends State<GuestFormDialog>
             Navigator.of(context).pop(state.createdOrUpdatedItem);
           } else if (state.status == GuestFormStatus.failure &&
               state.errorMessage != null) {
-            AppSnackbar.show(
-              context,
-              message: state.errorMessage!,
-            );
+            AppSnackbar.show(context, message: state.errorMessage!);
           }
         },
-        child: BlocSelector<GuestFormCubit, GuestFormState,
-            ({bool isSuccess, bool isDirty, bool isSubmitting, bool isCreate})>(
-          selector: (state) => (
-            isSuccess: state.isSuccess,
-            isDirty: state.isDirty,
-            isSubmitting: state.isSubmitting,
-            isCreate: state.isCreateMode,
-          ),
-          builder: (popContext, record) {
-            return PopScope(
-              canPop: _isDiscarding ||
-                  record.isSuccess ||
-                  (!record.isDirty && !record.isSubmitting),
-              onPopInvokedWithResult: (didPop, _) async {
-                if (didPop || record.isSubmitting) return;
-                final confirmed =
-                    await GuestFormDialog._confirmDiscard(popContext);
-                if (confirmed && popContext.mounted) {
-                  setState(() => _isDiscarding = true);
-                  Navigator.of(popContext).pop();
-                }
-              },
-              child: Scaffold(
-                backgroundColor: colorScheme.surface,
-                resizeToAvoidBottomInset: false,
-                body: BlocSelector<GuestFormCubit, GuestFormState, bool>(
-                  selector: (state) => state.isSubmitting,
-                  builder: (context, isSubmitting) {
-                    final overlayMsg = record.isCreate
-                        ? 'Mendaftarkan tamu baru...'
-                        : 'Menyimpan perubahan data tamu...';
-
-                    return AppLoadingOverlay(
-                      isLoading: isSubmitting,
-                      message: overlayMsg,
-                      child: AppKeyboardInsetsPadding(
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          padding: const EdgeInsets.only(
-                            left: AppSpacing.space200,
-                            right: AppSpacing.space200,
-                            top: AppSpacing.space150,
-                            bottom: AppSpacing.space800 * 2,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // ── SEKSI 1: INFORMASI TAMU & IDENTITAS ──────
-                              _buildIdentitySection(cubit, isSubmitting),
-
-                              AppSpacing.vGap300,
-
-                              // ── SEKSI 2: TUJUAN & DETAIL KUNJUNGAN ───────
-                              _buildVisitSection(cubit, isSubmitting),
-
-                              AppSpacing.vGap300,
-
-                              // ── SEKSI 3: DOKUMENTASI FOTO TAMU ───────────
-                              AppFormSection.uncontained(
-                                title: 'Dokumentasi foto tamu',
-                                subtitle:
-                                    'Lampiran foto identitas atau wajah tamu '
-                                    'pengunjung (opsional).',
-                                child: GuestFormPhotoSection(
-                                  cubit: cubit,
-                                  isSubmitting: isSubmitting,
-                                  onPickPhoto: () => _handlePickPhoto(cubit),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+        child:
+            BlocSelector<
+              GuestFormCubit,
+              GuestFormState,
+              ({bool isSuccess, bool isDirty, bool isSubmitting, bool isCreate})
+            >(
+              selector: (state) => (
+                isSuccess: state.isSuccess,
+                isDirty: state.isDirty,
+                isSubmitting: state.isSubmitting,
+                isCreate: state.isCreateMode,
               ),
-            );
-          },
-        ),
+              builder: (popContext, record) {
+                return PopScope(
+                  canPop:
+                      _isDiscarding ||
+                      record.isSuccess ||
+                      (!record.isDirty && !record.isSubmitting),
+                  onPopInvokedWithResult: (didPop, _) async {
+                    if (didPop || record.isSubmitting) return;
+                    final confirmed = await GuestFormDialog._confirmDiscard(
+                      popContext,
+                    );
+                    if (confirmed && popContext.mounted) {
+                      setState(() => _isDiscarding = true);
+                      Navigator.of(popContext).pop();
+                    }
+                  },
+                  child: Scaffold(
+                    backgroundColor: colorScheme.surface,
+                    resizeToAvoidBottomInset: false,
+                    body: BlocSelector<GuestFormCubit, GuestFormState, bool>(
+                      selector: (state) => state.isSubmitting,
+                      builder: (context, isSubmitting) {
+                        final overlayMsg = record.isCreate
+                            ? 'Mendaftarkan tamu baru...'
+                            : 'Menyimpan perubahan data tamu...';
+
+                        return AppLoadingOverlay(
+                          isLoading: isSubmitting,
+                          message: overlayMsg,
+                          child: AppKeyboardInsetsPadding(
+                            child: SingleChildScrollView(
+                              controller: _scrollController,
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              padding: const EdgeInsets.only(
+                                left: AppSpacing.space200,
+                                right: AppSpacing.space200,
+                                top: AppSpacing.space150,
+                                bottom: AppSpacing.space800 * 2,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // ── SEKSI 1: INFORMASI TAMU & IDENTITAS ──────
+                                  _buildIdentitySection(cubit, isSubmitting),
+
+                                  AppSpacing.vGap300,
+
+                                  // ── SEKSI 2: TUJUAN & DETAIL KUNJUNGAN ───────
+                                  _buildVisitSection(cubit, isSubmitting),
+
+                                  AppSpacing.vGap300,
+
+                                  // ── SEKSI 3: DOKUMENTASI FOTO TAMU ───────────
+                                  AppFormSection.uncontained(
+                                    title: 'Dokumentasi foto tamu',
+                                    subtitle:
+                                        'Lampiran foto identitas atau wajah tamu '
+                                        'pengunjung (opsional).',
+                                    child: GuestFormPhotoSection(
+                                      cubit: cubit,
+                                      isSubmitting: isSubmitting,
+                                      onPickPhoto: () =>
+                                          _handlePickPhoto(cubit),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
       ),
     );
   }
@@ -457,7 +456,8 @@ class _GuestFormDialogState extends State<GuestFormDialog>
   Widget _buildIdentitySection(GuestFormCubit cubit, bool isSubmitting) {
     return AppFormSection(
       title: 'Informasi tamu & identitas',
-      subtitle: 'Data diri dan verifikasi tanda pengenal '
+      subtitle:
+          'Data diri dan verifikasi tanda pengenal '
           'pengunjung.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -520,7 +520,8 @@ class _GuestFormDialogState extends State<GuestFormDialog>
   Widget _buildVisitSection(GuestFormCubit cubit, bool isSubmitting) {
     return AppFormSection(
       title: 'Tujuan & detail kunjungan',
-      subtitle: 'Informasi tuan rumah, tujuan, dan '
+      subtitle:
+          'Informasi tuan rumah, tujuan, dan '
           'destinasi kunjungan.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

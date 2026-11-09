@@ -20,18 +20,16 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/app_imag
 /// dan banner kolase foto adaptif Material 3 Expressive.
 class InformationDetailPostCard extends StatelessWidget {
   /// Membuat instance [InformationDetailPostCard].
-  const InformationDetailPostCard({
-    required this.item,
-    super.key,
-  });
+  const InformationDetailPostCard({required this.item, super.key});
 
   /// Data feed informasi yang ditampilkan.
   final InformationItemEntity item;
 
   @override
   Widget build(BuildContext context) {
-    final photoInfo =
-        item.photos.isNotEmpty ? ', ${item.photos.length} foto terlampir' : '';
+    final photoInfo = item.photos.isNotEmpty
+        ? ', ${item.photos.length} foto terlampir'
+        : '';
     final semanticLabel =
         'Postingan informasi ${item.displayTitle}, dibuat oleh '
         '${item.displayUserName} (${item.displayUserEmail}), tanggal '
@@ -84,17 +82,11 @@ class InformationDetailPostCard extends StatelessWidget {
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          AppTag(
-            label: item.typeLabel,
-            variant: item.typeVariant,
-          ),
+          AppTag(label: item.typeLabel, variant: item.typeVariant),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.calendar1,
-                size: 14,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.calendar1, size: 14),
               AppSpacing.hGapXs,
               Text(
                 item.displayFeedDt,
@@ -169,9 +161,7 @@ class InformationDetailPostCard extends StatelessWidget {
           AppSpacing.vGap100,
           Text(
             item.text!,
-            style: typeScale.bodyLarge.copyWith(
-              color: colorScheme.onSurface,
-            ),
+            style: typeScale.bodyLarge.copyWith(color: colorScheme.onSurface),
           ),
         ],
       ],
@@ -198,7 +188,8 @@ class InformationDetailPostCard extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final pic = item.userProfilePic?.trim();
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -209,8 +200,8 @@ class InformationDetailPostCard extends StatelessWidget {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildAvatarFallback(),
-          errorWidget: (_, __, ___) => _buildAvatarFallback(),
+          placeholder: (_, _) => _buildAvatarFallback(),
+          errorWidget: (_, _, _) => _buildAvatarFallback(),
         ),
       );
     }
@@ -220,10 +211,7 @@ class InformationDetailPostCard extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.patrol3,
-        size: 40,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 40),
     );
   }
 }

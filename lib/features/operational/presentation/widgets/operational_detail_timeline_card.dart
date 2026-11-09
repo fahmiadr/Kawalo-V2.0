@@ -22,10 +22,7 @@ import 'package:kawalo_mobile/features/operational/presentation/extensions/opera
 /// Expressive.
 class OperationalDetailTimelineCard extends StatelessWidget {
   /// Membuat instance [OperationalDetailTimelineCard].
-  const OperationalDetailTimelineCard({
-    required this.item,
-    super.key,
-  });
+  const OperationalDetailTimelineCard({required this.item, super.key});
 
   /// Data personil operasional yang ditampilkan.
   final OperationalItemEntity item;
@@ -36,7 +33,8 @@ class OperationalDetailTimelineCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final emphasizedTypeScale = theme.typography.emphasized;
 
-    final semanticLabel = 'Riwayat aktivitas dinas, total '
+    final semanticLabel =
+        'Riwayat aktivitas dinas, total '
         '${item.timeline.length} aktivitas';
 
     return AppCard(
@@ -174,8 +172,9 @@ class OperationalDetailTimelineCard extends StatelessWidget {
                       AppSpacing.hGapSm,
                       AppTag(
                         label: journey.displayDuty,
-                        variant:
-                            journey.displayDutyTagVariant(isFirst: isFirst),
+                        variant: journey.displayDutyTagVariant(
+                          isFirst: isFirst,
+                        ),
                         size: AppTagSize.small,
                       ),
                     ],
@@ -190,10 +189,7 @@ class OperationalDetailTimelineCard extends StatelessWidget {
                   if (journey.journeyUid != null &&
                       journey.journeyUid!.isNotEmpty) ...[
                     AppSpacing.vGap50,
-                    _buildTransactionUidChip(
-                      context,
-                      journey.journeyUid!,
-                    ),
+                    _buildTransactionUidChip(context, journey.journeyUid!),
                   ],
                 ],
               ),
@@ -204,10 +200,7 @@ class OperationalDetailTimelineCard extends StatelessWidget {
     );
   }
 
-  Widget _buildNodeIndicator(
-    BuildContext context, {
-    required bool isFirst,
-  }) {
+  Widget _buildNodeIndicator(BuildContext context, {required bool isFirst}) {
     final colorScheme = AppTheme.of(context).colorScheme;
 
     if (isFirst) {
@@ -217,10 +210,7 @@ class OperationalDetailTimelineCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.primaryContainer,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: colorScheme.primary,
-            width: 2,
-          ),
+          border: Border.all(color: colorScheme.primary, width: 2),
         ),
         alignment: Alignment.center,
         child: Container(
@@ -241,10 +231,7 @@ class OperationalDetailTimelineCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: colorScheme.outline,
-          width: 1.5,
-        ),
+        border: Border.all(color: colorScheme.outline, width: 1.5),
       ),
       alignment: Alignment.center,
       child: Container(
@@ -284,9 +271,7 @@ class OperationalDetailTimelineCard extends StatelessWidget {
                   : colorScheme.surfaceContainerHigh,
               borderRadius: AppRadius.borderExtraSmall,
               border: state.focused
-                  ? Border.all(
-                      color: colorScheme.primary,
-                    )
+                  ? Border.all(color: colorScheme.primary)
                   : null,
             ),
             child: Padding(

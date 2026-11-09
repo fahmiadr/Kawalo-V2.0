@@ -60,69 +60,69 @@ class GuestLocalDataSourceImpl implements GuestLocalDataSource {
 
     if (createdBy != null && createdBy.isNotEmpty) {
       query = query.and().guestCreatorEmailEqualTo(
-            createdBy,
-            caseSensitive: false,
-          );
+        createdBy,
+        caseSensitive: false,
+      );
     }
 
     if (search != null && search.isNotEmpty) {
       final q = search;
       query = query.and().group(
-            (qBuilder) => qBuilder
-                .guestNameContains(q, caseSensitive: false)
-                .or()
-                .guestNumberContains(q, caseSensitive: false)
-                .or()
-                .guestIdentityContains(q, caseSensitive: false)
-                .or()
-                .guestIdentityTypeContains(q, caseSensitive: false)
-                .or()
-                .guestPurposeContains(q, caseSensitive: false)
-                .or()
-                .guestDestinationContains(q, caseSensitive: false)
-                .or()
-                .guestToUserEmailContains(q, caseSensitive: false)
-                .or()
-                .guestToUserNameContains(q, caseSensitive: false)
-                .or()
-                .guestCreatorEmailContains(q, caseSensitive: false)
-                .or()
-                .guestCreatorNameContains(q, caseSensitive: false)
-                .or()
-                .guestCategoryContains(q, caseSensitive: false)
-                .or()
-                .guestAddressContains(q, caseSensitive: false)
-                .or()
-                .guestTypeContains(q, caseSensitive: false)
-                .or()
-                .guestCheckoutByEmailContains(q, caseSensitive: false)
-                .or()
-                .guestCheckoutByNameContains(q, caseSensitive: false)
-                .or()
-                .qrUidContains(q, caseSensitive: false),
-          );
+        (qBuilder) => qBuilder
+            .guestNameContains(q, caseSensitive: false)
+            .or()
+            .guestNumberContains(q, caseSensitive: false)
+            .or()
+            .guestIdentityContains(q, caseSensitive: false)
+            .or()
+            .guestIdentityTypeContains(q, caseSensitive: false)
+            .or()
+            .guestPurposeContains(q, caseSensitive: false)
+            .or()
+            .guestDestinationContains(q, caseSensitive: false)
+            .or()
+            .guestToUserEmailContains(q, caseSensitive: false)
+            .or()
+            .guestToUserNameContains(q, caseSensitive: false)
+            .or()
+            .guestCreatorEmailContains(q, caseSensitive: false)
+            .or()
+            .guestCreatorNameContains(q, caseSensitive: false)
+            .or()
+            .guestCategoryContains(q, caseSensitive: false)
+            .or()
+            .guestAddressContains(q, caseSensitive: false)
+            .or()
+            .guestTypeContains(q, caseSensitive: false)
+            .or()
+            .guestCheckoutByEmailContains(q, caseSensitive: false)
+            .or()
+            .guestCheckoutByNameContains(q, caseSensitive: false)
+            .or()
+            .qrUidContains(q, caseSensitive: false),
+      );
     }
 
     if (startDate != null) {
       final startSpace = startDate.replaceFirst('T', ' ');
       final startT = startDate.replaceFirst(' ', 'T');
       query = query.and().group(
-            (q) => q
-                .guestDtGreaterThan(startSpace, include: true)
-                .or()
-                .guestDtGreaterThan(startT, include: true),
-          );
+        (q) => q
+            .guestDtGreaterThan(startSpace, include: true)
+            .or()
+            .guestDtGreaterThan(startT, include: true),
+      );
     }
 
     if (endDate != null) {
       final endSpace = endDate.replaceFirst('T', ' ');
       final endT = endDate.replaceFirst(' ', 'T');
       query = query.and().group(
-            (q) => q
-                .guestDtLessThan(endSpace, include: true)
-                .or()
-                .guestDtLessThan(endT, include: true),
-          );
+        (q) => q
+            .guestDtLessThan(endSpace, include: true)
+            .or()
+            .guestDtLessThan(endT, include: true),
+      );
     }
 
     final collections = await query.sortByGuestDtDesc().findAll();

@@ -14,10 +14,10 @@ abstract final class AttendanceMapper {
   static AttendanceItemEntity toEntity(AttendanceModel model) {
     return AttendanceItemEntity(
       id: AppSanitizer.cleanString(model.id) ?? model.id.trim(),
-      category: AppSanitizer.cleanString(model.category) ??
-          model.category.trim(),
-      diffMinutes: AppSanitizer.cleanInteger(model.diffMinutes) ??
-          model.diffMinutes,
+      category:
+          AppSanitizer.cleanString(model.category) ?? model.category.trim(),
+      diffMinutes:
+          AppSanitizer.cleanInteger(model.diffMinutes) ?? model.diffMinutes,
       userEmail: AppSanitizer.cleanEmail(model.userEmail),
       userName: AppSanitizer.cleanString(model.userName),
       userProfilePic: AppSanitizer.cleanString(model.userProfilePic),
@@ -29,17 +29,14 @@ abstract final class AttendanceMapper {
       longitude: AppSanitizer.cleanLongitudeDouble(model.longitude),
       shiftName: AppSanitizer.cleanString(model.shiftName),
       shiftColor: AppSanitizer.cleanString(model.shiftColor),
-      shiftTimeWindow:
-          AppSanitizer.cleanTimeWindow(model.shiftTimeWindow),
+      shiftTimeWindow: AppSanitizer.cleanTimeWindow(model.shiftTimeWindow),
       groupName: AppSanitizer.cleanString(model.groupName),
     );
   }
 
   /// Mengonversi daftar [AttendanceModel] menjadi daftar
   /// [AttendanceItemEntity].
-  static List<AttendanceItemEntity> toEntityList(
-    List<AttendanceModel> models,
-  ) {
+  static List<AttendanceItemEntity> toEntityList(List<AttendanceModel> models) {
     return models.map(toEntity).toList(growable: false);
   }
 }

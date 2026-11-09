@@ -16,9 +16,7 @@ class CameraLoadingIndicator extends StatelessWidget {
         data: AppTheme.m3eDark(),
         child: Theme(
           data: AppTheme.darkThemeData(),
-          child: const AppLoadingIndicator(
-            semanticLabel: 'Menyiapkan kamera',
-          ),
+          child: const AppLoadingIndicator(semanticLabel: 'Menyiapkan kamera'),
         ),
       ),
     );
@@ -60,9 +58,7 @@ class CameraShutterFlash extends StatelessWidget {
           }
 
           return Container(
-            color: colorScheme.scrim.withValues(
-              alpha: opacity.clamp(0.0, 1.0),
-            ),
+            color: colorScheme.scrim.withValues(alpha: opacity.clamp(0.0, 1.0)),
           );
         },
       ),
@@ -129,8 +125,11 @@ class _IlluminatedFramePainter extends CustomPainter {
     final cutoutPath = Path()..addRRect(cutoutRRect);
 
     // 1. Bingkai cahaya translusen luar (Difference path)
-    final framePath =
-        Path.combine(PathOperation.difference, fullPath, cutoutPath);
+    final framePath = Path.combine(
+      PathOperation.difference,
+      fullPath,
+      cutoutPath,
+    );
     final framePaint = Paint()
       ..color = frameColor
       ..style = PaintingStyle.fill;

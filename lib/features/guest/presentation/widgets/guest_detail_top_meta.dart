@@ -7,10 +7,7 @@ import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_ex
 /// memuat tag nama grup.
 class GuestDetailTopMeta extends StatelessWidget {
   /// Membuat instance [GuestDetailTopMeta].
-  const GuestDetailTopMeta({
-    required this.item,
-    super.key,
-  });
+  const GuestDetailTopMeta({required this.item, super.key});
 
   /// Data tamu yang ditampilkan.
   final GuestItemEntity item;

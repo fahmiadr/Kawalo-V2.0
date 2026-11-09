@@ -48,17 +48,13 @@ class ActionableErrorSlotContent extends StatelessWidget {
         // ── Slot 4: Troubleshooting Slot ─────────────────────────────────────
         if (data.hasTroubleshooting) ...[
           AppSpacing.vGap300,
-          _ErrorTroubleshootingSlot(
-            tips: data.troubleshootingTips,
-          ),
+          _ErrorTroubleshootingSlot(tips: data.troubleshootingTips),
         ],
 
         // ── Slot 5: Technical Detail Slot (Unexpected Error) ─────────────────
         if (data.hasTechnicalDetails) ...[
           AppSpacing.vGap200,
-          _ErrorTechnicalDetailsSlot(
-            details: data.technicalDetails!,
-          ),
+          _ErrorTechnicalDetailsSlot(details: data.technicalDetails!),
         ],
 
         if (!isCompact) const Spacer(),
@@ -107,7 +103,8 @@ class _ErrorIconSlot extends StatelessWidget {
       iconColor = colorScheme.onSecondaryContainer;
     }
 
-    final effectiveIcon = customIcon ??
+    final effectiveIcon =
+        customIcon ??
         AppSvgIcon(
           icon ?? KawaloVectors.alertSquareFilled,
           size: 40,
@@ -118,13 +115,8 @@ class _ErrorIconSlot extends StatelessWidget {
       child: Container(
         width: 80,
         height: 80,
-        decoration: ShapeDecoration(
-          color: badgeBg,
-          shape: AppShape.extraLarge,
-        ),
-        child: Center(
-          child: effectiveIcon,
-        ),
+        decoration: ShapeDecoration(color: badgeBg, shape: AppShape.extraLarge),
+        child: Center(child: effectiveIcon),
       ),
     );
   }
@@ -156,10 +148,11 @@ class _ErrorHeaderSlot extends StatelessWidget {
           header: true,
           child: Text(
             title,
-            style: (isCompact
-                    ? emphasizedScale.titleLarge
-                    : emphasizedScale.headlineSmall)
-                .copyWith(color: colorScheme.onSurface),
+            style:
+                (isCompact
+                        ? emphasizedScale.titleLarge
+                        : emphasizedScale.headlineSmall)
+                    .copyWith(color: colorScheme.onSurface),
             textAlign: TextAlign.center,
           ),
         ),
@@ -184,9 +177,7 @@ class _ErrorHeaderSlot extends StatelessWidget {
 /// mempertahankan kontras tonal yang stabil di seluruh modalitas (terutama
 /// saat disematkan di dalam dialog atau viewfinder kamera).
 class _ErrorTroubleshootingSlot extends StatelessWidget {
-  const _ErrorTroubleshootingSlot({
-    required this.tips,
-  });
+  const _ErrorTroubleshootingSlot({required this.tips});
 
   final List<String> tips;
 
@@ -261,9 +252,7 @@ class _ErrorTroubleshootingSlot extends StatelessWidget {
 
 /// Slot 5: Molecule Detail Teknis Diagnostik (Accordion Interaktif)
 class _ErrorTechnicalDetailsSlot extends StatefulWidget {
-  const _ErrorTechnicalDetailsSlot({
-    required this.details,
-  });
+  const _ErrorTechnicalDetailsSlot({required this.details});
 
   final String details;
 

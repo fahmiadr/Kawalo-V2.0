@@ -41,63 +41,56 @@ void main() {
       expect(model.groupName, 'Cluster Edelweiss');
     });
 
+    test('fromJson preserves null values for nullable fields without '
+        'empty string fallback', () {
+      final json = {
+        'id': '103',
+        'category': 'lainnya',
+        'diff_minutes': 0,
+        'user_email': null,
+        'user_name': null,
+        'user_profile_pic': null,
+        'user_duty': null,
+        'attendance_dt': null,
+        'attendance_type': null,
+        'latitude': null,
+        'longitude': null,
+        'location_name': null,
+        'shift_name': null,
+        'shift_color': null,
+        'shift_time_window': null,
+        'group_uid': null,
+        'group_name': null,
+      };
+
+      final model = AttendanceModel.fromJson(json);
+
+      expect(model.id, '103');
+      expect(model.category, 'lainnya');
+      expect(model.diffMinutes, 0);
+      expect(model.userEmail, isNull);
+      expect(model.userName, isNull);
+      expect(model.attendanceDt, isNull);
+      expect(model.attendanceType, isNull);
+      expect(model.locationName, isNull);
+    });
+
     test(
-      'fromJson preserves null values for nullable fields without '
-      'empty string fallback',
+      'fromJson throws TypeError when required non-null fields are missing',
       () {
-        final json = {
-          'id': '103',
-          'category': 'lainnya',
-          'diff_minutes': 0,
-          'user_email': null,
-          'user_name': null,
-          'user_profile_pic': null,
-          'user_duty': null,
-          'attendance_dt': null,
-          'attendance_type': null,
-          'latitude': null,
-          'longitude': null,
-          'location_name': null,
-          'shift_name': null,
-          'shift_color': null,
-          'shift_time_window': null,
-          'group_uid': null,
-          'group_name': null,
-        };
+        final jsonMissingId = {'category': 'masuk', 'diff_minutes': 0};
+        expect(
+          () => AttendanceModel.fromJson(jsonMissingId),
+          throwsA(isA<TypeError>()),
+        );
 
-        final model = AttendanceModel.fromJson(json);
-
-        expect(model.id, '103');
-        expect(model.category, 'lainnya');
-        expect(model.diffMinutes, 0);
-        expect(model.userEmail, isNull);
-        expect(model.userName, isNull);
-        expect(model.attendanceDt, isNull);
-        expect(model.attendanceType, isNull);
-        expect(model.locationName, isNull);
+        final jsonMissingCategory = {'id': '104', 'diff_minutes': 0};
+        expect(
+          () => AttendanceModel.fromJson(jsonMissingCategory),
+          throwsA(isA<TypeError>()),
+        );
       },
     );
-
-    test('fromJson throws TypeError when required non-null fields are missing',
-        () {
-      final jsonMissingId = {
-        'category': 'masuk',
-        'diff_minutes': 0,
-      };
-      expect(
-        () => AttendanceModel.fromJson(jsonMissingId),
-        throwsA(isA<TypeError>()),
-      );
-
-      final jsonMissingCategory = {
-        'id': '104',
-        'diff_minutes': 0,
-      };
-      expect(
-        () => AttendanceModel.fromJson(jsonMissingCategory),
-        throwsA(isA<TypeError>()),
-      );
-    });
 
     test('fromJson defaults diff_minutes to 0 when missing or null', () {
       final base = {'id': '105', 'category': 'masuk'};

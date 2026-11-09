@@ -198,45 +198,36 @@ void main() {
         );
 
         expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ValidationFailure>());
-            expect(
-              failure.message,
-              'ID informasi wajib diisi dan harus berupa angka valid.',
-            );
-          },
-          (_) => fail('Should be Left'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(
+            failure.message,
+            'ID informasi wajib diisi dan harus berupa angka valid.',
+          );
+        }, (_) => fail('Should be Left'));
         verifyZeroInteractions(mockRepository);
       },
     );
 
-    test(
-      'returns ForbiddenFailure when user is not authorized',
-      () async {
-        final result = await deleteInformationUseCase(
-          const DeleteInformationParams(
-            id: tValidId,
-            session: tSessionGuardOther,
-            item: tItem,
-          ),
-        );
+    test('returns ForbiddenFailure when user is not authorized', () async {
+      final result = await deleteInformationUseCase(
+        const DeleteInformationParams(
+          id: tValidId,
+          session: tSessionGuardOther,
+          item: tItem,
+        ),
+      );
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ForbiddenFailure>());
-            expect(
-              failure.message,
-              'Anda tidak memiliki izin untuk menghapus informasi ini.',
-            );
-          },
-          (_) => fail('Should be Left'),
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          failure.message,
+          'Anda tidak memiliki izin untuk menghapus informasi ini.',
         );
-        verifyZeroInteractions(mockRepository);
-      },
-    );
+      }, (_) => fail('Should be Left'));
+      verifyZeroInteractions(mockRepository);
+    });
 
     test(
       'delegates to repository and returns Right(null) on success',
@@ -257,11 +248,7 @@ void main() {
         );
 
         expect(result.isRight(), isTrue);
-        verify(
-          () => mockRepository.deleteInformation(
-            id: tValidId,
-          ),
-        ).called(1);
+        verify(() => mockRepository.deleteInformation(id: tValidId)).called(1);
         verifyNoMoreInteractions(mockRepository);
       },
     );
@@ -286,16 +273,15 @@ void main() {
 
       expect(result.isRight(), isTrue);
       verify(
-        () => mockRepository.deleteInformation(
-          id: tValidId,
-          cancelToken: token,
-        ),
+        () =>
+            mockRepository.deleteInformation(id: tValidId, cancelToken: token),
       ).called(1);
     });
 
     test('returns Failure when repository returns failure', () async {
-      const tFailure =
-          ServerFailure('Hanya Admin atau Petugas yang dapat menghapus.');
+      const tFailure = ServerFailure(
+        'Hanya Admin atau Petugas yang dapat menghapus.',
+      );
       when(
         () => mockRepository.deleteInformation(
           id: any(named: 'id'),

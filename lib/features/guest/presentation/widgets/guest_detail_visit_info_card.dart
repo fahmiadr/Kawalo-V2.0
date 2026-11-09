@@ -16,10 +16,7 @@ import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_ex
 /// 3. Petugas pencatat dan verifikasi (petugas check-in & check-out).
 class GuestDetailVisitInfoCard extends StatelessWidget {
   /// Membuat instance [GuestDetailVisitInfoCard].
-  const GuestDetailVisitInfoCard({
-    required this.item,
-    super.key,
-  });
+  const GuestDetailVisitInfoCard({required this.item, super.key});
 
   /// Data tamu yang ditampilkan.
   final GuestItemEntity item;
@@ -31,7 +28,8 @@ class GuestDetailVisitInfoCard extends StatelessWidget {
     final typeScale = theme.typeScale;
     final emphasizedScale = theme.typography.emphasized;
 
-    final semanticLabel = 'Informasi kunjungan dan penanggung jawab, '
+    final semanticLabel =
+        'Informasi kunjungan dan penanggung jawab, '
         'tujuan ${item.displayPurpose}, '
         'destinasi ${item.displayDestination}, bertemu dengan '
         '${item.displayGuestToUserName}, '
@@ -52,10 +50,7 @@ class GuestDetailVisitInfoCard extends StatelessWidget {
           // ── Sub-seksi: Detail Kunjungan ─────────────────────────────────
           Row(
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.log1,
-                size: 32,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.log1, size: 32),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(
@@ -105,10 +100,7 @@ class GuestDetailVisitInfoCard extends StatelessWidget {
           // ── Sub-seksi: Bertemu Dengan ───────────────────────────────────
           Row(
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.patrol3,
-                size: 32,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.patrol3, size: 32),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(
@@ -144,10 +136,7 @@ class GuestDetailVisitInfoCard extends StatelessWidget {
           // ── Sub-seksi: Petugas Pencatat & Verifikasi ─────────────────────
           Row(
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.checklist5,
-                size: 32,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.checklist5, size: 32),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(

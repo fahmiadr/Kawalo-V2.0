@@ -14,10 +14,7 @@ import 'package:kawalo_mobile/features/onboarding/presentation/widgets/onboardin
 /// Custom ScrollPhysics assertion-safe untuk memblokir swipe manual di Step 1
 /// (ke belakang) dan di Step 5 (ke depan), mengizinkan auto-advance film roll.
 class OnboardingScrollPhysics extends ClampingScrollPhysics {
-  const OnboardingScrollPhysics({
-    required this.itemCount,
-    super.parent,
-  });
+  const OnboardingScrollPhysics({required this.itemCount, super.parent});
 
   final int itemCount;
 
@@ -47,7 +44,8 @@ class OnboardingScrollPhysics extends ClampingScrollPhysics {
     }
 
     // 2. Pengecekan saat scroll MAJU (value > position.pixels)
-    final isManualUserGesture = position is ScrollPosition &&
+    final isManualUserGesture =
+        position is ScrollPosition &&
         position.userScrollDirection != ScrollDirection.idle;
 
     if (value > position.pixels && isManualUserGesture) {
@@ -94,7 +92,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     OnboardingItem(
       imagePath: 'assets/illustrations/onboarding_welcome.png',
       title: 'Selamat Datang di Aplikasi Kawalo 2.0 Terbaru',
-      description: 'Pantau insiden secara real-time, kelola personil, dan '
+      description:
+          'Pantau insiden secara real-time, kelola personil, dan '
           'otomatisasi laporan operasional dalam satu aplikasi.',
     ),
     OnboardingItem(
@@ -114,13 +113,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     OnboardingItem(
       imagePath: 'assets/illustrations/onboarding_product_3.png',
       title: 'Kendali Operasional di Tangan Anda',
-      description: 'Atur grup pengamanan, buat jadwal & shift, serta pantau '
+      description:
+          'Atur grup pengamanan, buat jadwal & shift, serta pantau '
           'eksekusi patroli harian tanpa repot.',
     ),
     OnboardingItem(
       imagePath: 'assets/illustrations/onboarding_product_4.png',
       title: 'Laporan Selesai dalam Satu Klik',
-      description: 'Otomatisasi seluruh rekap data lapangan menjadi laporan '
+      description:
+          'Otomatisasi seluruh rekap data lapangan menjadi laporan '
           'bulanan formal yang siap diekspor.',
     ),
   ];
@@ -149,10 +150,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _currentStep = initialPage % _items.length;
     _displayedProgressStep = _currentStep;
 
-    _animController = AnimationController(
-      vsync: this,
-      duration: _stepDuration,
-    );
+    _animController = AnimationController(vsync: this, duration: _stepDuration);
 
     _animController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -284,9 +282,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void _navigateToNextScreen(BuildContext context) {
     _animController.stop();
     Navigator.of(context).pushReplacement(
-      AppPageRoute.fade<void>(
-        builder: (context) => const LoginScreen(),
-      ),
+      AppPageRoute.fade<void>(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -339,8 +335,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             return OnboardingProgressBar(
                               totalSteps: _items.length,
                               currentStep: _displayedProgressStep,
-                              stepProgress:
-                                  isReducedMotion ? 1.0 : _animController.value,
+                              stepProgress: isReducedMotion
+                                  ? 1.0
+                                  : _animController.value,
                             );
                           },
                         ),
@@ -364,7 +361,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 builder: (context, constraints) {
                                   // Pada layar terbatas atau dynamic font scale
                                   // tinggi, aktifkan SingleChildScrollView.
-                                  final isConstrained = textScale > 1.3 ||
+                                  final isConstrained =
+                                      textScale > 1.3 ||
                                       constraints.maxHeight < 460;
 
                                   if (isConstrained) {

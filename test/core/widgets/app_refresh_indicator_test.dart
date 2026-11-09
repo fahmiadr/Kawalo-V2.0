@@ -7,15 +7,14 @@ void main() {
   Widget buildTestApp(Widget child) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: child,
-      ),
+      home: Scaffold(body: child),
     );
   }
 
   group('AppRefreshIndicator Tests', () {
-    testWidgets('renders AppRefreshIndicator with child scrollable',
-        (tester) async {
+    testWidgets('renders AppRefreshIndicator with child scrollable', (
+      tester,
+    ) async {
       var refreshed = false;
 
       await tester.pumpWidget(
@@ -48,17 +47,14 @@ void main() {
       expect(refreshed, isTrue);
     });
 
-    testWidgets('AppRefreshIndicator.contained renders contained variant',
-        (tester) async {
+    testWidgets('AppRefreshIndicator.contained renders contained variant', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           AppRefreshIndicator.contained(
             onRefresh: () async {},
-            child: ListView(
-              children: const [
-                Text('Scrollable content'),
-              ],
-            ),
+            child: ListView(children: const [Text('Scrollable content')]),
           ),
         ),
       );

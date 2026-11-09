@@ -11,9 +11,7 @@ class CheckoutGuestModel extends Equatable {
 
   /// Mengonversi payload menjadi representasi Map JSON.
   Map<String, dynamic> toJson() {
-    return {
-      if (qrUid != null) 'qr_uid': qrUid,
-    };
+    return {if (qrUid != null) 'qr_uid': qrUid};
   }
 
   @override

@@ -88,38 +88,42 @@ void main() {
     });
 
     for (final claim in ['sub', 'email', 'name']) {
-      test('fromJwtPayload throws FormatException when "$claim" is missing',
-          () {
-        final payload = <String, dynamic>{
-          'sub': 'usr_001',
-          'email': 'personil@kawalo.id',
-          'name': 'Budi Santoso',
-        }..remove(claim);
+      test(
+        'fromJwtPayload throws FormatException when "$claim" is missing',
+        () {
+          final payload = <String, dynamic>{
+            'sub': 'usr_001',
+            'email': 'personil@kawalo.id',
+            'name': 'Budi Santoso',
+          }..remove(claim);
 
-        expect(
-          () => AuthSessionModel.fromJwtPayload(payload),
-          throwsA(
-            isA<FormatException>().having(
-              (e) => e.message,
-              'message',
-              contains(claim),
+          expect(
+            () => AuthSessionModel.fromJwtPayload(payload),
+            throwsA(
+              isA<FormatException>().having(
+                (e) => e.message,
+                'message',
+                contains(claim),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
     }
 
-    test('fromJwtPayload throws FormatException when a claim has wrong type',
-        () {
-      expect(
-        () => AuthSessionModel.fromJwtPayload(const <String, dynamic>{
-          'sub': 42,
-          'email': 'personil@kawalo.id',
-          'name': 'Budi Santoso',
-        }),
-        throwsFormatException,
-      );
-    });
+    test(
+      'fromJwtPayload throws FormatException when a claim has wrong type',
+      () {
+        expect(
+          () => AuthSessionModel.fromJwtPayload(const <String, dynamic>{
+            'sub': 42,
+            'email': 'personil@kawalo.id',
+            'name': 'Budi Santoso',
+          }),
+          throwsFormatException,
+        );
+      },
+    );
 
     test('fromJson defaults missing allow_* flags to false', () {
       final model = AuthSessionModel.fromJson(const <String, dynamic>{

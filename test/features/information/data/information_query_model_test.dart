@@ -25,10 +25,7 @@ void main() {
     );
 
     test('toQueryParams omits null fields and preserves exact values', () {
-      const query = InformationQueryModel(
-        search: 'Laporan Air',
-        limit: 10,
-      );
+      const query = InformationQueryModel(search: 'Laporan Air', limit: 10);
 
       final params = query.toQueryParams();
 

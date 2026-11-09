@@ -66,18 +66,15 @@ class AppActionTile extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    final effectiveColor =
-        isDestructive ? colorScheme.error : colorScheme.onSurface;
+    final effectiveColor = isDestructive
+        ? colorScheme.error
+        : colorScheme.onSurface;
 
     Widget? leadingWidget;
     if (leading != null) {
       leadingWidget = leading;
     } else if (vectorIcon != null) {
-      leadingWidget = AppSvgIcon(
-        vectorIcon!,
-        size: 20,
-        color: effectiveColor,
-      );
+      leadingWidget = AppSvgIcon(vectorIcon!, size: 20, color: effectiveColor);
     }
 
     final titleWidget = Text(
@@ -118,12 +115,10 @@ class AppActionTile extends StatelessWidget {
         height: AppStateLayer.minTouchTarget,
         hPadding: AppSpacing.space150,
       ),
-      semanticLabel: semanticLabel ??
-          (subtitle != null ? '$title, $subtitle' : title),
+      semanticLabel:
+          semanticLabel ?? (subtitle != null ? '$title, $subtitle' : title),
       decoration: AppButtonDecoration(
-        foregroundColor: WidgetStatePropertyAll<Color?>(
-          effectiveColor,
-        ),
+        foregroundColor: WidgetStatePropertyAll<Color?>(effectiveColor),
       ),
       onPressed: () {
         if (closeOnTap) {
@@ -133,15 +128,9 @@ class AppActionTile extends StatelessWidget {
       },
       child: Row(
         children: [
-          if (leadingWidget != null) ...[
-            leadingWidget,
-            AppSpacing.hGap150,
-          ],
+          if (leadingWidget != null) ...[leadingWidget, AppSpacing.hGap150],
           Expanded(child: textColumn),
-          if (trailing != null) ...[
-            AppSpacing.hGap150,
-            trailing!,
-          ],
+          if (trailing != null) ...[AppSpacing.hGap150, trailing!],
         ],
       ),
     );

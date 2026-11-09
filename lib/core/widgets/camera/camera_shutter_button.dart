@@ -100,10 +100,7 @@ class CameraShutterButton extends StatelessWidget {
                 height: _buttonSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: ringColor,
-                    width: _strokeWidth,
-                  ),
+                  border: Border.all(color: ringColor, width: _strokeWidth),
                 ),
               ),
 
@@ -113,8 +110,9 @@ class CameraShutterButton extends StatelessWidget {
                 duration: isReducedMotion ? Duration.zero : AppDuration.short3,
                 curve: Curves.easeOutBack,
                 child: AnimatedContainer(
-                  duration:
-                      isReducedMotion ? Duration.zero : AppDuration.short3,
+                  duration: isReducedMotion
+                      ? Duration.zero
+                      : AppDuration.short3,
                   curve: AppEasing.standard,
                   width: _buttonSize - 12,
                   height: _buttonSize - 12,

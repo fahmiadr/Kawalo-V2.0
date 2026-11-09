@@ -5,8 +5,9 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 
 void main() {
   group('AppCard / M3ECard Tests', () {
-    testWidgets('renders card child and handles onPressed',
-        (WidgetTester tester) async {
+    testWidgets('renders card child and handles onPressed', (
+      WidgetTester tester,
+    ) async {
       var tapped = false;
 
       await tester.pumpWidget(
@@ -26,8 +27,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('renders outlined card variant',
-        (WidgetTester tester) async {
+    testWidgets('renders outlined card variant', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

@@ -5,8 +5,9 @@ import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_
 
 void main() {
   group('AppNavigationBar / M3ENavigationBar Tests', () {
-    testWidgets('renders destinations and responds to selection',
-        (tester) async {
+    testWidgets('renders destinations and responds to selection', (
+      tester,
+    ) async {
       var selectedIndex = 0;
 
       await tester.pumpWidget(

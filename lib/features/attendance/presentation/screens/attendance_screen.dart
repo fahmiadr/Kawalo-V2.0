@@ -33,10 +33,7 @@ import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendanc
 /// dan tampilan peta detail OpenStreetMap.
 class AttendanceScreen extends StatefulWidget {
   /// Membuat instance [AttendanceScreen].
-  const AttendanceScreen({
-    super.key,
-    this.cubit,
-  });
+  const AttendanceScreen({super.key, this.cubit});
 
   /// Instance [AttendanceCubit] opsional untuk injeksi pengujian.
   final AttendanceCubit? cubit;
@@ -123,10 +120,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   void _onAttendanceTapped(AttendanceItemEntity item) {
-    AttendanceDetailBottomSheet.show(
-      context: context,
-      item: item,
-    );
+    AttendanceDetailBottomSheet.show(context: context, item: item);
   }
 
   void _onOpenSearch() {
@@ -136,7 +130,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   void _onCloseSearch() {
-    final hasActiveSearch = _searchController.text.isNotEmpty ||
+    final hasActiveSearch =
+        _searchController.text.isNotEmpty ||
         _resolveCubit(context).state.searchQuery != null &&
             _resolveCubit(context).state.searchQuery!.isNotEmpty;
     _searchController.clear();
@@ -381,10 +376,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 autoFocus: true,
                 enabled: !isInitialLoading,
                 onSearch: _onSearch,
-                constraints: const BoxConstraints(
-                  minHeight: 40,
-                  maxHeight: 40,
-                ),
+                constraints: const BoxConstraints(minHeight: 40, maxHeight: 40),
               )
             : null,
         showBackButton: true,
@@ -392,8 +384,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           onPressed: !isInitialLoading
               ? (_isSearchExpanded ? _onCloseSearch : _onOpenSearch)
               : null,
-          semanticLabel:
-              _isSearchExpanded ? 'Tutup pencarian' : 'Cari data absensi',
+          semanticLabel: _isSearchExpanded
+              ? 'Tutup pencarian'
+              : 'Cari data absensi',
           icon: AppSvgIcon(
             _isSearchExpanded ? KawaloVectors.cancel01 : KawaloVectors.search01,
             size: 24,
@@ -405,9 +398,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomOfflineBanner(
-        isOffline: isOffline,
-      ),
+      bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
       body: SafeArea(
         top: false,
         child: AppKeyboardInsetsPadding(
@@ -440,8 +431,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         bottom: AppSpacing.space200,
       ),
       itemCount: 4,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
-      itemBuilder: (_, __) => const AttendanceCardSkeleton(),
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemBuilder: (_, _) => const AttendanceCardSkeleton(),
     );
   }
 
@@ -461,14 +452,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         bottom: AppSpacing.space200,
       ),
       itemCount: totalCount,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
       itemBuilder: (context, index) {
         if (index == attendances.length) {
           return const Padding(
             padding: AppSpacing.paddingVertical200,
-            child: Center(
-              child: AppLoadingIndicator(),
-            ),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
 
@@ -483,9 +472,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildEmptyGroupState(BuildContext context) {
     return const AppEmptyState(
-      icon: AppSvgIcon.color(
-        KawaloColorVectors.checklist2,
-      ),
+      icon: AppSvgIcon.color(KawaloColorVectors.checklist2),
       title: 'Belum ada data absensi',
       description: 'Belum ada aktivitas absensi personil pada hari ini.',
     );
@@ -494,7 +481,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildEmptySearchResult(BuildContext context) {
     return AppEmptyState.search(
       title: 'Data absensi tidak ditemukan',
-      description: 'Tidak ada data absensi yang cocok dengan '
+      description:
+          'Tidak ada data absensi yang cocok dengan '
           'pencarian atau filter yang diterapkan.',
       actionLabel: 'Reset filter & pencarian',
       onActionPressed: _resetAllFilters,
@@ -512,9 +500,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       retryLabel: 'Coba lagi',
       onRetry: () {
         final query = _searchController.text;
-        cubit.fetchAttendances(
-          search: query.isEmpty ? null : query,
-        );
+        cubit.fetchAttendances(search: query.isEmpty ? null : query);
       },
     );
   }

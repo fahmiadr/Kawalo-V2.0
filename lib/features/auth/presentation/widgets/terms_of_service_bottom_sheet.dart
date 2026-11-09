@@ -44,7 +44,8 @@ void showTermsOfServiceBottomSheet(BuildContext context) {
                   _buildSection(
                     context,
                     title: '1. Ketentuan Umum',
-                    content: 'Dengan mengunduh, mendaftar, dan menggunakan '
+                    content:
+                        'Dengan mengunduh, mendaftar, dan menggunakan '
                         'aplikasi Kawalo, Anda menyetujui untuk terikat '
                         'oleh seluruh ketentuan layanan operasional resmi '
                         'ini.',
@@ -62,7 +63,8 @@ void showTermsOfServiceBottomSheet(BuildContext context) {
                   _buildSection(
                     context,
                     title: '3. Penggunaan yang Diperbolehkan',
-                    content: 'Aplikasi Kawalo ditujukan khusus untuk manajemen '
+                    content:
+                        'Aplikasi Kawalo ditujukan khusus untuk manajemen '
                         'operasional, absensi GPS, laporan insiden, '
                         'dan jadwal patroli petugas di lingkungan resmi.',
                   ),
@@ -91,10 +93,7 @@ void showTermsOfServiceBottomSheet(BuildContext context) {
               size: AppButtonSize.md,
               semanticLabel: 'Saya mengerti',
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Saya mengerti',
-                style: typeScale.titleMedium,
-              ),
+              child: Text('Saya mengerti', style: typeScale.titleMedium),
             ),
           ),
         ],

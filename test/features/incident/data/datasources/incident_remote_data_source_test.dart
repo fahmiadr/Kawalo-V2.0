@@ -22,39 +22,40 @@ void main() {
   });
 
   group('IncidentRemoteDataSource Tests', () {
-    test('getIncidents calls apiClient.get with correct path and query',
-        () async {
-      when(
-        () => mockApiClient.get(
-          '/v1/incidents',
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer(
-        (_) async => {
-          'data': [
-            {
-              'id': 'inc_1',
-              'group_id': 'grp_1',
-              'title': 'Pintu Rusak',
-              'status': 'OPEN',
-              'created_by': 'usr_1',
-              'created_at': '2026-11-04T10:00:00.000Z',
-            }
-          ],
-        },
-      );
-
-      const query = IncidentQueryModel(groupId: 'grp_1', status: 'OPEN');
-      final result = await remoteDataSource.getIncidents(query: query);
-
-      expect(result.length, equals(1));
-      expect(result[0].id, equals('inc_1'));
-      expect(result[0].title, equals('Pintu Rusak'));
-    });
-
     test(
-        'IncidentQueryModel omits group_id and includes start_date, '
+      'getIncidents calls apiClient.get with correct path and query',
+      () async {
+        when(
+          () => mockApiClient.get(
+            '/v1/incidents',
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer(
+          (_) async => {
+            'data': [
+              {
+                'id': 'inc_1',
+                'group_id': 'grp_1',
+                'title': 'Pintu Rusak',
+                'status': 'OPEN',
+                'created_by': 'usr_1',
+                'created_at': '2026-11-04T10:00:00.000Z',
+              },
+            ],
+          },
+        );
+
+        const query = IncidentQueryModel(groupId: 'grp_1', status: 'OPEN');
+        final result = await remoteDataSource.getIncidents(query: query);
+
+        expect(result.length, equals(1));
+        expect(result[0].id, equals('inc_1'));
+        expect(result[0].title, equals('Pintu Rusak'));
+      },
+    );
+
+    test('IncidentQueryModel omits group_id and includes start_date, '
         'end_date, limit, and offset', () {
       const query = IncidentQueryModel(
         groupId: 'grp_1',
@@ -103,14 +104,15 @@ void main() {
                 'sender_role': 'admin',
                 'message': 'Sedang dicek',
                 'created_at': '2026-11-04T10:05:00.000Z',
-              }
+              },
             ],
           },
         },
       );
 
-      final result =
-          await remoteDataSource.getIncidentDetail(incidentId: 'inc_1');
+      final result = await remoteDataSource.getIncidentDetail(
+        incidentId: 'inc_1',
+      );
 
       expect(result.incident.id, equals('inc_1'));
       expect(result.replies.length, equals(1));
@@ -137,10 +139,7 @@ void main() {
         },
       );
 
-      const model = CreateIncidentModel(
-        title: 'Lampu Mati',
-        groupId: 'grp_1',
-      );
+      const model = CreateIncidentModel(title: 'Lampu Mati', groupId: 'grp_1');
 
       final result = await remoteDataSource.createIncident(data: model);
 
@@ -201,8 +200,9 @@ void main() {
         },
       );
 
-      final result =
-          await remoteDataSource.resolveIncident(incidentId: 'inc_1');
+      final result = await remoteDataSource.resolveIncident(
+        incidentId: 'inc_1',
+      );
 
       expect(result.status, equals('RESOLVED'));
       expect(result.resolvedByName, equals('Dewi'));
@@ -224,10 +224,10 @@ void main() {
       verify(() => mockApiClient.delete('/v1/incidents/inc_1')).called(1);
     });
 
-    test(
-        'watchIncidentStream sets Accept and Last-Event-ID headers and '
-            'transforms SSE', () async {
-      const sseText = 'event: new_reply\n'
+    test('watchIncidentStream sets Accept and Last-Event-ID headers and '
+        'transforms SSE', () async {
+      const sseText =
+          'event: new_reply\n'
           'data: {"id": "rep_10", "incident_id": "inc_1", "sender_id": "u1", '
           '"sender_name": "Budi", "sender_role": "guard", "message": "tes", '
           '"created_at": "2026-11-04T10:00:00.000Z"}\n\n';

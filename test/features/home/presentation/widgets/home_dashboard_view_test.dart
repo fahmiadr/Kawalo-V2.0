@@ -88,8 +88,9 @@ void main() {
       expect(find.text('B 1234 ABC'), findsOneWidget);
     });
 
-    testWidgets('triggers edit callback on shortcuts and management sections',
-        (tester) async {
+    testWidgets('triggers edit callback on shortcuts and management sections', (
+      tester,
+    ) async {
       var editShortcutsTapped = false;
       var editManagementTapped = false;
 

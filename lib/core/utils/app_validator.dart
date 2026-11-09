@@ -159,8 +159,9 @@ class AppValidator {
   static final RegExp _digitRegex = RegExp('[0-9]');
 
   /// Regex karakter simbol / spesial yang diizinkan NIST & OWASP
-  static final RegExp _specialCharRegex =
-      RegExp(r'[!@#$%^&*(),.?":{}|<>\-_+=\[\]\\/~`]');
+  static final RegExp _specialCharRegex = RegExp(
+    r'[!@#$%^&*(),.?":{}|<>\-_+=\[\]\\/~`]',
+  );
 
   /// Daftar pola kata sandi umum yang sangat lemah
   static const Set<String> _commonlyWeakPasswords = {

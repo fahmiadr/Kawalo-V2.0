@@ -154,14 +154,12 @@ abstract class AppLayout {
   }
 
   /// True if the layout is in Compact size class (< 600dp).
-  static bool isCompact(double screenWidth) =>
-      screenWidth < compactBreakpoint;
+  static bool isCompact(double screenWidth) => screenWidth < compactBreakpoint;
 
   /// True if the layout is in Medium size class (600dp – 839dp).
   static bool isMedium(double screenWidth) =>
       screenWidth >= compactBreakpoint && screenWidth < mediumBreakpoint;
 
   /// True if the layout is in Expanded size class (≥ 840dp).
-  static bool isExpanded(double screenWidth) =>
-      screenWidth >= mediumBreakpoint;
+  static bool isExpanded(double screenWidth) => screenWidth >= mediumBreakpoint;
 }

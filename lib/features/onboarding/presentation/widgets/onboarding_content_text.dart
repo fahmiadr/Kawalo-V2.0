@@ -34,9 +34,7 @@ class OnboardingContentText extends StatelessWidget {
         Text(
           description,
           textAlign: TextAlign.center,
-          style: typeScale.bodyLarge.copyWith(
-            color: colorScheme.onSurface,
-          ),
+          style: typeScale.bodyLarge.copyWith(color: colorScheme.onSurface),
         ),
       ],
     );

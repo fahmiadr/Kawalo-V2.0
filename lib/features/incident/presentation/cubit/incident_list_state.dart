@@ -186,8 +186,9 @@ class IncidentLoaded extends IncidentState implements ListLoadedState {
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       filterPeriod: filterPeriod ?? this.filterPeriod,
-      selectedFilter:
-          clearStatusFilter ? null : (selectedFilter ?? this.selectedFilter),
+      selectedFilter: clearStatusFilter
+          ? null
+          : (selectedFilter ?? this.selectedFilter),
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       startDateIso: startDateIso ?? this.startDateIso,
@@ -198,19 +199,19 @@ class IncidentLoaded extends IncidentState implements ListLoadedState {
 
   @override
   List<Object?> get props => [
-        incidents,
-        isFromCache,
-        lastSync,
-        hasMore,
-        isLoadingMore,
-        filterPeriod,
-        selectedFilter,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    incidents,
+    isFromCache,
+    lastSync,
+    hasMore,
+    isLoadingMore,
+    filterPeriod,
+    selectedFilter,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }
 
 /// Keadaan ketika terjadi kegagalan pengambilan data insiden.
@@ -286,16 +287,16 @@ class IncidentError extends IncidentState {
 
   @override
   List<Object?> get props => [
-        message,
-        failure,
-        cachedIncidents,
-        lastSync,
-        filterPeriod,
-        selectedFilter,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    message,
+    failure,
+    cachedIncidents,
+    lastSync,
+    filterPeriod,
+    selectedFilter,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }

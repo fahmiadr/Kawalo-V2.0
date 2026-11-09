@@ -54,9 +54,7 @@ class GuestRepositoryImpl implements GuestRepository {
   final NetworkInfo? networkInfo;
 
   @override
-  Future<Either<Failure, GuestResult>> getGuests(
-    GetGuestsParams params,
-  ) {
+  Future<Either<Failure, GuestResult>> getGuests(GetGuestsParams params) {
     final local = localDataSource;
     return fetchRemoteWithCacheFallback<GuestModel, GuestResult>(
       isRefresh: params.isRefresh,
@@ -278,9 +276,7 @@ class GuestRepositoryImpl implements GuestRepository {
       // 3. Sinkronisasi Cache Lokal: Best-effort cache eviction jika remote
       // berhasil.
       final local = localDataSource;
-      await bestEffortCache(
-        local == null ? null : () => local.deleteGuest(id),
-      );
+      await bestEffortCache(local == null ? null : () => local.deleteGuest(id));
 
       return const Right(null);
     } on AppException catch (e) {

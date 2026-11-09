@@ -78,15 +78,15 @@ class CreateInformationParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        text,
-        feedFile,
-        photos,
-        feedType,
-        eventLocation,
-        glat,
-        glong,
-        session,
-        cancelToken,
-      ];
+    title,
+    text,
+    feedFile,
+    photos,
+    feedType,
+    eventLocation,
+    glat,
+    glong,
+    session,
+    cancelToken,
+  ];
 }

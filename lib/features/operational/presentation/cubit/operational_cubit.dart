@@ -21,15 +21,15 @@ class OperationalCubit
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
   }) : super(
-          OperationalInitial(
-            lastSync: SyncStorageService.resolveInitialGreeting(
-              initialGreeting: initialGreeting,
-              featureKey: AppConstants.syncKeyOperational,
-              storageService: syncStorageService,
-            ),
-          ),
-          syncKey: AppConstants.syncKeyOperational,
-        );
+         OperationalInitial(
+           lastSync: SyncStorageService.resolveInitialGreeting(
+             initialGreeting: initialGreeting,
+             featureKey: AppConstants.syncKeyOperational,
+             storageService: syncStorageService,
+           ),
+         ),
+         syncKey: AppConstants.syncKeyOperational,
+       );
 
   /// Use case untuk mengambil aktifitas operasional.
   final GetOperationalsUseCase getOperationalsUseCase;
@@ -55,16 +55,15 @@ class OperationalCubit
     DateTime? endDate,
     String? startDateIso,
     String? endDateIso,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        isRefresh: false,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    isRefresh: false,
+  );
 
   /// Memperbarui aktifitas operasional via pull-to-refresh tanpa skeleton.
   Future<AppFetchResult> refreshOperationals({
@@ -74,16 +73,15 @@ class OperationalCubit
     DateTime? endDate,
     String? startDateIso,
     String? endDateIso,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        isRefresh: true,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    isRefresh: true,
+  );
 
   Future<AppFetchResult> _fetch({
     required bool isRefresh,
@@ -117,8 +115,7 @@ class OperationalCubit
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      ))
-          .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
       loaded: (page, lastSync, {required hasMore}) => OperationalLoaded(
         operationals: page.items,
         isFromCache: page.isFromCache,
@@ -148,24 +145,23 @@ class OperationalCubit
 
   /// Memuat halaman berikutnya untuk infinite scroll.
   Future<void> loadMoreOperationals() => runLoadMore<OperationalLoaded>(
-        request: (current) async => (await getOperationalsUseCase(
-          GetOperationalsParams(
-            search: current.searchQuery,
-            limit: pageSize,
-            offset: current.operationals.length,
-            startDate: current.startDateIso,
-            endDate: current.endDateIso,
-          ),
-        ))
-            .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
-        setLoadingMore: (current, {required loadingMore}) =>
-            current.copyWith(isLoadingMore: loadingMore),
-        append: (current, newItems, {required hasMore}) => current.copyWith(
-          operationals: [...current.operationals, ...newItems],
-          hasMore: hasMore,
-          isLoadingMore: false,
-        ),
-      );
+    request: (current) async => (await getOperationalsUseCase(
+      GetOperationalsParams(
+        search: current.searchQuery,
+        limit: pageSize,
+        offset: current.operationals.length,
+        startDate: current.startDateIso,
+        endDate: current.endDateIso,
+      ),
+    )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+    setLoadingMore: (current, {required loadingMore}) =>
+        current.copyWith(isLoadingMore: loadingMore),
+    append: (current, newItems, {required hasMore}) => current.copyWith(
+      operationals: [...current.operationals, ...newItems],
+      hasMore: hasMore,
+      isLoadingMore: false,
+    ),
+  );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
   Future<AppFetchResult> setFilter(AppDateFilterResult filterResult) =>

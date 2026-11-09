@@ -7,15 +7,14 @@ void main() {
   Widget buildApp(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
-      home: Scaffold(
-        floatingActionButton: child,
-      ),
+      home: Scaffold(floatingActionButton: child),
     );
   }
 
   group('AppExtendedFab & AppFab M3E Tests', () {
-    testWidgets('AppExtendedFab renders label and icon correctly',
-        (tester) async {
+    testWidgets('AppExtendedFab renders label and icon correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildApp(
           AppExtendedFab(
@@ -47,8 +46,9 @@ void main() {
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
-    testWidgets('AppFab with AppFabColor.error resolves error colors',
-        (tester) async {
+    testWidgets('AppFab with AppFabColor.error resolves error colors', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildApp(
           AppFab(
@@ -69,8 +69,9 @@ void main() {
       expect(m3eFab.decoration?.foregroundColor, isNotNull);
     });
 
-    testWidgets('AppExtendedFab with AppFabColor.error resolves error colors',
-        (tester) async {
+    testWidgets('AppExtendedFab with AppFabColor.error resolves error colors', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildApp(
           AppExtendedFab(
@@ -89,50 +90,40 @@ void main() {
       final m3eExtendedFabFinder = find.byType(M3EExtendedFab);
       expect(m3eExtendedFabFinder, findsOneWidget);
 
-      final m3eExtendedFab =
-          tester.widget<M3EExtendedFab>(m3eExtendedFabFinder);
+      final m3eExtendedFab = tester.widget<M3EExtendedFab>(
+        m3eExtendedFabFinder,
+      );
       expect(m3eExtendedFab.decoration?.backgroundColor, isNotNull);
       expect(m3eExtendedFab.decoration?.foregroundColor, isNotNull);
     });
 
-    testWidgets(
-      'AppFab with custom backgroundColor & foregroundColor applies '
-      'overrides',
-      (tester) async {
-        const customBg = Color(0xFF123456);
-        const customFg = Color(0xFF654321);
+    testWidgets('AppFab with custom backgroundColor & foregroundColor applies '
+        'overrides', (tester) async {
+      const customBg = Color(0xFF123456);
+      const customFg = Color(0xFF654321);
 
-        await tester.pumpWidget(
-          buildApp(
-            AppFab(
-              onPressed: () {},
-              backgroundColor: customBg,
-              foregroundColor: customFg,
-              icon: const Icon(Icons.star),
-            ),
+      await tester.pumpWidget(
+        buildApp(
+          AppFab(
+            onPressed: () {},
+            backgroundColor: customBg,
+            foregroundColor: customFg,
+            icon: const Icon(Icons.star),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final m3eFabFinder = find.byType(M3EFab);
-        expect(m3eFabFinder, findsOneWidget);
+      final m3eFabFinder = find.byType(M3EFab);
+      expect(m3eFabFinder, findsOneWidget);
 
-        final m3eFab = tester.widget<M3EFab>(m3eFabFinder);
-        expect(
-          m3eFab.decoration?.backgroundColor?.resolve({}),
-          equals(customBg),
-        );
-        expect(
-          m3eFab.decoration?.foregroundColor?.resolve({}),
-          equals(customFg),
-        );
-      },
-    );
+      final m3eFab = tester.widget<M3EFab>(m3eFabFinder);
+      expect(m3eFab.decoration?.backgroundColor?.resolve({}), equals(customBg));
+      expect(m3eFab.decoration?.foregroundColor?.resolve({}), equals(customFg));
+    });
 
-    testWidgets(
-      'AppExtendedFab with custom backgroundColor & foregroundColor '
-      'applies overrides',
-      (tester) async {
+    testWidgets('AppExtendedFab with custom backgroundColor & foregroundColor '
+        'applies overrides', (tester) async {
       const customBg = Color(0xFF112233);
       const customFg = Color(0xFF445566);
 
@@ -152,8 +143,9 @@ void main() {
       final m3eExtendedFabFinder = find.byType(M3EExtendedFab);
       expect(m3eExtendedFabFinder, findsOneWidget);
 
-      final m3eExtendedFab =
-          tester.widget<M3EExtendedFab>(m3eExtendedFabFinder);
+      final m3eExtendedFab = tester.widget<M3EExtendedFab>(
+        m3eExtendedFabFinder,
+      );
       expect(
         m3eExtendedFab.decoration?.backgroundColor?.resolve({}),
         equals(customBg),
@@ -164,8 +156,9 @@ void main() {
       );
     });
 
-    testWidgets('AppFabMenu renders with custom colors correctly',
-        (tester) async {
+    testWidgets('AppFabMenu renders with custom colors correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildApp(
           AppFabMenu(

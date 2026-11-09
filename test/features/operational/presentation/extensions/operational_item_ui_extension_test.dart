@@ -19,23 +19,14 @@ void main() {
     });
 
     test('dutyTagVariant returns correct variants', () {
-      const onDutyTimeline = DutyTimelineEntity(
-        id: '1',
-        duty: 'ON DUTY',
-      );
+      const onDutyTimeline = DutyTimelineEntity(id: '1', duty: 'ON DUTY');
       expect(
         onDutyTimeline.displayDutyTagVariant(isFirst: true),
         AppTagVariant.primary,
       );
-      expect(
-        onDutyTimeline.displayDutyTagVariant(),
-        AppTagVariant.secondary,
-      );
+      expect(onDutyTimeline.displayDutyTagVariant(), AppTagVariant.secondary);
 
-      const offDutyTimeline = DutyTimelineEntity(
-        id: '2',
-        duty: 'OFF DUTY',
-      );
+      const offDutyTimeline = DutyTimelineEntity(id: '2', duty: 'OFF DUTY');
       expect(
         offDutyTimeline.displayDutyTagVariant(isFirst: true),
         AppTagVariant.tertiary,
@@ -53,25 +44,27 @@ void main() {
   });
 
   group('OperationalItemUiExtension Tests', () {
-    test('displayName returns userName if present, or em-dash without fallback',
-        () {
-      const withName = OperationalItemEntity(
-        id: 'agus@kawalo.id_2026-07-08',
-        userEmail: 'agus@kawalo.id',
-        userName: 'Agus Pratama',
-        totalActivities: 1,
-        timeline: [],
-      );
-      expect(withName.displayUserName, 'Agus Pratama');
+    test(
+      'displayName returns userName if present, or em-dash without fallback',
+      () {
+        const withName = OperationalItemEntity(
+          id: 'agus@kawalo.id_2026-07-08',
+          userEmail: 'agus@kawalo.id',
+          userName: 'Agus Pratama',
+          totalActivities: 1,
+          timeline: [],
+        );
+        expect(withName.displayUserName, 'Agus Pratama');
 
-      const withoutName = OperationalItemEntity(
-        id: 'agus@kawalo.id_2026-07-08',
-        userEmail: 'agus@kawalo.id',
-        totalActivities: 1,
-        timeline: [],
-      );
-      expect(withoutName.displayUserName, '—');
-    });
+        const withoutName = OperationalItemEntity(
+          id: 'agus@kawalo.id_2026-07-08',
+          userEmail: 'agus@kawalo.id',
+          totalActivities: 1,
+          timeline: [],
+        );
+        expect(withoutName.displayUserName, '—');
+      },
+    );
 
     test('duty and state tag variants resolve correctly', () {
       const onDutyWorker = OperationalItemEntity(

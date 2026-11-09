@@ -64,48 +64,42 @@ void main() {
   );
 
   group('OperationalRepositoryImpl Tests', () {
-    test(
-      'getOperationals returns Right and caches data on success',
-      () async {
-        when(
-          () => mockRemoteDataSource.getOperationals(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => [sampleOperational]);
+    test('getOperationals returns Right and caches data on success', () async {
+      when(
+        () => mockRemoteDataSource.getOperationals(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => [sampleOperational]);
 
-        when(() => mockLocalDataSource.cacheOperationals(any()))
-            .thenAnswer((_) async {});
-        when(() => mockLocalDataSource.deleteOlderThan(any()))
-            .thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.cacheOperationals(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.deleteOlderThan(any()),
+      ).thenAnswer((_) async {});
 
-        final result = await repository.getOperationals(
-          const GetOperationalsParams(
-            search: 'Asep',
-            startDate: '2026-09-10',
-            endDate: '2026-09-10',
-          ),
-        );
+      final result = await repository.getOperationals(
+        const GetOperationalsParams(
+          search: 'Asep',
+          startDate: '2026-09-10',
+          endDate: '2026-09-10',
+        ),
+      );
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should return Right'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(resultEntity.items.first, isA<OperationalItemEntity>());
-            expect(
-              resultEntity.items.first.userEmail,
-              sampleOperational.userEmail,
-            );
-            expect(resultEntity.isFromCache, isFalse);
-          },
-        );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Should return Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first, isA<OperationalItemEntity>());
+        expect(resultEntity.items.first.userEmail, sampleOperational.userEmail);
+        expect(resultEntity.isFromCache, isFalse);
+      });
 
-        verify(() => mockLocalDataSource.cacheOperationals([sampleOperational]))
-            .called(1);
-        verify(() => mockLocalDataSource.deleteOlderThan(any())).called(1);
-      },
-    );
+      verify(
+        () => mockLocalDataSource.cacheOperationals([sampleOperational]),
+      ).called(1);
+      verify(() => mockLocalDataSource.deleteOlderThan(any())).called(1);
+    });
 
     test(
       'getOperationals falls back to cache on NoInternetException',
@@ -134,17 +128,14 @@ void main() {
         );
 
         expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should return Right'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(
-              resultEntity.items.first.userEmail,
-              sampleOperational.userEmail,
-            );
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
+        result.fold((failure) => fail('Should return Right'), (resultEntity) {
+          expect(resultEntity.items.length, 1);
+          expect(
+            resultEntity.items.first.userEmail,
+            sampleOperational.userEmail,
+          );
+          expect(resultEntity.isFromCache, isTrue);
+        });
 
         verify(
           () => mockLocalDataSource.getCachedOperationals(
@@ -190,74 +181,64 @@ void main() {
       },
     );
 
-    test(
-      'triggers remote fetch when offline if isRefresh is true',
-      () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-        when(
-          () => mockRemoteDataSource.getOperationals(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => [sampleOperational]);
-        when(
-          () => mockLocalDataSource.cacheOperationals(any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).thenAnswer((_) async {});
+    test('triggers remote fetch when offline if isRefresh is true', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      when(
+        () => mockRemoteDataSource.getOperationals(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => [sampleOperational]);
+      when(
+        () => mockLocalDataSource.cacheOperationals(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.deleteOlderThan(any()),
+      ).thenAnswer((_) async {});
 
-        final result = await repository.getOperationals(
-          const GetOperationalsParams(
-            search: 'Asep',
-            isRefresh: true,
-          ),
-        );
+      final result = await repository.getOperationals(
+        const GetOperationalsParams(search: 'Asep', isRefresh: true),
+      );
 
-        expect(result.isRight(), isTrue);
-        verify(
-          () => mockRemoteDataSource.getOperationals(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      verify(
+        () => mockRemoteDataSource.getOperationals(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
+    });
 
-    test(
-      'does not trigger remote fetch when offline and returns empty cache '
-      'result when no data found',
-      () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-        when(
-          () => mockLocalDataSource.getCachedOperationals(
-            search: any(named: 'search'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => []);
+    test('does not trigger remote fetch when offline and returns empty cache '
+        'result when no data found', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      when(
+        () => mockLocalDataSource.getCachedOperationals(
+          search: any(named: 'search'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => []);
 
-        final result = await repository.getOperationals(
-          const GetOperationalsParams(search: 'NonExistent'),
-        );
+      final result = await repository.getOperationals(
+        const GetOperationalsParams(search: 'NonExistent'),
+      );
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Expected Right but got Left: $failure'),
-          (resultEntity) {
-            expect(resultEntity.items, isEmpty);
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Expected Right but got Left: $failure'), (
+        resultEntity,
+      ) {
+        expect(resultEntity.items, isEmpty);
+        expect(resultEntity.isFromCache, isTrue);
+      });
 
-        verifyNever(
-          () => mockRemoteDataSource.getOperationals(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        );
-      },
-    );
+      verifyNever(
+        () => mockRemoteDataSource.getOperationals(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      );
+    });
 
     test(
       'returns Right with empty items and isFromCache true when remote throws '
@@ -283,13 +264,10 @@ void main() {
         );
 
         expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Should return Right'),
-          (resultEntity) {
-            expect(resultEntity.items, isEmpty);
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
+        result.fold((failure) => fail('Should return Right'), (resultEntity) {
+          expect(resultEntity.items, isEmpty);
+          expect(resultEntity.isFromCache, isTrue);
+        });
       },
     );
 
@@ -332,12 +310,9 @@ void main() {
         );
 
         expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<RequestCancelledFailure>());
-          },
-          (operationals) => fail('Should return Left'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<RequestCancelledFailure>());
+        }, (operationals) => fail('Should return Left'));
 
         verifyNever(
           () => mockLocalDataSource.getCachedOperationals(

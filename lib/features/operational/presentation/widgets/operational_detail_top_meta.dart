@@ -7,10 +7,7 @@ import 'package:kawalo_mobile/features/operational/presentation/extensions/opera
 /// memuat tag nama grup.
 class OperationalDetailTopMeta extends StatelessWidget {
   /// Membuat instance [OperationalDetailTopMeta].
-  const OperationalDetailTopMeta({
-    required this.item,
-    super.key,
-  });
+  const OperationalDetailTopMeta({required this.item, super.key});
 
   /// Data tenaga kerja operasional yang ditampilkan.
   final OperationalItemEntity item;

@@ -70,8 +70,9 @@ void main() {
       expect(tIncident.canReplyBySession(guardSession), isTrue);
       expect(tIncident.canReplyBySession(otherGroupGuardSession), isFalse);
 
-      final resolvedIncident =
-          tIncident.copyWith(status: IncidentStatus.resolved);
+      final resolvedIncident = tIncident.copyWith(
+        status: IncidentStatus.resolved,
+      );
       expect(resolvedIncident.canReplyBySession(guardSession), isFalse);
 
       final deletedIncident = tIncident.copyWith(deletedAt: DateTime.now());
@@ -83,8 +84,9 @@ void main() {
       expect(tIncident.canBeResolvedBySession(adminSession), isTrue);
       expect(tIncident.canBeResolvedBySession(otherGroupGuardSession), isFalse);
 
-      final resolvedIncident =
-          tIncident.copyWith(status: IncidentStatus.resolved);
+      final resolvedIncident = tIncident.copyWith(
+        status: IncidentStatus.resolved,
+      );
       expect(resolvedIncident.canBeResolvedBySession(guardSession), isFalse);
     });
 

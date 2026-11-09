@@ -95,21 +95,20 @@ void main() {
       },
     );
 
-    testWidgets(
-      'opens AppImageViewer when photo is tapped via AppTappable',
-      (tester) async {
-        await tester.pumpWidget(buildTestCard(sampleGuestWithPhoto));
-        await tester.pump();
+    testWidgets('opens AppImageViewer when photo is tapped via AppTappable', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestCard(sampleGuestWithPhoto));
+      await tester.pump();
 
-        final tappableFinder = find.byType(AppTappable);
-        expect(tappableFinder, findsOneWidget);
+      final tappableFinder = find.byType(AppTappable);
+      expect(tappableFinder, findsOneWidget);
 
-        await tester.tap(tappableFinder);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(tappableFinder);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-        expect(find.byType(AppImageViewer), findsOneWidget);
-      },
-    );
+      expect(find.byType(AppImageViewer), findsOneWidget);
+    });
   });
 }

@@ -10,8 +10,7 @@ import 'package:kawalo_mobile/features/group/data/repositories/group_repository_
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGroupRemoteDataSource extends Mock
-    implements GroupRemoteDataSource {}
+class MockGroupRemoteDataSource extends Mock implements GroupRemoteDataSource {}
 
 class MockNetworkInfo extends Mock implements NetworkInfo {}
 
@@ -49,83 +48,84 @@ void main() {
   ];
 
   group('getMembers', () {
+    test('should return NoInternetFailure when device is offline without '
+        'calling remoteDataSource', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+
+      final result = await repository.getMembers();
+
+      expect(
+        result,
+        const Left<Failure, List<GroupMemberEntity>>(NoInternetFailure()),
+      );
+      verifyNever(
+        () => mockRemoteDataSource.getMembers(
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      );
+    });
+
     test(
-      'should return NoInternetFailure when device is offline without '
-      'calling remoteDataSource',
+      'should return list of GroupMemberEntity when remote call succeeds',
       () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+        when(
+          () => mockRemoteDataSource.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async => tModels);
+
+        final cancelToken = MockAppCancellationToken();
+        final result = await repository.getMembers(cancelToken: cancelToken);
+
+        expect(result.isRight(), isTrue);
+        result.fold(
+          (failure) => fail('Should be Right'),
+          (entities) => expect(entities, equals(tEntities)),
+        );
+        verify(
+          () => mockRemoteDataSource.getMembers(cancelToken: cancelToken),
+        ).called(1);
+      },
+    );
+
+    test(
+      'should proceed to remoteDataSource when networkInfo is null',
+      () async {
+        final repoWithoutNetwork = GroupRepositoryImpl(
+          remoteDataSource: mockRemoteDataSource,
+        );
+        when(
+          () => mockRemoteDataSource.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer((_) async => tModels);
+
+        final result = await repoWithoutNetwork.getMembers();
+
+        expect(result.isRight(), isTrue);
+        verify(() => mockRemoteDataSource.getMembers()).called(1);
+      },
+    );
+
+    test(
+      'should return RequestCancelledFailure on RequestCancelledException',
+      () async {
+        when(
+          () => mockRemoteDataSource.getMembers(
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenThrow(const RequestCancelledException());
 
         final result = await repository.getMembers();
 
         expect(
           result,
           const Left<Failure, List<GroupMemberEntity>>(
-            NoInternetFailure(),
-          ),
-        );
-        verifyNever(
-          () => mockRemoteDataSource.getMembers(
-            cancelToken: any(named: 'cancelToken'),
+            RequestCancelledFailure(),
           ),
         );
       },
     );
-
-    test('should return list of GroupMemberEntity when remote call succeeds',
-        () async {
-      when(
-        () => mockRemoteDataSource.getMembers(
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) async => tModels);
-
-      final cancelToken = MockAppCancellationToken();
-      final result = await repository.getMembers(cancelToken: cancelToken);
-
-      expect(result.isRight(), isTrue);
-      result.fold(
-        (failure) => fail('Should be Right'),
-        (entities) => expect(entities, equals(tEntities)),
-      );
-      verify(
-        () => mockRemoteDataSource.getMembers(cancelToken: cancelToken),
-      ).called(1);
-    });
-
-    test('should proceed to remoteDataSource when networkInfo is null',
-        () async {
-      final repoWithoutNetwork = GroupRepositoryImpl(
-        remoteDataSource: mockRemoteDataSource,
-      );
-      when(
-        () => mockRemoteDataSource.getMembers(
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer((_) async => tModels);
-
-      final result = await repoWithoutNetwork.getMembers();
-
-      expect(result.isRight(), isTrue);
-      verify(() => mockRemoteDataSource.getMembers()).called(1);
-    });
-
-    test('should return RequestCancelledFailure on RequestCancelledException',
-        () async {
-      when(
-        () => mockRemoteDataSource.getMembers(
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenThrow(const RequestCancelledException());
-
-      final result = await repository.getMembers();
-
-      expect(
-        result,
-        const Left<Failure, List<GroupMemberEntity>>(
-          RequestCancelledFailure(),
-        ),
-      );
-    });
 
     test('should return ServerFailure on ServerException', () async {
       when(

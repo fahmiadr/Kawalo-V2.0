@@ -55,8 +55,9 @@ void main() {
 
   group('CreateGuestUseCase Execution Tests', () {
     test('delegates to repository and returns entity on success', () async {
-      when(() => mockRepository.createGuest(any()))
-          .thenAnswer((_) async => const Right(tCreatedGuest));
+      when(
+        () => mockRepository.createGuest(any()),
+      ).thenAnswer((_) async => const Right(tCreatedGuest));
 
       final result = await useCase(tParams);
 
@@ -66,8 +67,9 @@ void main() {
         (entity) => expect(entity, equals(tCreatedGuest)),
       );
 
-      verify(() => mockRepository.createGuest(tParams.toRepositoryData()))
-          .called(1);
+      verify(
+        () => mockRepository.createGuest(tParams.toRepositoryData()),
+      ).called(1);
       verifyNoMoreInteractions(mockRepository);
     });
 
@@ -78,8 +80,9 @@ void main() {
         guestDestination: 'Blok A No. 1',
         guestType: 'TAMU',
       ).copyWithCancelToken(token);
-      when(() => mockRepository.createGuest(any()))
-          .thenAnswer((_) async => const Right(tCreatedGuest));
+      when(
+        () => mockRepository.createGuest(any()),
+      ).thenAnswer((_) async => const Right(tCreatedGuest));
 
       final result = await useCase(tParamsWithToken);
 
@@ -91,8 +94,9 @@ void main() {
 
     test('returns failure when repository fails', () async {
       const tFailure = ServerFailure('Gagal menyimpan data tamu');
-      when(() => mockRepository.createGuest(any()))
-          .thenAnswer((_) async => const Left(tFailure));
+      when(
+        () => mockRepository.createGuest(any()),
+      ).thenAnswer((_) async => const Left(tFailure));
 
       final result = await useCase(tParams);
 
@@ -101,8 +105,9 @@ void main() {
         (failure) => expect(failure, equals(tFailure)),
         (_) => fail('Should be Left'),
       );
-      verify(() => mockRepository.createGuest(tParams.toRepositoryData()))
-          .called(1);
+      verify(
+        () => mockRepository.createGuest(tParams.toRepositoryData()),
+      ).called(1);
     });
   });
 }

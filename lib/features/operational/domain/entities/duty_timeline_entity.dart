@@ -31,12 +31,5 @@ class DutyTimelineEntity extends Equatable {
   final String? stateDt;
 
   @override
-  List<Object?> get props => [
-        id,
-        journeyUid,
-        duty,
-        state,
-        dutyDt,
-        stateDt,
-      ];
+  List<Object?> get props => [id, journeyUid, duty, state, dutyDt, stateDt];
 }

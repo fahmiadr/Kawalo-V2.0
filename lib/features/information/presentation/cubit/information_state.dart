@@ -223,20 +223,20 @@ class InformationLoaded extends InformationState implements ListLoadedState {
 
   @override
   List<Object?> get props => [
-        information,
-        isFromCache,
-        lastSync,
-        hasMore,
-        isLoadingMore,
-        filterPeriod,
-        filterAuthorEmail,
-        filterAuthorName,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    information,
+    isFromCache,
+    lastSync,
+    hasMore,
+    isLoadingMore,
+    filterPeriod,
+    filterAuthorEmail,
+    filterAuthorName,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }
 
 /// Keadaan saat terjadi kegagalan saat memuat data informasi.
@@ -332,17 +332,17 @@ class InformationError extends InformationState {
 
   @override
   List<Object?> get props => [
-        message,
-        failure,
-        cachedInformation,
-        lastSync,
-        filterPeriod,
-        filterAuthorEmail,
-        filterAuthorName,
-        startDate,
-        endDate,
-        startDateIso,
-        endDateIso,
-        searchQuery,
-      ];
+    message,
+    failure,
+    cachedInformation,
+    lastSync,
+    filterPeriod,
+    filterAuthorEmail,
+    filterAuthorName,
+    startDate,
+    endDate,
+    startDateIso,
+    endDateIso,
+    searchQuery,
+  ];
 }

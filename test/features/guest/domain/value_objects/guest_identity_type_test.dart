@@ -19,20 +19,19 @@ void main() {
     });
 
     test('allowedCodes returns all valid backend codes', () {
-      expect(
-        GuestIdentityType.allowedCodes,
-        ['KTP', 'SIM', 'PASPOR', 'LAINNYA'],
-      );
+      expect(GuestIdentityType.allowedCodes, [
+        'KTP',
+        'SIM',
+        'PASPOR',
+        'LAINNYA',
+      ]);
     });
 
     test('tryFromCode parses codes correctly', () {
       expect(GuestIdentityType.tryFromCode('KTP'), GuestIdentityType.ktp);
       expect(GuestIdentityType.tryFromCode('ktp'), GuestIdentityType.ktp);
       expect(GuestIdentityType.tryFromCode(' SIM '), GuestIdentityType.sim);
-      expect(
-        GuestIdentityType.tryFromCode('paspor'),
-        GuestIdentityType.paspor,
-      );
+      expect(GuestIdentityType.tryFromCode('paspor'), GuestIdentityType.paspor);
       expect(
         GuestIdentityType.tryFromCode('lainnya'),
         GuestIdentityType.lainnya,

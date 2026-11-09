@@ -38,29 +38,20 @@ void main() {
     'calls repository.getAttendances and returns Right with items',
     () async {
       const tParams = GetAttendancesParams(search: 'Ahmad');
-      when(
-        () => mockRepo.getAttendances(any()),
-      ).thenAnswer(
-        (_) async => const Right(
-          AttendanceResult(items: [testItem]),
-        ),
+      when(() => mockRepo.getAttendances(any())).thenAnswer(
+        (_) async => const Right(AttendanceResult(items: [testItem])),
       );
 
       final result = await useCase(tParams);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (failure) => fail('Should be Right'),
-        (resultEntity) {
-          expect(resultEntity.items.length, 1);
-          expect(resultEntity.items.first.userName, 'Ahmad');
-          expect(resultEntity.isFromCache, isFalse);
-        },
-      );
+      result.fold((failure) => fail('Should be Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first.userName, 'Ahmad');
+        expect(resultEntity.isFromCache, isFalse);
+      });
 
-      verify(
-        () => mockRepo.getAttendances(tParams),
-      ).called(1);
+      verify(() => mockRepo.getAttendances(tParams)).called(1);
     },
   );
 
@@ -68,9 +59,7 @@ void main() {
     const tParams = GetAttendancesParams();
     when(
       () => mockRepo.getAttendances(any()),
-    ).thenAnswer(
-      (_) async => const Left(ServerFailure('Server error')),
-    );
+    ).thenAnswer((_) async => const Left(ServerFailure('Server error')));
 
     final result = await useCase(tParams);
 
@@ -80,8 +69,6 @@ void main() {
       (_) => fail('Should be Left'),
     );
 
-    verify(
-      () => mockRepo.getAttendances(tParams),
-    ).called(1);
+    verify(() => mockRepo.getAttendances(tParams)).called(1);
   });
 }

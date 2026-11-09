@@ -13,9 +13,7 @@ void main() {
             body: AppDialog(
               title: 'Judul Dialog',
               content: Text('Konten Dialog'),
-              actions: [
-                Text('Aksi'),
-              ],
+              actions: [Text('Aksi')],
             ),
           ),
         ),
@@ -110,7 +108,7 @@ void main() {
                           onPressed: () {
                             Navigator.of(dialogCtx).push<void>(
                               PageRouteBuilder<void>(
-                                pageBuilder: (_, __, ___) => const Scaffold(
+                                pageBuilder: (_, _, _) => const Scaffold(
                                   body: Hero(
                                     tag: 'test_hero',
                                     child: Text('Viewer Hero'),

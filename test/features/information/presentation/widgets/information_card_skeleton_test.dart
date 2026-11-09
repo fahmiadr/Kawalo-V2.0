@@ -6,14 +6,13 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/informat
 
 void main() {
   group('InformationCardSkeleton Widget Tests', () {
-    testWidgets('renders skeleton layout correctly with AppCard wrapper',
-        (tester) async {
+    testWidgets('renders skeleton layout correctly with AppCard wrapper', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
-          home: const Scaffold(
-            body: InformationCardSkeleton(),
-          ),
+          home: const Scaffold(body: InformationCardSkeleton()),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
@@ -22,8 +21,9 @@ void main() {
       expect(find.byType(AppCard), findsOneWidget);
     });
 
-    testWidgets('renders media collage placeholder when showMedia is true',
-        (tester) async {
+    testWidgets('renders media collage placeholder when showMedia is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -40,8 +40,9 @@ void main() {
       expect(find.byType(AppCard), findsOneWidget);
     });
 
-    testWidgets('renders attachment tag when showAttachment is true',
-        (tester) async {
+    testWidgets('renders attachment tag when showAttachment is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -55,16 +56,15 @@ void main() {
       expect(find.byType(InformationCardSkeleton), findsOneWidget);
     });
 
-    testWidgets('renders safely under reduced motion mode without animation',
-        (tester) async {
+    testWidgets('renders safely under reduced motion mode without animation', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
           home: const MediaQuery(
             data: MediaQueryData(disableAnimations: true),
-            child: Scaffold(
-              body: InformationCardSkeleton(showMedia: true),
-            ),
+            child: Scaffold(body: InformationCardSkeleton(showMedia: true)),
           ),
         ),
       );

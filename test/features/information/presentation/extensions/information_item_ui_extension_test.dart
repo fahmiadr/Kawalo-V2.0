@@ -5,24 +5,23 @@ import 'package:kawalo_mobile/features/information/presentation/extensions/infor
 
 void main() {
   group('InformationItemUiExtension Tests', () {
-    test('displayUserName and displayUserEmail format correctly with fallback',
-        () {
-      const withBoth = InformationItemEntity(
-        id: '1',
-        photos: [],
-        userName: 'Budi Santoso',
-        userEmail: 'budi@kawalo.id',
-      );
-      expect(withBoth.displayUserName, 'Budi Santoso');
-      expect(withBoth.displayUserEmail, 'budi@kawalo.id');
+    test(
+      'displayUserName and displayUserEmail format correctly with fallback',
+      () {
+        const withBoth = InformationItemEntity(
+          id: '1',
+          photos: [],
+          userName: 'Budi Santoso',
+          userEmail: 'budi@kawalo.id',
+        );
+        expect(withBoth.displayUserName, 'Budi Santoso');
+        expect(withBoth.displayUserEmail, 'budi@kawalo.id');
 
-      const withNeither = InformationItemEntity(
-        id: '2',
-        photos: [],
-      );
-      expect(withNeither.displayUserName, '—');
-      expect(withNeither.displayUserEmail, '—');
-    });
+        const withNeither = InformationItemEntity(id: '2', photos: []);
+        expect(withNeither.displayUserName, '—');
+        expect(withNeither.displayUserEmail, '—');
+      },
+    );
 
     test('typeLabel and typeVariant map all categories correctly', () {
       const incident = InformationItemEntity(
@@ -41,11 +40,7 @@ void main() {
       expect(event.typeLabel, 'Acara');
       expect(event.typeVariant, AppTagVariant.primary);
 
-      const join = InformationItemEntity(
-        id: '3',
-        photos: [],
-        feedType: 'JOIN',
-      );
+      const join = InformationItemEntity(id: '3', photos: [], feedType: 'JOIN');
       expect(join.typeLabel, 'Personil Baru');
       expect(join.typeVariant, AppTagVariant.tertiary);
 
@@ -57,19 +52,13 @@ void main() {
       expect(general.typeLabel, 'Informasi Umum');
       expect(general.typeVariant, AppTagVariant.secondary);
 
-      const nullType = InformationItemEntity(
-        id: '5',
-        photos: [],
-      );
+      const nullType = InformationItemEntity(id: '5', photos: []);
       expect(nullType.typeLabel, 'Informasi Umum');
       expect(nullType.typeVariant, AppTagVariant.secondary);
     });
 
     test('photos getters calculate correctly', () {
-      const noPhotos = InformationItemEntity(
-        id: '1',
-        photos: [],
-      );
+      const noPhotos = InformationItemEntity(id: '1', photos: []);
       expect(noPhotos.primaryPhoto, isNull);
       expect(noPhotos.hasPhotos, isFalse);
       expect(noPhotos.extraPhotosCount, 0);
@@ -102,12 +91,10 @@ void main() {
         );
         expect(sameDay.displayEventSchedule, contains('10:00 – 12:00'));
 
-      const nullSchedule = InformationItemEntity(
-        id: '2',
-        photos: [],
-      );
-      expect(nullSchedule.displayEventSchedule, isNull);
-    });
+        const nullSchedule = InformationItemEntity(id: '2', photos: []);
+        expect(nullSchedule.displayEventSchedule, isNull);
+      },
+    );
 
     test('hasFileAttachment identifies valid and invalid file attachments', () {
       const withValidFile = InformationItemEntity(
@@ -117,10 +104,7 @@ void main() {
       );
       expect(withValidFile.hasFileAttachment, isTrue);
 
-      const withNullFile = InformationItemEntity(
-        id: '2',
-        photos: [],
-      );
+      const withNullFile = InformationItemEntity(id: '2', photos: []);
       expect(withNullFile.hasFileAttachment, isFalse);
 
       const withNaFile = InformationItemEntity(
@@ -146,10 +130,7 @@ void main() {
     });
 
     test('display getters return em-dash for null values', () {
-      const emptyItem = InformationItemEntity(
-        id: '1',
-        photos: [],
-      );
+      const emptyItem = InformationItemEntity(id: '1', photos: []);
       expect(emptyItem.displayTitle, '—');
       expect(emptyItem.displayText, '—');
       expect(emptyItem.displayUserEmail, '—');

@@ -23,14 +23,15 @@ class GuestFormNameField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<
-        GuestFormCubit,
-        GuestFormState,
-        ({
-          String? error,
-          bool enabled,
-          bool hasIdentityType,
-          int validationAttempt,
-        })>(
+      GuestFormCubit,
+      GuestFormState,
+      ({
+        String? error,
+        bool enabled,
+        bool hasIdentityType,
+        int validationAttempt,
+      })
+    >(
       selector: (state) => (
         error: state.nameError,
         enabled: !state.isSubmitting,

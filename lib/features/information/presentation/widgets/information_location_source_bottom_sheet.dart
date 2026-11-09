@@ -68,18 +68,18 @@ class InformationLocationSourceBottomSheet extends StatelessWidget {
                 title: 'Lokasi saat ini',
                 subtitle:
                     'Deteksi posisi sekarang secara otomatis menggunakan GPS',
-                onTap: () => Navigator.of(context).pop(
-                  InformationLocationSource.currentLocation,
-                ),
+                onTap: () => Navigator.of(
+                  context,
+                ).pop(InformationLocationSource.currentLocation),
               ),
               AppSpacing.vGap150,
               AppOptionTile(
                 vectorIcon: KawaloVectors.mapPin,
                 title: 'Pilih di peta',
                 subtitle: 'Geser dan perbesar peta untuk menandai titik lokasi',
-                onTap: () => Navigator.of(context).pop(
-                  InformationLocationSource.pickOnMap,
-                ),
+                onTap: () => Navigator.of(
+                  context,
+                ).pop(InformationLocationSource.pickOnMap),
               ),
             ],
           ),

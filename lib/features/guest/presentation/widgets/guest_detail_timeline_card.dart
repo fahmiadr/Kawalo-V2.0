@@ -12,10 +12,7 @@ import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_ex
 /// dengan standar Material 3 Expressive.
 class GuestDetailTimelineCard extends StatelessWidget {
   /// Membuat instance [GuestDetailTimelineCard].
-  const GuestDetailTimelineCard({
-    required this.item,
-    super.key,
-  });
+  const GuestDetailTimelineCard({required this.item, super.key});
 
   /// Data tamu yang ditampilkan.
   final GuestItemEntity item;
@@ -38,10 +35,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
           // ── Header Kartu Linimasa ───────────────────────────────────────
           Row(
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.timeRotation,
-                size: 32,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.timeRotation, size: 32),
               AppSpacing.hGapSm,
               Expanded(
                 child: Text(
@@ -53,8 +47,9 @@ class GuestDetailTimelineCard extends StatelessWidget {
               ),
               AppTag(
                 label: isExited ? 'Selesai' : 'Aktif',
-                variant:
-                    isExited ? AppTagVariant.primary : AppTagVariant.tertiary,
+                variant: isExited
+                    ? AppTagVariant.primary
+                    : AppTagVariant.tertiary,
                 size: AppTagSize.small,
               ),
             ],
@@ -119,10 +114,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
                   Expanded(
                     child: Center(
                       child: isLineActive
-                          ? Container(
-                              width: 2.5,
-                              color: colorScheme.primary,
-                            )
+                          ? Container(width: 2.5, color: colorScheme.primary)
                           : CustomPaint(
                               size: const Size(2, double.infinity),
                               painter: _DashedLinePainter(
@@ -165,9 +157,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           )
                         : typeScale.bodyMedium.copyWith(
-                            color: colorScheme.outline.withValues(
-                              alpha: 0.60,
-                            ),
+                            color: colorScheme.outline.withValues(alpha: 0.60),
                           ),
                   ),
                 ],
@@ -179,10 +169,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTimelineNode(
-    BuildContext context, {
-    required bool isActive,
-  }) {
+  Widget _buildTimelineNode(BuildContext context, {required bool isActive}) {
     final colorScheme = AppTheme.of(context).colorScheme;
 
     if (isActive) {
@@ -192,10 +179,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.primaryContainer,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: colorScheme.primary,
-            width: 1.5,
-          ),
+          border: Border.all(color: colorScheme.primary, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: colorScheme.primary.withValues(alpha: 0.12),
@@ -220,10 +204,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-          width: 1.5,
-        ),
+        border: Border.all(color: colorScheme.outlineVariant, width: 1.5),
       ),
       alignment: Alignment.center,
       child: Container(
@@ -240,9 +221,7 @@ class GuestDetailTimelineCard extends StatelessWidget {
 
 /// Painter untuk menggambar garis putus-putus pada segmen linimasa tertunda.
 class _DashedLinePainter extends CustomPainter {
-  const _DashedLinePainter({
-    required this.color,
-  });
+  const _DashedLinePainter({required this.color});
 
   final Color color;
 

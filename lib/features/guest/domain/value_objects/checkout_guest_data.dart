@@ -7,11 +7,7 @@ import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 /// JSON dan independen dari HTTP/Dio.
 class CheckoutGuestData extends Equatable {
   /// Membuat instance [CheckoutGuestData].
-  const CheckoutGuestData({
-    required this.id,
-    this.qrUid,
-    this.cancelToken,
-  });
+  const CheckoutGuestData({required this.id, this.qrUid, this.cancelToken});
 
   /// Identifier numerik unik data tamu (wajib).
   final String id;

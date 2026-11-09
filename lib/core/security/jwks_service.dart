@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/constants/app_constants.dart';
@@ -12,18 +13,17 @@ import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 /// 2. Dynamic path / Key Rotation: Mengambil public keys terbaru dari endpoint
 ///    `/.well-known/jwks.json` saat token ditandatangani dengan `kid` baru.
 class JwksService {
-  JwksService({
-    SecureStorageService? storageService,
-    Dio? dio,
-  })  : _storageService = storageService ?? SecureStorageService(),
-        _dio = dio ??
-            Dio(
-              BaseOptions(
-                connectTimeout: AppConstants.connectTimeout,
-                sendTimeout: AppConstants.sendTimeout,
-                receiveTimeout: AppConstants.receiveTimeout,
-              ),
-            );
+  JwksService({SecureStorageService? storageService, Dio? dio})
+    : _storageService = storageService ?? SecureStorageService(),
+      _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              connectTimeout: AppConstants.connectTimeout,
+              sendTimeout: AppConstants.sendTimeout,
+              receiveTimeout: AppConstants.receiveTimeout,
+            ),
+          );
 
   final SecureStorageService _storageService;
   final Dio _dio;
@@ -109,15 +109,11 @@ class JwksService {
       final uri = Uri.parse(effectiveBase);
 
       // Sesuai standar RFC 5785 / RFC 8414, endpoint JWKS berada di origin root
-      final jwksUri = uri.replace(
-        path: '/.well-known/jwks.json',
-      );
+      final jwksUri = uri.replace(path: '/.well-known/jwks.json');
 
       final response = await _dio.getUri<dynamic>(
         jwksUri,
-        options: Options(
-          responseType: ResponseType.plain,
-        ),
+        options: Options(responseType: ResponseType.plain),
       );
 
       final dynamic data = response.data;
@@ -136,9 +132,7 @@ class JwksService {
         );
         final response = await _dio.getUri<dynamic>(
           subpathUri,
-          options: Options(
-            responseType: ResponseType.plain,
-          ),
+          options: Options(responseType: ResponseType.plain),
         );
         final dynamic data = response.data;
         if (data is Map<String, dynamic>) {

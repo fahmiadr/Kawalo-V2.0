@@ -19,19 +19,16 @@ import 'package:latlong2/latlong.dart' hide Path;
 /// Teks penampil koordinat lintang dan bujur yang mendengarkan perubahan
 /// posisi kamera secara real-time tanpa memicu rebuild pada kanvas peta.
 class CoordinatesDisplay extends StatelessWidget {
-  const CoordinatesDisplay({
-    required this.centerListenable,
-    super.key,
-  });
+  const CoordinatesDisplay({required this.centerListenable, super.key});
 
   final ValueListenable<LatLng> centerListenable;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = AppTheme.of(context).colorScheme;
-    final style = AppTheme.emphasizedTypeScaleOf(context).labelMedium.copyWith(
-          color: colorScheme.onSurface,
-        );
+    final style = AppTheme.emphasizedTypeScaleOf(
+      context,
+    ).labelMedium.copyWith(color: colorScheme.onSurface);
 
     return ValueListenableBuilder<LatLng>(
       valueListenable: centerListenable,
@@ -54,9 +51,7 @@ class CoordinatesDisplay extends StatelessWidget {
 /// Baris aksi error dan tombol coba lagi ketika resolusi alamat gagal,
 /// mematuhi standar Material 3 Expressive dan WCAG AA touch target 48x48dp.
 class _AddressErrorRetry extends StatelessWidget {
-  const _AddressErrorRetry({
-    required this.onRetry,
-  });
+  const _AddressErrorRetry({required this.onRetry});
 
   final VoidCallback onRetry;
 
@@ -91,8 +86,9 @@ class _AddressErrorRetry extends StatelessWidget {
                   return DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: AppRadius.borderExtraSmall,
-                      border:
-                          state.focused ? Border.all(color: linkColor) : null,
+                      border: state.focused
+                          ? Border.all(color: linkColor)
+                          : null,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.only(
@@ -204,14 +200,8 @@ class _AddressShimmerSkeletonState extends State<_AddressShimmerSkeleton>
             final gradient = isReduced
                 ? null
                 : LinearGradient(
-                    begin: Alignment(
-                      -2.0 + 4.0 * _controller.value,
-                      -0.3,
-                    ),
-                    end: Alignment(
-                      -1.0 + 4.0 * _controller.value,
-                      0.3,
-                    ),
+                    begin: Alignment(-2.0 + 4.0 * _controller.value, -0.3),
+                    end: Alignment(-1.0 + 4.0 * _controller.value, 0.3),
                     colors: [baseColor, highlightColor, baseColor],
                     stops: const [0.0, 0.5, 1.0],
                   );
@@ -280,10 +270,7 @@ class AddressResolutionSection extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(top: 2),
           child: ExcludeSemantics(
-            child: AppSvgIcon.color(
-              KawaloColorVectors.location1,
-              size: 16,
-            ),
+            child: AppSvgIcon.color(KawaloColorVectors.location1, size: 16),
           ),
         ),
         AppSpacing.hGap100,

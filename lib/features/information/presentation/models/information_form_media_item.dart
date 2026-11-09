@@ -52,10 +52,7 @@ class InformationFormMediaItem extends Equatable {
 
   /// Factory untuk membuat item penampung sementara ketika foto sedang
   /// dimuat atau dikompresi.
-  factory InformationFormMediaItem.loading({
-    String? id,
-    String? name,
-  }) {
+  factory InformationFormMediaItem.loading({String? id, String? name}) {
     return InformationFormMediaItem(
       id: id ?? 'temp_loading_${DateTime.now().microsecondsSinceEpoch}',
       name: name ?? 'Memuat foto...',
@@ -115,13 +112,13 @@ class InformationFormMediaItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        path,
-        bytes,
-        remoteUrl,
-        isLocal,
-        fileSize,
-        isLoading,
-      ];
+    id,
+    name,
+    path,
+    bytes,
+    remoteUrl,
+    isLocal,
+    fileSize,
+    isLoading,
+  ];
 }

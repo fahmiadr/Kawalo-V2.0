@@ -73,11 +73,11 @@ class MapPickerOverlayState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isLocatingUser,
-        isResolvingAddress,
-        hasGeocodeError,
-        hasConfirmedFix,
-        hasUserInteracted,
-        resolvedAddress,
-      ];
+    isLocatingUser,
+    isResolvingAddress,
+    hasGeocodeError,
+    hasConfirmedFix,
+    hasUserInteracted,
+    resolvedAddress,
+  ];
 }

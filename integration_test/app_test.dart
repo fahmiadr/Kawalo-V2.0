@@ -6,9 +6,9 @@ import 'package:kawalo_mobile/main.dart' as app;
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets(
-    'E2E Login Flow Test: fill form and trigger login button',
-    (WidgetTester tester) async {
+  testWidgets('E2E Login Flow Test: fill form and trigger login button', (
+    WidgetTester tester,
+  ) async {
     app.main();
     await tester.pumpAndSettle();
 

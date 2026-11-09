@@ -47,10 +47,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> logout(LogoutRequestModel request) async {
-    await apiClient.post(
-      '/v1/auth/logout',
-      body: request.toJson(),
-    );
+    await apiClient.post('/v1/auth/logout', body: request.toJson());
   }
 
   @override

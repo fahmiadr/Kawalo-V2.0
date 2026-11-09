@@ -110,7 +110,8 @@ class AppEmptyState extends StatelessWidget {
     final typeScale = theme.typeScale;
     final emphasizedScale = theme.typography.emphasized;
 
-    final effectiveAction = action ??
+    final effectiveAction =
+        action ??
         (actionLabel != null && onActionPressed != null
             ? AppButton(
                 style: actionStyle,
@@ -132,14 +133,10 @@ class AppEmptyState extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconTheme(
-                  data: IconThemeData(
-                    size: iconSize,
-                  ),
+                  data: IconThemeData(size: iconSize),
                   child: SizedBox.square(
                     dimension: iconSize,
-                    child: FittedBox(
-                      child: icon,
-                    ),
+                    child: FittedBox(child: icon),
                   ),
                 ),
                 AppSpacing.vGap300,
@@ -184,9 +181,7 @@ class _AppEmptyStateSearch extends AppEmptyState {
     super.actionSize = AppButtonSize.sm,
     super.padding,
     super.physics,
-  }) : super(
-          icon: const SizedBox.shrink(),
-        );
+  }) : super(icon: const SizedBox.shrink());
 
   @override
   Widget build(BuildContext context) {
@@ -194,10 +189,7 @@ class _AppEmptyStateSearch extends AppEmptyState {
     final colorScheme = theme.colorScheme;
 
     return AppEmptyState(
-      icon: AppSvgIcon(
-        KawaloVectors.search01,
-        color: colorScheme.outline,
-      ),
+      icon: AppSvgIcon(KawaloVectors.search01, color: colorScheme.outline),
       iconSize: iconSize,
       title: title,
       description: description,
@@ -228,10 +220,10 @@ class _AppEmptyStateError extends AppEmptyState {
     super.padding,
     super.physics,
   }) : super(
-          icon: const SizedBox.shrink(),
-          actionLabel: actionLabel ?? retryLabel,
-          onActionPressed: onActionPressed ?? onRetry,
-        );
+         icon: const SizedBox.shrink(),
+         actionLabel: actionLabel ?? retryLabel,
+         onActionPressed: onActionPressed ?? onRetry,
+       );
 
   @override
   Widget build(BuildContext context) {

@@ -67,14 +67,14 @@ class CreateIncidentParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        groupId,
-        description,
-        category,
-        glat,
-        glong,
-        photos,
-        session,
-        cancelToken,
-      ];
+    title,
+    groupId,
+    description,
+    category,
+    glat,
+    glong,
+    photos,
+    session,
+    cancelToken,
+  ];
 }

@@ -17,8 +17,9 @@ void main() {
   }
 
   group('AppActionableError Framework Tests', () {
-    testWidgets('renders In-Place view with all 6 slots properly',
-        (tester) async {
+    testWidgets('renders In-Place view with all 6 slots properly', (
+      tester,
+    ) async {
       var primaryPressed = false;
       var secondaryPressed = false;
 
@@ -40,9 +41,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        wrapWithTheme(
-          AppActionableErrorView(data: data),
-        ),
+        wrapWithTheme(AppActionableErrorView(data: data)),
       );
 
       // Slot 2: Title with Semantics header
@@ -79,8 +78,7 @@ void main() {
       );
 
       // Slot 6: Action buttons
-      final primaryButton =
-          find.widgetWithText(AppButton, 'Buka pengaturan');
+      final primaryButton = find.widgetWithText(AppButton, 'Buka pengaturan');
       expect(primaryButton, findsOneWidget);
       await tester.tap(primaryButton);
       expect(primaryPressed, isTrue);
@@ -91,8 +89,7 @@ void main() {
       expect(secondaryPressed, isTrue);
     });
 
-    testWidgets('presents and dismisses Bottom Sheet modality',
-        (tester) async {
+    testWidgets('presents and dismisses Bottom Sheet modality', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
@@ -129,8 +126,7 @@ void main() {
       expect(find.byType(AppActionableErrorBottomSheet), findsOneWidget);
     });
 
-    testWidgets('presents and interacts with Dialog modality',
-        (tester) async {
+    testWidgets('presents and interacts with Dialog modality', (tester) async {
       var retryClicked = false;
 
       await tester.pumpWidget(
@@ -177,8 +173,9 @@ void main() {
       expect(find.byType(AppActionableErrorDialog), findsNothing);
     });
 
-    testWidgets('honors isBlocking flag in FullScreen modality',
-        (tester) async {
+    testWidgets('honors isBlocking flag in FullScreen modality', (
+      tester,
+    ) async {
       const blockingData = AppActionableErrorData(
         title: 'Perangkat Diblokir',
         message: 'Akses dinonaktifkan demi keamanan.',
@@ -200,8 +197,7 @@ void main() {
       expect(popScope.canPop, isFalse);
     });
 
-    test('themeMode defaults to system and stores configured mode cleanly',
-        () {
+    test('themeMode defaults to system and stores configured mode cleanly', () {
       const defaultData = AppActionableErrorData(
         title: 'Title',
         message: 'Message',
@@ -223,8 +219,9 @@ void main() {
       expect(lightData.themeMode, AppActionableErrorThemeMode.light);
     });
 
-    testWidgets('injects M3E dark theme when themeMode is dark in light app',
-        (tester) async {
+    testWidgets('injects M3E dark theme when themeMode is dark in light app', (
+      tester,
+    ) async {
       const data = AppActionableErrorData(
         title: 'Error Gelap',
         message: 'Pesan dalam mode gelap.',
@@ -234,9 +231,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: AppActionableErrorView(data: data),
-          ),
+          home: const Scaffold(body: AppActionableErrorView(data: data)),
         ),
       );
 
@@ -248,8 +243,9 @@ void main() {
       expect(resolvedFlutter.brightness, Brightness.dark);
     });
 
-    testWidgets('injects M3E light theme when themeMode is light in dark app',
-        (tester) async {
+    testWidgets('injects M3E light theme when themeMode is light in dark app', (
+      tester,
+    ) async {
       const data = AppActionableErrorData(
         title: 'Error Terang',
         message: 'Pesan dalam mode terang.',
@@ -259,9 +255,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.darkThemeData(),
-          home: const Scaffold(
-            body: AppActionableErrorView(data: data),
-          ),
+          home: const Scaffold(body: AppActionableErrorView(data: data)),
         ),
       );
 
@@ -273,8 +267,9 @@ void main() {
       expect(resolvedFlutter.brightness, Brightness.light);
     });
 
-    testWidgets('preserves ambient theme when themeMode is system',
-        (tester) async {
+    testWidgets('preserves ambient theme when themeMode is system', (
+      tester,
+    ) async {
       const data = AppActionableErrorData(
         title: 'Error Sistem',
         message: 'Pesan mengikuti sistem.',
@@ -283,9 +278,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: AppActionableErrorView(data: data),
-          ),
+          home: const Scaffold(body: AppActionableErrorView(data: data)),
         ),
       );
 
@@ -295,8 +288,9 @@ void main() {
       expect(resolvedFlutter.brightness, Brightness.light);
     });
 
-    testWidgets('calibrates typography roles and font weights properly',
-        (tester) async {
+    testWidgets('calibrates typography roles and font weights properly', (
+      tester,
+    ) async {
       const data = AppActionableErrorData(
         title: 'Judul Kesalahan',
         message: 'Deskripsi pesan.',
@@ -313,13 +307,15 @@ void main() {
       // In-Place uses headlineSmall (fontSize 24)
       expect(inPlaceTitle.style?.fontSize, 24);
 
-      final troubleshootingHeader =
-          tester.widget<Text>(find.text('Cara mengatasi:'));
+      final troubleshootingHeader = tester.widget<Text>(
+        find.text('Cara mengatasi:'),
+      );
       // Slot 4 uses titleSmall (fontSize 14)
       expect(troubleshootingHeader.style?.fontSize, 14);
 
-      final toggleTrigger =
-          tester.widget<Text>(find.text('Lihat detail teknis'));
+      final toggleTrigger = tester.widget<Text>(
+        find.text('Lihat detail teknis'),
+      );
       // Slot 5 toggle uses labelMedium (fontSize 12, FontWeight.w500)
       expect(toggleTrigger.style?.fontSize, 12);
       expect(toggleTrigger.style?.fontWeight, FontWeight.w500);
@@ -328,17 +324,16 @@ void main() {
       await tester.tap(find.text('Lihat detail teknis'));
       await tester.pumpAndSettle();
 
-      final details =
-          tester.widget<SelectableText>(find.byType(SelectableText));
+      final details = tester.widget<SelectableText>(
+        find.byType(SelectableText),
+      );
       // BodySmall without hardcoded fontSize (fontSize 12)
       expect(details.style?.fontSize, 12);
       expect(details.style?.fontFamily, 'monospace');
 
       // 2. Compact view (Bottom Sheet)
       await tester.pumpWidget(
-        wrapWithTheme(
-          const AppActionableErrorBottomSheet(data: data),
-        ),
+        wrapWithTheme(const AppActionableErrorBottomSheet(data: data)),
       );
 
       final compactTitle = tester.widget<Text>(find.text('Judul Kesalahan'));
@@ -422,9 +417,7 @@ void main() {
           );
 
           await tester.pumpWidget(
-            wrapWithTheme(
-              AppActionableError.view(data: data),
-            ),
+            wrapWithTheme(AppActionableError.view(data: data)),
           );
 
           expect(find.byType(AppActionableErrorView), findsOneWidget);
@@ -609,32 +602,29 @@ void main() {
         },
       );
 
-      test(
-        'Deep collection equality and defensive immutability on tips',
-        () {
-          final rawTips = <String>['Langkah 1', 'Langkah 2'];
-          final data1 = AppActionableErrorData.actionable(
-            title: 'Izin Ditolak',
-            message: 'Aktifkan izin di pengaturan.',
-            troubleshootingTips: rawTips,
-          );
+      test('Deep collection equality and defensive immutability on tips', () {
+        final rawTips = <String>['Langkah 1', 'Langkah 2'];
+        final data1 = AppActionableErrorData.actionable(
+          title: 'Izin Ditolak',
+          message: 'Aktifkan izin di pengaturan.',
+          troubleshootingTips: rawTips,
+        );
 
-          final data2 = AppActionableErrorData.actionable(
-            title: 'Izin Ditolak',
-            message: 'Aktifkan izin di pengaturan.',
-            troubleshootingTips: const ['Langkah 1', 'Langkah 2'],
-          );
+        final data2 = AppActionableErrorData.actionable(
+          title: 'Izin Ditolak',
+          message: 'Aktifkan izin di pengaturan.',
+          troubleshootingTips: const ['Langkah 1', 'Langkah 2'],
+        );
 
-          expect(data1, equals(data2));
-          expect(data1.hashCode, equals(data2.hashCode));
+        expect(data1, equals(data2));
+        expect(data1.hashCode, equals(data2.hashCode));
 
-          // Verifikasi defensive unmodifiable list
-          expect(
-            () => data1.troubleshootingTips.add('Langkah 3'),
-            throwsUnsupportedError,
-          );
-        },
-      );
+        // Verifikasi defensive unmodifiable list
+        expect(
+          () => data1.troubleshootingTips.add('Langkah 3'),
+          throwsUnsupportedError,
+        );
+      });
 
       test(
         'copyWith enforces defensive unmodifiable list for troubleshootingTips',
@@ -646,9 +636,7 @@ void main() {
           );
 
           final mutableList = <String>['Langkah Baru 1', 'Langkah Baru 2'];
-          final updated = original.copyWith(
-            troubleshootingTips: mutableList,
-          );
+          final updated = original.copyWith(troubleshootingTips: mutableList);
 
           // Verifikasi bahwa updated.troubleshootingTips tidak dapat dimutasi
           expect(

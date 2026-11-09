@@ -54,12 +54,12 @@ class InformationPhotosSection extends StatelessWidget {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return BlocSelector<InformationFormCubit, InformationFormState,
-        ({List<InformationFormMediaItem> photos, String? error})>(
-      selector: (state) => (
-        photos: state.photos,
-        error: state.photosError,
-      ),
+    return BlocSelector<
+      InformationFormCubit,
+      InformationFormState,
+      ({List<InformationFormMediaItem> photos, String? error})
+    >(
+      selector: (state) => (photos: state.photos, error: state.photosError),
       builder: (context, data) {
         final photos = data.photos;
         final hasLoadingPhotos = photos.any((p) => p.isLoading);
@@ -88,71 +88,66 @@ class InformationPhotosSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-                if (photos.isEmpty)
-                  AppFormEmptyPlaceholder(
-                    title: 'Belum ada foto terlampir',
-                    subtitle:
-                        'Ketuk untuk memilih foto dari kamera atau galeri',
-                    vectorIcon: KawaloVectors.images,
-                    onTap: isSubmitting ? null : onPickPhoto,
-                  )
-                else ...[
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: AppSpacing.space150,
-                      mainAxisSpacing: AppSpacing.space150,
-                    ),
-                    itemCount: photos.length,
-                    itemBuilder: (context, index) {
-                      final item = photos[index];
-                      return InformationPhotoThumbnail(
-                        item: item,
-                        index: index,
-                        heroTagPrefix: heroTagPrefix,
-                        isSubmitting: isSubmitting,
-                        onTap: () => onTapPhoto(index),
-                        onRemove: () => onRemovePhoto(index),
-                        onMoreOptions: () => onMoreOptions(index),
-                      );
-                    },
+              if (photos.isEmpty)
+                AppFormEmptyPlaceholder(
+                  title: 'Belum ada foto terlampir',
+                  subtitle: 'Ketuk untuk memilih foto dari kamera atau galeri',
+                  vectorIcon: KawaloVectors.images,
+                  onTap: isSubmitting ? null : onPickPhoto,
+                )
+              else ...[
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: AppSpacing.space150,
+                    mainAxisSpacing: AppSpacing.space150,
                   ),
-                  if (photos.length < 4) ...[
-                    AppSpacing.vGap200,
-                    AppButton(
-                      style: AppButtonColor.outlined,
-                      enabled: canAddPhoto,
-                      onPressed: canAddPhoto ? onPickPhoto : null,
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AppSvgIcon(
-                            KawaloVectors.add01,
-                            size: 18,
-                          ),
-                          AppSpacing.hGapXs,
-                          Text('Tambah foto'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-                if (data.error != null) ...[
-                  AppSpacing.vGap100,
-                  Text(
-                    data.error!,
-                    style: theme.typeScale.bodySmall.copyWith(
-                      color: colorScheme.error,
+                  itemCount: photos.length,
+                  itemBuilder: (context, index) {
+                    final item = photos[index];
+                    return InformationPhotoThumbnail(
+                      item: item,
+                      index: index,
+                      heroTagPrefix: heroTagPrefix,
+                      isSubmitting: isSubmitting,
+                      onTap: () => onTapPhoto(index),
+                      onRemove: () => onRemovePhoto(index),
+                      onMoreOptions: () => onMoreOptions(index),
+                    );
+                  },
+                ),
+                if (photos.length < 4) ...[
+                  AppSpacing.vGap200,
+                  AppButton(
+                    style: AppButtonColor.outlined,
+                    enabled: canAddPhoto,
+                    onPressed: canAddPhoto ? onPickPhoto : null,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AppSvgIcon(KawaloVectors.add01, size: 18),
+                        AppSpacing.hGapXs,
+                        Text('Tambah foto'),
+                      ],
                     ),
                   ),
                 ],
               ],
-            ),
-          );
-        },
-      );
+              if (data.error != null) ...[
+                AppSpacing.vGap100,
+                Text(
+                  data.error!,
+                  style: theme.typeScale.bodySmall.copyWith(
+                    color: colorScheme.error,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
   }
 }

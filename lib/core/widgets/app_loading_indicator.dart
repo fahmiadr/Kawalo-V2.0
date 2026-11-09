@@ -128,7 +128,8 @@ class AppLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final m3eTheme = M3ETheme.maybeOf(context) ??
+    final m3eTheme =
+        M3ETheme.maybeOf(context) ??
         (Theme.of(context).brightness == Brightness.dark
             ? AppTheme.m3eDark()
             : AppTheme.m3eLight());
@@ -147,10 +148,9 @@ class AppLoadingIndicator extends StatelessWidget {
       color: color,
       containerColor: containerColor,
       polygons: polygons,
-      constraints: constraints ??
-          BoxConstraints.tight(
-            Size(size.containerSize, size.containerSize),
-          ),
+      constraints:
+          constraints ??
+          BoxConstraints.tight(Size(size.containerSize, size.containerSize)),
       padding: padding,
       globalRotationDuration: globalRotationDuration,
       morphInterval: morphInterval,
@@ -177,7 +177,6 @@ class AppLoadingIndicator extends StatelessWidget {
     );
   }
 }
-
 
 /// Alias for [M3ELoadingIndicatorVariant] to maintain standard project naming.
 typedef AppLoadingIndicatorVariant = M3ELoadingIndicatorVariant;

@@ -64,13 +64,13 @@ class IncidentReplyEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        incidentId,
-        senderId,
-        senderName,
-        senderRole,
-        message,
-        photos,
-        createdAt,
-      ];
+    id,
+    incidentId,
+    senderId,
+    senderName,
+    senderRole,
+    message,
+    photos,
+    createdAt,
+  ];
 }

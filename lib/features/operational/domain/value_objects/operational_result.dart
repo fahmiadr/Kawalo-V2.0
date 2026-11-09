@@ -5,10 +5,7 @@ import 'package:kawalo_mobile/features/operational/domain/entities/operational_i
 /// dengan transparansi sumber data (cache offline vs server remote).
 class OperationalResult extends Equatable {
   /// Membuat instance [OperationalResult].
-  const OperationalResult({
-    required this.items,
-    this.isFromCache = false,
-  });
+  const OperationalResult({required this.items, this.isFromCache = false});
 
   /// Daftar item data personil operasional.
   final List<OperationalItemEntity> items;

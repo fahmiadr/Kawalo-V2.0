@@ -14,9 +14,8 @@ import 'package:kawalo_mobile/features/incident/presentation/models/incident_med
 /// dan pengiriman ke API.
 class IncidentFormCubit extends Cubit<IncidentFormState> {
   /// Membuat instance [IncidentFormCubit].
-  IncidentFormCubit({
-    required this.createIncidentUseCase,
-  }) : super(const IncidentFormState());
+  IncidentFormCubit({required this.createIncidentUseCase})
+    : super(const IncidentFormState());
 
   /// Use case untuk membuat laporan insiden.
   final CreateIncidentUseCase createIncidentUseCase;
@@ -39,10 +38,7 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
   static String? validateTitle(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        fieldName: 'Judul laporan',
-      );
+      return AppValidator.validateRequired(trimmed, fieldName: 'Judul laporan');
     }
     if (value.length > 128) {
       return 'Judul laporan maksimal 128 karakter.';
@@ -165,12 +161,7 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
 
   /// Memperbarui koordinat lokasi GPS insiden.
   void updateLocation({double? lat, double? long}) {
-    emit(
-      state.copyWith(
-        glat: lat,
-        glong: long,
-      ),
-    );
+    emit(state.copyWith(glat: lat, glong: long));
   }
 
   /// Mengirimkan formulir pembuatan laporan insiden baru ke server.
@@ -224,8 +215,9 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
     final params = CreateIncidentParams(
       title: trimmedTitle,
       groupId: groupId,
-      description:
-          state.description.trim().isNotEmpty ? state.description.trim() : null,
+      description: state.description.trim().isNotEmpty
+          ? state.description.trim()
+          : null,
       category: state.category,
       glat: state.glat,
       glong: state.glong,

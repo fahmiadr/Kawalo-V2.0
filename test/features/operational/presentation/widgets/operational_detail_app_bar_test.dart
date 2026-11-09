@@ -21,23 +21,19 @@ void main() {
   }
 
   group('OperationalDetailAppBar Tests', () {
-    testWidgets('renders title, greeting, and back button without trailing',
-        (tester) async {
+    testWidgets('renders title, greeting, and back button without trailing', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
       expect(find.text('Detail operasional'), findsOneWidget);
       expect(find.text('Diperbarui Hari ini, 15.00'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Kembali'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Kembali'), findsOneWidget);
     });
 
     test('has correct preferredSize without search bar', () {
-      const appBar = OperationalDetailAppBar(
-        greeting: 'Status',
-      );
+      const appBar = OperationalDetailAppBar(greeting: 'Status');
 
       expect(
         appBar.preferredSize.height,
@@ -45,14 +41,13 @@ void main() {
       );
     });
 
-    testWidgets('triggers onBackPressed when back button is tapped',
-        (tester) async {
+    testWidgets('triggers onBackPressed when back button is tapped', (
+      tester,
+    ) async {
       var backTapped = false;
 
       await tester.pumpWidget(
-        buildTestApp(
-          onBackPressed: () => backTapped = true,
-        ),
+        buildTestApp(onBackPressed: () => backTapped = true),
       );
       await tester.pumpAndSettle();
 

@@ -21,15 +21,14 @@ void main() {
   Widget buildTestWidget(OperationalItemEntity item) {
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
-      home: Scaffold(
-        body: OperationalDetailTopMeta(item: item),
-      ),
+      home: Scaffold(body: OperationalDetailTopMeta(item: item)),
     );
   }
 
   group('OperationalDetailTopMeta Tests', () {
-    testWidgets('renders AppTag with groupName and secondary variant',
-        (tester) async {
+    testWidgets('renders AppTag with groupName and secondary variant', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(sampleWorker));
       await tester.pumpAndSettle();
 

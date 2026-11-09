@@ -49,8 +49,8 @@ abstract final class InformationMapper {
     DeleteBatchInformationResponseModel model,
   ) {
     return DeleteBatchResult(
-      deletedCount: AppSanitizer.cleanInteger(model.deletedCount) ??
-          model.deletedCount,
+      deletedCount:
+          AppSanitizer.cleanInteger(model.deletedCount) ?? model.deletedCount,
     );
   }
 }

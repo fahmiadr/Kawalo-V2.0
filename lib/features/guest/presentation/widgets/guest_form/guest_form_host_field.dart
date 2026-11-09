@@ -21,15 +21,16 @@ class GuestFormHostField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<
-        GuestFormCubit,
-        GuestFormState,
-        ({
-          List<GroupMemberEntity> masterHosts,
-          bool isLoading,
-          String? masterHostsError,
-          String? hostEmail,
-          bool isBusy,
-        })>(
+      GuestFormCubit,
+      GuestFormState,
+      ({
+        List<GroupMemberEntity> masterHosts,
+        bool isLoading,
+        String? masterHostsError,
+        String? hostEmail,
+        bool isBusy,
+      })
+    >(
       selector: (state) => (
         masterHosts: state.masterHosts,
         isLoading: state.isLoadingMasterHosts,
@@ -40,8 +41,9 @@ class GuestFormHostField extends StatelessWidget {
       builder: (context, hostState) {
         Widget inputChild;
         if (hostState.isLoading) {
-          inputChild =
-              GuestFormDropdownSkeleton(shimmerController: shimmerController);
+          inputChild = GuestFormDropdownSkeleton(
+            shimmerController: shimmerController,
+          );
         } else if (hostState.masterHostsError != null &&
             hostState.masterHosts.isEmpty) {
           inputChild = GuestFormMasterErrorWithRetry(

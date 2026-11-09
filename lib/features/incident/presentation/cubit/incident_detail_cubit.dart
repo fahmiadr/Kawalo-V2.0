@@ -125,16 +125,15 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
 
     _sseSubscription = watchIncidentRepliesUseCase(params).listen(
       (eventResult) {
-        eventResult.fold(
-          (failure) => _handleStreamError(session: session),
-          (streamEvent) {
-            _retryCount = 0;
-            if (state.isReconnecting) {
-              emit(state.copyWith(isReconnecting: false));
-            }
-            _handleIncomingEvent(streamEvent);
-          },
-        );
+        eventResult.fold((failure) => _handleStreamError(session: session), (
+          streamEvent,
+        ) {
+          _retryCount = 0;
+          if (state.isReconnecting) {
+            emit(state.copyWith(isReconnecting: false));
+          }
+          _handleIncomingEvent(streamEvent);
+        });
       },
       onError: (_) => _handleStreamError(session: session),
       onDone: () => _handleStreamError(session: session),
@@ -157,10 +156,10 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
         emit(state.copyWith(replies: updatedReplies));
 
       case IncidentResolvedStreamEvent(
-          :final resolvedBy,
-          :final resolvedByName,
-          :final resolvedAt
-        ):
+        :final resolvedBy,
+        :final resolvedByName,
+        :final resolvedAt,
+      ):
         final updatedIncident = state.incident?.copyWith(
           status: IncidentStatus.resolved,
           resolvedBy: resolvedBy,
@@ -319,10 +318,7 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
       ),
     );
 
-    final params = ResolveIncidentParams(
-      incident: incident,
-      session: session,
-    );
+    final params = ResolveIncidentParams(incident: incident, session: session);
 
     final result = await resolveIncidentUseCase(params);
 
@@ -364,17 +360,9 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
     final incident = state.incident;
     if (incident == null || state.isDeleting) return;
 
-    emit(
-      state.copyWith(
-        isDeleting: true,
-        errorMessage: () => null,
-      ),
-    );
+    emit(state.copyWith(isDeleting: true, errorMessage: () => null));
 
-    final params = DeleteIncidentParams(
-      incident: incident,
-      session: session,
-    );
+    final params = DeleteIncidentParams(incident: incident, session: session);
 
     final result = await deleteIncidentUseCase(params);
 

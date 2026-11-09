@@ -223,8 +223,8 @@ class AppActionableErrorData extends Equatable {
       customIcon: customIcon ?? this.customIcon,
       troubleshootingTips: troubleshootingTips != null
           ? (troubleshootingTips.isEmpty
-              ? const <String>[]
-              : List<String>.unmodifiable(troubleshootingTips))
+                ? const <String>[]
+                : List<String>.unmodifiable(troubleshootingTips))
           : this.troubleshootingTips,
       technicalDetails: technicalDetails ?? this.technicalDetails,
       primaryActionLabel: primaryActionLabel ?? this.primaryActionLabel,
@@ -244,21 +244,21 @@ class AppActionableErrorData extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        message,
-        icon,
-        customIcon,
-        troubleshootingTips,
-        technicalDetails,
-        primaryActionLabel,
-        onPrimaryAction != null,
-        primaryActionStyle,
-        primaryButtonDecoration,
-        secondaryActionLabel,
-        onSecondaryAction != null,
-        secondaryActionStyle,
-        secondaryButtonDecoration,
-        isUnexpected,
-        themeMode,
-      ];
+    title,
+    message,
+    icon,
+    customIcon,
+    troubleshootingTips,
+    technicalDetails,
+    primaryActionLabel,
+    onPrimaryAction != null,
+    primaryActionStyle,
+    primaryButtonDecoration,
+    secondaryActionLabel,
+    onSecondaryAction != null,
+    secondaryActionStyle,
+    secondaryButtonDecoration,
+    isUnexpected,
+    themeMode,
+  ];
 }

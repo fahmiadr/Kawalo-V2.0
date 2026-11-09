@@ -72,17 +72,13 @@ abstract final class AppTheme {
 
   /// Expressive Light Theme.
   static M3EThemeData m3eLight({String? fontFamily = defaultFontFamily}) {
-    final theme = M3EThemeData.light(
-      seedColor: brandPrimary,
-    );
+    final theme = M3EThemeData.light(seedColor: brandPrimary);
     return fontFamily != null ? theme.copyWith(fontFamily: fontFamily) : theme;
   }
 
   /// Expressive Dark Theme.
   static M3EThemeData m3eDark({String? fontFamily = defaultFontFamily}) {
-    final theme = M3EThemeData.dark(
-      seedColor: brandPrimary,
-    );
+    final theme = M3EThemeData.dark(seedColor: brandPrimary);
     return fontFamily != null ? theme.copyWith(fontFamily: fontFamily) : theme;
   }
 
@@ -92,9 +88,9 @@ abstract final class AppTheme {
 
   /// Expressive Dark ColorScheme.
   static ColorScheme darkColorScheme() => ColorScheme.fromSeed(
-        seedColor: brandPrimary,
-        brightness: Brightness.dark,
-      );
+    seedColor: brandPrimary,
+    brightness: Brightness.dark,
+  );
 
   /// Standard light ThemeData helper converted with Material 3 Expressive
   /// tokens for screens and widgets requiring Flutter [ThemeData].

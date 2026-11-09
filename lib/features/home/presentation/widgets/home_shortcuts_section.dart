@@ -56,10 +56,7 @@ class HomeShortcutsSection extends StatelessWidget {
         subtitle: 'Masuk 30 Jun 2026 08:00',
         iconPath: KawaloColorVectors.calendar2,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Jadwal Kerja...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Jadwal Kerja...');
         },
       ),
       AppShortcutItem(
@@ -67,9 +64,7 @@ class HomeShortcutsSection extends StatelessWidget {
         iconPath: KawaloColorVectors.guestValidation,
         onTap: () {
           Navigator.of(context).push(
-            AppPageRoute.slideFade<void>(
-              builder: (_) => const GuestScreen(),
-            ),
+            AppPageRoute.slideFade<void>(builder: (_) => const GuestScreen()),
           );
         },
       ),
@@ -90,10 +85,7 @@ class HomeShortcutsSection extends StatelessWidget {
         subtitle: 'Post Checkpoint',
         iconPath: KawaloColorVectors.location2,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Data Patroli...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Data Patroli...');
         },
       ),
       AppShortcutItem(
@@ -120,12 +112,14 @@ class HomeShortcutsSection extends StatelessWidget {
         title: 'Logout',
         subtitle: 'Keluar Akun',
         iconPath: KawaloColorVectors.logout,
-        onTap: onLogoutPressed ??
+        onTap:
+            onLogoutPressed ??
             () async {
               final confirmed = await showAppConfirmationDialog(
                 context: context,
                 title: 'Keluar dari akun?',
-                message: 'Sesi Anda akan berakhir. Anda perlu masuk kembali '
+                message:
+                    'Sesi Anda akan berakhir. Anda perlu masuk kembali '
                     'untuk mengakses aplikasi.',
                 confirmText: 'Keluar',
               );
@@ -149,11 +143,9 @@ class HomeShortcutsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = shortcuts ??
-        _getDefaultShortcuts(
-          context,
-          onLogoutPressed: onLogoutPressed,
-        );
+    final items =
+        shortcuts ??
+        _getDefaultShortcuts(context, onLogoutPressed: onLogoutPressed);
     final totalCount = showAddCard ? items.length + 1 : items.length;
 
     return Column(
@@ -165,7 +157,8 @@ class HomeShortcutsSection extends StatelessWidget {
           title: 'Pintasan',
           linkText: 'Edit',
           semanticLabel: 'Edit susunan pintasan',
-          onPressed: onEditPressed ??
+          onPressed:
+              onEditPressed ??
               () {
                 AppSnackbar.show(
                   context,
@@ -201,7 +194,8 @@ class HomeShortcutsSection extends StatelessWidget {
                   return AppShortcutCard(item: items[index]);
                 }
                 return AppAddShortcutCard(
-                  onPressed: onAddPressed ??
+                  onPressed:
+                      onAddPressed ??
                       () {
                         AppSnackbar.show(
                           context,

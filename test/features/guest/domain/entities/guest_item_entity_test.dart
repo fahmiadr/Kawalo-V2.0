@@ -15,85 +15,81 @@ void main() {
       expect(tGuest.canBeDeletedBySession(null), isFalse);
     });
 
-    test(
-      'canBeDeletedBySession returns false when role is null or empty',
-      () {
-        const nullRoleSession = AuthSessionEntity(
-          userId: '1',
-          email: tAuthorEmail,
-          name: 'No Role',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeDeletedBySession(nullRoleSession), isFalse);
-
-        const emptyRoleSession = AuthSessionEntity(
-          userId: '1',
-          email: tAuthorEmail,
-          name: 'Empty Role',
-          role: '',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeDeletedBySession(emptyRoleSession), isFalse);
-      },
-    );
-
-    test('canBeDeletedBySession returns true for ADMIN regardless of email',
-        () {
-      const adminSession = AuthSessionEntity(
+    test('canBeDeletedBySession returns false when role is null or empty', () {
+      const nullRoleSession = AuthSessionEntity(
         userId: '1',
-        email: 'other@kawalo.id',
-        name: 'Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
+        email: tAuthorEmail,
+        name: 'No Role',
+        allowAdmin: false,
         allowPatrol: false,
         allowMonPatrol: false,
       );
-      expect(tGuest.canBeDeletedBySession(adminSession), isTrue);
+      expect(tGuest.canBeDeletedBySession(nullRoleSession), isFalse);
+
+      const emptyRoleSession = AuthSessionEntity(
+        userId: '1',
+        email: tAuthorEmail,
+        name: 'Empty Role',
+        role: '',
+        allowAdmin: false,
+        allowPatrol: false,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeDeletedBySession(emptyRoleSession), isFalse);
     });
 
     test(
-      'canBeDeletedBySession returns true for GUARD only if email matches '
-      'guestCreatorEmail',
+      'canBeDeletedBySession returns true for ADMIN regardless of email',
       () {
-        const matchGuardSession = AuthSessionEntity(
-          userId: '2',
-          email: tAuthorEmail,
-          name: 'Guard',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
+        const adminSession = AuthSessionEntity(
+          userId: '1',
+          email: 'other@kawalo.id',
+          name: 'Admin',
+          role: 'ADMIN',
+          allowAdmin: true,
+          allowPatrol: false,
           allowMonPatrol: false,
         );
-        expect(tGuest.canBeDeletedBySession(matchGuardSession), isTrue);
-
-        const otherGuardSession = AuthSessionEntity(
-          userId: '3',
-          email: 'guard2@kawalo.id',
-          name: 'Other Guard',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeDeletedBySession(otherGuardSession), isFalse);
-
-        // Case-insensitive and trimmed email matching
-        const caseGuardSession = AuthSessionEntity(
-          userId: '2',
-          email: ' GUARD1@KAWALO.ID ',
-          name: 'Guard Upper',
-          role: 'guard',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeDeletedBySession(caseGuardSession), isTrue);
+        expect(tGuest.canBeDeletedBySession(adminSession), isTrue);
       },
     );
+
+    test('canBeDeletedBySession returns true for GUARD only if email matches '
+        'guestCreatorEmail', () {
+      const matchGuardSession = AuthSessionEntity(
+        userId: '2',
+        email: tAuthorEmail,
+        name: 'Guard',
+        role: 'GUARD',
+        allowAdmin: false,
+        allowPatrol: true,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeDeletedBySession(matchGuardSession), isTrue);
+
+      const otherGuardSession = AuthSessionEntity(
+        userId: '3',
+        email: 'guard2@kawalo.id',
+        name: 'Other Guard',
+        role: 'GUARD',
+        allowAdmin: false,
+        allowPatrol: true,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeDeletedBySession(otherGuardSession), isFalse);
+
+      // Case-insensitive and trimmed email matching
+      const caseGuardSession = AuthSessionEntity(
+        userId: '2',
+        email: ' GUARD1@KAWALO.ID ',
+        name: 'Guard Upper',
+        role: 'guard',
+        allowAdmin: false,
+        allowPatrol: true,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeDeletedBySession(caseGuardSession), isTrue);
+    });
 
     test('canBeDeletedBySession returns true when allowAdmin is true', () {
       const allowAdminSession = AuthSessionEntity(
@@ -107,33 +103,30 @@ void main() {
       expect(tGuest.canBeDeletedBySession(allowAdminSession), isTrue);
     });
 
-    test(
-      'canBeDeletedBySession returns false for other roles '
-      '(e.g. CITIZEN, GUEST)',
-      () {
-        const citizenSession = AuthSessionEntity(
-          userId: '4',
-          email: tAuthorEmail,
-          name: 'Citizen',
-          role: 'CITIZEN',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeDeletedBySession(citizenSession), isFalse);
+    test('canBeDeletedBySession returns false for other roles '
+        '(e.g. CITIZEN, GUEST)', () {
+      const citizenSession = AuthSessionEntity(
+        userId: '4',
+        email: tAuthorEmail,
+        name: 'Citizen',
+        role: 'CITIZEN',
+        allowAdmin: false,
+        allowPatrol: false,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeDeletedBySession(citizenSession), isFalse);
 
-        const guestSession = AuthSessionEntity(
-          userId: '5',
-          email: tAuthorEmail,
-          name: 'Guest',
-          role: 'GUEST',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeDeletedBySession(guestSession), isFalse);
-      },
-    );
+      const guestSession = AuthSessionEntity(
+        userId: '5',
+        email: tAuthorEmail,
+        name: 'Guest',
+        role: 'GUEST',
+        allowAdmin: false,
+        allowPatrol: false,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeDeletedBySession(guestSession), isFalse);
+    });
 
     test('canBeCreatedBySession returns true for ADMIN and GUARD', () {
       expect(GuestItemEntity.canBeCreatedBySession(null), isFalse);
@@ -176,109 +169,100 @@ void main() {
       expect(tGuest.canBeUpdatedBySession(null), isFalse);
     });
 
-    test(
-      'canBeUpdatedBySession returns false when role is null or empty',
-      () {
-        const nullRoleSession = AuthSessionEntity(
-          userId: '1',
-          email: tAuthorEmail,
-          name: 'No Role',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeUpdatedBySession(nullRoleSession), isFalse);
-
-        const emptyRoleSession = AuthSessionEntity(
-          userId: '1',
-          email: tAuthorEmail,
-          name: 'Empty Role',
-          role: '',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeUpdatedBySession(emptyRoleSession), isFalse);
-      },
-    );
-
-    test('canBeUpdatedBySession returns true for ADMIN regardless of email',
-        () {
-      const adminSession = AuthSessionEntity(
+    test('canBeUpdatedBySession returns false when role is null or empty', () {
+      const nullRoleSession = AuthSessionEntity(
         userId: '1',
-        email: 'other@kawalo.id',
-        name: 'Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: false,
-        allowMonPatrol: false,
-      );
-      expect(tGuest.canBeUpdatedBySession(adminSession), isTrue);
-    });
-
-    test(
-      'canBeUpdatedBySession returns true for GUARD only if email matches '
-      'guestCreatorEmail',
-      () {
-        const matchingGuardSession = AuthSessionEntity(
-          userId: '2',
-          email: tAuthorEmail,
-          name: 'Matching Guard',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeUpdatedBySession(matchingGuardSession), isTrue);
-
-        const otherGuardSession = AuthSessionEntity(
-          userId: '3',
-          email: 'other_guard@kawalo.id',
-          name: 'Other Guard',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-        expect(tGuest.canBeUpdatedBySession(otherGuardSession), isFalse);
-      },
-    );
-
-    test(
-      'canBeUpdatedBySession returns false for GUARD when '
-      'guestCreatorEmail is null',
-      () {
-        const guestWithoutAuthor = GuestItemEntity(id: '102');
-        const guardSession = AuthSessionEntity(
-          userId: '2',
-          email: tAuthorEmail,
-          name: 'Guard',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-        expect(
-          guestWithoutAuthor.canBeUpdatedBySession(guardSession),
-          isFalse,
-        );
-      },
-    );
-
-    test(
-        'canBeUpdatedBySession returns false for non-ADMIN and non-GUARD roles',
-        () {
-      const citizenSession = AuthSessionEntity(
-        userId: '4',
         email: tAuthorEmail,
-        name: 'Citizen',
-        role: 'CITIZEN',
+        name: 'No Role',
         allowAdmin: false,
         allowPatrol: false,
         allowMonPatrol: false,
       );
-      expect(tGuest.canBeUpdatedBySession(citizenSession), isFalse);
+      expect(tGuest.canBeUpdatedBySession(nullRoleSession), isFalse);
+
+      const emptyRoleSession = AuthSessionEntity(
+        userId: '1',
+        email: tAuthorEmail,
+        name: 'Empty Role',
+        role: '',
+        allowAdmin: false,
+        allowPatrol: false,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeUpdatedBySession(emptyRoleSession), isFalse);
     });
+
+    test(
+      'canBeUpdatedBySession returns true for ADMIN regardless of email',
+      () {
+        const adminSession = AuthSessionEntity(
+          userId: '1',
+          email: 'other@kawalo.id',
+          name: 'Admin',
+          role: 'ADMIN',
+          allowAdmin: true,
+          allowPatrol: false,
+          allowMonPatrol: false,
+        );
+        expect(tGuest.canBeUpdatedBySession(adminSession), isTrue);
+      },
+    );
+
+    test('canBeUpdatedBySession returns true for GUARD only if email matches '
+        'guestCreatorEmail', () {
+      const matchingGuardSession = AuthSessionEntity(
+        userId: '2',
+        email: tAuthorEmail,
+        name: 'Matching Guard',
+        role: 'GUARD',
+        allowAdmin: false,
+        allowPatrol: true,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeUpdatedBySession(matchingGuardSession), isTrue);
+
+      const otherGuardSession = AuthSessionEntity(
+        userId: '3',
+        email: 'other_guard@kawalo.id',
+        name: 'Other Guard',
+        role: 'GUARD',
+        allowAdmin: false,
+        allowPatrol: true,
+        allowMonPatrol: false,
+      );
+      expect(tGuest.canBeUpdatedBySession(otherGuardSession), isFalse);
+    });
+
+    test('canBeUpdatedBySession returns false for GUARD when '
+        'guestCreatorEmail is null', () {
+      const guestWithoutAuthor = GuestItemEntity(id: '102');
+      const guardSession = AuthSessionEntity(
+        userId: '2',
+        email: tAuthorEmail,
+        name: 'Guard',
+        role: 'GUARD',
+        allowAdmin: false,
+        allowPatrol: true,
+        allowMonPatrol: false,
+      );
+      expect(guestWithoutAuthor.canBeUpdatedBySession(guardSession), isFalse);
+    });
+
+    test(
+      'canBeUpdatedBySession returns false for non-ADMIN and non-GUARD roles',
+      () {
+        const citizenSession = AuthSessionEntity(
+          userId: '4',
+          email: tAuthorEmail,
+          name: 'Citizen',
+          role: 'CITIZEN',
+          allowAdmin: false,
+          allowPatrol: false,
+          allowMonPatrol: false,
+        );
+        expect(tGuest.canBeUpdatedBySession(citizenSession), isFalse);
+      },
+    );
 
     test('isExited evaluates correctly based on guestOutDt', () {
       const activeGuest = GuestItemEntity(id: '1');

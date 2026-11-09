@@ -160,7 +160,8 @@ class AppFilterBottomSheet extends StatelessWidget {
               title: title,
               linkText: resetLabel,
               onPressed: isResetEnabled ? onReset : null,
-              semanticLabel: resetSemanticLabel ??
+              semanticLabel:
+                  resetSemanticLabel ??
                   (isResetEnabled
                       ? '$resetLabel $title'
                       : 'Filter $title dalam kondisi default'),
@@ -180,7 +181,7 @@ class AppFilterBottomSheet extends StatelessWidget {
               AppSpacing.vGapSm,
             ],
 
-            if (headerChild != null) headerChild!,
+            ?headerChild,
 
             // ── Slot Filter Dinamis (Scrollable) ───────────────────────────
             middleSlot,
@@ -204,10 +205,7 @@ class AppFilterBottomSheet extends StatelessWidget {
       );
 
       if (targetHeight != null) {
-        return SizedBox(
-          height: targetHeight,
-          child: content,
-        );
+        return SizedBox(height: targetHeight, child: content);
       }
 
       return content;

@@ -84,12 +84,7 @@ class AppDialog extends M3EDialog {
             position: Tween<Offset>(
               begin: const Offset(0, 1),
               end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: curve,
-              ),
-            ),
+            ).animate(CurvedAnimation(parent: animation, curve: curve)),
             child: child,
           );
         },

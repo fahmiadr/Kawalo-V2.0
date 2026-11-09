@@ -3,24 +3,21 @@ import 'package:kawalo_mobile/features/auth/data/models/auth_tokens_model.dart';
 
 void main() {
   group('AuthTokensModel Tests', () {
-    test(
-      'fromJson deserializes JSON map directly into AuthTokensModel',
-      () {
-        final json = {
-          'access_token': 'jwt_access_token',
-          'refresh_token': 'opaque_refresh_token',
-          'token_type': 'Bearer',
-          'expires_in': 900,
-        };
+    test('fromJson deserializes JSON map directly into AuthTokensModel', () {
+      final json = {
+        'access_token': 'jwt_access_token',
+        'refresh_token': 'opaque_refresh_token',
+        'token_type': 'Bearer',
+        'expires_in': 900,
+      };
 
-        final model = AuthTokensModel.fromJson(json);
+      final model = AuthTokensModel.fromJson(json);
 
-        expect(model.accessToken, equals('jwt_access_token'));
-        expect(model.refreshToken, equals('opaque_refresh_token'));
-        expect(model.tokenType, equals('Bearer'));
-        expect(model.expiresIn, equals(900));
-      },
-    );
+      expect(model.accessToken, equals('jwt_access_token'));
+      expect(model.refreshToken, equals('opaque_refresh_token'));
+      expect(model.tokenType, equals('Bearer'));
+      expect(model.expiresIn, equals(900));
+    });
 
     test('fromJson accepts a decimal expires_in', () {
       final model = AuthTokensModel.fromJson(const {

@@ -17,10 +17,7 @@ import 'package:kawalo_mobile/features/operational/presentation/extensions/opera
 /// makro (`ON DUTY` / `OFF DUTY`).
 class OperationalDetailProfileCard extends StatelessWidget {
   /// Membuat instance [OperationalDetailProfileCard].
-  const OperationalDetailProfileCard({
-    required this.item,
-    super.key,
-  });
+  const OperationalDetailProfileCard({required this.item, super.key});
 
   /// Data personil operasional yang ditampilkan.
   final OperationalItemEntity item;
@@ -92,7 +89,8 @@ class OperationalDetailProfileCard extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final pic = item.userProfilePic?.trim();
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -103,8 +101,8 @@ class OperationalDetailProfileCard extends StatelessWidget {
           width: 64,
           height: 64,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildAvatarFallback(),
-          errorWidget: (_, __, ___) => _buildAvatarFallback(),
+          placeholder: (_, _) => _buildAvatarFallback(),
+          errorWidget: (_, _, _) => _buildAvatarFallback(),
         ),
       );
     }
@@ -115,10 +113,7 @@ class OperationalDetailProfileCard extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.patrol2,
-        size: 64,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.patrol2, size: 64),
     );
   }
 }

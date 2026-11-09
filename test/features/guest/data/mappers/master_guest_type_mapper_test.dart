@@ -5,17 +5,9 @@ import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_e
 
 void main() {
   group('MasterGuestTypeMapper Tests', () {
-    const tModel = MasterGuestTypeModel(
-      id: '1',
-      uid: 'GT-001',
-      name: 'TAMU',
-    );
+    const tModel = MasterGuestTypeModel(id: '1', uid: 'GT-001', name: 'TAMU');
 
-    const tEntity = MasterGuestTypeEntity(
-      id: '1',
-      uid: 'GT-001',
-      name: 'TAMU',
-    );
+    const tEntity = MasterGuestTypeEntity(id: '1', uid: 'GT-001', name: 'TAMU');
 
     test('toEntity maps correctly', () {
       final entity = MasterGuestTypeMapper.toEntity(tModel);

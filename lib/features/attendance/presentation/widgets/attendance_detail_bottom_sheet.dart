@@ -68,9 +68,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ExcludeSemantics(
-                child: _buildAvatar(context),
-              ),
+              ExcludeSemantics(child: _buildAvatar(context)),
               AppSpacing.hGap200,
               Expanded(
                 child: Column(
@@ -104,10 +102,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
               ),
               AppSpacing.hGapSm,
               AppIconButton(
-                icon: const AppSvgIcon(
-                  KawaloVectors.cancel01,
-                  size: 24,
-                ),
+                icon: const AppSvgIcon(KawaloVectors.cancel01, size: 24),
                 semanticLabel: 'Tutup rincian absensi',
                 onPressed: () => Navigator.of(context).maybePop(),
               ),
@@ -165,7 +160,8 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final pic = item.userProfilePic;
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -176,8 +172,8 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
           width: 64,
           height: 64,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildAvatarFallback(),
-          errorWidget: (_, __, ___) => _buildAvatarFallback(),
+          placeholder: (_, _) => _buildAvatarFallback(),
+          errorWidget: (_, _, _) => _buildAvatarFallback(),
         ),
       );
     }
@@ -187,10 +183,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.patrol3,
-        size: 64,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 64),
     );
   }
 
@@ -209,8 +202,9 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
             value: item.displayAttendanceDt,
             trailingWidget: AppTag(
               label: item.displayDiffLabel,
-              variant:
-                  item.isLate ? AppTagVariant.error : AppTagVariant.primary,
+              variant: item.isLate
+                  ? AppTagVariant.error
+                  : AppTagVariant.primary,
               size: AppTagSize.small,
             ),
           ),
@@ -263,10 +257,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
       padding: AppSpacing.paddingVerticalSm,
       child: Row(
         children: [
-          AppSvgIcon.color(
-            iconPath,
-            size: 32,
-          ),
+          AppSvgIcon.color(iconPath, size: 32),
           AppSpacing.hGapSm,
           Expanded(
             child: Column(
@@ -291,10 +282,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          if (trailingWidget != null) ...[
-            AppSpacing.hGapSm,
-            trailingWidget,
-          ],
+          if (trailingWidget != null) ...[AppSpacing.hGapSm, trailingWidget],
         ],
       ),
     );

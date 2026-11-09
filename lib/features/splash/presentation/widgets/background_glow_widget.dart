@@ -1,15 +1,12 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 
 /// Ambient glowing background blur effect for Splash Screen.
 class BackgroundGlowWidget extends StatelessWidget {
-  const BackgroundGlowWidget({
-    super.key,
-    this.size,
-    this.color,
-  });
+  const BackgroundGlowWidget({super.key, this.size, this.color});
 
   final double? size;
   final Color? color;

@@ -100,10 +100,7 @@ abstract final class LocationActionableError {
       secondaryActionLabel: secondaryActionLabel,
       message: message,
     );
-    return AppActionableError.showBottomSheet<T>(
-      context,
-      data: data,
-    );
+    return AppActionableError.showBottomSheet<T>(context, data: data);
   }
 
   /// Menghasilkan model galat saat layanan GPS atau sensor lokasi
@@ -128,7 +125,8 @@ abstract final class LocationActionableError {
     return AppActionableErrorData.actionable(
       icon: KawaloVectors.gpsDisconnectedFilled,
       title: 'Layanan lokasi belum diaktifkan',
-      message: message ??
+      message:
+          message ??
           'Layanan lokasi pada perangkat Anda sedang nonaktif. '
               'Aktifkan lokasi untuk menentukan posisi Anda di peta.',
       troubleshootingTips: const [
@@ -166,7 +164,8 @@ abstract final class LocationActionableError {
     return AppActionableErrorData.actionable(
       icon: KawaloVectors.location01Filled,
       title: 'Izin akses lokasi dibutuhkan',
-      message: message ??
+      message:
+          message ??
           'Izin akses lokasi diperlukan untuk menentukan posisi Anda '
               'di peta.',
       troubleshootingTips: const [
@@ -204,7 +203,8 @@ abstract final class LocationActionableError {
     return AppActionableErrorData.actionable(
       icon: KawaloVectors.locationOffline01Filled,
       title: 'Izin akses lokasi dinonaktifkan',
-      message: message ??
+      message:
+          message ??
           'Izin akses lokasi diperlukan untuk menentukan posisi Anda '
               'di peta.',
       troubleshootingTips: const [
@@ -248,7 +248,8 @@ abstract final class LocationActionableError {
     return AppActionableErrorData.actionable(
       icon: KawaloVectors.location01Filled,
       title: 'Akses lokasi presisi diperlukan',
-      message: message ??
+      message:
+          message ??
           'Aplikasi memerlukan izin lokasi presisi untuk menentukan posisi '
               'Anda di peta secara akurat. Lokasi perkiraan tidak didukung.',
       troubleshootingTips: const [
@@ -284,7 +285,8 @@ abstract final class LocationActionableError {
     return AppActionableErrorData.actionable(
       icon: KawaloVectors.shieldOffFilled,
       title: 'Lokasi tiruan terdeteksi',
-      message: message ??
+      message:
+          message ??
           'Sistem mendeteksi penggunaan aplikasi lokasi tiruan. '
               'Demi integritas data, lokasi tiruan tidak dapat digunakan.',
       troubleshootingTips: const [
@@ -323,8 +325,9 @@ abstract final class LocationActionableError {
       ],
       primaryActionLabel: onRetry != null ? 'Coba lagi' : 'Tutup',
       onPrimaryAction: onRetry ?? onDismiss,
-      secondaryActionLabel:
-          onRetry != null ? (secondaryActionLabel ?? 'Pilih manual') : null,
+      secondaryActionLabel: onRetry != null
+          ? (secondaryActionLabel ?? 'Pilih manual')
+          : null,
       onSecondaryAction: onRetry != null ? onDismiss : null,
       themeMode: themeMode,
     );
@@ -353,69 +356,70 @@ abstract final class LocationActionableError {
   }) {
     return switch (result.status) {
       LocationStatus.serviceDisabled => serviceDisabled(
-          onDismiss: onDismiss,
-          onRetry: onRetry,
-          onOpenSettings: onOpenSettings,
-          openLocationSettingsFn: openLocationSettingsFn,
-          launcherService: launcherService,
-          themeMode: themeMode,
-          secondaryActionLabel: secondaryActionLabel,
-          message: message,
-        ),
+        onDismiss: onDismiss,
+        onRetry: onRetry,
+        onOpenSettings: onOpenSettings,
+        openLocationSettingsFn: openLocationSettingsFn,
+        launcherService: launcherService,
+        themeMode: themeMode,
+        secondaryActionLabel: secondaryActionLabel,
+        message: message,
+      ),
       LocationStatus.permissionDeniedForever => permissionDeniedForever(
-          onDismiss: onDismiss,
-          onRetry: onRetry,
-          onOpenSettings: onOpenSettings,
-          openAppSettingsFn: openAppSettingsFn,
-          launcherService: launcherService,
-          themeMode: themeMode,
-          secondaryActionLabel: secondaryActionLabel,
-          message: message,
-        ),
+        onDismiss: onDismiss,
+        onRetry: onRetry,
+        onOpenSettings: onOpenSettings,
+        openAppSettingsFn: openAppSettingsFn,
+        launcherService: launcherService,
+        themeMode: themeMode,
+        secondaryActionLabel: secondaryActionLabel,
+        message: message,
+      ),
       LocationStatus.preciseLocationRequired => preciseLocationRequired(
-          onDismiss: onDismiss,
-          onRetry: onRetry,
-          onOpenSettings: onOpenSettings,
-          openAppSettingsFn: openAppSettingsFn,
-          launcherService: launcherService,
-          themeMode: themeMode,
-          secondaryActionLabel: secondaryActionLabel,
-          message: message,
-        ),
+        onDismiss: onDismiss,
+        onRetry: onRetry,
+        onOpenSettings: onOpenSettings,
+        openAppSettingsFn: openAppSettingsFn,
+        launcherService: launcherService,
+        themeMode: themeMode,
+        secondaryActionLabel: secondaryActionLabel,
+        message: message,
+      ),
       LocationStatus.permissionDenied => permissionDenied(
-          onDismiss: onDismiss,
-          onRetry: onRetry,
-          message: message ?? result.errorMessage,
-          themeMode: themeMode,
-          secondaryActionLabel: secondaryActionLabel,
-        ),
+        onDismiss: onDismiss,
+        onRetry: onRetry,
+        message: message ?? result.errorMessage,
+        themeMode: themeMode,
+        secondaryActionLabel: secondaryActionLabel,
+      ),
       LocationStatus.mockLocationDetected => mockLocationDetected(
-          onDismiss: onDismiss,
-          onRetry: onRetry,
-          themeMode: themeMode,
-          secondaryActionLabel: secondaryActionLabel,
-          message: message,
-        ),
+        onDismiss: onDismiss,
+        onRetry: onRetry,
+        themeMode: themeMode,
+        secondaryActionLabel: secondaryActionLabel,
+        message: message,
+      ),
       LocationStatus.timeout => throw ArgumentError.value(
-          result.status,
-          'result.status',
-          'LocationStatus.timeout tidak menggunakan modal bottom sheet. '
-              'Gunakan LocationActionableError.showTimeoutSnackbar().',
-        ),
+        result.status,
+        'result.status',
+        'LocationStatus.timeout tidak menggunakan modal bottom sheet. '
+            'Gunakan LocationActionableError.showTimeoutSnackbar().',
+      ),
       LocationStatus.unknownError => unexpected(
-          message: message ??
-              result.errorMessage ??
-              'Terjadi kendala saat menghubungkan sensor lokasi perangkat.',
-          onDismiss: onDismiss,
-          onRetry: onRetry,
-          themeMode: themeMode,
-          secondaryActionLabel: secondaryActionLabel,
-        ),
+        message:
+            message ??
+            result.errorMessage ??
+            'Terjadi kendala saat menghubungkan sensor lokasi perangkat.',
+        onDismiss: onDismiss,
+        onRetry: onRetry,
+        themeMode: themeMode,
+        secondaryActionLabel: secondaryActionLabel,
+      ),
       LocationStatus.success => throw ArgumentError.value(
-          result.status,
-          'result.status',
-          'LocationStatus.success tidak dapat dipetakan ke actionable error.',
-        ),
+        result.status,
+        'result.status',
+        'LocationStatus.success tidak dapat dipetakan ke actionable error.',
+      ),
     };
   }
 

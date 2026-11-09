@@ -23,10 +23,7 @@ void main() {
     });
 
     test('defaults message to empty string when missing in response', () {
-      final json = {
-        'success': true,
-        'data': 'payload',
-      };
+      final json = {'success': true, 'data': 'payload'};
 
       final response = ApiResponseModel<String>.fromJson(
         json,
@@ -45,10 +42,7 @@ void main() {
         'details': {'reason': 'Role insufficient'},
       };
 
-      final response = ApiResponseModel<Object?>.fromJson(
-        json,
-        (_) => null,
-      );
+      final response = ApiResponseModel<Object?>.fromJson(json, (_) => null);
 
       expect(response.success, isFalse);
       expect(response.message, 'Akses ditolak');
@@ -58,11 +52,7 @@ void main() {
     });
 
     test('throws FormatException if success field is not a boolean', () {
-      final json = {
-        'success': 'true',
-        'message': 'OK',
-        'data': null,
-      };
+      final json = {'success': 'true', 'message': 'OK', 'data': null};
 
       expect(
         () => ApiResponseModel<Object?>.fromJson(json, (_) => null),
@@ -104,22 +94,18 @@ void main() {
       );
     });
 
-    test('unwrap throws ServerException when data is null for non-nullable T',
-        () {
-      final json = {
-        'success': true,
-        'message': 'OK',
-        'data': null,
-      };
+    test(
+      'unwrap throws ServerException when data is null for non-nullable T',
+      () {
+        final json = {'success': true, 'message': 'OK', 'data': null};
 
-      expect(
-        () => ApiResponseModel.unwrap<String>(
-          json,
-          (data) => data! as String,
-        ),
-        throwsA(isA<ServerException>()),
-      );
-    });
+        expect(
+          () =>
+              ApiResponseModel.unwrap<String>(json, (data) => data! as String),
+          throwsA(isA<ServerException>()),
+        );
+      },
+    );
 
     test('props equality compares models correctly', () {
       const resp1 = ApiResponseModel<String>(

@@ -20,16 +20,18 @@ void main() {
       },
     };
 
-    test('fromJson parses user and tokens correctly according to DTO schema',
-        () {
-      final model = LoginResponseModel.fromJson(tJson);
+    test(
+      'fromJson parses user and tokens correctly according to DTO schema',
+      () {
+        final model = LoginResponseModel.fromJson(tJson);
 
-      expect(model.user.id, equals('usr_123'));
-      expect(model.user.email, equals('admin@kawalo.id'));
-      expect(model.tokens.accessToken, equals('jwt_access'));
-      expect(model.tokens.tokenType, equals('Bearer'));
-      expect(model.tokens.expiresIn, equals(900));
-      expect(model.props, equals([model.user, model.tokens]));
-    });
+        expect(model.user.id, equals('usr_123'));
+        expect(model.user.email, equals('admin@kawalo.id'));
+        expect(model.tokens.accessToken, equals('jwt_access'));
+        expect(model.tokens.tokenType, equals('Bearer'));
+        expect(model.tokens.expiresIn, equals(900));
+        expect(model.props, equals([model.user, model.tokens]));
+      },
+    );
   });
 }

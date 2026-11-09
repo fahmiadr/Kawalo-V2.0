@@ -83,10 +83,7 @@ void main() {
     ).thenAnswer((_) async => AppFetchResult.success);
     when(() => mockCubit.setSearchQuery(any())).thenReturn(null);
     when(
-      () => mockCubit.searchIncidents(
-        any(),
-        session: any(named: 'session'),
-      ),
+      () => mockCubit.searchIncidents(any(), session: any(named: 'session')),
     ).thenAnswer((_) async => AppFetchResult.success);
     when(
       () => mockCubit.refreshIncidents(
@@ -109,8 +106,9 @@ void main() {
     when(() => mockCubit.close()).thenAnswer((_) async {});
 
     when(() => mockSessionCubit.state).thenReturn(session ?? tSession);
-    when(() => mockSessionCubit.stream)
-        .thenAnswer((_) => Stream.value(session ?? tSession));
+    when(
+      () => mockSessionCubit.stream,
+    ).thenAnswer((_) => Stream.value(session ?? tSession));
     when(() => mockSessionCubit.close()).thenAnswer((_) async {});
 
     return MaterialApp(
@@ -179,8 +177,9 @@ void main() {
       },
     );
 
-    testWidgets('renders search icon action and expands AppSearchBar on tap',
-        (tester) async {
+    testWidgets('renders search icon action and expands AppSearchBar on tap', (
+      tester,
+    ) async {
       final state = IncidentLoaded(
         incidents: [tIncident],
         lastSync: 'Diperbarui Hari ini, 10.00',
@@ -228,8 +227,9 @@ void main() {
       expect(find.byType(AppSearchBar), findsNothing);
     });
 
-    testWidgets('renders list of IncidentCard when incidents are loaded',
-        (tester) async {
+    testWidgets('renders list of IncidentCard when incidents are loaded', (
+      tester,
+    ) async {
       final state = IncidentLoaded(
         incidents: [tIncident],
         lastSync: 'Diperbarui Hari ini, 10.00',
@@ -244,8 +244,9 @@ void main() {
       expect(find.textContaining('Ahmad Dahlan'), findsWidgets);
     });
 
-    testWidgets('renders empty search result when search has no matches',
-        (tester) async {
+    testWidgets('renders empty search result when search has no matches', (
+      tester,
+    ) async {
       const state = IncidentLoaded(
         incidents: [],
         lastSync: 'Diperbarui Hari ini, 10.00',
@@ -265,8 +266,9 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('renders AppExtendedFab when user has active group session',
-        (tester) async {
+    testWidgets('renders AppExtendedFab when user has active group session', (
+      tester,
+    ) async {
       final state = IncidentLoaded(
         incidents: [tIncident],
         lastSync: 'Diperbarui Hari ini, 10.00',
@@ -279,8 +281,9 @@ void main() {
       expect(find.text('Insiden'), findsWidgets);
     });
 
-    testWidgets('renders without overflow under 200% dynamic text scaling',
-        (tester) async {
+    testWidgets('renders without overflow under 200% dynamic text scaling', (
+      tester,
+    ) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2.0;
       addTearDown(
         () => tester.platformDispatcher.clearTextScaleFactorTestValue(),

@@ -23,9 +23,11 @@ OperationalModel _$OperationalModelFromJson(Map<String, dynamic> json) =>
       totalActivities: json['total_activities'] == null
           ? 0
           : const IntFromNumConverter().fromJson(json['total_activities']),
-      timeline: (json['timeline'] as List<dynamic>?)
+      timeline:
+          (json['timeline'] as List<dynamic>?)
               ?.map(
-                  (e) => DutyTimelineModel.fromJson(e as Map<String, dynamic>))
+                (e) => DutyTimelineModel.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       userName: json['user_name'] as String?,

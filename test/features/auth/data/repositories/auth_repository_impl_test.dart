@@ -109,7 +109,8 @@ void main() {
   final testRsaKey = RSAPrivateKey(_testPrivateKeyPem);
 
   String generateTestToken({bool isExpired = false, bool omitSub = false}) {
-    final exp = (DateTime.now().millisecondsSinceEpoch ~/ 1000) +
+    final exp =
+        (DateTime.now().millisecondsSinceEpoch ~/ 1000) +
         (isExpired ? -3600 : 3600);
     return JWT(
       {
@@ -123,11 +124,7 @@ void main() {
         'allow_mon_patrol': false,
         'exp': exp,
       }..removeWhere((key, _) => omitSub && key == 'sub'),
-      header: {
-        'alg': 'RS256',
-        'typ': 'JWT',
-        'kid': 'test-key-1',
-      },
+      header: {'alg': 'RS256', 'typ': 'JWT', 'kid': 'test-key-1'},
       issuer: 'https://api.kawalo.com',
     ).sign(testRsaKey, algorithm: JWTAlgorithm.RS256);
   }
@@ -142,34 +139,14 @@ void main() {
       ),
     );
     registerFallbackValue(
-      const UserModel(
-        id: 'u1',
-        email: 'e@k.com',
-        name: 'u',
-        groups: [],
-      ),
+      const UserModel(id: 'u1', email: 'e@k.com', name: 'u', groups: []),
     );
     registerFallbackValue(
-      const LoginRequestModel(
-        email: 'e@k.com',
-        password: 'p',
-      ),
+      const LoginRequestModel(email: 'e@k.com', password: 'p'),
     );
-    registerFallbackValue(
-      const LogoutRequestModel(
-        refreshToken: 'rt',
-      ),
-    );
-    registerFallbackValue(
-      const RefreshTokenRequestModel(
-        refreshToken: 'rt',
-      ),
-    );
-    registerFallbackValue(
-      const SwitchGroupRequestModel(
-        groupUid: 'g1',
-      ),
-    );
+    registerFallbackValue(const LogoutRequestModel(refreshToken: 'rt'));
+    registerFallbackValue(const RefreshTokenRequestModel(refreshToken: 'rt'));
+    registerFallbackValue(const SwitchGroupRequestModel(groupUid: 'g1'));
     registerFallbackValue(
       const AuthSessionModel(
         userId: 'u1',
@@ -186,7 +163,8 @@ void main() {
   setUp(() {
     final escapedPem = _testPublicKeyPem.trim().replaceAll('\n', r'\n');
     dotenv.loadFromString(
-      envString: '''
+      envString:
+          '''
 API_BASE_URL=http://localhost:3000/api
 APP_NAME=Kawalo Test
 JWT_PUBLIC_KEY="$escapedPem"
@@ -199,10 +177,12 @@ JWT_PUBLIC_KEY="$escapedPem"
         preserveEmail: any(named: 'preserveEmail'),
       ),
     ).thenAnswer((_) async => {});
-    when(() => mockLocalDataSource.saveLastEmail(any()))
-        .thenAnswer((_) async => {});
-    when(() => mockLocalDataSource.saveSession(any()))
-        .thenAnswer((_) async => {});
+    when(
+      () => mockLocalDataSource.saveLastEmail(any()),
+    ).thenAnswer((_) async => {});
+    when(
+      () => mockLocalDataSource.saveSession(any()),
+    ).thenAnswer((_) async => {});
 
     final testJwks = JwksService()
       ..cacheKey('test-key-1', _testPublicKeyPem.trim());
@@ -239,40 +219,39 @@ JWT_PUBLIC_KEY="$escapedPem"
   }
 
   group('login', () {
-    test(
-      'should return UserEntity and save tokens & user when remote call '
-      'succeeds',
-      () async {
-        // Arrange
-        final validTokens = createValidTokens();
-        final loginResponse = LoginResponseModel(
-          user: tUserModel,
-          tokens: validTokens,
-        );
-        when(() => mockRemoteDataSource.login(any()))
-            .thenAnswer((_) async => loginResponse);
-        when(() => mockLocalDataSource.saveTokens(any()))
-            .thenAnswer((_) async => {});
-        when(() => mockLocalDataSource.saveUser(any()))
-            .thenAnswer((_) async => {});
+    test('should return UserEntity and save tokens & user when remote call '
+        'succeeds', () async {
+      // Arrange
+      final validTokens = createValidTokens();
+      final loginResponse = LoginResponseModel(
+        user: tUserModel,
+        tokens: validTokens,
+      );
+      when(
+        () => mockRemoteDataSource.login(any()),
+      ).thenAnswer((_) async => loginResponse);
+      when(
+        () => mockLocalDataSource.saveTokens(any()),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockLocalDataSource.saveUser(any()),
+      ).thenAnswer((_) async => {});
 
-        // Act
-        final result =
-            await repository.login(email: tEmail, password: tPassword);
+      // Act
+      final result = await repository.login(email: tEmail, password: tPassword);
 
-        // Assert
-        expect(result, const Right<Failure, UserEntity>(tUserEntity));
-        verify(
-          () => mockRemoteDataSource.login(
-            const LoginRequestModel(email: tEmail, password: tPassword),
-          ),
-        ).called(1);
-        verify(() => mockLocalDataSource.saveTokens(validTokens)).called(1);
-        verify(() => mockLocalDataSource.saveUser(tUserModel)).called(1);
-        verify(() => mockLocalDataSource.saveSession(any())).called(1);
-        verify(() => mockLocalDataSource.saveLastEmail(tEmail)).called(1);
-      },
-    );
+      // Assert
+      expect(result, const Right<Failure, UserEntity>(tUserEntity));
+      verify(
+        () => mockRemoteDataSource.login(
+          const LoginRequestModel(email: tEmail, password: tPassword),
+        ),
+      ).called(1);
+      verify(() => mockLocalDataSource.saveTokens(validTokens)).called(1);
+      verify(() => mockLocalDataSource.saveUser(tUserModel)).called(1);
+      verify(() => mockLocalDataSource.saveSession(any())).called(1);
+      verify(() => mockLocalDataSource.saveLastEmail(tEmail)).called(1);
+    });
 
     test(
       'should return AuthFailure and persist nothing when the verified token '
@@ -285,14 +264,14 @@ JWT_PUBLIC_KEY="$escapedPem"
           expiresIn: 900,
         );
         when(() => mockRemoteDataSource.login(any())).thenAnswer(
-          (_) async => LoginResponseModel(
-            user: tUserModel,
-            tokens: malformedTokens,
-          ),
+          (_) async =>
+              LoginResponseModel(user: tUserModel, tokens: malformedTokens),
         );
 
-        final result =
-            await repository.login(email: tEmail, password: tPassword);
+        final result = await repository.login(
+          email: tEmail,
+          password: tPassword,
+        );
 
         expect(result.isLeft(), isTrue);
         result.match(
@@ -304,33 +283,28 @@ JWT_PUBLIC_KEY="$escapedPem"
       },
     );
 
-    test(
-      'should return ServerFailure when remote data source throws '
-      'ServerException',
-      () async {
-        // Arrange
-        when(() => mockRemoteDataSource.login(any()))
-            .thenThrow(const ServerException('Server Exception', 500));
+    test('should return ServerFailure when remote data source throws '
+        'ServerException', () async {
+      // Arrange
+      when(
+        () => mockRemoteDataSource.login(any()),
+      ).thenThrow(const ServerException('Server Exception', 500));
 
-        // Act
-        final result =
-            await repository.login(email: tEmail, password: tPassword);
+      // Act
+      final result = await repository.login(email: tEmail, password: tPassword);
 
-        // Assert
-        expect(
-          result,
-          const Left<Failure, UserEntity>(
-            ServerFailure('Server Exception', 500),
-          ),
-        );
-        verify(
-          () => mockRemoteDataSource.login(
-            const LoginRequestModel(email: tEmail, password: tPassword),
-          ),
-        ).called(1);
-        verifyNever(() => mockLocalDataSource.saveTokens(any()));
-      },
-    );
+      // Assert
+      expect(
+        result,
+        const Left<Failure, UserEntity>(ServerFailure('Server Exception', 500)),
+      );
+      verify(
+        () => mockRemoteDataSource.login(
+          const LoginRequestModel(email: tEmail, password: tPassword),
+        ),
+      ).called(1);
+      verifyNever(() => mockLocalDataSource.saveTokens(any()));
+    });
   });
 
   group('logout', () {
@@ -338,10 +312,12 @@ JWT_PUBLIC_KEY="$escapedPem"
       'should clear local session and revoke token on remote when called',
       () async {
         // Arrange
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
-        when(() => mockRemoteDataSource.logout(any()))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockLocalDataSource.getRefreshToken(),
+        ).thenAnswer((_) async => 'mock_refresh_token');
+        when(
+          () => mockRemoteDataSource.logout(any()),
+        ).thenAnswer((_) async => {});
 
         // Act
         final result = await repository.logout();
@@ -354,8 +330,9 @@ JWT_PUBLIC_KEY="$escapedPem"
             const LogoutRequestModel(refreshToken: 'mock_refresh_token'),
           ),
         ).called(1);
-        verify(() => mockLocalDataSource.clearSession(preserveEmail: false))
-            .called(1);
+        verify(
+          () => mockLocalDataSource.clearSession(preserveEmail: false),
+        ).called(1);
       },
     );
   });
@@ -370,12 +347,15 @@ JWT_PUBLIC_KEY="$escapedPem"
       () async {
         // Arrange
         final validToken = generateTestToken();
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => validToken);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
+        when(
+          () => mockLocalDataSource.getUser(),
+        ).thenAnswer((_) async => tUserModel);
+        when(
+          () => mockLocalDataSource.getAccessToken(),
+        ).thenAnswer((_) async => validToken);
+        when(
+          () => mockLocalDataSource.getRefreshToken(),
+        ).thenAnswer((_) async => 'mock_refresh_token');
 
         // Act
         final result = await repository.getCurrentUser();
@@ -391,28 +371,12 @@ JWT_PUBLIC_KEY="$escapedPem"
     test('should return null when no cached user is present', () async {
       // Arrange
       when(() => mockLocalDataSource.getUser()).thenAnswer((_) async => null);
-      when(() => mockLocalDataSource.getAccessToken())
-          .thenAnswer((_) async => null);
-      when(() => mockLocalDataSource.getRefreshToken())
-          .thenAnswer((_) async => null);
-
-      // Act
-      final result = await repository.getCurrentUser();
-
-      // Assert
-      expect(result, const Right<Failure, UserEntity?>(null));
-      verify(() => mockLocalDataSource.getUser()).called(1);
-    });
-
-    test('should return null when user exists but tokens are missing',
-        () async {
-      // Arrange
-      when(() => mockLocalDataSource.getUser())
-          .thenAnswer((_) async => tUserModel);
-      when(() => mockLocalDataSource.getAccessToken())
-          .thenAnswer((_) async => null);
-      when(() => mockLocalDataSource.getRefreshToken())
-          .thenAnswer((_) async => null);
+      when(
+        () => mockLocalDataSource.getAccessToken(),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockLocalDataSource.getRefreshToken(),
+      ).thenAnswer((_) async => null);
 
       // Act
       final result = await repository.getCurrentUser();
@@ -423,28 +387,51 @@ JWT_PUBLIC_KEY="$escapedPem"
     });
 
     test(
-      'should clear session and return null when a verified token lacks '
-      'mandatory claims',
+      'should return null when user exists but tokens are missing',
       () async {
-        final malformedToken = generateTestToken(omitSub: true);
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => malformedToken);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
+        // Arrange
+        when(
+          () => mockLocalDataSource.getUser(),
+        ).thenAnswer((_) async => tUserModel);
+        when(
+          () => mockLocalDataSource.getAccessToken(),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockLocalDataSource.getRefreshToken(),
+        ).thenAnswer((_) async => null);
 
+        // Act
         final result = await repository.getCurrentUser();
 
+        // Assert
         expect(result, const Right<Failure, UserEntity?>(null));
-        verify(
-          () => mockLocalDataSource.clearSession(
-            preserveEmail: any(named: 'preserveEmail'),
-          ),
-        ).called(1);
-        verifyNever(() => mockLocalDataSource.saveSession(any()));
+        verify(() => mockLocalDataSource.getUser()).called(1);
       },
     );
+
+    test('should clear session and return null when a verified token lacks '
+        'mandatory claims', () async {
+      final malformedToken = generateTestToken(omitSub: true);
+      when(
+        () => mockLocalDataSource.getUser(),
+      ).thenAnswer((_) async => tUserModel);
+      when(
+        () => mockLocalDataSource.getAccessToken(),
+      ).thenAnswer((_) async => malformedToken);
+      when(
+        () => mockLocalDataSource.getRefreshToken(),
+      ).thenAnswer((_) async => 'mock_refresh_token');
+
+      final result = await repository.getCurrentUser();
+
+      expect(result, const Right<Failure, UserEntity?>(null));
+      verify(
+        () => mockLocalDataSource.clearSession(
+          preserveEmail: any(named: 'preserveEmail'),
+        ),
+      ).called(1);
+      verifyNever(() => mockLocalDataSource.saveSession(any()));
+    });
 
     test(
       'should silently refresh token when access token is expired and return '
@@ -453,20 +440,24 @@ JWT_PUBLIC_KEY="$escapedPem"
         // Arrange
         final expiredJwt = buildExpiredJwt();
         final refreshedTokens = createValidTokens();
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => expiredJwt);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
+        when(
+          () => mockLocalDataSource.getUser(),
+        ).thenAnswer((_) async => tUserModel);
+        when(
+          () => mockLocalDataSource.getAccessToken(),
+        ).thenAnswer((_) async => expiredJwt);
+        when(
+          () => mockLocalDataSource.getRefreshToken(),
+        ).thenAnswer((_) async => 'mock_refresh_token');
         when(
           () => mockRemoteDataSource.refreshToken(
             any(),
             cancelToken: any(named: 'cancelToken'),
           ),
         ).thenAnswer((_) async => refreshedTokens);
-        when(() => mockLocalDataSource.saveTokens(refreshedTokens))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockLocalDataSource.saveTokens(refreshedTokens),
+        ).thenAnswer((_) async => {});
 
         // Act
         final result = await repository.getCurrentUser();
@@ -495,27 +486,30 @@ JWT_PUBLIC_KEY="$escapedPem"
 
         final expiredJwt = buildExpiredJwt();
         final refreshedJwt = generateTestToken();
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => expiredJwt);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
+        when(
+          () => mockLocalDataSource.getUser(),
+        ).thenAnswer((_) async => tUserModel);
+        when(
+          () => mockLocalDataSource.getAccessToken(),
+        ).thenAnswer((_) async => expiredJwt);
+        when(
+          () => mockLocalDataSource.getRefreshToken(),
+        ).thenAnswer((_) async => 'mock_refresh_token');
         when(
           () => mockApiClient.refreshAccessToken(
             refreshToken: any(named: 'refreshToken'),
             cancelToken: any(named: 'cancelToken'),
           ),
         ).thenAnswer(
-          (_) async => (
-            accessToken: refreshedJwt,
-            refreshToken: 'new_refresh_token',
-          ),
+          (_) async =>
+              (accessToken: refreshedJwt, refreshToken: 'new_refresh_token'),
         );
-        when(() => mockLocalDataSource.saveTokens(any()))
-            .thenAnswer((_) async => {});
-        when(() => mockLocalDataSource.saveSession(any()))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockLocalDataSource.saveTokens(any()),
+        ).thenAnswer((_) async => {});
+        when(
+          () => mockLocalDataSource.saveSession(any()),
+        ).thenAnswer((_) async => {});
 
         final result = await repoWithClient.getCurrentUser();
 
@@ -535,39 +529,37 @@ JWT_PUBLIC_KEY="$escapedPem"
       },
     );
 
-    test(
-      'should retain cached user when refresh token times out and triggers '
-      'cancellation',
-      () async {
-        final expiredJwt = buildExpiredJwt();
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => expiredJwt);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
-        when(
-          () => mockRemoteDataSource.refreshToken(
-            any(),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (invocation) async {
-            final token = invocation.namedArguments[#cancelToken]
-                as AppCancellationToken?;
-            await Future<void>.delayed(const Duration(milliseconds: 100));
-            if (token?.isCancelled ?? false) {
-              throw const AuthException('Permintaan dibatalkan.');
-            }
-            return createValidTokens();
-          },
-        );
+    test('should retain cached user when refresh token times out and triggers '
+        'cancellation', () async {
+      final expiredJwt = buildExpiredJwt();
+      when(
+        () => mockLocalDataSource.getUser(),
+      ).thenAnswer((_) async => tUserModel);
+      when(
+        () => mockLocalDataSource.getAccessToken(),
+      ).thenAnswer((_) async => expiredJwt);
+      when(
+        () => mockLocalDataSource.getRefreshToken(),
+      ).thenAnswer((_) async => 'mock_refresh_token');
+      when(
+        () => mockRemoteDataSource.refreshToken(
+          any(),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((invocation) async {
+        final token =
+            invocation.namedArguments[#cancelToken] as AppCancellationToken?;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        if (token?.isCancelled ?? false) {
+          throw const AuthException('Permintaan dibatalkan.');
+        }
+        return createValidTokens();
+      });
 
-        final result = await repository.getCurrentUser();
+      final result = await repository.getCurrentUser();
 
-        expect(result, const Right<Failure, UserEntity?>(tUserEntity));
-      },
-    );
+      expect(result, const Right<Failure, UserEntity?>(tUserEntity));
+    });
 
     test(
       'should clear session and return null when access token is expired and '
@@ -575,12 +567,15 @@ JWT_PUBLIC_KEY="$escapedPem"
       () async {
         // Arrange
         final expiredJwt = buildExpiredJwt();
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => expiredJwt);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
+        when(
+          () => mockLocalDataSource.getUser(),
+        ).thenAnswer((_) async => tUserModel);
+        when(
+          () => mockLocalDataSource.getAccessToken(),
+        ).thenAnswer((_) async => expiredJwt);
+        when(
+          () => mockLocalDataSource.getRefreshToken(),
+        ).thenAnswer((_) async => 'mock_refresh_token');
         when(
           () => mockRemoteDataSource.refreshToken(
             any(),
@@ -597,33 +592,33 @@ JWT_PUBLIC_KEY="$escapedPem"
       },
     );
 
-    test(
-      'should retain cached user when access token is expired but refresh '
-      'token encounters network error',
-      () async {
-        // Arrange
-        final expiredJwt = buildExpiredJwt();
-        when(() => mockLocalDataSource.getUser())
-            .thenAnswer((_) async => tUserModel);
-        when(() => mockLocalDataSource.getAccessToken())
-            .thenAnswer((_) async => expiredJwt);
-        when(() => mockLocalDataSource.getRefreshToken())
-            .thenAnswer((_) async => 'mock_refresh_token');
-        when(
-          () => mockRemoteDataSource.refreshToken(
-            any(),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(const NoInternetException());
+    test('should retain cached user when access token is expired but refresh '
+        'token encounters network error', () async {
+      // Arrange
+      final expiredJwt = buildExpiredJwt();
+      when(
+        () => mockLocalDataSource.getUser(),
+      ).thenAnswer((_) async => tUserModel);
+      when(
+        () => mockLocalDataSource.getAccessToken(),
+      ).thenAnswer((_) async => expiredJwt);
+      when(
+        () => mockLocalDataSource.getRefreshToken(),
+      ).thenAnswer((_) async => 'mock_refresh_token');
+      when(
+        () => mockRemoteDataSource.refreshToken(
+          any(),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(const NoInternetException());
 
-        // Act
-        final result = await repository.getCurrentUser();
+      // Act
+      final result = await repository.getCurrentUser();
 
-        // Assert
-        expect(result, const Right<Failure, UserEntity?>(tUserEntity));
-        verifyNever(() => mockLocalDataSource.clearSession());
-      },
-    );
+      // Assert
+      expect(result, const Right<Failure, UserEntity?>(tUserEntity));
+      verifyNever(() => mockLocalDataSource.clearSession());
+    });
   });
 
   group('getActiveSession', () {
@@ -649,29 +644,35 @@ JWT_PUBLIC_KEY="$escapedPem"
       allowMonPatrol: false,
     );
 
-    test('should return AuthSessionEntity when session exists in local storage',
-        () async {
-      when(() => mockLocalDataSource.getSession())
-          .thenAnswer((_) async => tSessionModel);
+    test(
+      'should return AuthSessionEntity when session exists in local storage',
+      () async {
+        when(
+          () => mockLocalDataSource.getSession(),
+        ).thenAnswer((_) async => tSessionModel);
 
-      final result = await repository.getActiveSession();
+        final result = await repository.getActiveSession();
 
-      expect(
-        result,
-        const Right<Failure, AuthSessionEntity?>(tSessionEntity),
-      );
-      verify(() => mockLocalDataSource.getSession()).called(1);
-    });
+        expect(
+          result,
+          const Right<Failure, AuthSessionEntity?>(tSessionEntity),
+        );
+        verify(() => mockLocalDataSource.getSession()).called(1);
+      },
+    );
 
-    test('should return null when no session is found in local storage',
-        () async {
-      when(() => mockLocalDataSource.getSession())
-          .thenAnswer((_) async => null);
+    test(
+      'should return null when no session is found in local storage',
+      () async {
+        when(
+          () => mockLocalDataSource.getSession(),
+        ).thenAnswer((_) async => null);
 
-      final result = await repository.getActiveSession();
+        final result = await repository.getActiveSession();
 
-      expect(result, const Right<Failure, AuthSessionEntity?>(null));
-      verify(() => mockLocalDataSource.getSession()).called(1);
-    });
+        expect(result, const Right<Failure, AuthSessionEntity?>(null));
+        verify(() => mockLocalDataSource.getSession()).called(1);
+      },
+    );
   });
 }

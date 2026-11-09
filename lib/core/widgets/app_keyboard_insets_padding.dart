@@ -50,8 +50,9 @@ class AppKeyboardInsetsPadding extends StatelessWidget {
 
       final navBarHeight = hasBottomNavigationBar ? 80.0 : 0.0;
       final offlineBannerHeight = isOffline ? 36.0 : 0.0;
-      final safeAreaHeight =
-          (hasBottomNavigationBar || isOffline) ? physicalBottom : 0.0;
+      final safeAreaHeight = (hasBottomNavigationBar || isOffline)
+          ? physicalBottom
+          : 0.0;
       final bottomBarHeight =
           navBarHeight + offlineBannerHeight + safeAreaHeight;
 

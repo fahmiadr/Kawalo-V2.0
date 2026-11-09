@@ -28,38 +28,27 @@ void main() {
     userEmail: 'agus@kawalo.id',
     userName: 'Agus Setiawan',
     totalActivities: 2,
-    timeline: [
-      DutyTimelineEntity(id: '1', duty: 'Patroli Lingkungan'),
-    ],
+    timeline: [DutyTimelineEntity(id: '1', duty: 'Patroli Lingkungan')],
   );
 
   test(
     'calls repository.getOperationals and returns Right with items',
     () async {
       const tParams = GetOperationalsParams(search: 'Agus');
-      when(
-        () => mockRepo.getOperationals(any()),
-      ).thenAnswer(
-        (_) async => const Right(
-          OperationalResult(items: [testWorker]),
-        ),
+      when(() => mockRepo.getOperationals(any())).thenAnswer(
+        (_) async => const Right(OperationalResult(items: [testWorker])),
       );
 
       final result = await useCase(tParams);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (failure) => fail('Should be Right'),
-        (resultEntity) {
-          expect(resultEntity.items.length, 1);
-          expect(resultEntity.items.first.userName, 'Agus Setiawan');
-          expect(resultEntity.isFromCache, isFalse);
-        },
-      );
+      result.fold((failure) => fail('Should be Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first.userName, 'Agus Setiawan');
+        expect(resultEntity.isFromCache, isFalse);
+      });
 
-      verify(
-        () => mockRepo.getOperationals(tParams),
-      ).called(1);
+      verify(() => mockRepo.getOperationals(tParams)).called(1);
     },
   );
 
@@ -67,9 +56,7 @@ void main() {
     const tParams = GetOperationalsParams();
     when(
       () => mockRepo.getOperationals(any()),
-    ).thenAnswer(
-      (_) async => const Left(ServerFailure('Server error')),
-    );
+    ).thenAnswer((_) async => const Left(ServerFailure('Server error')));
 
     final result = await useCase(tParams);
 
@@ -79,8 +66,6 @@ void main() {
       (_) => fail('Should be Left'),
     );
 
-    verify(
-      () => mockRepo.getOperationals(tParams),
-    ).called(1);
+    verify(() => mockRepo.getOperationals(tParams)).called(1);
   });
 }

@@ -32,10 +32,7 @@ void main() {
 
       await tester.pumpWidget(
         buildTestableWidget(
-          AttendanceCard(
-            item: item,
-            onTap: () => tapped = true,
-          ),
+          AttendanceCard(item: item, onTap: () => tapped = true),
         ),
       );
 
@@ -43,8 +40,9 @@ void main() {
       expect(find.text('guard.ahmad@kawalo.id'), findsOneWidget);
       expect(find.widgetWithText(AppTag, 'Masuk'), findsOneWidget);
 
-      final diffTag = tester
-          .widget<AppTag>(find.widgetWithText(AppTag, 'Terlambat 5 menit'));
+      final diffTag = tester.widget<AppTag>(
+        find.widgetWithText(AppTag, 'Terlambat 5 menit'),
+      );
       expect(diffTag.variant, AppTagVariant.error);
 
       expect(find.text('Shift Pagi • 07:00 - 15:00'), findsOneWidget);
@@ -68,16 +66,15 @@ void main() {
       );
 
       await tester.pumpWidget(
-        buildTestableWidget(
-          const AttendanceCard(item: item),
-        ),
+        buildTestableWidget(const AttendanceCard(item: item)),
       );
 
       expect(find.text('Budi Pratama'), findsOneWidget);
       expect(find.widgetWithText(AppTag, 'Pulang'), findsOneWidget);
 
-      final onTimeTag =
-          tester.widget<AppTag>(find.widgetWithText(AppTag, 'Tepat waktu'));
+      final onTimeTag = tester.widget<AppTag>(
+        find.widgetWithText(AppTag, 'Tepat waktu'),
+      );
       expect(onTimeTag.variant, AppTagVariant.primary);
     });
   });

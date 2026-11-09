@@ -13,9 +13,7 @@ class DeleteIncidentUseCase implements UseCase<void, DeleteIncidentParams> {
   final IncidentRepository repository;
 
   @override
-  Future<Either<Failure, void>> call(
-    DeleteIncidentParams params,
-  ) async {
+  Future<Either<Failure, void>> call(DeleteIncidentParams params) async {
     if (!params.isAuthorized) {
       return const Left(
         ForbiddenFailure(

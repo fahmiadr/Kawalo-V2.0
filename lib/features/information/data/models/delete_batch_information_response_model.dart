@@ -15,8 +15,7 @@ class DeleteBatchInformationResponseModel extends Equatable {
 
   factory DeleteBatchInformationResponseModel.fromJson(
     Map<String, dynamic> json,
-  ) =>
-      _$DeleteBatchInformationResponseModelFromJson(json);
+  ) => _$DeleteBatchInformationResponseModelFromJson(json);
 
   /// Jumlah informasi yang dihapus sesuai response server.
   ///

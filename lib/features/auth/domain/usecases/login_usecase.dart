@@ -27,12 +27,9 @@ class LoginUseCase implements UseCase<UserEntity, LoginParams> {
       password: params.password,
     );
 
-    return await result.fold(
-      (failure) async => Left(failure),
-      (user) async {
-        await cacheWiper?.wipeAll();
-        return Right(user);
-      },
-    );
+    return await result.fold((failure) async => Left(failure), (user) async {
+      await cacheWiper?.wipeAll();
+      return Right(user);
+    });
   }
 }

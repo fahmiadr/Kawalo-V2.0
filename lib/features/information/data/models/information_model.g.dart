@@ -9,7 +9,8 @@ part of 'information_model.dart';
 InformationModel _$InformationModelFromJson(Map<String, dynamic> json) =>
     InformationModel(
       id: json['id'] as String,
-      photos: (json['photos'] as List<dynamic>?)
+      photos:
+          (json['photos'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -25,8 +26,9 @@ InformationModel _$InformationModelFromJson(Map<String, dynamic> json) =>
       eventLocation: json['event_location'] as String?,
       eventStartDt: json['event_start_dt'] as String?,
       eventEndDt: json['event_end_dt'] as String?,
-      eventDuration:
-          const NullableIntFromNumConverter().fromJson(json['event_duration']),
+      eventDuration: const NullableIntFromNumConverter().fromJson(
+        json['event_duration'],
+      ),
       glat: json['glat'] as String?,
       glong: json['glong'] as String?,
     );

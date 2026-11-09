@@ -185,8 +185,9 @@ class InformationFormState extends Equatable {
     final origGlat = original.glat != null ? original.glat.toString() : '';
     final origGlong = original.glong != null ? original.glong.toString() : '';
 
-    final currentSources =
-        photos.map((p) => p.remoteUrl ?? p.displaySource).toList();
+    final currentSources = photos
+        .map((p) => p.remoteUrl ?? p.displaySource)
+        .toList();
 
     return title.trim() != origTitle.trim() ||
         text.trim() != origText.trim() ||
@@ -270,15 +271,18 @@ class InformationFormState extends Equatable {
       text: text ?? this.text,
       textError: textError != null ? textError() : this.textError,
       feedType: feedType ?? this.feedType,
-      feedTypeError:
-          feedTypeError != null ? feedTypeError() : this.feedTypeError,
+      feedTypeError: feedTypeError != null
+          ? feedTypeError()
+          : this.feedTypeError,
       photos: photos ?? this.photos,
       photosError: photosError != null ? photosError() : this.photosError,
-      documentMedia:
-          documentMedia != null ? documentMedia() : this.documentMedia,
+      documentMedia: documentMedia != null
+          ? documentMedia()
+          : this.documentMedia,
       feedFile: feedFile ?? this.feedFile,
-      feedFileError:
-          feedFileError != null ? feedFileError() : this.feedFileError,
+      feedFileError: feedFileError != null
+          ? feedFileError()
+          : this.feedFileError,
       eventLocation: eventLocation ?? this.eventLocation,
       eventLocationError: eventLocationError != null
           ? eventLocationError()
@@ -295,28 +299,28 @@ class InformationFormState extends Equatable {
 
   @override
   List<Object?> get props => [
-        mode,
-        status,
-        initialItem,
-        title,
-        titleError,
-        text,
-        textError,
-        feedType,
-        feedTypeError,
-        photos,
-        photosError,
-        documentMedia,
-        feedFile,
-        feedFileError,
-        eventLocation,
-        eventLocationError,
-        glat,
-        glatError,
-        glong,
-        glongError,
-        errorMessage,
-        createdOrUpdatedItem,
-        validationAttempt,
-      ];
+    mode,
+    status,
+    initialItem,
+    title,
+    titleError,
+    text,
+    textError,
+    feedType,
+    feedTypeError,
+    photos,
+    photosError,
+    documentMedia,
+    feedFile,
+    feedFileError,
+    eventLocation,
+    eventLocationError,
+    glat,
+    glatError,
+    glong,
+    glongError,
+    errorMessage,
+    createdOrUpdatedItem,
+    validationAttempt,
+  ];
 }

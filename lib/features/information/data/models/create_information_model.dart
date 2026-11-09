@@ -58,13 +58,13 @@ class CreateInformationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        text,
-        feedFile,
-        photos,
-        feedType,
-        eventLocation,
-        glat,
-        glong,
-      ];
+    title,
+    text,
+    feedFile,
+    photos,
+    feedType,
+    eventLocation,
+    glat,
+    glong,
+  ];
 }

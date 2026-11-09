@@ -7,34 +7,24 @@ import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 Widget _buildTestApp(Widget child) {
   return M3EMaterialApp(
     data: AppTheme.m3eLight(),
-    home: Scaffold(
-      body: Center(child: child),
-    ),
+    home: Scaffold(body: Center(child: child)),
   );
 }
 
 void main() {
   group('AppTag Widget Tests', () {
     testWidgets('renders label text correctly', (tester) async {
-      await tester.pumpWidget(
-        _buildTestApp(
-          const AppTag(label: 'Test Tag'),
-        ),
-      );
+      await tester.pumpWidget(_buildTestApp(const AppTag(label: 'Test Tag')));
 
       expect(find.text('Test Tag'), findsOneWidget);
     });
 
-    testWidgets('renders all semantic variants with correct M3 colors',
-        (tester) async {
+    testWidgets('renders all semantic variants with correct M3 colors', (
+      tester,
+    ) async {
       for (final variant in AppTagVariant.values) {
         await tester.pumpWidget(
-          _buildTestApp(
-            AppTag(
-              label: variant.name,
-              variant: variant,
-            ),
-          ),
+          _buildTestApp(AppTag(label: variant.name, variant: variant)),
         );
 
         final textFinder = find.text(variant.name);
@@ -69,25 +59,22 @@ void main() {
       }
     });
 
-    testWidgets('renders outlined style with transparent background and border',
-        (tester) async {
-      await tester.pumpWidget(
-        _buildTestApp(
-          const AppTag(
-            label: 'Outlined Tag',
-            isOutlined: true,
-          ),
-        ),
-      );
+    testWidgets(
+      'renders outlined style with transparent background and border',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildTestApp(const AppTag(label: 'Outlined Tag', isOutlined: true)),
+        );
 
-      final decoratedBox = tester.widget<DecoratedBox>(
-        find.byType(DecoratedBox).first,
-      );
-      final decoration = decoratedBox.decoration as BoxDecoration;
+        final decoratedBox = tester.widget<DecoratedBox>(
+          find.byType(DecoratedBox).first,
+        );
+        final decoration = decoratedBox.decoration as BoxDecoration;
 
-      expect(decoration.color, Colors.transparent);
-      expect(decoration.border, isNotNull);
-    });
+        expect(decoration.color, Colors.transparent);
+        expect(decoration.border, isNotNull);
+      },
+    );
 
     testWidgets('respects custom color overrides', (tester) async {
       const customBg = Color(0xFF123456);
@@ -116,8 +103,9 @@ void main() {
       expect(decoration.border?.top.color, customBorder);
     });
 
-    testWidgets('renders leading and trailing widgets correctly',
-        (tester) async {
+    testWidgets('renders leading and trailing widgets correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _buildTestApp(
           const AppTag(
@@ -136,12 +124,7 @@ void main() {
     testWidgets('renders different size variants', (tester) async {
       for (final size in AppTagSize.values) {
         await tester.pumpWidget(
-          _buildTestApp(
-            AppTag(
-              label: 'Size ${size.name}',
-              size: size,
-            ),
-          ),
+          _buildTestApp(AppTag(label: 'Size ${size.name}', size: size)),
         );
 
         expect(find.text('Size ${size.name}'), findsOneWidget);

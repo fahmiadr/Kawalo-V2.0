@@ -9,10 +9,7 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tooltip.dart';
 
 class GuestFormDropdownSkeleton extends StatelessWidget {
-  const GuestFormDropdownSkeleton({
-    required this.shimmerController,
-    super.key,
-  });
+  const GuestFormDropdownSkeleton({required this.shimmerController, super.key});
 
   final AnimationController shimmerController;
 
@@ -30,9 +27,7 @@ class GuestFormDropdownSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: isReducedMotion ? baseColor : null,
         borderRadius: AppRadius.borderMedium,
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: isReducedMotion
           ? null
@@ -91,9 +86,7 @@ class GuestFormMasterErrorWithRetry extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.errorContainer.withValues(alpha: 0.4),
         borderRadius: AppRadius.borderMedium,
-        border: Border.all(
-          color: colorScheme.error.withValues(alpha: 0.5),
-        ),
+        border: Border.all(color: colorScheme.error.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [

@@ -63,70 +63,70 @@ void main() {
         (incident) => expect(incident.status, equals(IncidentStatus.resolved)),
       );
 
-      verify(() => mockRepository.resolveIncident(incidentId: 'inc_10'))
-          .called(1);
+      verify(
+        () => mockRepository.resolveIncident(incidentId: 'inc_10'),
+      ).called(1);
     });
 
-    test('returns ForbiddenFailure when unauthorized (different group)',
-        () async {
-      const otherSession = AuthSessionEntity(
-        userId: 'usr_other',
-        email: 'other@k.id',
-        name: 'Other',
-        allowAdmin: false,
-        allowPatrol: true,
-        allowMonPatrol: false,
-        groupUid: 'grp_other',
-      );
+    test(
+      'returns ForbiddenFailure when unauthorized (different group)',
+      () async {
+        const otherSession = AuthSessionEntity(
+          userId: 'usr_other',
+          email: 'other@k.id',
+          name: 'Other',
+          allowAdmin: false,
+          allowPatrol: true,
+          allowMonPatrol: false,
+          groupUid: 'grp_other',
+        );
 
-      final params = ResolveIncidentParams(
-        incident: tOpenIncident,
-        session: otherSession,
-      );
+        final params = ResolveIncidentParams(
+          incident: tOpenIncident,
+          session: otherSession,
+        );
 
-      final result = await useCase(params);
+        final result = await useCase(params);
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<ForbiddenFailure>()),
-        (_) => fail('Should be left'),
-      );
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<ForbiddenFailure>()),
+          (_) => fail('Should be left'),
+        );
 
-      verifyNever(
-        () => mockRepository.resolveIncident(
-          incidentId: any(named: 'incidentId'),
-        ),
-      );
-    });
+        verifyNever(
+          () => mockRepository.resolveIncident(
+            incidentId: any(named: 'incidentId'),
+          ),
+        );
+      },
+    );
 
-    test('propagates ServerFailure (HTTP 409 Conflict) from repository',
-        () async {
-      when(
-        () => mockRepository.resolveIncident(
-          incidentId: 'inc_10',
-          cancelToken: any(named: 'cancelToken'),
-        ),
-      ).thenAnswer(
-        (_) async => const Left(
-          ServerFailure('Already resolved', 409),
-        ),
-      );
+    test(
+      'propagates ServerFailure (HTTP 409 Conflict) from repository',
+      () async {
+        when(
+          () => mockRepository.resolveIncident(
+            incidentId: 'inc_10',
+            cancelToken: any(named: 'cancelToken'),
+          ),
+        ).thenAnswer(
+          (_) async => const Left(ServerFailure('Already resolved', 409)),
+        );
 
-      final params = ResolveIncidentParams(
-        incident: tOpenIncident,
-        session: tSession,
-      );
+        final params = ResolveIncidentParams(
+          incident: tOpenIncident,
+          session: tSession,
+        );
 
-      final result = await useCase(params);
+        final result = await useCase(params);
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
+        expect(result.isLeft(), isTrue);
+        result.fold((failure) {
           expect(failure, isA<ServerFailure>());
           expect((failure as ServerFailure).statusCode, equals(409));
-        },
-        (_) => fail('Should be left'),
-      );
-    });
+        }, (_) => fail('Should be left'));
+      },
+    );
   });
 }

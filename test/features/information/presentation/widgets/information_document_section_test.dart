@@ -22,10 +22,8 @@ Widget _buildTestApp({
   bool isSubmitting = false,
 }) {
   return MaterialApp(
-    builder: (context, child) => M3ETheme(
-      data: AppTheme.m3eLight(),
-      child: child!,
-    ),
+    builder: (context, child) =>
+        M3ETheme(data: AppTheme.m3eLight(), child: child!),
     home: Scaffold(
       body: SingleChildScrollView(
         child: BlocProvider<InformationFormCubit>.value(
@@ -49,8 +47,9 @@ void main() {
   });
 
   group('InformationDocumentSection Widget Tests', () {
-    testWidgets('renders empty placeholder when no document is attached',
-        (tester) async {
+    testWidgets('renders empty placeholder when no document is attached', (
+      tester,
+    ) async {
       when(() => mockCubit.state).thenReturn(const InformationFormState());
 
       var pickCalled = false;
@@ -72,8 +71,7 @@ void main() {
       expect(pickCalled, isTrue);
     });
 
-    testWidgets(
-        'renders AppFileTile and separate right-aligned buttons when '
+    testWidgets('renders AppFileTile and separate right-aligned buttons when '
         'document attached', (tester) async {
       when(() => mockCubit.state).thenReturn(
         const InformationFormState(
@@ -120,13 +118,12 @@ void main() {
       expect(clearCalled, isTrue);
     });
 
-    testWidgets('disables action buttons when isSubmitting is true',
-        (tester) async {
-      when(() => mockCubit.state).thenReturn(
-        const InformationFormState(
-          feedFile: 'dokumen_lama.docx',
-        ),
-      );
+    testWidgets('disables action buttons when isSubmitting is true', (
+      tester,
+    ) async {
+      when(
+        () => mockCubit.state,
+      ).thenReturn(const InformationFormState(feedFile: 'dokumen_lama.docx'));
 
       var pickCalled = false;
       var clearCalled = false;
@@ -154,8 +151,9 @@ void main() {
       expect(clearCalled, isFalse);
     });
 
-    testWidgets('displays error text when feedFileError is present',
-        (tester) async {
+    testWidgets('displays error text when feedFileError is present', (
+      tester,
+    ) async {
       when(() => mockCubit.state).thenReturn(
         const InformationFormState(
           feedFileError: 'Ukuran berkas melebihi batas 10MB',

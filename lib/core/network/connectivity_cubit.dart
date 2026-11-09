@@ -40,12 +40,10 @@ class ConnectivityCubit extends Cubit<ConnectivityStatus>
     ConnectivityStatus initialState = ConnectivityStatus.online,
     bool autoStart = true,
     Future<bool> Function()? checkConnection,
-  })  : _ownsNetworkInfo = networkInfo == null,
-        _networkInfo = networkInfo ??
-            NetworkInfoImpl(
-              checkConnection: checkConnection,
-            ),
-        super(initialState) {
+  }) : _ownsNetworkInfo = networkInfo == null,
+       _networkInfo =
+           networkInfo ?? NetworkInfoImpl(checkConnection: checkConnection),
+       super(initialState) {
     if (autoStart) {
       _startMonitoring();
     }
@@ -85,8 +83,9 @@ class ConnectivityCubit extends Cubit<ConnectivityStatus>
   }
 
   void _handleConnectivityChanged(bool isConnected) {
-    final newStatus =
-        isConnected ? ConnectivityStatus.online : ConnectivityStatus.offline;
+    final newStatus = isConnected
+        ? ConnectivityStatus.online
+        : ConnectivityStatus.offline;
     if (state != newStatus) {
       emit(newStatus);
     }
@@ -96,8 +95,9 @@ class ConnectivityCubit extends Cubit<ConnectivityStatus>
   /// dan memancarkan perubahan state jika berbeda.
   Future<void> checkNow() async {
     final isConnected = await _networkInfo.checkConnectivity();
-    final newStatus =
-        isConnected ? ConnectivityStatus.online : ConnectivityStatus.offline;
+    final newStatus = isConnected
+        ? ConnectivityStatus.online
+        : ConnectivityStatus.offline;
     if (state != newStatus) {
       emit(newStatus);
     }
@@ -121,7 +121,7 @@ class ConnectivityCubit extends Cubit<ConnectivityStatus>
     } on Object catch (_) {}
     _networkSubscription?.cancel();
     if (_ownsNetworkInfo && _networkInfo is NetworkInfoImpl) {
-      (_networkInfo as NetworkInfoImpl).dispose();
+      _networkInfo.dispose();
     }
     return super.close();
   }

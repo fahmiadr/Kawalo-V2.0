@@ -141,9 +141,7 @@ void main() {
       expect(roundTrip.timeline.first.duty, 'Standby');
     });
 
-    test(
-      'toLocal and fromLocal fallback to trimmed values when uncleaned',
-      () {
+    test('toLocal and fromLocal fallback to trimmed values when uncleaned', () {
       const invalidEmailWorker = OperationalModel(
         id: 'invalid-id',
         userEmail: '   ',
@@ -168,16 +166,18 @@ void main() {
         id: '  -  ',
         duty: 'Standby',
       );
-      final timelineLocal =
-          OperationalLocalMapper.toDutyTimelineLocal(invalidTimelineModel);
+      final timelineLocal = OperationalLocalMapper.toDutyTimelineLocal(
+        invalidTimelineModel,
+      );
       expect(timelineLocal, isNotNull);
       expect(timelineLocal!.id, '-');
 
       final invalidTimelineLocal = DutyTimelineLocalModel()
         ..id = 'null'
         ..duty = 'Standby';
-      final timelineModel =
-          OperationalLocalMapper.fromDutyTimelineLocal(invalidTimelineLocal);
+      final timelineModel = OperationalLocalMapper.fromDutyTimelineLocal(
+        invalidTimelineLocal,
+      );
       expect(timelineModel, isNotNull);
       expect(timelineModel!.id, 'null');
     });

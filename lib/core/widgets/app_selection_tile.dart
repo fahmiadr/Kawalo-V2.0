@@ -83,23 +83,15 @@ class AppSelectionTile extends StatelessWidget {
     return AppButton(
       style: AppButtonColor.text,
       shape: shape,
-      size: AppButtonSize.custom(
-        height: minHeight,
-        hPadding: hPadding,
-      ),
+      size: AppButtonSize.custom(height: minHeight, hPadding: hPadding),
       semanticLabel: semanticLabel ?? 'Pilih $title',
       decoration: AppButtonDecoration(
-        foregroundColor: WidgetStatePropertyAll<Color?>(
-          colorScheme.onSurface,
-        ),
+        foregroundColor: WidgetStatePropertyAll<Color?>(colorScheme.onSurface),
       ),
       onPressed: onTap,
       child: Row(
         children: [
-          if (leading != null) ...[
-            leading!,
-            AppSpacing.hGapSm,
-          ],
+          if (leading != null) ...[leading!, AppSpacing.hGapSm],
           Expanded(
             child: effectiveSubtitle == null
                 ? Text(
@@ -123,7 +115,7 @@ class AppSelectionTile extends StatelessWidget {
                     ],
                   ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

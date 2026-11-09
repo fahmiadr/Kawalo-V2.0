@@ -5,8 +5,9 @@ import 'package:kawalo_mobile/core/widgets/app_tooltip.dart';
 
 void main() {
   group('AppIconButton / M3EIconButton Tests', () {
-    testWidgets('renders icon button and handles tap',
-        (WidgetTester tester) async {
+    testWidgets('renders icon button and handles tap', (
+      WidgetTester tester,
+    ) async {
       var tapped = false;
 
       await tester.pumpWidget(
@@ -26,8 +27,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('supports toggle state',
-        (WidgetTester tester) async {
+    testWidgets('supports toggle state', (WidgetTester tester) async {
       var isSelected = false;
 
       await tester.pumpWidget(
@@ -117,57 +117,60 @@ void main() {
     testWidgets(
       'positions dot badge according to M3 guidelines and supports badgeOffset',
       (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: Column(
-                children: [
-                  AppIconButton(
-                    key: const ValueKey('default_dot_btn'),
-                    icon: const Icon(Icons.filter_list),
-                    badgeValue: true,
-                    onPressed: () {},
-                  ),
-                  AppIconButton(
-                    key: const ValueKey('filled_dot_btn'),
-                    variant: AppIconButtonColor.filled,
-                    icon: const Icon(Icons.filter_list),
-                    badgeValue: true,
-                    onPressed: () {},
-                  ),
-                  AppIconButton(
-                    key: const ValueKey('custom_offset_btn'),
-                    icon: const Icon(Icons.filter_list),
-                    badgeValue: true,
-                    badgeOffset: const Offset(6, 4),
-                    onPressed: () {},
-                  ),
-                ],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Column(
+                  children: [
+                    AppIconButton(
+                      key: const ValueKey('default_dot_btn'),
+                      icon: const Icon(Icons.filter_list),
+                      badgeValue: true,
+                      onPressed: () {},
+                    ),
+                    AppIconButton(
+                      key: const ValueKey('filled_dot_btn'),
+                      variant: AppIconButtonColor.filled,
+                      icon: const Icon(Icons.filter_list),
+                      badgeValue: true,
+                      onPressed: () {},
+                    ),
+                    AppIconButton(
+                      key: const ValueKey('custom_offset_btn'),
+                      icon: const Icon(Icons.filter_list),
+                      badgeValue: true,
+                      badgeOffset: const Offset(6, 4),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final positionedWidgets = tester.widgetList<PositionedDirectional>(
-        find.byType(PositionedDirectional),
-      ).toList();
+        final positionedWidgets = tester
+            .widgetList<PositionedDirectional>(
+              find.byType(PositionedDirectional),
+            )
+            .toList();
 
-      expect(positionedWidgets.length, 3);
-      // Standard variant: anchored to icon corner (top: 8.0, end: 8.0)
-      expect(positionedWidgets[0].top, 8.0);
-      expect(positionedWidgets[0].end, 8.0);
+        expect(positionedWidgets.length, 3);
+        // Standard variant: anchored to icon corner (top: 8.0, end: 8.0)
+        expect(positionedWidgets[0].top, 8.0);
+        expect(positionedWidgets[0].end, 8.0);
 
-      // Filled variant: anchored to container corner (top: 0.0, end: 0.0)
-      expect(positionedWidgets[1].top, 0.0);
-      expect(positionedWidgets[1].end, 0.0);
+        // Filled variant: anchored to container corner (top: 0.0, end: 0.0)
+        expect(positionedWidgets[1].top, 0.0);
+        expect(positionedWidgets[1].end, 0.0);
 
-      // Custom badge offset (dx: 6, dy: 4)
-      expect(positionedWidgets[2].top, 4.0);
-      expect(positionedWidgets[2].end, 6.0);
-    });
+        // Custom badge offset (dx: 6, dy: 4)
+        expect(positionedWidgets[2].top, 4.0);
+        expect(positionedWidgets[2].end, 6.0);
+      },
+    );
 
     testWidgets(
       'positions value badge according to M3 guidelines anchored to icon',
@@ -199,9 +202,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final positionedWidgets = tester.widgetList<PositionedDirectional>(
-          find.byType(PositionedDirectional),
-        ).toList();
+        final positionedWidgets = tester
+            .widgetList<PositionedDirectional>(
+              find.byType(PositionedDirectional),
+            )
+            .toList();
 
         expect(positionedWidgets.length, 2);
         // Standard variant value badge: anchored to icon (top: 4.0, end: 8.0)
@@ -214,10 +219,10 @@ void main() {
       },
     );
 
-    testWidgets(
-      'AppIconButton renders AppTooltip when tooltip is provided',
-      (tester) async {
-        await tester.pumpWidget(
+    testWidgets('AppIconButton renders AppTooltip when tooltip is provided', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: AppIconButton(

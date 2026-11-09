@@ -97,20 +97,14 @@ class AppLoadingOverlay extends StatelessWidget {
         scrimColor ?? colorScheme.scrim.withValues(alpha: 0.32);
 
     final hasMessage = message != null && message!.isNotEmpty;
-    final hasSemanticLabel =
-        semanticLabel != null && semanticLabel!.isNotEmpty;
+    final hasSemanticLabel = semanticLabel != null && semanticLabel!.isNotEmpty;
 
     final Widget content;
     if (hasMessage) {
       content = Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space300,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space300),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: 140,
-            maxWidth: 280,
-          ),
+          constraints: const BoxConstraints(minWidth: 140, maxWidth: 280),
           child: Material(
             color: colorScheme.surfaceContainerHigh,
             elevation: elevation,
@@ -123,10 +117,7 @@ class AppLoadingOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AppLoadingIndicator(
-                    size: size,
-                    elevation: 0,
-                  ),
+                  AppLoadingIndicator(size: size, elevation: 0),
                   AppSpacing.vGap200,
                   Text(
                     message!,
@@ -165,11 +156,7 @@ class AppLoadingOverlay extends StatelessWidget {
     return AbsorbPointer(
       child: ColoredBox(
         color: effectiveScrimColor,
-        child: Center(
-          child: SingleChildScrollView(
-            child: effectiveContent,
-          ),
-        ),
+        child: Center(child: SingleChildScrollView(child: effectiveContent)),
       ),
     );
   }
@@ -182,10 +169,7 @@ class AppLoadingOverlay extends StatelessWidget {
         fit: StackFit.passthrough,
         children: [
           child!,
-          if (isLoading)
-            Positioned.fill(
-              child: _buildOverlayContent(context),
-            ),
+          if (isLoading) Positioned.fill(child: _buildOverlayContent(context)),
         ],
       );
     }
@@ -196,9 +180,7 @@ class AppLoadingOverlay extends StatelessWidget {
     }
 
     if (isPositioned) {
-      return Positioned.fill(
-        child: _buildOverlayContent(context),
-      );
+      return Positioned.fill(child: _buildOverlayContent(context));
     }
 
     return _buildOverlayContent(context);

@@ -27,11 +27,7 @@ class CreateIncidentUseCase
     }
 
     if (params.title.trim().isEmpty) {
-      return const Left(
-        ValidationFailure(
-          'Judul insiden wajib diisi.',
-        ),
-      );
+      return const Left(ValidationFailure('Judul insiden wajib diisi.'));
     }
 
     return await repository.createIncident(params.toRepositoryData());

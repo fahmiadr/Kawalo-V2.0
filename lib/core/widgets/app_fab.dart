@@ -68,11 +68,11 @@ class AppFab extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  })  : assert(elevation == null || elevation >= 0.0, 'assertion failed'),
-        assert(
-          hoverElevation == null || hoverElevation >= 0.0,
-          'assertion failed',
-        );
+  }) : assert(elevation == null || elevation >= 0.0, 'assertion failed'),
+       assert(
+         hoverElevation == null || hoverElevation >= 0.0,
+         'assertion failed',
+       );
 
   /// The icon widget displayed inside the button.
   final Widget icon;
@@ -160,11 +160,11 @@ class AppExtendedFab extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  })  : assert(elevation == null || elevation >= 0.0, 'assertion failed'),
-        assert(
-          hoverElevation == null || hoverElevation >= 0.0,
-          'assertion failed',
-        );
+  }) : assert(elevation == null || elevation >= 0.0, 'assertion failed'),
+       assert(
+         hoverElevation == null || hoverElevation >= 0.0,
+         'assertion failed',
+       );
 
   /// The text label displayed next to the icon.
   final String label;
@@ -236,10 +236,12 @@ M3EFabDecoration? _resolveFabDecoration({
   required AppFabDecoration? decoration,
 }) {
   final colorScheme = AppTheme.colorSchemeOf(context);
-  final errorBg =
-      color == AppFabColor.error ? colorScheme.errorContainer : null;
-  final errorFg =
-      color == AppFabColor.error ? colorScheme.onErrorContainer : null;
+  final errorBg = color == AppFabColor.error
+      ? colorScheme.errorContainer
+      : null;
+  final errorFg = color == AppFabColor.error
+      ? colorScheme.onErrorContainer
+      : null;
 
   final effectiveBg = backgroundColor ?? errorBg;
   final effectiveFg = foregroundColor ?? errorFg;
@@ -306,25 +308,25 @@ class AppStationaryEndFloatFabLocation extends FloatingActionButtonLocation {
     if (scaffoldGeometry.textDirection == TextDirection.rtl) {
       fabX = endOffset;
     } else {
-      fabX = scaffoldGeometry.scaffoldSize.width -
+      fabX =
+          scaffoldGeometry.scaffoldSize.width -
           scaffoldGeometry.floatingActionButtonSize.width -
           endOffset;
     }
 
-    final safeAreaBottom =
-        respectSafeArea ? scaffoldGeometry.minViewPadding.bottom : 0;
+    final safeAreaBottom = respectSafeArea
+        ? scaffoldGeometry.minViewPadding.bottom
+        : 0;
     final nonKeyboardBottomHeight = math.max(
       0,
       scaffoldGeometry.scaffoldSize.height -
           scaffoldGeometry.contentBottom -
           scaffoldGeometry.minInsets.bottom,
     );
-    final baseBottomInset = math.max(
-      safeAreaBottom,
-      nonKeyboardBottomHeight,
-    );
+    final baseBottomInset = math.max(safeAreaBottom, nonKeyboardBottomHeight);
 
-    final fabY = scaffoldGeometry.scaffoldSize.height -
+    final fabY =
+        scaffoldGeometry.scaffoldSize.height -
         scaffoldGeometry.floatingActionButtonSize.height -
         baseBottomInset -
         bottomOffset;

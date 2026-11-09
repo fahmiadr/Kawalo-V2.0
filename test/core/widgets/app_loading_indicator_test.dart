@@ -6,11 +6,7 @@ void main() {
   group('AppLoadingIndicator Tests', () {
     testWidgets('renders default morphing loading indicator', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppLoadingIndicator(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppLoadingIndicator())),
       );
 
       expect(find.byType(AppLoadingIndicator), findsOneWidget);
@@ -39,8 +35,9 @@ void main() {
       expect(widget.variant, AppLoadingIndicatorVariant.contained);
     });
 
-    testWidgets('supports small, medium, large, extraLarge size tokens',
-        (tester) async {
+    testWidgets('supports small, medium, large, extraLarge size tokens', (
+      tester,
+    ) async {
       for (final size in AppLoadingIndicatorSize.values) {
         await tester.pumpWidget(
           MaterialApp(

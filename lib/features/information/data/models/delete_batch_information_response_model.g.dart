@@ -7,9 +7,9 @@ part of 'delete_batch_information_response_model.dart';
 // **************************************************************************
 
 DeleteBatchInformationResponseModel
-    _$DeleteBatchInformationResponseModelFromJson(Map<String, dynamic> json) =>
-        DeleteBatchInformationResponseModel(
-          deletedCount: json['deleted_count'] == null
-              ? 0
-              : const IntFromNumConverter().fromJson(json['deleted_count']),
-        );
+_$DeleteBatchInformationResponseModelFromJson(Map<String, dynamic> json) =>
+    DeleteBatchInformationResponseModel(
+      deletedCount: json['deleted_count'] == null
+          ? 0
+          : const IntFromNumConverter().fromJson(json['deleted_count']),
+    );

@@ -14,14 +14,10 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/informat
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_photo_action_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_photo_source_bottom_sheet.dart';
 
-Widget _buildTestApp({
-  required Widget child,
-}) {
+Widget _buildTestApp({required Widget child}) {
   return M3EMaterialApp(
     data: AppTheme.m3eLight(),
-    home: Scaffold(
-      body: child,
-    ),
+    home: Scaffold(body: child),
   );
 }
 
@@ -81,8 +77,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // The last element is the second AppOptionTile ("Pilih di peta")
-        final lastOptionFinder =
-            find.widgetWithText(AppOptionTile, 'Pilih di peta');
+        final lastOptionFinder = find.widgetWithText(
+          AppOptionTile,
+          'Pilih di peta',
+        );
         expect(lastOptionFinder, findsOneWidget);
 
         final lastElementBottom = tester.getBottomLeft(lastOptionFinder).dy;
@@ -103,182 +101,157 @@ void main() {
       },
     );
 
-    testWidgets(
-      'InformationPhotoSourceBottomSheet has 24dp gap to safe area '
-      'and 58dp to screen edge',
-      (tester) async {
-        configureView(tester);
+    testWidgets('InformationPhotoSourceBottomSheet has 24dp gap to safe area '
+        'and 58dp to screen edge', (tester) async {
+      configureView(tester);
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            child: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    InformationPhotoSourceBottomSheet.show(context),
-                child: const Text('Open'),
-              ),
+      await tester.pumpWidget(
+        _buildTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => InformationPhotoSourceBottomSheet.show(context),
+              child: const Text('Open'),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        // The last element is the second AppOptionTile ("Galeri")
-        final lastOptionFinder = find.widgetWithText(AppOptionTile, 'Galeri');
-        expect(lastOptionFinder, findsOneWidget);
+      // The last element is the second AppOptionTile ("Galeri")
+      final lastOptionFinder = find.widgetWithText(AppOptionTile, 'Galeri');
+      expect(lastOptionFinder, findsOneWidget);
 
-        final lastElementBottom = tester.getBottomLeft(lastOptionFinder).dy;
-        const screenHeight = 800.0;
-        const bottomInset = 34.0;
-        const safeAreaBottom = screenHeight - bottomInset;
+      final lastElementBottom = tester.getBottomLeft(lastOptionFinder).dy;
+      const screenHeight = 800.0;
+      const bottomInset = 34.0;
+      const safeAreaBottom = screenHeight - bottomInset;
 
-        final gapToSafeArea = safeAreaBottom - lastElementBottom;
-        expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
+      final gapToSafeArea = safeAreaBottom - lastElementBottom;
+      expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
 
-        final gapToScreenEdge = screenHeight - lastElementBottom;
-        expect(
-          gapToScreenEdge,
-          closeTo(AppSpacing.space300 + bottomInset, 0.5),
-        );
-      },
-    );
+      final gapToScreenEdge = screenHeight - lastElementBottom;
+      expect(gapToScreenEdge, closeTo(AppSpacing.space300 + bottomInset, 0.5));
+    });
 
-    testWidgets(
-      'InformationPhotoActionBottomSheet has 24dp gap to safe area '
-      'and 58dp to screen edge',
-      (tester) async {
-        configureView(tester);
+    testWidgets('InformationPhotoActionBottomSheet has 24dp gap to safe area '
+        'and 58dp to screen edge', (tester) async {
+      configureView(tester);
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            child: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => InformationPhotoActionBottomSheet.show(
-                  context,
-                  item: testMediaItem,
-                  index: 0,
-                  totalPhotos: 1,
-                  onViewPhoto: () {},
-                  onMakePrimary: () {},
-                  onMoveLeft: () {},
-                  onMoveRight: () {},
-                  onDelete: () {},
-                ),
-                child: const Text('Open'),
+      await tester.pumpWidget(
+        _buildTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => InformationPhotoActionBottomSheet.show(
+                context,
+                item: testMediaItem,
+                index: 0,
+                totalPhotos: 1,
+                onViewPhoto: () {},
+                onMakePrimary: () {},
+                onMoveLeft: () {},
+                onMoveRight: () {},
+                onDelete: () {},
               ),
+              child: const Text('Open'),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        // The last element is the destructive AppActionTile ("Hapus foto ini")
-        final lastActionFinder =
-            find.widgetWithText(AppActionTile, 'Hapus foto ini');
-        expect(lastActionFinder, findsOneWidget);
+      // The last element is the destructive AppActionTile ("Hapus foto ini")
+      final lastActionFinder = find.widgetWithText(
+        AppActionTile,
+        'Hapus foto ini',
+      );
+      expect(lastActionFinder, findsOneWidget);
 
-        final lastElementBottom = tester.getBottomLeft(lastActionFinder).dy;
-        const screenHeight = 800.0;
-        const bottomInset = 34.0;
-        const safeAreaBottom = screenHeight - bottomInset;
+      final lastElementBottom = tester.getBottomLeft(lastActionFinder).dy;
+      const screenHeight = 800.0;
+      const bottomInset = 34.0;
+      const safeAreaBottom = screenHeight - bottomInset;
 
-        final gapToSafeArea = safeAreaBottom - lastElementBottom;
-        expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
+      final gapToSafeArea = safeAreaBottom - lastElementBottom;
+      expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
 
-        final gapToScreenEdge = screenHeight - lastElementBottom;
-        expect(
-          gapToScreenEdge,
-          closeTo(AppSpacing.space300 + bottomInset, 0.5),
-        );
-      },
-    );
+      final gapToScreenEdge = screenHeight - lastElementBottom;
+      expect(gapToScreenEdge, closeTo(AppSpacing.space300 + bottomInset, 0.5));
+    });
 
-    testWidgets(
-      'AppUserFilterBottomSheet has identical 24dp gap to safe area '
-      'and 58dp to screen edge',
-      (tester) async {
-        configureView(tester);
+    testWidgets('AppUserFilterBottomSheet has identical 24dp gap to safe area '
+        'and 58dp to screen edge', (tester) async {
+      configureView(tester);
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            child: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => showAppUserFilterBottomSheet(
-                  context: context,
-                  users: testUsers,
-                  currentUserSession: testSession,
-                ),
-                child: const Text('Open'),
+      await tester.pumpWidget(
+        _buildTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => showAppUserFilterBottomSheet(
+                context: context,
+                users: testUsers,
+                currentUserSession: testSession,
               ),
+              child: const Text('Open'),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        // The last element is the sticky AppButton ("Terapkan")
-        final applyButtonFinder = find.widgetWithText(AppButton, 'Terapkan');
-        expect(applyButtonFinder, findsOneWidget);
+      // The last element is the sticky AppButton ("Terapkan")
+      final applyButtonFinder = find.widgetWithText(AppButton, 'Terapkan');
+      expect(applyButtonFinder, findsOneWidget);
 
-        final lastElementBottom = tester.getBottomLeft(applyButtonFinder).dy;
-        const screenHeight = 800.0;
-        const bottomInset = 34.0;
-        const safeAreaBottom = screenHeight - bottomInset;
+      final lastElementBottom = tester.getBottomLeft(applyButtonFinder).dy;
+      const screenHeight = 800.0;
+      const bottomInset = 34.0;
+      const safeAreaBottom = screenHeight - bottomInset;
 
-        final gapToSafeArea = safeAreaBottom - lastElementBottom;
-        expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
+      final gapToSafeArea = safeAreaBottom - lastElementBottom;
+      expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
 
-        final gapToScreenEdge = screenHeight - lastElementBottom;
-        expect(
-          gapToScreenEdge,
-          closeTo(AppSpacing.space300 + bottomInset, 0.5),
-        );
-      },
-    );
+      final gapToScreenEdge = screenHeight - lastElementBottom;
+      expect(gapToScreenEdge, closeTo(AppSpacing.space300 + bottomInset, 0.5));
+    });
 
-    testWidgets(
-      'AppDateFilterBottomSheet has identical 24dp gap to safe area '
-      'and 58dp to screen edge',
-      (tester) async {
-        configureView(tester);
+    testWidgets('AppDateFilterBottomSheet has identical 24dp gap to safe area '
+        'and 58dp to screen edge', (tester) async {
+      configureView(tester);
 
-        await tester.pumpWidget(
-          _buildTestApp(
-            child: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => showAppDateFilterBottomSheet(
-                  context: context,
-                ),
-                child: const Text('Open'),
-              ),
+      await tester.pumpWidget(
+        _buildTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => showAppDateFilterBottomSheet(context: context),
+              child: const Text('Open'),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        // The last element is the sticky AppButton ("Terapkan")
-        final applyButtonFinder = find.widgetWithText(AppButton, 'Terapkan');
-        expect(applyButtonFinder, findsOneWidget);
+      // The last element is the sticky AppButton ("Terapkan")
+      final applyButtonFinder = find.widgetWithText(AppButton, 'Terapkan');
+      expect(applyButtonFinder, findsOneWidget);
 
-        final lastElementBottom = tester.getBottomLeft(applyButtonFinder).dy;
-        const screenHeight = 800.0;
-        const bottomInset = 34.0;
-        const safeAreaBottom = screenHeight - bottomInset;
+      final lastElementBottom = tester.getBottomLeft(applyButtonFinder).dy;
+      const screenHeight = 800.0;
+      const bottomInset = 34.0;
+      const safeAreaBottom = screenHeight - bottomInset;
 
-        final gapToSafeArea = safeAreaBottom - lastElementBottom;
-        expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
+      final gapToSafeArea = safeAreaBottom - lastElementBottom;
+      expect(gapToSafeArea, closeTo(AppSpacing.space300, 0.5));
 
-        final gapToScreenEdge = screenHeight - lastElementBottom;
-        expect(
-          gapToScreenEdge,
-          closeTo(AppSpacing.space300 + bottomInset, 0.5),
-        );
-      },
-    );
+      final gapToScreenEdge = screenHeight - lastElementBottom;
+      expect(gapToScreenEdge, closeTo(AppSpacing.space300 + bottomInset, 0.5));
+    });
   });
 }

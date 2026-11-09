@@ -197,45 +197,36 @@ void main() {
         );
 
         expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ValidationFailure>());
-            expect(
-              failure.message,
-              'ID tamu wajib diisi dan harus berupa angka valid.',
-            );
-          },
-          (_) => fail('Should be Left'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(
+            failure.message,
+            'ID tamu wajib diisi dan harus berupa angka valid.',
+          );
+        }, (_) => fail('Should be Left'));
         verifyZeroInteractions(mockRepository);
       },
     );
 
-    test(
-      'returns ForbiddenFailure when user is not authorized',
-      () async {
-        final result = await deleteGuestUseCase(
-          const DeleteGuestParams(
-            id: tValidId,
-            session: tSessionGuardOther,
-            item: tItem,
-          ),
-        );
+    test('returns ForbiddenFailure when user is not authorized', () async {
+      final result = await deleteGuestUseCase(
+        const DeleteGuestParams(
+          id: tValidId,
+          session: tSessionGuardOther,
+          item: tItem,
+        ),
+      );
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) {
-            expect(failure, isA<ForbiddenFailure>());
-            expect(
-              failure.message,
-              'Anda tidak memiliki izin untuk menghapus data tamu ini.',
-            );
-          },
-          (_) => fail('Should be Left'),
+      expect(result.isLeft(), isTrue);
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          failure.message,
+          'Anda tidak memiliki izin untuk menghapus data tamu ini.',
         );
-        verifyZeroInteractions(mockRepository);
-      },
-    );
+      }, (_) => fail('Should be Left'));
+      verifyZeroInteractions(mockRepository);
+    });
 
     test(
       'delegates to repository and returns Right(null) on success',
@@ -256,11 +247,7 @@ void main() {
         );
 
         expect(result.isRight(), isTrue);
-        verify(
-          () => mockRepository.deleteGuest(
-            id: tValidId,
-          ),
-        ).called(1);
+        verify(() => mockRepository.deleteGuest(id: tValidId)).called(1);
         verifyNoMoreInteractions(mockRepository);
       },
     );
@@ -285,16 +272,14 @@ void main() {
 
       expect(result.isRight(), isTrue);
       verify(
-        () => mockRepository.deleteGuest(
-          id: tValidId,
-          cancelToken: token,
-        ),
+        () => mockRepository.deleteGuest(id: tValidId, cancelToken: token),
       ).called(1);
     });
 
     test('returns Failure when repository returns failure', () async {
-      const tFailure =
-          ServerFailure('Hanya Admin atau Petugas yang dapat menghapus.');
+      const tFailure = ServerFailure(
+        'Hanya Admin atau Petugas yang dapat menghapus.',
+      );
       when(
         () => mockRepository.deleteGuest(
           id: any(named: 'id'),

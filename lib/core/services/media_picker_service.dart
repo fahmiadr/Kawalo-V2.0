@@ -116,21 +116,23 @@ abstract interface class MediaPickerService {
 }
 
 /// Signature fungsi callback untuk meluncurkan layar kamera multi-shot.
-typedef CameraScreenLauncher = Future<List<AppMediaFile>> Function(
-  BuildContext context, {
-  int maxPhotos,
-  int alreadyAttachedCount,
-  double maxWidth,
-  double maxHeight,
-  int imageQuality,
-});
+typedef CameraScreenLauncher =
+    Future<List<AppMediaFile>> Function(
+      BuildContext context, {
+      int maxPhotos,
+      int alreadyAttachedCount,
+      double maxWidth,
+      double maxHeight,
+      int imageQuality,
+    });
 
 /// Signature fungsi callback untuk memilih dokumen tunggal dari penyimpanan
 /// berkas.
-typedef DocumentPicker = Future<PlatformFile?> Function({
-  FileType type,
-  List<String>? allowedExtensions,
-});
+typedef DocumentPicker =
+    Future<PlatformFile?> Function({
+      FileType type,
+      List<String>? allowedExtensions,
+    });
 
 /// Implementasi default [MediaPickerService] yang menggunakan `image_picker`
 /// dan `file_picker`.
@@ -144,9 +146,9 @@ final class DefaultMediaPickerService implements MediaPickerService {
     this.imageQuality = defaultImageQuality,
     this.allowedDocumentExtensions = defaultAllowedDocumentExtensions,
     CameraScreenLauncher? cameraLauncher,
-  })  : _imagePicker = imagePicker ?? ImagePicker(),
-        _documentPicker = documentPicker ?? FilePicker.pickFile,
-        _cameraLauncher = cameraLauncher ?? AppMultiShotCameraScreen.show;
+  }) : _imagePicker = imagePicker ?? ImagePicker(),
+       _documentPicker = documentPicker ?? FilePicker.pickFile,
+       _cameraLauncher = cameraLauncher ?? AppMultiShotCameraScreen.show;
 
   /// Resolusi lebar maksimum standar dalam piksel (Full HD boundary).
   static const double defaultMaxWidth = 1920;
@@ -196,8 +198,9 @@ final class DefaultMediaPickerService implements MediaPickerService {
     );
     if (xFiles.isEmpty) return const [];
 
-    final targetFiles =
-        limit != null && limit > 0 ? xFiles.take(limit) : xFiles;
+    final targetFiles = limit != null && limit > 0
+        ? xFiles.take(limit)
+        : xFiles;
 
     return await Future.wait(targetFiles.map(AppMediaFile.fromXFile));
   }

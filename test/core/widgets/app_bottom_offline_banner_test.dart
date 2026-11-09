@@ -67,27 +67,24 @@ void main() {
       },
     );
 
-    testWidgets(
-      'does not render SafeArea when useSafeArea=false',
-      (tester) async {
-        await tester.pumpWidget(buildTestWidget(useSafeArea: false));
-        await tester.pumpAndSettle();
+    testWidgets('does not render SafeArea when useSafeArea=false', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(useSafeArea: false));
+      await tester.pumpAndSettle();
 
-        expect(
-          find.descendant(
-            of: find.byType(AppBottomOfflineBanner),
-            matching: find.byType(SafeArea),
-          ),
-          findsNothing,
-        );
-      },
-    );
+      expect(
+        find.descendant(
+          of: find.byType(AppBottomOfflineBanner),
+          matching: find.byType(SafeArea),
+        ),
+        findsNothing,
+      );
+    });
 
     testWidgets('renders custom message correctly', (tester) async {
       const customMessage = 'Jaringan terputus — Menggunakan data lokal';
-      await tester.pumpWidget(
-        buildTestWidget(message: customMessage),
-      );
+      await tester.pumpWidget(buildTestWidget(message: customMessage));
       await tester.pumpAndSettle();
 
       expect(find.text(customMessage), findsOneWidget);
@@ -126,9 +123,7 @@ void main() {
 
         // 1. Awalnya dalam kondisi offline
         await tester.pumpWidget(
-          buildTestWidget(
-            onlineDwellDuration: dwellDuration,
-          ),
+          buildTestWidget(onlineDwellDuration: dwellDuration),
         );
         await tester.pumpAndSettle();
 
@@ -139,10 +134,7 @@ void main() {
 
         // 2. Koneksi kembali pulih (isOffline: false)
         await tester.pumpWidget(
-          buildTestWidget(
-            isOffline: false,
-            onlineDwellDuration: dwellDuration,
-          ),
+          buildTestWidget(isOffline: false, onlineDwellDuration: dwellDuration),
         );
         // Biarkan animasi transisi warna dan teks berjalan
         await tester.pump();
@@ -169,123 +161,111 @@ void main() {
       },
     );
 
-    testWidgets(
-      'animates in when transitioning from online to offline',
-      (tester) async {
-        // 1. Mulai saat online
-        await tester.pumpWidget(buildTestWidget(isOffline: false));
-        await tester.pumpAndSettle();
+    testWidgets('animates in when transitioning from online to offline', (
+      tester,
+    ) async {
+      // 1. Mulai saat online
+      await tester.pumpWidget(buildTestWidget(isOffline: false));
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsNothing,
-        );
+      expect(
+        find.text('Mode offline — Menampilkan data tersimpan'),
+        findsNothing,
+      );
 
-        // 2. Berubah ke offline
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pump();
-        await tester.pumpAndSettle();
+      // 2. Berubah ke offline
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(
+        find.text('Mode offline — Menampilkan data tersimpan'),
+        findsOneWidget,
+      );
+    });
 
-    testWidgets(
-      'transitions immediately when reduced motion is enabled',
-      (tester) async {
-        await tester.pumpWidget(
-          buildTestWidget(
-            disableAnimations: true,
-          ),
-        );
-        await tester.pump();
+    testWidgets('transitions immediately when reduced motion is enabled', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(disableAnimations: true));
+      await tester.pump();
 
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsOneWidget,
-        );
+      expect(
+        find.text('Mode offline — Menampilkan data tersimpan'),
+        findsOneWidget,
+      );
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            isOffline: false,
-            disableAnimations: true,
-            onlineDwellDuration: const Duration(milliseconds: 500),
-          ),
-        );
-        await tester.pump();
+      await tester.pumpWidget(
+        buildTestWidget(
+          isOffline: false,
+          disableAnimations: true,
+          onlineDwellDuration: const Duration(milliseconds: 500),
+        ),
+      );
+      await tester.pump();
 
-        expect(find.text('Kembali online'), findsOneWidget);
+      expect(find.text('Kembali online'), findsOneWidget);
 
-        // Lewati dwell duration
-        await tester.pump(const Duration(milliseconds: 600));
-        await tester.pump();
+      // Lewati dwell duration
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
 
-        expect(find.text('Kembali online'), findsNothing);
-      },
-    );
+      expect(find.text('Kembali online'), findsNothing);
+    });
 
-    testWidgets(
-      'renders safe area spacer with matching color when online and '
-      'keepSafeAreaWhenHidden is true',
-      (tester) async {
-        const testInset = 34.0;
-        const customColor = Color(0xFF123456);
+    testWidgets('renders safe area spacer with matching color when online and '
+        'keepSafeAreaWhenHidden is true', (tester) async {
+      const testInset = 34.0;
+      const customColor = Color(0xFF123456);
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            isOffline: false,
-            keepSafeAreaWhenHidden: true,
-            safeAreaColor: customColor,
-            viewPadding: const EdgeInsets.only(bottom: testInset),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        buildTestWidget(
+          isOffline: false,
+          keepSafeAreaWhenHidden: true,
+          safeAreaColor: customColor,
+          viewPadding: const EdgeInsets.only(bottom: testInset),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final coloredBoxFinder = find.descendant(
-          of: find.byType(AppBottomOfflineBanner),
-          matching: find.byType(ColoredBox),
-        );
-        expect(coloredBoxFinder, findsOneWidget);
-        final coloredBox = tester.widget<ColoredBox>(coloredBoxFinder);
-        expect(coloredBox.color, customColor);
+      final coloredBoxFinder = find.descendant(
+        of: find.byType(AppBottomOfflineBanner),
+        matching: find.byType(ColoredBox),
+      );
+      expect(coloredBoxFinder, findsOneWidget);
+      final coloredBox = tester.widget<ColoredBox>(coloredBoxFinder);
+      expect(coloredBox.color, customColor);
 
-        final size = tester.getSize(coloredBoxFinder);
-        expect(size.height, testInset);
-      },
-    );
+      final size = tester.getSize(coloredBoxFinder);
+      expect(size.height, testInset);
+    });
 
-    testWidgets(
-      'defaults safeAreaColor to surfaceContainerHigh when '
-      'keepSafeAreaWhenHidden is true',
-      (tester) async {
-        const testInset = 48.0;
+    testWidgets('defaults safeAreaColor to surfaceContainerHigh when '
+        'keepSafeAreaWhenHidden is true', (tester) async {
+      const testInset = 48.0;
 
-        await tester.pumpWidget(
-          buildTestWidget(
-            isOffline: false,
-            keepSafeAreaWhenHidden: true,
-            viewPadding: const EdgeInsets.only(bottom: testInset),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        buildTestWidget(
+          isOffline: false,
+          keepSafeAreaWhenHidden: true,
+          viewPadding: const EdgeInsets.only(bottom: testInset),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final coloredBoxFinder = find.descendant(
-          of: find.byType(AppBottomOfflineBanner),
-          matching: find.byType(ColoredBox),
-        );
-        expect(coloredBoxFinder, findsOneWidget);
-        final coloredBox = tester.widget<ColoredBox>(coloredBoxFinder);
-        expect(
-          coloredBox.color,
-          AppTheme.m3eLight().colorScheme.surfaceContainerHigh,
-        );
+      final coloredBoxFinder = find.descendant(
+        of: find.byType(AppBottomOfflineBanner),
+        matching: find.byType(ColoredBox),
+      );
+      expect(coloredBoxFinder, findsOneWidget);
+      final coloredBox = tester.widget<ColoredBox>(coloredBoxFinder);
+      expect(
+        coloredBox.color,
+        AppTheme.m3eLight().colorScheme.surfaceContainerHigh,
+      );
 
-        final size = tester.getSize(coloredBoxFinder);
-        expect(size.height, testInset);
-      },
-    );
+      final size = tester.getSize(coloredBoxFinder);
+      expect(size.height, testInset);
+    });
   });
 }

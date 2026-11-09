@@ -57,7 +57,8 @@ class AppMorphingSurface extends StatefulWidget {
     BuildContext context,
     BorderRadius effectiveRadius,
     AppInteractionState state,
-  )? builder;
+  )?
+  builder;
 
   /// Callback saat permukaan diketuk.
   final VoidCallback? onTap;
@@ -159,8 +160,8 @@ class _AppMorphingSurfaceState extends State<AppMorphingSurface>
     final colorScheme = AppTheme.colorSchemeOf(context);
     final isReducedMotion = AppMotion.isReducedMotion(context);
     final restingRadius = widget.restingBorderRadius;
-    final pressedRadius = widget.pressedBorderRadius ??
-        AppRadius.compressOnPress(restingRadius);
+    final pressedRadius =
+        widget.pressedBorderRadius ?? AppRadius.compressOnPress(restingRadius);
 
     return AnimatedBuilder(
       animation: _morphController,
@@ -210,7 +211,7 @@ class _AppMorphingSurfaceState extends State<AppMorphingSurface>
                   return Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (content != null) content,
+                      ?content,
                       if (widget.border != null)
                         Positioned.fill(
                           child: IgnorePointer(
@@ -227,8 +228,8 @@ class _AppMorphingSurfaceState extends State<AppMorphingSurface>
                         Positioned.fill(
                           child: M3EStateLayerOverlay(
                             state: state,
-                            color: widget.stateLayerColor ??
-                                colorScheme.onSurface,
+                            color:
+                                widget.stateLayerColor ?? colorScheme.onSurface,
                             shape: RoundedRectangleBorder(
                               borderRadius: effectiveRadius,
                             ),

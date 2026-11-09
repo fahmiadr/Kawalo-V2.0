@@ -121,8 +121,7 @@ class AppSelectionAppBar extends StatelessWidget
         ? totalHeight - AppHomeAppBar.defaultPreferredHeight
         : (theme?.selectAllHeight ?? 48.0);
 
-    final effectiveTheme =
-        (theme ?? M3ESelectionTheme.defaults).copyWith(
+    final effectiveTheme = (theme ?? M3ESelectionTheme.defaults).copyWith(
       selectAllHeight: calculatedSelectAllHeight,
     );
 

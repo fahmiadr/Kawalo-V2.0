@@ -195,18 +195,14 @@ abstract final class AppSanitizer {
   static bool isValidCoordinates({
     required num? latitude,
     required num? longitude,
-  }) =>
-      isValidLatitude(latitude) && isValidLongitude(longitude);
+  }) => isValidLatitude(latitude) && isValidLongitude(longitude);
 
   /// Membersihkan daftar string dengan membuang elemen kosong, `'N/A'`,
   /// `'null'`, atau `'-'` serta mengembalikan list fixed-length
   /// (`growable: false`).
   static List<String> cleanStringList(List<String>? list) {
     if (list == null || list.isEmpty) return const [];
-    return list
-        .map(cleanString)
-        .whereType<String>()
-        .toList(growable: false);
+    return list.map(cleanString).whereType<String>().toList(growable: false);
   }
 
   static final RegExp _filePathRegex = RegExp(

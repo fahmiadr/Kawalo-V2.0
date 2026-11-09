@@ -8,7 +8,7 @@ import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 class DioCancellationToken implements AppCancellationToken {
   /// Membuat instance [DioCancellationToken] baru atau membungkus [dioToken].
   DioCancellationToken([dio.CancelToken? dioToken])
-      : dioToken = dioToken ?? dio.CancelToken();
+    : dioToken = dioToken ?? dio.CancelToken();
 
   /// Instance [dio.CancelToken] internal yang dikelola.
   final dio.CancelToken dioToken;

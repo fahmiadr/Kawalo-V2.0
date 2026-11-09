@@ -107,10 +107,7 @@ void main() {
       final mockSwitch = MockSwitchGroupUseCase();
 
       await tester.pumpWidget(
-        createWidgetUnderTest(
-          mockLogin: mockLogin,
-          mockSwitch: mockSwitch,
-        ),
+        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
       );
       await tester.pumpAndSettle();
 
@@ -142,10 +139,7 @@ void main() {
       final mockSwitch = MockSwitchGroupUseCase();
 
       await tester.pumpWidget(
-        createWidgetUnderTest(
-          mockLogin: mockLogin,
-          mockSwitch: mockSwitch,
-        ),
+        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
       );
       await tester.pumpAndSettle();
 
@@ -190,10 +184,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createWidgetUnderTest(
-          mockLogin: mockLogin,
-          mockSwitch: mockSwitch,
-        ),
+        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
       );
       await tester.pumpAndSettle();
 
@@ -238,10 +229,7 @@ void main() {
       when(() => mockSwitch(any())).thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(
-        createWidgetUnderTest(
-          mockLogin: mockLogin,
-          mockSwitch: mockSwitch,
-        ),
+        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
       );
       await tester.pumpAndSettle();
 
@@ -282,10 +270,7 @@ void main() {
       final mockSwitch = MockSwitchGroupUseCase();
 
       await tester.pumpWidget(
-        createWidgetUnderTest(
-          mockLogin: mockLogin,
-          mockSwitch: mockSwitch,
-        ),
+        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
       );
       await tester.pumpAndSettle();
 
@@ -294,13 +279,12 @@ void main() {
       expect(primaryFocus?.debugLabel, 'GroupCard_GRP-001');
 
       // The CTA button is immediately visible without needing to scroll
-      final buttonFinder =
-          find.widgetWithText(AppButton, 'Lanjutkan ke beranda');
-      expect(buttonFinder, findsOneWidget);
-      expect(
-        tester.getRect(buttonFinder).bottom,
-        lessThanOrEqualTo(600),
+      final buttonFinder = find.widgetWithText(
+        AppButton,
+        'Lanjutkan ke beranda',
       );
+      expect(buttonFinder, findsOneWidget);
+      expect(tester.getRect(buttonFinder).bottom, lessThanOrEqualTo(600));
     },
   );
 
@@ -311,10 +295,7 @@ void main() {
       final mockSwitch = MockSwitchGroupUseCase();
 
       await tester.pumpWidget(
-        createWidgetUnderTest(
-          mockLogin: mockLogin,
-          mockSwitch: mockSwitch,
-        ),
+        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
       );
       await tester.pumpAndSettle();
 

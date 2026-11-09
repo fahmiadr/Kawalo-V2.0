@@ -74,13 +74,9 @@ class KawaloLogoText extends StatelessWidget {
       leadingDistribution: TextLeadingDistribution.even,
     );
 
-    final darkTextStyle = baseStyle.copyWith(
-      color: effectiveTextColor,
-    );
+    final darkTextStyle = baseStyle.copyWith(color: effectiveTextColor);
 
-    final greenTextStyle = baseStyle.copyWith(
-      color: effectivePrimaryColor,
-    );
+    final greenTextStyle = baseStyle.copyWith(color: effectivePrimaryColor);
 
     Widget textWidget = Text.rich(
       TextSpan(

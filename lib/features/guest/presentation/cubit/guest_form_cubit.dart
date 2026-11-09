@@ -50,9 +50,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
 
   static GuestFormState _buildInitialState(GuestItemEntity? initialItem) {
     if (initialItem == null) {
-      return const GuestFormState(
-        status: GuestFormStatus.ready,
-      );
+      return const GuestFormState(status: GuestFormStatus.ready);
     }
 
     InformationFormMediaItem? initialPhotoMedia;
@@ -97,10 +95,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
   static String? validateName(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        fieldName: 'Nama tamu',
-      );
+      return AppValidator.validateRequired(trimmed, fieldName: 'Nama tamu');
     }
     if (value.length > 128) {
       return 'Nama tamu maksimal 128 karakter.';
@@ -206,9 +201,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       getMasterGuestTypesUseCase(
         GetMasterGuestTypesParams(cancelToken: cancelToken),
       ),
-      getGroupMembersUseCase(
-        GetGroupMembersParams(cancelToken: cancelToken),
-      ),
+      getGroupMembersUseCase(GetGroupMembersParams(cancelToken: cancelToken)),
     ]);
 
     if (isClosed) return;
@@ -304,10 +297,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     _masterCancelToken = cancelToken;
 
     emit(
-      state.copyWith(
-        isLoadingMasterHosts: true,
-        masterHostsError: () => null,
-      ),
+      state.copyWith(isLoadingMasterHosts: true, masterHostsError: () => null),
     );
 
     final result = await getGroupMembersUseCase(
@@ -539,7 +529,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     final purposeErr = validatePurpose(state.purpose);
     final addressErr = validateAddress(state.address);
 
-    final hasErrors = nameErr != null ||
+    final hasErrors =
+        nameErr != null ||
         destErr != null ||
         typeErr != null ||
         idErr != null ||
@@ -591,18 +582,20 @@ class GuestFormCubit extends Cubit<GuestFormState> {
 
     final identityNumberPayload =
         isIdentityRequired && idNumberTrimmed.isNotEmpty
-            ? idNumberTrimmed
-            : null;
+        ? idNumberTrimmed
+        : null;
 
     final guestNumberPayload = state.guestNumber.trim().isNotEmpty
         ? state.guestNumber.trim()
         : null;
 
-    final purposePayload =
-        state.purpose.trim().isNotEmpty ? state.purpose.trim() : null;
+    final purposePayload = state.purpose.trim().isNotEmpty
+        ? state.purpose.trim()
+        : null;
 
-    final addressPayload =
-        state.address.trim().isNotEmpty ? state.address.trim() : null;
+    final addressPayload = state.address.trim().isNotEmpty
+        ? state.address.trim()
+        : null;
 
     final hostEmailPayload = state.hostEmail?.trim().isNotEmpty == true
         ? state.hostEmail!.trim()

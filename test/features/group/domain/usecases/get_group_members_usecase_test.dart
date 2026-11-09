@@ -27,38 +27,35 @@ void main() {
       name: 'User Satu',
       profilePic: 'https://example.com/pic1.jpg',
     ),
-    GroupMemberEntity(
-      email: 'user2@kawalo.id',
-      name: 'User Dua',
-    ),
+    GroupMemberEntity(email: 'user2@kawalo.id', name: 'User Dua'),
   ];
 
-  test('should call repository.getMembers and return list of entities',
-      () async {
-    when(
-      () => mockRepository.getMembers(
-        cancelToken: any(named: 'cancelToken'),
-      ),
-    ).thenAnswer(
-      (_) async => const Right<Failure, List<GroupMemberEntity>>(tMembers),
-    );
+  test(
+    'should call repository.getMembers and return list of entities',
+    () async {
+      when(
+        () => mockRepository.getMembers(cancelToken: any(named: 'cancelToken')),
+      ).thenAnswer(
+        (_) async => const Right<Failure, List<GroupMemberEntity>>(tMembers),
+      );
 
-    final cancelToken = MockAppCancellationToken();
-    final result = await useCase(
-      GetGroupMembersParams(cancelToken: cancelToken),
-    );
+      final cancelToken = MockAppCancellationToken();
+      final result = await useCase(
+        GetGroupMembersParams(cancelToken: cancelToken),
+      );
 
-    expect(result, const Right<Failure, List<GroupMemberEntity>>(tMembers));
-    verify(() => mockRepository.getMembers(cancelToken: cancelToken)).called(1);
-    verifyNoMoreInteractions(mockRepository);
-  });
+      expect(result, const Right<Failure, List<GroupMemberEntity>>(tMembers));
+      verify(
+        () => mockRepository.getMembers(cancelToken: cancelToken),
+      ).called(1);
+      verifyNoMoreInteractions(mockRepository);
+    },
+  );
 
   test('should return Failure when repository call fails', () async {
     const tFailure = ServerFailure('Gagal memuat anggota grup');
     when(
-      () => mockRepository.getMembers(
-        cancelToken: any(named: 'cancelToken'),
-      ),
+      () => mockRepository.getMembers(cancelToken: any(named: 'cancelToken')),
     ).thenAnswer(
       (_) async => const Left<Failure, List<GroupMemberEntity>>(tFailure),
     );

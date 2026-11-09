@@ -27,10 +27,7 @@ void main() {
       home: Scaffold(
         body: Center(
           child: provideCubit
-              ? BlocProvider<PttCubit>.value(
-                  value: mockPttCubit,
-                  child: card,
-                )
+              ? BlocProvider<PttCubit>.value(value: mockPttCubit, child: card)
               : card,
         ),
       ),
@@ -38,8 +35,9 @@ void main() {
   }
 
   group('HomePttFloatingCard Tests', () {
-    testWidgets('renders SizedBox.shrink when PttCubit is not provided',
-        (tester) async {
+    testWidgets('renders SizedBox.shrink when PttCubit is not provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(provideCubit: false));
       await tester.pumpAndSettle();
 
@@ -50,10 +48,7 @@ void main() {
     testWidgets('renders card in Idle state with member count', (tester) async {
       when(() => mockPttCubit.state).thenReturn(
         const PttIdle(
-          channel: PttChannelEntity(
-            groupUid: 'grp_01',
-            memberCount: 8,
-          ),
+          channel: PttChannelEntity(groupUid: 'grp_01', memberCount: 8),
           floorState: PttFloorStateEntity(status: PttFloorStatus.idle),
         ),
       );
@@ -85,8 +80,9 @@ void main() {
       expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
     });
 
-    testWidgets('renders card in Listening state with active speaker name',
-        (tester) async {
+    testWidgets('renders card in Listening state with active speaker name', (
+      tester,
+    ) async {
       when(() => mockPttCubit.state).thenReturn(
         const PttListening(
           channel: PttChannelEntity(groupUid: 'grp_01'),
@@ -105,10 +101,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Mendengarkan: Danru Bambang'), findsOneWidget);
-      expect(
-        find.text('Audio langsung diputar ke speaker'),
-        findsOneWidget,
-      );
+      expect(find.text('Audio langsung diputar ke speaker'), findsOneWidget);
       expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
     });
 

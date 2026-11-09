@@ -25,8 +25,9 @@ void main() {
   }
 
   group('AppFormFieldSlot Tests', () {
-    testWidgets('renders label and child without error when omitted',
-        (tester) async {
+    testWidgets('renders label and child without error when omitted', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildFrame(
           label: 'Slot Label',
@@ -40,10 +41,7 @@ void main() {
 
     testWidgets('renders label and child', (tester) async {
       await tester.pumpWidget(
-        buildFrame(
-          label: 'Tipe Tamu *',
-          child: const Text('Dropdown Slot'),
-        ),
+        buildFrame(label: 'Tipe Tamu *', child: const Text('Dropdown Slot')),
       );
 
       expect(find.text('Tipe Tamu *'), findsOneWidget);

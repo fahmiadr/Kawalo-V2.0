@@ -16,37 +16,39 @@ void main() {
       mockLauncherService = MockAppLauncherService();
     });
 
-    test('serviceDisabled builds correct error data and invokes settings',
-        () async {
-      var dismissed = false;
-      var settingsOpened = false;
-
-      final data = LocationActionableError.serviceDisabled(
-        onDismiss: () => dismissed = true,
-        openLocationSettingsFn: () async {
-          settingsOpened = true;
-          return true;
-        },
-      );
-
-      expect(data.icon, equals(KawaloVectors.gpsDisconnectedFilled));
-      expect(data.title, equals('Layanan lokasi belum diaktifkan'));
-      expect(data.primaryActionLabel, equals('Aktifkan lokasi'));
-      expect(data.secondaryActionLabel, equals('Pilih manual'));
-      expect(data.troubleshootingTips.length, equals(3));
-
-      data.onPrimaryAction?.call();
-      expect(settingsOpened, isTrue);
-
-      data.onSecondaryAction?.call();
-      expect(dismissed, isTrue);
-    });
-
     test(
-        'serviceDisabled invokes launcherService when openLocationSettingsFn '
+      'serviceDisabled builds correct error data and invokes settings',
+      () async {
+        var dismissed = false;
+        var settingsOpened = false;
+
+        final data = LocationActionableError.serviceDisabled(
+          onDismiss: () => dismissed = true,
+          openLocationSettingsFn: () async {
+            settingsOpened = true;
+            return true;
+          },
+        );
+
+        expect(data.icon, equals(KawaloVectors.gpsDisconnectedFilled));
+        expect(data.title, equals('Layanan lokasi belum diaktifkan'));
+        expect(data.primaryActionLabel, equals('Aktifkan lokasi'));
+        expect(data.secondaryActionLabel, equals('Pilih manual'));
+        expect(data.troubleshootingTips.length, equals(3));
+
+        data.onPrimaryAction?.call();
+        expect(settingsOpened, isTrue);
+
+        data.onSecondaryAction?.call();
+        expect(dismissed, isTrue);
+      },
+    );
+
+    test('serviceDisabled invokes launcherService when openLocationSettingsFn '
         'is null', () async {
-      when(() => mockLauncherService.openLocationSettings())
-          .thenAnswer((_) async => true);
+      when(
+        () => mockLauncherService.openLocationSettings(),
+      ).thenAnswer((_) async => true);
 
       final data = LocationActionableError.serviceDisabled(
         onDismiss: () {},
@@ -57,31 +59,32 @@ void main() {
       verify(() => mockLauncherService.openLocationSettings()).called(1);
     });
 
-    test('permissionDenied builds actionable error data with retry and dismiss',
-        () {
-      var dismissed = false;
-      var retried = false;
-
-      final data = LocationActionableError.permissionDenied(
-        onDismiss: () => dismissed = true,
-        onRetry: () => retried = true,
-      );
-
-      expect(data.icon, equals(KawaloVectors.location01Filled));
-      expect(data.title, equals('Izin akses lokasi dibutuhkan'));
-      expect(data.primaryActionLabel, equals('Izinkan akses'));
-      expect(data.secondaryActionLabel, equals('Pilih manual'));
-      expect(data.troubleshootingTips.length, equals(3));
-
-      data.onPrimaryAction?.call();
-      expect(retried, isTrue);
-
-      data.onSecondaryAction?.call();
-      expect(dismissed, isTrue);
-    });
-
     test(
-        'permissionDeniedForever builds correct error data and invokes app '
+      'permissionDenied builds actionable error data with retry and dismiss',
+      () {
+        var dismissed = false;
+        var retried = false;
+
+        final data = LocationActionableError.permissionDenied(
+          onDismiss: () => dismissed = true,
+          onRetry: () => retried = true,
+        );
+
+        expect(data.icon, equals(KawaloVectors.location01Filled));
+        expect(data.title, equals('Izin akses lokasi dibutuhkan'));
+        expect(data.primaryActionLabel, equals('Izinkan akses'));
+        expect(data.secondaryActionLabel, equals('Pilih manual'));
+        expect(data.troubleshootingTips.length, equals(3));
+
+        data.onPrimaryAction?.call();
+        expect(retried, isTrue);
+
+        data.onSecondaryAction?.call();
+        expect(dismissed, isTrue);
+      },
+    );
+
+    test('permissionDeniedForever builds correct error data and invokes app '
         'settings', () async {
       var dismissed = false;
       var appSettingsOpened = false;
@@ -106,11 +109,11 @@ void main() {
       expect(dismissed, isTrue);
     });
 
-    test(
-        'permissionDeniedForever invokes launcherService when '
+    test('permissionDeniedForever invokes launcherService when '
         'openAppSettingsFn is null', () async {
-      when(() => mockLauncherService.openAppSettings())
-          .thenAnswer((_) async => true);
+      when(
+        () => mockLauncherService.openAppSettings(),
+      ).thenAnswer((_) async => true);
 
       final data = LocationActionableError.permissionDeniedForever(
         onDismiss: () {},
@@ -121,8 +124,7 @@ void main() {
       verify(() => mockLauncherService.openAppSettings()).called(1);
     });
 
-    test(
-        'preciseLocationRequired builds correct error data and invokes app '
+    test('preciseLocationRequired builds correct error data and invokes app '
         'settings', () async {
       var dismissed = false;
       var appSettingsOpened = false;
@@ -148,11 +150,11 @@ void main() {
       expect(dismissed, isTrue);
     });
 
-    test(
-        'preciseLocationRequired invokes launcherService when '
+    test('preciseLocationRequired invokes launcherService when '
         'openAppSettingsFn is null', () async {
-      when(() => mockLauncherService.openAppSettings())
-          .thenAnswer((_) async => true);
+      when(
+        () => mockLauncherService.openAppSettings(),
+      ).thenAnswer((_) async => true);
 
       final data = LocationActionableError.preciseLocationRequired(
         onDismiss: () {},
@@ -246,28 +248,19 @@ void main() {
         const LocationResult.permissionDenied(),
         onDismiss: () {},
       );
-      expect(
-        permDeniedData.title,
-        equals('Izin akses lokasi dibutuhkan'),
-      );
+      expect(permDeniedData.title, equals('Izin akses lokasi dibutuhkan'));
 
       final permForeverData = LocationActionableError.fromLocationResult(
         const LocationResult.permissionDeniedForever(),
         onDismiss: () {},
       );
-      expect(
-        permForeverData.title,
-        equals('Izin akses lokasi dinonaktifkan'),
-      );
+      expect(permForeverData.title, equals('Izin akses lokasi dinonaktifkan'));
 
       final preciseData = LocationActionableError.fromLocationResult(
         const LocationResult.preciseLocationRequired(),
         onDismiss: () {},
       );
-      expect(
-        preciseData.title,
-        equals('Akses lokasi presisi diperlukan'),
-      );
+      expect(preciseData.title, equals('Akses lokasi presisi diperlukan'));
       expect(preciseData.icon, equals(KawaloVectors.location01Filled));
       expect(preciseData.troubleshootingTips.length, equals(4));
 
@@ -312,8 +305,9 @@ void main() {
       expect(data.themeMode, equals(AppActionableErrorThemeMode.dark));
     });
 
-    testWidgets('showBottomSheet displays modal sheet with error details',
-        (tester) async {
+    testWidgets('showBottomSheet displays modal sheet with error details', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2;
       addTearDown(() => tester.view.reset());

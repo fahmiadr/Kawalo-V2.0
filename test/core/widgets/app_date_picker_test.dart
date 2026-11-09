@@ -13,56 +13,55 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      builder: (context, child) => M3ETheme(
-        data: AppTheme.m3eLight(),
-        child: child!,
-      ),
-      home: Scaffold(
-        body: Builder(builder: onBuild),
-      ),
+      builder: (context, child) =>
+          M3ETheme(data: AppTheme.m3eLight(), child: child!),
+      home: Scaffold(body: Builder(builder: onBuild)),
     );
   }
 
   group('AppDatePicker Tests', () {
-    testWidgets('showAppDatePicker opens M3E DatePickerDialog and selects date',
-        (tester) async {
-      DateTime? selectedDate;
+    testWidgets(
+      'showAppDatePicker opens M3E DatePickerDialog and selects date',
+      (tester) async {
+        DateTime? selectedDate;
 
-      await tester.pumpWidget(
-        buildTestApp(
-          onBuild: (context) => ElevatedButton(
-            onPressed: () async {
-              selectedDate = await showAppDatePicker(
-                context: context,
-                initialDate: DateTime(2026, 8, 15),
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2030),
-              );
-            },
-            child: const Text('Pick Date'),
+        await tester.pumpWidget(
+          buildTestApp(
+            onBuild: (context) => ElevatedButton(
+              onPressed: () async {
+                selectedDate = await showAppDatePicker(
+                  context: context,
+                  initialDate: DateTime(2026, 8, 15),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                );
+              },
+              child: const Text('Pick Date'),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Tap button to open date picker dialog
-      await tester.tap(find.text('Pick Date'));
-      await tester.pumpAndSettle();
+        // Tap button to open date picker dialog
+        await tester.tap(find.text('Pick Date'));
+        await tester.pumpAndSettle();
 
-      // Dialog is open
-      expect(find.byType(AppDatePickerDialog), findsOneWidget);
+        // Dialog is open
+        expect(find.byType(AppDatePickerDialog), findsOneWidget);
 
-      // Confirm button is present (e.g. OK)
-      final okButton = find.text('OK');
-      expect(okButton, findsOneWidget);
-      await tester.tap(okButton);
-      await tester.pumpAndSettle();
+        // Confirm button is present (e.g. OK)
+        final okButton = find.text('OK');
+        expect(okButton, findsOneWidget);
+        await tester.tap(okButton);
+        await tester.pumpAndSettle();
 
-      expect(selectedDate, equals(DateTime(2026, 8, 15)));
-    });
+        expect(selectedDate, equals(DateTime(2026, 8, 15)));
+      },
+    );
 
-    testWidgets('showAppDateRangePicker opens M3E DateRangePickerDialog',
-        (tester) async {
+    testWidgets('showAppDateRangePicker opens M3E DateRangePickerDialog', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestApp(
           onBuild: (context) => ElevatedButton(

@@ -22,16 +22,14 @@ class PostIncidentReplyUseCase
       return const Left(
         ForbiddenFailure(
           'Diskusi telah ditutup atau Anda tidak memiliki akses ke insiden '
-              'ini.',
+          'ini.',
         ),
       );
     }
 
     if (params.message.trim().isEmpty && params.photos.isEmpty) {
       return const Left(
-        ValidationFailure(
-          'Pesan balasan atau foto lampiran wajib diisi.',
-        ),
+        ValidationFailure('Pesan balasan atau foto lampiran wajib diisi.'),
       );
     }
 

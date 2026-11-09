@@ -15,7 +15,8 @@ IncidentReplyModel _$IncidentReplyModelFromJson(Map<String, dynamic> json) =>
       senderRole: json['sender_role'] as String? ?? '',
       message: json['message'] as String? ?? '',
       createdAt: _createdAtOrNow(json['created_at']),
-      photos: (json['photos'] as List<dynamic>?)
+      photos:
+          (json['photos'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],

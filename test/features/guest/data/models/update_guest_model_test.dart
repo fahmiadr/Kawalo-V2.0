@@ -32,44 +32,38 @@ void main() {
     });
 
     test('toJson omits null fields', () {
-      const partialModel = UpdateGuestModel(
-        guestName: 'Only Name',
-      );
+      const partialModel = UpdateGuestModel(guestName: 'Only Name');
       final json = partialModel.toJson();
 
       expect(json, {'guest_name': 'Only Name'});
       expect(json.containsKey('guest_destination'), isFalse);
     });
 
-    test(
-      'toJson includes null optional fields when includeNulls is true',
-      () {
-        const clearModel = UpdateGuestModel(
-          guestName: 'Nama Revisi',
-          guestDestination: 'Blok B',
-          includeNulls: true,
-        );
-        final json = clearModel.toJson();
+    test('toJson includes null optional fields when includeNulls is true', () {
+      const clearModel = UpdateGuestModel(
+        guestName: 'Nama Revisi',
+        guestDestination: 'Blok B',
+        includeNulls: true,
+      );
+      final json = clearModel.toJson();
 
-        expect(json['guest_name'], 'Nama Revisi');
-        expect(json['guest_destination'], 'Blok B');
-        expect(json.containsKey('guest_purpose'), isTrue);
-        expect(json['guest_purpose'], isNull);
-        expect(json.containsKey('guest_number'), isTrue);
-        expect(json['guest_number'], isNull);
-        expect(json.containsKey('guest_identity'), isTrue);
-        expect(json['guest_identity'], isNull);
-        expect(json.containsKey('guest_identity_type'), isTrue);
-        expect(json['guest_identity_type'], isNull);
-        expect(json.containsKey('guest_address'), isTrue);
-        expect(json['guest_address'], isNull);
-        expect(json.containsKey('guest_to_user_email'), isTrue);
-        expect(json['guest_to_user_email'], isNull);
-        expect(json.containsKey('guest_photo'), isTrue);
-        expect(json['guest_photo'], isNull);
-      },
-    );
-
+      expect(json['guest_name'], 'Nama Revisi');
+      expect(json['guest_destination'], 'Blok B');
+      expect(json.containsKey('guest_purpose'), isTrue);
+      expect(json['guest_purpose'], isNull);
+      expect(json.containsKey('guest_number'), isTrue);
+      expect(json['guest_number'], isNull);
+      expect(json.containsKey('guest_identity'), isTrue);
+      expect(json['guest_identity'], isNull);
+      expect(json.containsKey('guest_identity_type'), isTrue);
+      expect(json['guest_identity_type'], isNull);
+      expect(json.containsKey('guest_address'), isTrue);
+      expect(json['guest_address'], isNull);
+      expect(json.containsKey('guest_to_user_email'), isTrue);
+      expect(json['guest_to_user_email'], isNull);
+      expect(json.containsKey('guest_photo'), isTrue);
+      expect(json['guest_photo'], isNull);
+    });
 
     test('props equality works correctly', () {
       const otherModel = UpdateGuestModel(

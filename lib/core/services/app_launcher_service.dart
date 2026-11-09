@@ -55,11 +55,12 @@ typedef CanLaunchUrlFn = Future<bool> Function(Uri url);
 /// saat berjalan pada platform web.
 ///
 /// Mengembalikan `true` jika peluncuran berhasil diinisiasi oleh sistem.
-typedef LaunchUrlFn = Future<bool> Function(
-  Uri url, {
-  LaunchMode mode,
-  String? webOnlyWindowName,
-});
+typedef LaunchUrlFn =
+    Future<bool> Function(
+      Uri url, {
+      LaunchMode mode,
+      String? webOnlyWindowName,
+    });
 
 /// Kontrak layanan peluncur intent eksternal terpadu di aplikasi Kawalo.
 ///
@@ -148,11 +149,7 @@ abstract interface class AppLauncherService {
   ///
   /// Mengembalikan `false` jika format [email] tidak valid. Mengembalikan
   /// `true` jika aplikasi komposer surel berhasil dibuka.
-  Future<bool> openEmail(
-    String email, {
-    String? subject,
-    String? body,
-  });
+  Future<bool> openEmail(String email, {String? subject, String? body});
 }
 
 /// Implementasi standar [AppLauncherService] berbasis platform dan
@@ -207,9 +204,9 @@ final class DefaultAppLauncherService implements AppLauncherService {
     CanLaunchUrlFn canLaunch = canLaunchUrl,
     LaunchUrlFn launch = launchUrl,
     GeolocatorPlatform? geolocatorPlatform,
-  })  : _canLaunch = canLaunch,
-        _launch = launch,
-        _geolocatorPlatform = geolocatorPlatform;
+  }) : _canLaunch = canLaunch,
+       _launch = launch,
+       _geolocatorPlatform = geolocatorPlatform;
 
   final CanLaunchUrlFn _canLaunch;
   final LaunchUrlFn _launch;
@@ -218,9 +215,7 @@ final class DefaultAppLauncherService implements AppLauncherService {
   GeolocatorPlatform get _geolocator =>
       _geolocatorPlatform ?? GeolocatorPlatform.instance;
 
-  Future<bool> _safePlatformAction(
-    Future<bool> Function() platformFn,
-  ) async {
+  Future<bool> _safePlatformAction(Future<bool> Function() platformFn) async {
     try {
       return await platformFn();
     } on Object {
@@ -262,14 +257,10 @@ final class DefaultAppLauncherService implements AppLauncherService {
     );
 
     // 2. Apple Maps URL (iOS & macOS)
-    final appleMapsUri = Uri.https(
-      'maps.apple.com',
-      '/',
-      <String, String>{
-        if (hasTitle) 'q': title,
-        'll': coords,
-      },
-    );
+    final appleMapsUri = Uri.https('maps.apple.com', '/', <String, String>{
+      if (hasTitle) 'q': title,
+      'll': coords,
+    });
 
     // 3. Google Maps Web universal URL (Android, iOS, Web, Desktop)
     final googleMapsUrl = Uri.https(
@@ -318,11 +309,7 @@ final class DefaultAppLauncherService implements AppLauncherService {
   }
 
   @override
-  Future<bool> openEmail(
-    String email, {
-    String? subject,
-    String? body,
-  }) async {
+  Future<bool> openEmail(String email, {String? subject, String? body}) async {
     final cleanEmail = AppSanitizer.cleanEmail(email);
     if (cleanEmail == null) return false;
     final queryParameters = <String, String>{

@@ -38,15 +38,15 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     super.pageSize = AppConstants.defaultPageSize,
     super.syncStorageService,
   }) : super(
-          GuestInitial(
-            lastSync: SyncStorageService.resolveInitialGreeting(
-              initialGreeting: initialGreeting,
-              featureKey: AppConstants.syncKeyGuest,
-              storageService: syncStorageService,
-            ),
-          ),
-          syncKey: AppConstants.syncKeyGuest,
-        );
+         GuestInitial(
+           lastSync: SyncStorageService.resolveInitialGreeting(
+             initialGreeting: initialGreeting,
+             featureKey: AppConstants.syncKeyGuest,
+             storageService: syncStorageService,
+           ),
+         ),
+         syncKey: AppConstants.syncKeyGuest,
+       );
 
   /// Use case untuk mengambil data tamu.
   final GetGuestsUseCase getGuestsUseCase;
@@ -87,19 +87,18 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     String? creatorEmail,
     String? creatorName,
     bool clearCreatorFilter = false,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        creatorEmail: creatorEmail,
-        creatorName: creatorName,
-        clearCreatorFilter: clearCreatorFilter,
-        isRefresh: false,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    creatorEmail: creatorEmail,
+    creatorName: creatorName,
+    clearCreatorFilter: clearCreatorFilter,
+    isRefresh: false,
+  );
 
   /// Memperbarui data tamu secara reaktif melalui tarikan pull-to-refresh.
   Future<AppFetchResult> refreshGuests({
@@ -112,19 +111,18 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     String? creatorEmail,
     String? creatorName,
     bool clearCreatorFilter = false,
-  }) =>
-      _fetch(
-        search: search,
-        filterPeriod: filterPeriod,
-        startDate: startDate,
-        endDate: endDate,
-        startDateIso: startDateIso,
-        endDateIso: endDateIso,
-        creatorEmail: creatorEmail,
-        creatorName: creatorName,
-        clearCreatorFilter: clearCreatorFilter,
-        isRefresh: true,
-      );
+  }) => _fetch(
+    search: search,
+    filterPeriod: filterPeriod,
+    startDate: startDate,
+    endDate: endDate,
+    startDateIso: startDateIso,
+    endDateIso: endDateIso,
+    creatorEmail: creatorEmail,
+    creatorName: creatorName,
+    clearCreatorFilter: clearCreatorFilter,
+    isRefresh: true,
+  );
 
   Future<AppFetchResult> _fetch({
     required bool isRefresh,
@@ -138,10 +136,12 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     String? creatorName,
     bool clearCreatorFilter = false,
   }) {
-    final effectiveCreatorEmail =
-        clearCreatorFilter ? null : (creatorEmail ?? state.filterCreatorEmail);
-    final effectiveCreatorName =
-        clearCreatorFilter ? null : (creatorName ?? state.filterCreatorName);
+    final effectiveCreatorEmail = clearCreatorFilter
+        ? null
+        : (creatorEmail ?? state.filterCreatorEmail);
+    final effectiveCreatorName = clearCreatorFilter
+        ? null
+        : (creatorName ?? state.filterCreatorName);
     final filter = resolveFilter(
       search: search,
       filterPeriod: filterPeriod,
@@ -167,8 +167,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
-      ))
-          .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+      )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
       loaded: (page, lastSync, {required hasMore}) => GuestLoaded(
         guests: page.items,
         isFromCache: page.isFromCache,
@@ -202,25 +201,24 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
 
   /// Memuat halaman data tamu berikutnya untuk mendukung infinite scroll.
   Future<void> loadMoreGuests() => runLoadMore<GuestLoaded>(
-        request: (current) async => (await getGuestsUseCase(
-          GetGuestsParams(
-            search: current.searchQuery,
-            limit: pageSize,
-            offset: current.guests.length,
-            startDate: current.startDateIso,
-            endDate: current.endDateIso,
-            createdBy: current.filterCreatorEmail,
-          ),
-        ))
-            .map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
-        setLoadingMore: (current, {required loadingMore}) =>
-            current.copyWith(isLoadingMore: loadingMore),
-        append: (current, newItems, {required hasMore}) => current.copyWith(
-          guests: [...current.guests, ...newItems],
-          hasMore: hasMore,
-          isLoadingMore: false,
-        ),
-      );
+    request: (current) async => (await getGuestsUseCase(
+      GetGuestsParams(
+        search: current.searchQuery,
+        limit: pageSize,
+        offset: current.guests.length,
+        startDate: current.startDateIso,
+        endDate: current.endDateIso,
+        createdBy: current.filterCreatorEmail,
+      ),
+    )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
+    setLoadingMore: (current, {required loadingMore}) =>
+        current.copyWith(isLoadingMore: loadingMore),
+    append: (current, newItems, {required hasMore}) => current.copyWith(
+      guests: [...current.guests, ...newItems],
+      hasMore: hasMore,
+      isLoadingMore: false,
+    ),
+  );
 
   /// Menerapkan filter waktu dari hasil [AppDateFilterResult].
   Future<AppFetchResult> setFilter(AppDateFilterResult filterResult) =>
@@ -231,10 +229,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
   Future<AppFetchResult> resetDateFilter() => resetDateFilterWith(fetchGuests);
 
   /// Mengubah filter pencatat/pembuat data tamu (Creator) oleh ADMIN.
-  Future<AppFetchResult> changeCreatorFilter({
-    String? email,
-    String? name,
-  }) =>
+  Future<AppFetchResult> changeCreatorFilter({String? email, String? name}) =>
       fetchGuests(
         creatorEmail: email,
         creatorName: name,
@@ -243,15 +238,8 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
 
   /// Mengatur ulang seluruh filter waktu, pencarian, dan pembuat ke default.
   Future<AppFetchResult> resetFilters() => resetAllFiltersWith(
-        ({
-          search,
-          filterPeriod,
-          startDate,
-          endDate,
-          startDateIso,
-          endDateIso,
-        }) =>
-            fetchGuests(
+    ({search, filterPeriod, startDate, endDate, startDateIso, endDateIso}) =>
+        fetchGuests(
           search: search,
           filterPeriod: filterPeriod,
           startDate: startDate,
@@ -260,7 +248,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
           endDateIso: endDateIso,
           clearCreatorFilter: true,
         ),
-      );
+  );
 
   /// Memuat daftar anggota grup secara segar on-demand dari remote service.
   ///
@@ -272,9 +260,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     if (useCase == null) {
       return const Left(ServerFailure('Layanan anggota grup tidak tersedia.'));
     }
-    return await useCase.call(
-      GetGroupMembersParams(cancelToken: cancelToken),
-    );
+    return await useCase.call(GetGroupMembersParams(cancelToken: cancelToken));
   }
 
   /// Menghapus data tamu [item] atas nama [session].
@@ -293,17 +279,15 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
       DeleteGuestParams(id: id, session: session, item: item),
     );
 
-    result.fold(
-      (failure) => null,
-      (_) {
-        final currentState = state;
-        if (currentState is GuestLoaded) {
-          final updated =
-              currentState.guests.where((item) => item.id != id).toList();
-          emit(currentState.copyWith(guests: updated));
-        }
-      },
-    );
+    result.fold((failure) => null, (_) {
+      final currentState = state;
+      if (currentState is GuestLoaded) {
+        final updated = currentState.guests
+            .where((item) => item.id != id)
+            .toList();
+        emit(currentState.copyWith(guests: updated));
+      }
+    });
 
     return result;
   }
@@ -331,18 +315,15 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
       ),
     );
 
-    result.fold(
-      (failure) => null,
-      (deleteResult) {
-        final currentState = state;
-        if (currentState is GuestLoaded) {
-          final updated = currentState.guests
-              .where((item) => !ids.contains(item.id))
-              .toList();
-          emit(currentState.copyWith(guests: updated));
-        }
-      },
-    );
+    result.fold((failure) => null, (deleteResult) {
+      final currentState = state;
+      if (currentState is GuestLoaded) {
+        final updated = currentState.guests
+            .where((item) => !ids.contains(item.id))
+            .toList();
+        emit(currentState.copyWith(guests: updated));
+      }
+    });
 
     return result;
   }
@@ -373,10 +354,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
       ),
     );
 
-    result.fold(
-      (failure) => null,
-      onGuestUpdated,
-    );
+    result.fold((failure) => null, onGuestUpdated);
 
     return result;
   }
@@ -395,8 +373,9 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
   void onGuestUpdated(GuestItemEntity item) {
     final currentState = state;
     if (currentState is GuestLoaded) {
-      final updated =
-          currentState.guests.map((i) => i.id == item.id ? item : i).toList();
+      final updated = currentState.guests
+          .map((i) => i.id == item.id ? item : i)
+          .toList();
       emit(currentState.copyWith(guests: updated));
     }
   }

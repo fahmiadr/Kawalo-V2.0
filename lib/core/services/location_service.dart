@@ -11,11 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
 
 export 'package:geolocator/geolocator.dart'
-    show
-        LocationAccuracy,
-        LocationAccuracyStatus,
-        LocationPermission,
-        Position;
+    show LocationAccuracy, LocationAccuracyStatus, LocationPermission, Position;
 
 /// Status hasil evaluasi dan perolehan koordinat lokasi perangkat.
 ///
@@ -78,74 +74,62 @@ class LocationResult extends Equatable {
   });
 
   /// Menghasilkan instans keberhasilan perolehan koordinat lokasi.
-  const LocationResult.success(
-    Position position, {
-    bool isMocked = false,
-  }) : this(
-          status: LocationStatus.success,
-          position: position,
-          isMocked: isMocked,
-        );
+  const LocationResult.success(Position position, {bool isMocked = false})
+    : this(
+        status: LocationStatus.success,
+        position: position,
+        isMocked: isMocked,
+      );
 
   /// Menghasilkan instans kegagalan akibat sensor lokasi perangkat nonaktif.
   const LocationResult.serviceDisabled({
     String message = 'Layanan lokasi perangkat sedang nonaktif.',
-  }) : this(
-          status: LocationStatus.serviceDisabled,
-          errorMessage: message,
-        );
+  }) : this(status: LocationStatus.serviceDisabled, errorMessage: message);
 
   /// Menghasilkan instans kegagalan akibat izin akses lokasi belum diberikan.
   const LocationResult.permissionDenied({
     String message = 'Izin akses lokasi belum diberikan.',
-  }) : this(
-          status: LocationStatus.permissionDenied,
-          errorMessage: message,
-        );
+  }) : this(status: LocationStatus.permissionDenied, errorMessage: message);
 
   /// Menghasilkan instans kegagalan akibat izin lokasi dinonaktifkan permanen.
   const LocationResult.permissionDeniedForever({
-    String message = 'Izin akses lokasi dinonaktifkan. Aktifkan '
+    String message =
+        'Izin akses lokasi dinonaktifkan. Aktifkan '
         'izin lokasi di pengaturan perangkat.',
   }) : this(
-          status: LocationStatus.permissionDeniedForever,
-          errorMessage: message,
-        );
+         status: LocationStatus.permissionDeniedForever,
+         errorMessage: message,
+       );
 
   /// Menghasilkan instans kegagalan akibat izin lokasi hanya berupa perkiraan.
   const LocationResult.preciseLocationRequired({
-    String message = 'Akses lokasi presisi diperlukan. Aktifkan lokasi '
+    String message =
+        'Akses lokasi presisi diperlukan. Aktifkan lokasi '
         'akurat di pengaturan perangkat.',
   }) : this(
-          status: LocationStatus.preciseLocationRequired,
-          errorMessage: message,
-        );
+         status: LocationStatus.preciseLocationRequired,
+         errorMessage: message,
+       );
 
   /// Menghasilkan instans peringatan akibat deteksi lokasi tiruan.
   const LocationResult.mockDetected({
     Position? position,
     String message = 'Penggunaan lokasi tiruan terdeteksi.',
   }) : this(
-          status: LocationStatus.mockLocationDetected,
-          position: position,
-          isMocked: true,
-          errorMessage: message,
-        );
+         status: LocationStatus.mockLocationDetected,
+         position: position,
+         isMocked: true,
+         errorMessage: message,
+       );
 
   /// Menghasilkan instans kegagalan akibat batas waktu pengambilan habis.
   const LocationResult.timeout({
     String message = 'Waktu pencarian lokasi berakhir.',
-  }) : this(
-          status: LocationStatus.timeout,
-          errorMessage: message,
-        );
+  }) : this(status: LocationStatus.timeout, errorMessage: message);
 
   /// Menghasilkan instans kegagalan akibat kesalahan umum atau tak terduga.
   const LocationResult.error(String message)
-      : this(
-          status: LocationStatus.unknownError,
-          errorMessage: message,
-        );
+    : this(status: LocationStatus.unknownError, errorMessage: message);
 
   /// Status hasil operasi penentuan lokasi.
   final LocationStatus status;
@@ -178,9 +162,8 @@ class LocationResult extends Equatable {
   ///   print('Latitude: $lat, Longitude: $lng');
   /// }
   /// ```
-  (double latitude, double longitude)? get coordinates => position != null
-      ? (position!.latitude, position!.longitude)
-      : null;
+  (double latitude, double longitude)? get coordinates =>
+      position != null ? (position!.latitude, position!.longitude) : null;
 
   static const Object _sentinel = Object();
 
@@ -308,9 +291,8 @@ final class DefaultLocationService implements LocationService {
   /// Menerima delegator [geolocatorPlatform] opsional untuk memfasilitasi
   /// pengujian unit terisolasi. Jika bernilai `null`, instans akan menggunakan
   /// [GeolocatorPlatform.instance] bawaan platform secara dinamis saat runtime.
-  const DefaultLocationService({
-    GeolocatorPlatform? geolocatorPlatform,
-  }) : _geolocatorPlatform = geolocatorPlatform;
+  const DefaultLocationService({GeolocatorPlatform? geolocatorPlatform})
+    : _geolocatorPlatform = geolocatorPlatform;
 
   final GeolocatorPlatform? _geolocatorPlatform;
 
@@ -395,8 +377,8 @@ final class DefaultLocationService implements LocationService {
       LocationPermission.denied => await _requestPermission(),
       LocationPermission.whileInUse || LocationPermission.always => null,
       LocationPermission.unableToDetermine => const LocationResult.error(
-          'Status perizinan lokasi tidak dapat ditentukan.',
-        ),
+        'Status perizinan lokasi tidak dapat ditentukan.',
+      ),
     };
   }
 
@@ -408,8 +390,8 @@ final class DefaultLocationService implements LocationService {
         const LocationResult.permissionDeniedForever(),
       LocationPermission.whileInUse || LocationPermission.always => null,
       LocationPermission.unableToDetermine => const LocationResult.error(
-          'Status perizinan lokasi tidak dapat ditentukan.',
-        ),
+        'Status perizinan lokasi tidak dapat ditentukan.',
+      ),
     };
   }
 
@@ -428,11 +410,10 @@ final class DefaultLocationService implements LocationService {
     double startLongitude,
     double endLatitude,
     double endLongitude,
-  ) =>
-      _geolocator.distanceBetween(
-        startLatitude,
-        startLongitude,
-        endLatitude,
-        endLongitude,
-      );
+  ) => _geolocator.distanceBetween(
+    startLatitude,
+    startLongitude,
+    endLatitude,
+    endLongitude,
+  );
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,10 +92,12 @@ void main() {
     }) {
       final headerStr = jsonEncode(header ?? {'alg': 'RS256', 'typ': 'JWT'});
       final payloadStr = jsonEncode(payload);
-      final headerB64 =
-          base64Url.encode(utf8.encode(headerStr)).replaceAll('=', '');
-      final payloadB64 =
-          base64Url.encode(utf8.encode(payloadStr)).replaceAll('=', '');
+      final headerB64 = base64Url
+          .encode(utf8.encode(headerStr))
+          .replaceAll('=', '');
+      final payloadB64 = base64Url
+          .encode(utf8.encode(payloadStr))
+          .replaceAll('=', '');
       const signatureB64 = 'mock_signature';
       return '$headerB64.$payloadB64.$signatureB64';
     }
@@ -203,7 +206,8 @@ void main() {
         EnvConfig.environment = AppEnvironment.dev;
         final escapedPem = testPublicKeyPem.trim().replaceAll('\n', r'\n');
         dotenv.loadFromString(
-          envString: '''
+          envString:
+              '''
 API_BASE_URL=http://localhost:3000/api
 APP_NAME=Kawalo Test
 JWT_PUBLIC_KEY="$escapedPem"
@@ -218,95 +222,75 @@ JWT_PUBLIC_KEY="$escapedPem"
         'RS256 key',
         () async {
           final privateKey = RSAPrivateKey(testPrivateKeyPem);
-          final signer = JWT(
-            {
-              'sub': 'user_123',
-              'email': 'admin@kawalo.co.id',
-              'name': 'Admin User',
-              'role': 'ADMIN',
-              'group_uid': 'GRP-001',
-              'allow_admin': true,
-              'allow_patrol': true,
-              'allow_mon_patrol': false,
-            },
-            issuer: 'https://api.kawalo.com',
-          );
+          final signer = JWT({
+            'sub': 'user_123',
+            'email': 'admin@kawalo.co.id',
+            'name': 'Admin User',
+            'role': 'ADMIN',
+            'group_uid': 'GRP-001',
+            'allow_admin': true,
+            'allow_patrol': true,
+            'allow_mon_patrol': false,
+          }, issuer: 'https://api.kawalo.com');
 
           final token = signer.sign(privateKey, algorithm: JWTAlgorithm.RS256);
 
-          final payload = await JwtUtils.verifyAndDecode(
-            token,
-          );
+          final payload = await JwtUtils.verifyAndDecode(token);
           expect(payload, isNotNull);
           expect(payload!['sub'], equals('user_123'));
           expect(payload['role'], equals('ADMIN'));
           expect(payload['allow_admin'], equals(true));
 
           // Also verify synchronous method
-          final syncPayload = JwtUtils.verifyAndDecodeSync(
-            token,
-          );
+          final syncPayload = JwtUtils.verifyAndDecodeSync(token);
           expect(syncPayload, isNotNull);
           expect(syncPayload!['sub'], equals('user_123'));
         },
       );
 
-      test(
-        'rejects tampered token where payload was forged locally '
-        '(privilege escalation attempt)',
-        () async {
-          final privateKey = RSAPrivateKey(testPrivateKeyPem);
-          final signer = JWT(
-            {
-              'sub': 'user_123',
-              'role': 'GUARD',
-            },
-            issuer: 'https://api.kawalo.com',
-          );
-          final genuineToken =
-              signer.sign(privateKey, algorithm: JWTAlgorithm.RS256);
+      test('rejects tampered token where payload was forged locally '
+          '(privilege escalation attempt)', () async {
+        final privateKey = RSAPrivateKey(testPrivateKeyPem);
+        final signer = JWT({
+          'sub': 'user_123',
+          'role': 'GUARD',
+        }, issuer: 'https://api.kawalo.com');
+        final genuineToken = signer.sign(
+          privateKey,
+          algorithm: JWTAlgorithm.RS256,
+        );
 
-          final parts = genuineToken.split('.');
-          final forgedPayload = base64Url
-              .encode(
-                utf8.encode(
-                  jsonEncode({'sub': 'user_123', 'role': 'ADMIN'}),
-                ),
-              )
-              .replaceAll('=', '');
-          final tamperedToken = '${parts[0]}.$forgedPayload.${parts[2]}';
+        final parts = genuineToken.split('.');
+        final forgedPayload = base64Url
+            .encode(
+              utf8.encode(jsonEncode({'sub': 'user_123', 'role': 'ADMIN'})),
+            )
+            .replaceAll('=', '');
+        final tamperedToken = '${parts[0]}.$forgedPayload.${parts[2]}';
 
-          final result = await JwtUtils.verifyAndDecode(
-            tamperedToken,
-          );
-          expect(result, isNull);
-        },
-      );
+        final result = await JwtUtils.verifyAndDecode(tamperedToken);
+        expect(result, isNull);
+      });
 
       test('rejects token with forged or modified signature', () async {
         final privateKey = RSAPrivateKey(testPrivateKeyPem);
         final signer = JWT({'sub': 'user_123', 'role': 'GUARD'});
-        final genuineToken =
-            signer.sign(privateKey, algorithm: JWTAlgorithm.RS256);
+        final genuineToken = signer.sign(
+          privateKey,
+          algorithm: JWTAlgorithm.RS256,
+        );
 
         final parts = genuineToken.split('.');
         final tamperedToken = '${parts[0]}.${parts[1]}.invalid_signature';
 
-        final result = await JwtUtils.verifyAndDecode(
-          tamperedToken,
-        );
+        final result = await JwtUtils.verifyAndDecode(tamperedToken);
         expect(result, isNull);
       });
 
       test('returns null for empty or malformed token string', () async {
+        expect(await JwtUtils.verifyAndDecode(''), isNull);
         expect(
-          await JwtUtils.verifyAndDecode(''),
-          isNull,
-        );
-        expect(
-          await JwtUtils.verifyAndDecode(
-            'not.a.valid.jwt.string',
-          ),
+          await JwtUtils.verifyAndDecode('not.a.valid.jwt.string'),
           isNull,
         );
       });
@@ -316,37 +300,29 @@ JWT_PUBLIC_KEY="$escapedPem"
       test(
         'verifies token with kid using JwksService dynamic resolution',
         () async {
-        final privateKey = RSAPrivateKey(
-          testPrivateKeyPem.trim(),
-        );
+          final privateKey = RSAPrivateKey(testPrivateKeyPem.trim());
 
-        final signer = JWT(
-          {
-            'sub': 'user_rotated',
-            'role': 'SUPER_ADMIN',
-          },
-          header: {
-            'alg': 'RS256',
-            'typ': 'JWT',
-            'kid': 'rotated-key-2026',
-          },
-        );
+          final signer = JWT(
+            {'sub': 'user_rotated', 'role': 'SUPER_ADMIN'},
+            header: {'alg': 'RS256', 'typ': 'JWT', 'kid': 'rotated-key-2026'},
+          );
 
-        final token = signer.sign(privateKey, algorithm: JWTAlgorithm.RS256);
+          final token = signer.sign(privateKey, algorithm: JWTAlgorithm.RS256);
 
-        final mockStorage = MockSecureStorageService();
-        final jwksService = JwksService(storageService: mockStorage);
+          final mockStorage = MockSecureStorageService();
+          final jwksService = JwksService(storageService: mockStorage);
 
-        final payload = await JwtUtils.verifyAndDecode(
-          token,
-          jwksService: jwksService,
-          publicKeyPem: testPublicKeyPem,
-        );
+          final payload = await JwtUtils.verifyAndDecode(
+            token,
+            jwksService: jwksService,
+            publicKeyPem: testPublicKeyPem,
+          );
 
-        expect(payload, isNotNull);
-        expect(payload!['sub'], equals('user_rotated'));
-        expect(payload['role'], equals('SUPER_ADMIN'));
-      });
+          expect(payload, isNotNull);
+          expect(payload!['sub'], equals('user_rotated'));
+          expect(payload['role'], equals('SUPER_ADMIN'));
+        },
+      );
 
       test(
         'checkExpiresIn false allows verifying expired authentic token',
@@ -354,12 +330,7 @@ JWT_PUBLIC_KEY="$escapedPem"
           final privateKey = RSAPrivateKey(testPrivateKeyPem.trim());
           final expiredExp =
               (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 3600;
-          final signer = JWT(
-            {
-              'sub': 'user_expired',
-              'exp': expiredExp,
-            },
-          );
+          final signer = JWT({'sub': 'user_expired', 'exp': expiredExp});
           final token = signer.sign(privateKey, algorithm: JWTAlgorithm.RS256);
 
           // With checkExpiresIn: true (default) -> null

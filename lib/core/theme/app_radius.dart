@@ -63,16 +63,19 @@ abstract final class AppRadius {
   static const Radius radiusMd = radiusMedium;
   static const Radius radiusLarge = Radius.circular(M3EShapes.large);
   static const Radius radiusLg = radiusLarge;
-  static const Radius radiusLargeIncreased =
-      Radius.circular(M3EShapes.largeIncreased);
+  static const Radius radiusLargeIncreased = Radius.circular(
+    M3EShapes.largeIncreased,
+  );
   static const Radius radiusLgIncreased = radiusLargeIncreased;
   static const Radius radiusExtraLarge = Radius.circular(M3EShapes.extraLarge);
   static const Radius radiusXl = radiusExtraLarge;
-  static const Radius radiusExtraLargeIncreased =
-      Radius.circular(M3EShapes.extraLargeIncreased);
+  static const Radius radiusExtraLargeIncreased = Radius.circular(
+    M3EShapes.extraLargeIncreased,
+  );
   static const Radius radiusXlIncreased = radiusExtraLargeIncreased;
-  static const Radius radiusExtraExtraLarge =
-      Radius.circular(M3EShapes.extraExtraLarge);
+  static const Radius radiusExtraExtraLarge = Radius.circular(
+    M3EShapes.extraExtraLarge,
+  );
   static const Radius radiusXxl = radiusExtraExtraLarge;
   static const Radius radiusFull = Radius.circular(M3EShapes.full);
 
@@ -80,34 +83,44 @@ abstract final class AppRadius {
   // BorderRadius Tokens (Symmetric)
   // -------------------------------------------------------------------------
   static const BorderRadius borderNone = BorderRadius.zero;
-  static const BorderRadius borderExtraSmall =
-      BorderRadius.all(radiusExtraSmall);
+  static const BorderRadius borderExtraSmall = BorderRadius.all(
+    radiusExtraSmall,
+  );
   static const BorderRadius borderSmall = BorderRadius.all(radiusSmall);
   static const BorderRadius borderMedium = BorderRadius.all(radiusMedium);
   static const BorderRadius borderLarge = BorderRadius.all(radiusLarge);
-  static const BorderRadius borderLargeIncreased =
-      BorderRadius.all(radiusLargeIncreased);
-  static const BorderRadius borderExtraLarge =
-      BorderRadius.all(radiusExtraLarge);
-  static const BorderRadius borderExtraLargeIncreased =
-      BorderRadius.all(radiusExtraLargeIncreased);
-  static const BorderRadius borderExtraExtraLarge =
-      BorderRadius.all(radiusExtraExtraLarge);
+  static const BorderRadius borderLargeIncreased = BorderRadius.all(
+    radiusLargeIncreased,
+  );
+  static const BorderRadius borderExtraLarge = BorderRadius.all(
+    radiusExtraLarge,
+  );
+  static const BorderRadius borderExtraLargeIncreased = BorderRadius.all(
+    radiusExtraLargeIncreased,
+  );
+  static const BorderRadius borderExtraExtraLarge = BorderRadius.all(
+    radiusExtraExtraLarge,
+  );
   static const BorderRadius borderFull = BorderRadius.all(radiusFull);
 
   // -------------------------------------------------------------------------
   // BorderRadius Tokens (Directional)
   // -------------------------------------------------------------------------
-  static const BorderRadius borderExtraSmallTop =
-      BorderRadius.vertical(top: radiusExtraSmall);
-  static const BorderRadius borderLargeTop =
-      BorderRadius.vertical(top: radiusLarge);
-  static const BorderRadius borderExtraLargeTop =
-      BorderRadius.vertical(top: radiusExtraLarge);
-  static const BorderRadius borderLargeStart =
-      BorderRadius.horizontal(left: radiusLarge);
-  static const BorderRadius borderLargeEnd =
-      BorderRadius.horizontal(right: radiusLarge);
+  static const BorderRadius borderExtraSmallTop = BorderRadius.vertical(
+    top: radiusExtraSmall,
+  );
+  static const BorderRadius borderLargeTop = BorderRadius.vertical(
+    top: radiusLarge,
+  );
+  static const BorderRadius borderExtraLargeTop = BorderRadius.vertical(
+    top: radiusExtraLarge,
+  );
+  static const BorderRadius borderLargeStart = BorderRadius.horizontal(
+    left: radiusLarge,
+  );
+  static const BorderRadius borderLargeEnd = BorderRadius.horizontal(
+    right: radiusLarge,
+  );
 
   // -------------------------------------------------------------------------
   // Concentric Optical Roundness Calculations

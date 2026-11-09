@@ -34,20 +34,17 @@ class InformationFormCubit extends Cubit<InformationFormState> {
     InformationItemEntity? initialItem,
   ) {
     if (initialItem == null) {
-      return const InformationFormState(
-        status: InformationFormStatus.ready,
-      );
+      return const InformationFormState(status: InformationFormStatus.ready);
     }
 
-    final initialPhotos =
-        initialItem.photos.map(InformationFormMediaItem.fromRemoteUrl).toList();
+    final initialPhotos = initialItem.photos
+        .map(InformationFormMediaItem.fromRemoteUrl)
+        .toList();
 
     InformationFormMediaItem? initialDoc;
     final docFile = initialItem.feedFile;
     if (docFile != null && docFile.trim().isNotEmpty) {
-      initialDoc = InformationFormMediaItem.fromRemoteUrl(
-        docFile,
-      );
+      initialDoc = InformationFormMediaItem.fromRemoteUrl(docFile);
     }
 
     return InformationFormState(
@@ -245,10 +242,7 @@ class InformationFormCubit extends Cubit<InformationFormState> {
 
   /// Memasang titik koordinat lokasi secara terprogram dari GPS
   /// atau pemilih peta.
-  void onSetLocationCoordinates({
-    required double lat,
-    required double lng,
-  }) {
+  void onSetLocationCoordinates({required double lat, required double lng}) {
     emit(
       state.copyWith(
         glat: lat.toString(),
@@ -303,7 +297,8 @@ class InformationFormCubit extends Cubit<InformationFormState> {
     if (availableSlots <= 0) {
       emit(
         state.copyWith(
-          photosError: () => 'Maksimal '
+          photosError: () =>
+              'Maksimal '
               '${InformationFormState.maxPhotosLimit} foto dapat dilampirkan.',
         ),
       );
@@ -314,7 +309,8 @@ class InformationFormCubit extends Cubit<InformationFormState> {
     for (final item in items) {
       if (newItemsToAdd.length >= availableSlots) break;
 
-      final isDuplicate = !item.isLoading &&
+      final isDuplicate =
+          !item.isLoading &&
           (state.photos.any((p) => _isPhotoMatch(p, item)) ||
               newItemsToAdd.any((p) => _isPhotoMatch(p, item)));
 
@@ -469,8 +465,8 @@ class InformationFormCubit extends Cubit<InformationFormState> {
     final photosErr = state.photos.length > 4
         ? 'Maksimal 4 foto dapat dilampirkan.'
         : hasLoadingPhotos
-            ? 'Tunggu hingga semua foto selesai diproses.'
-            : null;
+        ? 'Tunggu hingga semua foto selesai diproses.'
+        : null;
     final hasGlat = state.glat.trim().isNotEmpty;
     final hasGlong = state.glong.trim().isNotEmpty;
     var glatErr = validateGlat(state.glat);
@@ -551,8 +547,8 @@ class InformationFormCubit extends Cubit<InformationFormState> {
     final photosPayload = state.isUpdateMode
         ? List<String>.from(resolvedPhotos)
         : (resolvedPhotos.isNotEmpty
-            ? List<String>.from(resolvedPhotos)
-            : null);
+              ? List<String>.from(resolvedPhotos)
+              : null);
     final textPayload = textTrimmed.isNotEmpty ? textTrimmed : null;
     final filePayload = resolvedFile;
     final locPayload = locationTrimmed.isNotEmpty ? locationTrimmed : null;

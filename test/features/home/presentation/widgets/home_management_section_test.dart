@@ -23,8 +23,9 @@ void main() {
   }
 
   group('HomeManagementSection Tests', () {
-    testWidgets('renders all 5 management cards and 1 add management card',
-        (tester) async {
+    testWidgets('renders all 5 management cards and 1 add management card', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -51,8 +52,9 @@ void main() {
       expect(find.byType(AppAddShortcutCard), findsOneWidget);
     });
 
-    testWidgets('triggers callbacks for edit and add management',
-        (tester) async {
+    testWidgets('triggers callbacks for edit and add management', (
+      tester,
+    ) async {
       var editTapped = false;
       var addTapped = false;
 

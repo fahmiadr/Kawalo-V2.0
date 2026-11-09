@@ -23,10 +23,10 @@ class PttSpeakerDto extends Equatable {
   final String role;
 
   Map<String, dynamic> toMap() => {
-        'userId': userId,
-        'name': name,
-        'role': role,
-      };
+    'userId': userId,
+    'name': name,
+    'role': role,
+  };
 
   @override
   List<Object?> get props => [userId, name, role];
@@ -91,30 +91,24 @@ class PttTransmissionEventDto extends Equatable {
 
   @override
   List<Object?> get props => [
-        state,
-        requestId,
-        reason,
-        preemptedBy,
-        leaseTtlMs,
-        currentSpeaker,
-      ];
+    state,
+    requestId,
+    reason,
+    preemptedBy,
+    leaseTtlMs,
+    currentSpeaker,
+  ];
 }
 
 class PttEventDto extends Equatable {
-  const PttEventDto({
-    required this.eventType,
-    required this.rawMap,
-  });
+  const PttEventDto({required this.eventType, required this.rawMap});
 
   factory PttEventDto.fromMap(Map<dynamic, dynamic> map) {
     final eventType = map['event']?.toString() ?? '';
     final data = map['data'];
     final dataMap = data is Map<dynamic, dynamic> ? data : <dynamic, dynamic>{};
 
-    return PttEventDto(
-      eventType: eventType,
-      rawMap: dataMap,
-    );
+    return PttEventDto(eventType: eventType, rawMap: dataMap);
   }
 
   final String eventType;

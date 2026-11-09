@@ -7,11 +7,7 @@ void main() {
   group('AppDivider / M3EDivider Tests', () {
     testWidgets('renders horizontal divider', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: M3EDivider(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: M3EDivider())),
       );
 
       expect(find.byType(M3EDivider), findsOneWidget);

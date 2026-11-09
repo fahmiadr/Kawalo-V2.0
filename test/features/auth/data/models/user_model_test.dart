@@ -44,54 +44,48 @@ void main() {
       },
     );
 
-    test(
-      'toJson harus menyertakan data grup dan user tanpa privileges, role, '
-      'atau redundansi allow_* di root',
-      () {
-        final user = UserModel.fromJson(tUserJson);
-        final json = user.toJson();
+    test('toJson harus menyertakan data grup dan user tanpa privileges, role, '
+        'atau redundansi allow_* di root', () {
+      final user = UserModel.fromJson(tUserJson);
+      final json = user.toJson();
 
-        expect(json['id'], '101');
-        expect(json.containsKey('role'), false);
-        expect(json.containsKey('allow_admin'), false);
-        expect(json.containsKey('allow_patrol'), false);
-        expect(json.containsKey('allow_mon_patrol'), false);
+      expect(json['id'], '101');
+      expect(json.containsKey('role'), false);
+      expect(json.containsKey('allow_admin'), false);
+      expect(json.containsKey('allow_patrol'), false);
+      expect(json.containsKey('allow_mon_patrol'), false);
 
-        final activeGroupJson = json['active_group'] as Map<String, dynamic>;
-        expect(activeGroupJson['category'], 'GUARD');
-        expect(activeGroupJson['status'], 'JOINED');
-        expect(activeGroupJson['allow_admin'], false);
-        expect(activeGroupJson['allow_patrol'], true);
-        expect(activeGroupJson['allow_mon_patrol'], false);
-        expect(activeGroupJson.containsKey('role'), false);
-        expect(activeGroupJson.containsKey('privileges'), false);
-      },
-    );
+      final activeGroupJson = json['active_group'] as Map<String, dynamic>;
+      expect(activeGroupJson['category'], 'GUARD');
+      expect(activeGroupJson['status'], 'JOINED');
+      expect(activeGroupJson['allow_admin'], false);
+      expect(activeGroupJson['allow_patrol'], true);
+      expect(activeGroupJson['allow_mon_patrol'], false);
+      expect(activeGroupJson.containsKey('role'), false);
+      expect(activeGroupJson.containsKey('privileges'), false);
+    });
 
-    test(
-      'UserGroupModel.fromJson memetakan payload snake_case resmi tanpa '
-      'alias role dan tanpa privileges',
-      () {
-        final groupJson = {
-          'group_uid': 'grp_456',
-          'group_name': 'Cluster Beta',
-          'category': 'ADMIN',
-          'status': 'JOINED',
-          'allow_admin': true,
-          'allow_patrol': true,
-          'allow_mon_patrol': true,
-          'features': ['ADMIN_PANEL'],
-        };
+    test('UserGroupModel.fromJson memetakan payload snake_case resmi tanpa '
+        'alias role dan tanpa privileges', () {
+      final groupJson = {
+        'group_uid': 'grp_456',
+        'group_name': 'Cluster Beta',
+        'category': 'ADMIN',
+        'status': 'JOINED',
+        'allow_admin': true,
+        'allow_patrol': true,
+        'allow_mon_patrol': true,
+        'features': ['ADMIN_PANEL'],
+      };
 
-        final group = UserGroupModel.fromJson(groupJson);
-        expect(group.groupUid, 'grp_456');
-        expect(group.category, 'ADMIN');
-        expect(group.allowAdmin, true);
-        expect(group.allowPatrol, true);
-        expect(group.allowMonPatrol, true);
-        expect(group.features, ['ADMIN_PANEL']);
-      },
-    );
+      final group = UserGroupModel.fromJson(groupJson);
+      expect(group.groupUid, 'grp_456');
+      expect(group.category, 'ADMIN');
+      expect(group.allowAdmin, true);
+      expect(group.allowPatrol, true);
+      expect(group.allowMonPatrol, true);
+      expect(group.features, ['ADMIN_PANEL']);
+    });
     test('UserGroupModel.fromJson defaults missing flags and features', () {
       final group = UserGroupModel.fromJson(const {'group_uid': 'grp_789'});
 
@@ -101,13 +95,15 @@ void main() {
       expect(group.features, isEmpty);
     });
 
-    test('UserGroupModel.fromJson throws an Exception on missing group_uid',
-        () {
-      expect(
-        () => UserGroupModel.fromJson(const {'allow_admin': true}),
-        throwsA(isA<Exception>()),
-      );
-    });
+    test(
+      'UserGroupModel.fromJson throws an Exception on missing group_uid',
+      () {
+        expect(
+          () => UserGroupModel.fromJson(const {'allow_admin': true}),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
 
     test('UserModel toJson and fromJson roundtrip nested groups', () {
       final user = UserModel.fromJson(tUserJson);

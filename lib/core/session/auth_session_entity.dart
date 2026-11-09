@@ -42,13 +42,13 @@ class AuthSessionEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        email,
-        name,
-        role,
-        groupUid,
-        allowAdmin,
-        allowPatrol,
-        allowMonPatrol,
-      ];
+    userId,
+    email,
+    name,
+    role,
+    groupUid,
+    allowAdmin,
+    allowPatrol,
+    allowMonPatrol,
+  ];
 }

@@ -4,12 +4,7 @@ import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_ca
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 
 /// Status siklus hidup formulir pelaporan insiden.
-enum IncidentFormStatus {
-  initial,
-  submitting,
-  success,
-  failure,
-}
+enum IncidentFormStatus { initial, submitting, success, failure }
 
 /// State representasi layar formulir pembuatan laporan insiden baru.
 class IncidentFormState extends Equatable {
@@ -139,17 +134,17 @@ class IncidentFormState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        title,
-        titleError,
-        description,
-        descriptionError,
-        category,
-        photos,
-        glat,
-        glong,
-        errorMessage,
-        createdIncident,
-        validationAttempt,
-      ];
+    status,
+    title,
+    titleError,
+    description,
+    descriptionError,
+    category,
+    photos,
+    glat,
+    glong,
+    errorMessage,
+    createdIncident,
+    validationAttempt,
+  ];
 }

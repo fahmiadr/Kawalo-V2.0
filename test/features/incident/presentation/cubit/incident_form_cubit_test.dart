@@ -169,9 +169,9 @@ void main() {
     blocTest<IncidentFormCubit, IncidentFormState>(
       'submit silently ignores RequestCancelledFailure',
       build: () {
-        when(() => mockCreateIncidentUseCase(any())).thenAnswer(
-          (_) async => const Left(RequestCancelledFailure()),
-        );
+        when(
+          () => mockCreateIncidentUseCase(any()),
+        ).thenAnswer((_) async => const Left(RequestCancelledFailure()));
         return cubit;
       },
       seed: () => const IncidentFormState(title: 'Lampu Padam'),
@@ -186,9 +186,9 @@ void main() {
     blocTest<IncidentFormCubit, IncidentFormState>(
       'submit emits failure on NoInternetFailure',
       build: () {
-        when(() => mockCreateIncidentUseCase(any())).thenAnswer(
-          (_) async => const Left(NoInternetFailure()),
-        );
+        when(
+          () => mockCreateIncidentUseCase(any()),
+        ).thenAnswer((_) async => const Left(NoInternetFailure()));
         return cubit;
       },
       seed: () => const IncidentFormState(title: 'Lampu Padam'),
@@ -217,13 +217,12 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        when(() => mockCreateIncidentUseCase(any()))
-            .thenAnswer((_) async => Right(tCreated));
+        when(
+          () => mockCreateIncidentUseCase(any()),
+        ).thenAnswer((_) async => Right(tCreated));
         return cubit;
       },
-      seed: () => const IncidentFormState(
-        title: 'Pagar Rusak',
-      ),
+      seed: () => const IncidentFormState(title: 'Pagar Rusak'),
       act: (c) => c.submit(session: tSession),
       expect: () => [
         predicate<IncidentFormState>((s) => s.isSubmitting),

@@ -19,20 +19,18 @@ class GuestFormDestinationField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<
-        GuestFormCubit,
-        GuestFormState,
-        ({
-          String? error,
-          bool enabled,
-          int validationAttempt,
-        })>(
+      GuestFormCubit,
+      GuestFormState,
+      ({String? error, bool enabled, int validationAttempt})
+    >(
       selector: (state) => (
         error: state.destinationError,
         enabled: !state.isSubmitting,
         validationAttempt: state.validationAttempt,
       ),
       builder: (context, destState) {
-        final showError = destState.validationAttempt > 0 ||
+        final showError =
+            destState.validationAttempt > 0 ||
             cubit.state.destination.isNotEmpty;
         return AppTextField(
           label: 'Destinasi tujuan *',

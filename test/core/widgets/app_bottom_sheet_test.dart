@@ -3,14 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_sheet.dart';
 
-Widget _buildTestApp({
-  required Widget child,
-}) {
+Widget _buildTestApp({required Widget child}) {
   return MaterialApp(
     theme: AppTheme.lightThemeData(),
-    home: Scaffold(
-      body: child,
-    ),
+    home: Scaffold(body: child),
   );
 }
 
@@ -22,9 +18,7 @@ void main() {
     testWidgets('renders child content correctly', (tester) async {
       await tester.pumpWidget(
         _buildTestApp(
-          child: const AppBottomSheet(
-            child: Text('Konten Bottom Sheet'),
-          ),
+          child: const AppBottomSheet(child: Text('Konten Bottom Sheet')),
         ),
       );
 
@@ -34,11 +28,7 @@ void main() {
 
     testWidgets('shows drag handle when enabled', (tester) async {
       await tester.pumpWidget(
-        _buildTestApp(
-          child: const AppBottomSheet(
-            child: Text('With Handle'),
-          ),
-        ),
+        _buildTestApp(child: const AppBottomSheet(child: Text('With Handle'))),
       );
 
       expect(find.text('With Handle'), findsOneWidget);
@@ -103,8 +93,9 @@ void main() {
       expect(find.text('Second Sheet'), findsNothing);
     });
 
-    testWidgets('dragging handle down past threshold triggers dismiss',
-        (tester) async {
+    testWidgets('dragging handle down past threshold triggers dismiss', (
+      tester,
+    ) async {
       var isDismissed = false;
 
       await tester.pumpWidget(
@@ -133,8 +124,9 @@ void main() {
       expect(isDismissed, isTrue);
     });
 
-    testWidgets('dragging handle down below threshold snaps back',
-        (tester) async {
+    testWidgets('dragging handle down below threshold snaps back', (
+      tester,
+    ) async {
       var isDismissed = false;
 
       await tester.pumpWidget(
@@ -161,8 +153,9 @@ void main() {
       expect(find.text('Snap Back Content'), findsOneWidget);
     });
 
-    testWidgets('dragging scrollable content while at top pulls sheet down',
-        (tester) async {
+    testWidgets('dragging scrollable content while at top pulls sheet down', (
+      tester,
+    ) async {
       var isDismissed = false;
 
       await tester.pumpWidget(
@@ -204,10 +197,7 @@ void main() {
         _buildTestApp(
           child: const AppBottomSheet(
             maxHeightFactor: 0.80,
-            child: SizedBox(
-              height: 2000,
-              child: Text('Tall Content'),
-            ),
+            child: SizedBox(height: 2000, child: Text('Tall Content')),
           ),
         ),
       );
@@ -219,8 +209,7 @@ void main() {
       expect(sheetSize.height, lessThanOrEqualTo(800.0));
     });
 
-    testWidgets('explicit maxHeight overrides maxHeightFactor',
-        (tester) async {
+    testWidgets('explicit maxHeight overrides maxHeightFactor', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(() => tester.view.reset());
@@ -229,10 +218,7 @@ void main() {
         _buildTestApp(
           child: const AppBottomSheet(
             maxHeight: 350,
-            child: SizedBox(
-              height: 2000,
-              child: Text('Explicit Max Content'),
-            ),
+            child: SizedBox(height: 2000, child: Text('Explicit Max Content')),
           ),
         ),
       );

@@ -25,9 +25,7 @@ void main() {
     );
 
     test('toQueryParams omits null fields and preserves exact values', () {
-      const query = OperationalQueryModel(
-        search: 'Asep',
-      );
+      const query = OperationalQueryModel(search: 'Asep');
 
       final params = query.toQueryParams();
 

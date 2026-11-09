@@ -30,8 +30,8 @@ extension GuestUiExtension on GuestItemEntity {
   /// Mendapatkan jenis identitas (KTP/SIM/Paspor).
   String get displayIdentityType =>
       (guestIdentityType != null && guestIdentityType!.isNotEmpty)
-          ? guestIdentityType!
-          : '-';
+      ? guestIdentityType!
+      : '-';
 
   /// Mendapatkan tipe tamu (misal: Visitor, Delivery).
   String get displayGuestType =>
@@ -48,14 +48,14 @@ extension GuestUiExtension on GuestItemEntity {
   /// Mendapatkan email petugas checkout.
   String get displayCheckoutByEmail =>
       (guestCheckoutByEmail != null && guestCheckoutByEmail!.isNotEmpty)
-          ? guestCheckoutByEmail!
-          : '-';
+      ? guestCheckoutByEmail!
+      : '-';
 
   /// Mendapatkan nama petugas checkout untuk ditampilkan.
   String get displayCheckoutByName =>
       (guestCheckoutByName != null && guestCheckoutByName!.isNotEmpty)
-          ? guestCheckoutByName!
-          : '-';
+      ? guestCheckoutByName!
+      : '-';
 
   /// Mendapatkan nama grup untuk ditampilkan.
   String get displayGroupName =>
@@ -64,20 +64,20 @@ extension GuestUiExtension on GuestItemEntity {
   /// Mendapatkan nomor identitas tamu untuk ditampilkan.
   String get displayIdNumber =>
       (guestIdentity != null && guestIdentity!.isNotEmpty)
-          ? guestIdentity!
-          : '-';
+      ? guestIdentity!
+      : '-';
 
   /// Teks destinasi yang ramah untuk tampilan UI.
   String get displayDestination =>
       (guestDestination != null && guestDestination!.isNotEmpty)
-          ? guestDestination!
-          : '-';
+      ? guestDestination!
+      : '-';
 
   /// Teks kategori tamu yang ramah untuk tampilan UI.
   String get displayCategory =>
       (guestCategory != null && guestCategory!.isNotEmpty)
-          ? guestCategory!
-          : '-';
+      ? guestCategory!
+      : '-';
 
   /// Teks keperluan tamu yang ramah untuk tampilan UI.
   String get displayPurpose =>
@@ -96,20 +96,20 @@ extension GuestUiExtension on GuestItemEntity {
   /// Mendapatkan email penerima tamu untuk ditampilkan.
   String get displayGuestToUserEmail =>
       (guestToUserEmail != null && guestToUserEmail!.isNotEmpty)
-          ? guestToUserEmail!
-          : '-';
+      ? guestToUserEmail!
+      : '-';
 
   /// Mendapatkan nama petugas pencatat untuk ditampilkan.
   String get displayRecordedBy =>
       (guestCreatorName != null && guestCreatorName!.isNotEmpty)
-          ? guestCreatorName!
-          : '-';
+      ? guestCreatorName!
+      : '-';
 
   /// Mendapatkan email petugas pencatat untuk ditampilkan.
   String get displayRecorderEmail =>
       (guestCreatorEmail != null && guestCreatorEmail!.isNotEmpty)
-          ? guestCreatorEmail!
-          : '-';
+      ? guestCreatorEmail!
+      : '-';
 
   /// Mendapatkan waktu masuk tamu untuk ditampilkan.
   String get displayEntryTime => (guestDt != null && guestDt!.isNotEmpty)
@@ -119,8 +119,8 @@ extension GuestUiExtension on GuestItemEntity {
   /// Mendapatkan waktu konfirmasi kunjungan tamu untuk ditampilkan.
   String get displayConfirmationTime =>
       (guestAckDt != null && guestAckDt!.isNotEmpty)
-          ? AppDateFormat.formatRawDate(guestAckDt)
-          : '-';
+      ? AppDateFormat.formatRawDate(guestAckDt)
+      : '-';
 
   /// Mendapatkan waktu keluar tamu untuk ditampilkan.
   String get displayExitTime => (guestOutDt != null && guestOutDt!.isNotEmpty)

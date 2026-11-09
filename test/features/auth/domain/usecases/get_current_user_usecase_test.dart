@@ -28,12 +28,14 @@ void main() {
   test(
     'should return UserEntity from repository when user is logged in',
     () async {
-    when(() => mockRepository.getCurrentUser())
-        .thenAnswer((_) async => const Right(tUser));
+      when(
+        () => mockRepository.getCurrentUser(),
+      ).thenAnswer((_) async => const Right(tUser));
 
-    final result = await useCase(const NoParams());
+      final result = await useCase(const NoParams());
 
-    expect(result, const Right<Failure, UserEntity?>(tUser));
-    verify(() => mockRepository.getCurrentUser()).called(1);
-  });
+      expect(result, const Right<Failure, UserEntity?>(tUser));
+      verify(() => mockRepository.getCurrentUser()).called(1);
+    },
+  );
 }

@@ -33,10 +33,7 @@ import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 /// via [AppNavigationBar], serta koordinasi bilah aplikasi terpusat.
 class MainNavigationScreen extends StatefulWidget {
   /// Membuat instance [MainNavigationScreen].
-  const MainNavigationScreen({
-    super.key,
-    this.initialIndex = 0,
-  });
+  const MainNavigationScreen({super.key, this.initialIndex = 0});
 
   /// Indeks destinasi navigasi awal saat dibuka (default: 0 = Beranda).
   final int initialIndex;
@@ -107,9 +104,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return const Column(
       children: [
         _HomeAppBarWithAuth(),
-        Expanded(
-          child: HomeDashboardView(),
-        ),
+        Expanded(child: HomeDashboardView()),
       ],
     );
   }
@@ -177,15 +172,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               AppNavigationBarDestination(
                 icon: AppSvgIcon(KawaloVectors.documentValidation),
-                selectedIcon:
-                    AppSvgIcon(KawaloVectors.documentValidationFilled),
+                selectedIcon: AppSvgIcon(
+                  KawaloVectors.documentValidationFilled,
+                ),
                 label: 'Laporan',
                 semanticLabel: 'Buat laporan',
               ),
               AppNavigationBarDestination(
                 icon: AppSvgIcon(KawaloVectors.moreHorizontalCircle01),
-                selectedIcon:
-                    AppSvgIcon(KawaloVectors.moreHorizontalCircle01Filled),
+                selectedIcon: AppSvgIcon(
+                  KawaloVectors.moreHorizontalCircle01Filled,
+                ),
                 label: 'Lainnya',
                 semanticLabel: 'Menu lainnya',
               ),
@@ -214,9 +211,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           } on Object catch (_) {}
           Navigator.of(context).pushAndRemoveUntil<void>(
             AppPageRoute.fade<void>(
-              builder: (_) => LoginScreen(
-                sessionExpiredMessage: state.message,
-              ),
+              builder: (_) => LoginScreen(sessionExpiredMessage: state.message),
             ),
             (route) => false,
           );
@@ -254,10 +249,7 @@ class _PlaceholderView extends StatelessWidget {
           onRefresh: () async {
             await Future<void>.delayed(const Duration(milliseconds: 600));
             if (context.mounted) {
-              AppSnackbar.show(
-                context,
-                message: '$title berhasil diperbarui.',
-              );
+              AppSnackbar.show(context, message: '$title berhasil diperbarui.');
             }
           },
           child: SingleChildScrollView(
@@ -266,11 +258,7 @@ class _PlaceholderView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AppSvgIcon(
-                  iconPath,
-                  size: 64,
-                  color: colorScheme.primary,
-                ),
+                AppSvgIcon(iconPath, size: 64, color: colorScheme.primary),
                 AppSpacing.vGap300,
                 Text(
                   title,
@@ -316,10 +304,7 @@ class _HomeAppBarWithAuth extends StatelessWidget
         greeting: HomeGreetingHelper.formatGreeting(),
         unreadNotificationsCount: 9,
         onNotificationPressed: () {
-          AppSnackbar.show(
-            context,
-            message: '9 Notifikasi baru belum dibaca.',
-          );
+          AppSnackbar.show(context, message: '9 Notifikasi baru belum dibaca.');
         },
       );
     }

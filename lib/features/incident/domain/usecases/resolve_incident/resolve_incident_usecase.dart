@@ -23,7 +23,7 @@ class ResolveIncidentUseCase
       return const Left(
         ForbiddenFailure(
           'Anda tidak memiliki izin atau insiden telah diselesaikan '
-              'sebelumnya.',
+          'sebelumnya.',
         ),
       );
     }

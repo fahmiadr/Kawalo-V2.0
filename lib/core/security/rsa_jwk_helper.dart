@@ -89,12 +89,7 @@ class RsaJwkHelper {
     } else if (length < 65536) {
       return [0x82, (length >> 8) & 0xff, length & 0xff];
     } else if (length < 16777216) {
-      return [
-        0x83,
-        (length >> 16) & 0xff,
-        (length >> 8) & 0xff,
-        length & 0xff,
-      ];
+      return [0x83, (length >> 16) & 0xff, (length >> 8) & 0xff, length & 0xff];
     } else {
       return [
         0x84,

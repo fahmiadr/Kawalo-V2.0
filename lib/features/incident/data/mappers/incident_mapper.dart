@@ -17,12 +17,15 @@ abstract final class IncidentMapper {
   /// Mengonversi [IncidentModel] DTO menjadi [IncidentEntity] domain.
   static IncidentEntity toEntity(IncidentModel model) {
     final createdAtDate = DateTime.tryParse(model.createdAt) ?? DateTime.now();
-    final updatedAtDate =
-        model.updatedAt != null ? DateTime.tryParse(model.updatedAt!) : null;
-    final resolvedAtDate =
-        model.resolvedAt != null ? DateTime.tryParse(model.resolvedAt!) : null;
-    final deletedAtDate =
-        model.deletedAt != null ? DateTime.tryParse(model.deletedAt!) : null;
+    final updatedAtDate = model.updatedAt != null
+        ? DateTime.tryParse(model.updatedAt!)
+        : null;
+    final resolvedAtDate = model.resolvedAt != null
+        ? DateTime.tryParse(model.resolvedAt!)
+        : null;
+    final deletedAtDate = model.deletedAt != null
+        ? DateTime.tryParse(model.deletedAt!)
+        : null;
 
     return IncidentEntity(
       id: AppSanitizer.cleanString(model.id) ?? model.id.trim(),

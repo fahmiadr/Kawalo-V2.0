@@ -86,16 +86,16 @@ class UpdateGuestModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        guestName,
-        guestDestination,
-        guestType,
-        guestPurpose,
-        guestNumber,
-        guestIdentity,
-        guestIdentityType,
-        guestAddress,
-        guestToUserEmail,
-        guestPhoto,
-        includeNulls,
-      ];
+    guestName,
+    guestDestination,
+    guestType,
+    guestPurpose,
+    guestNumber,
+    guestIdentity,
+    guestIdentityType,
+    guestAddress,
+    guestToUserEmail,
+    guestPhoto,
+    includeNulls,
+  ];
 }

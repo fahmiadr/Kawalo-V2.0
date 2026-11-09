@@ -113,7 +113,7 @@ class AppStaticMap extends StatelessWidget {
 
   /// Builder kustom opsional untuk tombol aksi buka peta eksternal.
   final Widget Function(BuildContext context, double lat, double lng)?
-      openExternalButtonBuilder;
+  openExternalButtonBuilder;
 
   /// Layanan reverse geocoding opsional untuk resolusi alamat fisik.
   final ReverseGeocodeService? reverseGeocodeService;
@@ -136,7 +136,7 @@ class AppStaticMap extends StatelessWidget {
 
   /// Builder kustom untuk membuat widget marker berdasarkan koordinat.
   final Widget Function(BuildContext context, double lat, double lng)?
-      markerBuilder;
+  markerBuilder;
 
   /// Ukuran visual marker (lebar dan tinggi dalam dp).
   ///
@@ -215,10 +215,7 @@ class AppStaticMap extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const AppSvgIcon.color(
-            KawaloColorVectors.location3,
-            size: 40,
-          ),
+          const AppSvgIcon.color(KawaloColorVectors.location3, size: 40),
           AppSpacing.vGapSm,
           Text(
             noGpsTitle,
@@ -262,103 +259,107 @@ class AppStaticMap extends StatelessWidget {
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest,
               borderRadius: AppRadius.borderMedium,
-              border: Border.all(
-                color: colorScheme.outlineVariant,
-              ),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Stack(
               children: [
                 IgnorePointer(
                   child: FlutterMap(
-                  // Key eksplisit memastikan peta langsung merender ulang
-                  // saat koordinat / zoom / tema berubah pada rebuild widget.
-                  key: ValueKey<String>('osm_${lat}_${lng}_${zoom}_$isDark'),
-                  options: MapOptions(
-                    initialCenter: center,
-                    initialZoom: zoom,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.none,
+                    // Key eksplisit memastikan peta langsung merender ulang
+                    // saat koordinat / zoom / tema berubah pada rebuild widget.
+                    key: ValueKey<String>('osm_${lat}_${lng}_${zoom}_$isDark'),
+                    options: MapOptions(
+                      initialCenter: center,
+                      initialZoom: zoom,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
+                      ),
                     ),
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.kawalo.app',
-                      tileBuilder: isDark ? darkModeTileBuilder : null,
-                      errorTileCallback: (tile, error, stackTrace) {
-                        // Handled gracefully saat jaringan offline
-                      },
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: center,
-                          width: markerSize ??
-                              (markerStyle == AppStaticMapMarkerStyle.dot
-                                  ? 14.0
-                                  : 28.0),
-                          height: markerSize ??
-                              (markerStyle == AppStaticMapMarkerStyle.dot
-                                  ? 14.0
-                                  : 28.0),
-                          child: Semantics(
-                            label: locationSemanticLabel ??
-                                'Titik lokasi $lat, $lng',
-                            child: _AppStaticMapPulseAuraMarker(
-                              color:
-                                  auraColor ?? pinColor ?? colorScheme.primary,
-                              coreSize: markerSize ??
-                                  (markerStyle == AppStaticMapMarkerStyle.dot
-                                      ? 14.0
-                                      : 28.0),
-                              showAura: showAura,
-                              child: _buildMarker(context, lat, lng),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.kawalo.app',
+                        tileBuilder: isDark ? darkModeTileBuilder : null,
+                        errorTileCallback: (tile, error, stackTrace) {
+                          // Handled gracefully saat jaringan offline
+                        },
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: center,
+                            width:
+                                markerSize ??
+                                (markerStyle == AppStaticMapMarkerStyle.dot
+                                    ? 14.0
+                                    : 28.0),
+                            height:
+                                markerSize ??
+                                (markerStyle == AppStaticMapMarkerStyle.dot
+                                    ? 14.0
+                                    : 28.0),
+                            child: Semantics(
+                              label:
+                                  locationSemanticLabel ??
+                                  'Titik lokasi $lat, $lng',
+                              child: _AppStaticMapPulseAuraMarker(
+                                color:
+                                    auraColor ??
+                                    pinColor ??
+                                    colorScheme.primary,
+                                coreSize:
+                                    markerSize ??
+                                    (markerStyle == AppStaticMapMarkerStyle.dot
+                                        ? 14.0
+                                        : 28.0),
+                                showAura: showAura,
+                                child: _buildMarker(context, lat, lng),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Tombol Aksi Buka Peta Eksternal
-              if (showOpenExternalButton)
+                // Tombol Aksi Buka Peta Eksternal
+                if (showOpenExternalButton)
+                  Positioned(
+                    top: AppSpacing.space100,
+                    right: AppSpacing.space100,
+                    child: openExternalButtonBuilder != null
+                        ? openExternalButtonBuilder!(context, lat, lng)
+                        : _buildDefaultOpenExternalButton(context, lat, lng),
+                  ),
+
+                // Atribusi OpenStreetMap Resmi & Legal
                 Positioned(
-                  top: AppSpacing.space100,
-                  right: AppSpacing.space100,
-                  child: openExternalButtonBuilder != null
-                      ? openExternalButtonBuilder!(context, lat, lng)
-                      : _buildDefaultOpenExternalButton(context, lat, lng),
-                ),
-
-              // Atribusi OpenStreetMap Resmi & Legal
-              Positioned(
-                bottom: 4,
-                right: 6,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.85),
-                    borderRadius: AppRadius.borderExtraSmall,
-                  ),
-                  child: Text(
-                    '© OpenStreetMap contributors',
-                    style: typeScale.labelSmall.copyWith(
-                      fontSize: 10,
-                      color: colorScheme.onSurfaceVariant,
+                  bottom: 4,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface.withValues(alpha: 0.85),
+                      borderRadius: AppRadius.borderExtraSmall,
+                    ),
+                    child: Text(
+                      '© OpenStreetMap contributors',
+                      style: typeScale.labelSmall.copyWith(
+                        fontSize: 10,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
 
         // ── Teks Baris Koordinat ────────────────────────────────────
         if (showCoordinates) ...[
@@ -404,10 +405,7 @@ class AppStaticMap extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const AppSvgIcon(
-              KawaloVectors.linkSquare02,
-              size: 14,
-            ),
+            const AppSvgIcon(KawaloVectors.linkSquare02, size: 14),
             AppSpacing.hGapXs,
             Text(openExternalButtonLabel),
           ],
@@ -468,10 +466,7 @@ class AppStaticMap extends StatelessWidget {
       decoration: BoxDecoration(
         color: effectiveColor,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: colorScheme.surface,
-          width: 2.5,
-        ),
+        border: Border.all(color: colorScheme.surface, width: 2.5),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.35),
@@ -498,10 +493,7 @@ class AppStaticMap extends StatelessWidget {
       decoration: BoxDecoration(
         color: effectivePinColor,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: colorScheme.surface,
-          width: 2,
-        ),
+        border: Border.all(color: colorScheme.surface, width: 2),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.25),
@@ -590,7 +582,8 @@ class _AppStaticMapPulseAuraMarkerState
     // Di lingkungan widget test (di mana tester.pumpAndSettle() sering
     // dipanggil), animasi berulang tanpa henti dicegah agar tidak memicu
     // timeout, kecuali jika diizinkan secara eksplisit oleh pengujian.
-    final isRunningInTest = WidgetsBinding.instance is! WidgetsFlutterBinding &&
+    final isRunningInTest =
+        WidgetsBinding.instance is! WidgetsFlutterBinding &&
         !AppStaticMap.debugEnableAuraAnimationInTests;
 
     if (isRunningInTest) {
@@ -857,15 +850,8 @@ class _AppStaticMapAddressState extends State<_AppStaticMapAddress>
                       -2.0 + 4.0 * _shimmerController.value,
                       -0.3,
                     ),
-                    end: Alignment(
-                      -1.0 + 4.0 * _shimmerController.value,
-                      0.3,
-                    ),
-                    colors: [
-                      baseColor,
-                      highlightColor,
-                      baseColor,
-                    ],
+                    end: Alignment(-1.0 + 4.0 * _shimmerController.value, 0.3),
+                    colors: [baseColor, highlightColor, baseColor],
                     stops: const [0.0, 0.5, 1.0],
                   );
 
@@ -991,10 +977,7 @@ class _AppStaticMapAddressState extends State<_AppStaticMapAddress>
           const Padding(
             padding: EdgeInsets.only(top: 2),
             child: ExcludeSemantics(
-              child: AppSvgIcon.color(
-                KawaloColorVectors.location1,
-                size: 16,
-              ),
+              child: AppSvgIcon.color(KawaloColorVectors.location1, size: 16),
             ),
           ),
           AppSpacing.hGapXs,
@@ -1010,15 +993,15 @@ class _AppStaticMapAddressState extends State<_AppStaticMapAddress>
                   child: _isLoading
                       ? _buildShimmerSkeleton(context)
                       : (hasAddress
-                          ? Text(
-                              _address!,
-                              style: emphasizedTypeScale.labelSmall.copyWith(
-                                color: colorScheme.onSurface,
-                              ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : _buildErrorWithRetry(context)),
+                            ? Text(
+                                _address!,
+                                style: emphasizedTypeScale.labelSmall.copyWith(
+                                  color: colorScheme.onSurface,
+                                ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : _buildErrorWithRetry(context)),
                 ),
               ),
             ),

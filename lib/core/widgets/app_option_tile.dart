@@ -69,7 +69,8 @@ class AppOptionTile extends StatelessWidget {
       variant: AppCardVariant.outlined,
       onPressed: onTap,
       semanticLabel: semanticLabel ?? '$title: $subtitle',
-      padding: padding ??
+      padding:
+          padding ??
           const EdgeInsets.symmetric(
             horizontal: AppSpacing.space200,
             vertical: AppSpacing.space150,

@@ -20,91 +20,72 @@ void main() {
           idle: idleWithSearch,
           controller: controller,
         );
-        expect(
-          appBarWithSearch.preferredSize.height,
-          equals(140.0),
-        );
+        expect(appBarWithSearch.preferredSize.height, equals(140.0));
 
         // 2. Without search bar: 64dp
-        const idleWithoutSearch = AppHomeAppBar(
-          title: 'Pusat informasi',
-        );
+        const idleWithoutSearch = AppHomeAppBar(title: 'Pusat informasi');
         final appBarWithoutSearch = AppSelectionAppBar(
           idle: idleWithoutSearch,
           controller: controller,
         );
-        expect(
-          appBarWithoutSearch.preferredSize.height,
-          equals(64.0),
-        );
+        expect(appBarWithoutSearch.preferredSize.height, equals(64.0));
       },
     );
 
-    testWidgets(
-      'renders idle bar when not in selection mode',
-      (tester) async {
-        final controller = AppSelectionController();
-        const idle = AppHomeAppBar(title: 'Data Berita');
+    testWidgets('renders idle bar when not in selection mode', (tester) async {
+      final controller = AppSelectionController();
+      const idle = AppHomeAppBar(title: 'Data Berita');
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
-            ),
-            home: Scaffold(
-              appBar: AppSelectionAppBar(
-                idle: idle,
-                controller: controller,
-              ),
-              body: const SizedBox.shrink(),
-            ),
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
+          home: Scaffold(
+            appBar: AppSelectionAppBar(idle: idle, controller: controller),
+            body: const SizedBox.shrink(),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.text('Data Berita'), findsOneWidget);
-      },
-    );
+      expect(find.text('Data Berita'), findsOneWidget);
+    });
 
-    testWidgets(
-      'switches to contextual mode and displays selected count',
-      (tester) async {
-        final controller = AppSelectionController();
-        const idle = AppHomeAppBar(title: 'Data Berita');
+    testWidgets('switches to contextual mode and displays selected count', (
+      tester,
+    ) async {
+      final controller = AppSelectionController();
+      const idle = AppHomeAppBar(title: 'Data Berita');
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => M3ETheme(
-              data: AppTheme.m3eLight(),
-              child: child!,
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
+          home: Scaffold(
+            appBar: AppSelectionAppBar(
+              idle: idle,
+              controller: controller,
+              itemCount: 5,
             ),
-            home: Scaffold(
-              appBar: AppSelectionAppBar(
-                idle: idle,
-                controller: controller,
-                itemCount: 5,
-              ),
-              body: const SizedBox.shrink(),
-            ),
+            body: const SizedBox.shrink(),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        controller
-          ..select(0)
-          ..select(2);
-        await tester.pumpAndSettle();
+      controller
+        ..select(0)
+        ..select(2);
+      await tester.pumpAndSettle();
 
-        // Counter '2' appears in contextual toolbar
-        expect(find.text('2'), findsOneWidget);
+      // Counter '2' appears in contextual toolbar
+      expect(find.text('2'), findsOneWidget);
 
-        // Clear selection via controller
-        controller.clear();
-        await tester.pumpAndSettle();
+      // Clear selection via controller
+      controller.clear();
+      await tester.pumpAndSettle();
 
-        expect(find.text('Data Berita'), findsOneWidget);
-      },
-    );
+      expect(find.text('Data Berita'), findsOneWidget);
+    });
   });
 }

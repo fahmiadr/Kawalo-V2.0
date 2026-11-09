@@ -18,47 +18,36 @@ void main() {
   }
 
   group('AppSecurityBlockedScreen Widget Tests', () {
-    testWidgets(
-      'renders Root/Jailbreak violation message correctly',
-      (tester) async {
-        await tester.pumpWidget(
-          buildTestableWidget(SecurityViolationType.rootOrJailbreak),
-        );
+    testWidgets('renders Root/Jailbreak violation message correctly', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestableWidget(SecurityViolationType.rootOrJailbreak),
+      );
 
-        expect(
-          find.text('Perangkat tidak memenuhi standar keamanan'),
-          findsOneWidget,
-        );
-        expect(
-          find.textContaining('telah dimodifikasi'),
-          findsOneWidget,
-        );
-        expect(
-          find.byWidgetPredicate(
-            (w) =>
-                w is AppSvgIcon &&
-                w.assetPath == KawaloVectors.shieldOffFilled,
-          ),
-          findsOneWidget,
-        );
-        expect(find.byType(AppButton), findsOneWidget);
-        expect(find.text('Tutup aplikasi'), findsOneWidget);
-      },
-    );
+      expect(
+        find.text('Perangkat tidak memenuhi standar keamanan'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('telah dimodifikasi'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is AppSvgIcon && w.assetPath == KawaloVectors.shieldOffFilled,
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(AppButton), findsOneWidget);
+      expect(find.text('Tutup aplikasi'), findsOneWidget);
+    });
 
     testWidgets('renders Mock GPS violation message correctly', (tester) async {
       await tester.pumpWidget(
         buildTestableWidget(SecurityViolationType.mockLocation),
       );
 
-      expect(
-        find.text('Lokasi tiruan terdeteksi'),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('penyedia lokasi tiruan'),
-        findsOneWidget,
-      );
+      expect(find.text('Lokasi tiruan terdeteksi'), findsOneWidget);
+      expect(find.textContaining('penyedia lokasi tiruan'), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (w) =>
@@ -69,30 +58,22 @@ void main() {
       );
     });
 
-    testWidgets(
-      'renders Unofficial Store violation message correctly',
-      (tester) async {
-        await tester.pumpWidget(
-          buildTestableWidget(SecurityViolationType.unofficialStore),
-        );
+    testWidgets('renders Unofficial Store violation message correctly', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestableWidget(SecurityViolationType.unofficialStore),
+      );
 
-        expect(
-          find.text('Aplikasi tidak resmi terdeteksi'),
-          findsOneWidget,
-        );
-        expect(
-          find.textContaining('toko aplikasi resmi'),
-          findsOneWidget,
-        );
-        expect(
-          find.byWidgetPredicate(
-            (w) =>
-                w is AppSvgIcon && w.assetPath == KawaloVectors.shieldXFilled,
-          ),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.text('Aplikasi tidak resmi terdeteksi'), findsOneWidget);
+      expect(find.textContaining('toko aplikasi resmi'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.shieldXFilled,
+        ),
+        findsOneWidget,
+      );
+    });
 
     testWidgets('has accessible touch target for exit button', (tester) async {
       await tester.pumpWidget(
@@ -104,8 +85,9 @@ void main() {
       expect(size.height, greaterThanOrEqualTo(48.0));
     });
 
-    testWidgets('triggers onExit callback when exit button is tapped',
-        (tester) async {
+    testWidgets('triggers onExit callback when exit button is tapped', (
+      tester,
+    ) async {
       var exitCalled = false;
 
       await tester.pumpWidget(

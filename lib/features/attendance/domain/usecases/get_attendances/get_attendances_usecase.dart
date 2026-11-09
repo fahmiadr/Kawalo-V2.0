@@ -15,9 +15,7 @@ class GetAttendancesUseCase
   final AttendanceRepository repository;
 
   @override
-  Future<Either<Failure, AttendanceResult>> call(
-    GetAttendancesParams params,
-  ) {
+  Future<Either<Failure, AttendanceResult>> call(GetAttendancesParams params) {
     return repository.getAttendances(params);
   }
 }

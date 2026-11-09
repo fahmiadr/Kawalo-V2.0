@@ -9,7 +9,8 @@ abstract final class GroupMemberMapper {
   /// dengan sanitasi string dan email.
   static GroupMemberEntity toEntity(GroupMemberModel model) {
     return GroupMemberEntity(
-      email: AppSanitizer.cleanEmail(model.email) ??
+      email:
+          AppSanitizer.cleanEmail(model.email) ??
           model.email.trim().toLowerCase(),
       name: AppSanitizer.cleanString(model.name),
       profilePic: AppSanitizer.cleanString(model.profilePic),

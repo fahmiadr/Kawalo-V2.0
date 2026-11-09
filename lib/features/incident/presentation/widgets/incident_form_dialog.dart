@@ -32,11 +32,7 @@ import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_ph
 /// Dialog, konsisten dan serasi dengan modul guest dan information.
 class IncidentFormDialog extends StatefulWidget {
   /// Membuat instance [IncidentFormDialog].
-  const IncidentFormDialog({
-    super.key,
-    this.cubit,
-    this.mediaPickerService,
-  });
+  const IncidentFormDialog({super.key, this.cubit, this.mediaPickerService});
 
   /// Instance [IncidentFormCubit] opsional untuk injeksi atau pengujian.
   final IncidentFormCubit? cubit;
@@ -66,8 +62,9 @@ class IncidentFormDialog extends StatefulWidget {
     IncidentListCubit? incidentListCubit,
     MediaPickerService? mediaPickerService,
   }) async {
-    final (resolvedCubit, isInternal) =
-        cubit != null ? (cubit, false) : _resolveCubitFromContext(context);
+    final (resolvedCubit, isInternal) = cubit != null
+        ? (cubit, false)
+        : _resolveCubitFromContext(context);
     const title = 'Laporkan insiden';
 
     AuthSessionEntity? session;
@@ -91,7 +88,7 @@ class IncidentFormDialog extends StatefulWidget {
                     ? () {
                         final activeSession =
                             actionContext.read<UserSessionCubit?>()?.state ??
-                                session;
+                            session;
                         resolvedCubit.submit(session: activeSession);
                       }
                     : null,
@@ -196,8 +193,9 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
     if (widget.cubit != null) return widget.cubit!;
     if (_internalCubit != null) return _internalCubit!;
 
-    final (cubit, isInternal) =
-        IncidentFormDialog._resolveCubitFromContext(context);
+    final (cubit, isInternal) = IncidentFormDialog._resolveCubitFromContext(
+      context,
+    );
     if (isInternal) {
       _internalCubit = cubit;
     }
@@ -221,10 +219,7 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
     if (source == null || !mounted) return;
 
     if (cubit.state.photos.length >= 4) {
-      AppSnackbar.show(
-        context,
-        message: 'Maksimal 4 foto dapat dilampirkan.',
-      );
+      AppSnackbar.show(context, message: 'Maksimal 4 foto dapat dilampirkan.');
       return;
     }
 
@@ -249,10 +244,7 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
       }
     } on Object catch (error) {
       if (mounted) {
-        AppSnackbar.show(
-          context,
-          message: 'Gagal memilih foto: $error',
-        );
+        AppSnackbar.show(context, message: 'Gagal memilih foto: $error');
       }
     }
   }
@@ -324,10 +316,7 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
             Navigator.of(context).pop(state.createdIncident);
           } else if (state.status == IncidentFormStatus.failure &&
               state.errorMessage != null) {
-            AppSnackbar.show(
-              context,
-              message: state.errorMessage!,
-            );
+            AppSnackbar.show(context, message: state.errorMessage!);
           }
         },
         builder: (context, state) {
@@ -339,8 +328,9 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                 _isDiscarding || isSuccess || (!isDirty && !state.isSubmitting),
             onPopInvokedWithResult: (didPop, _) async {
               if (didPop || state.isSubmitting) return;
-              final confirmed =
-                  await IncidentFormDialog._confirmDiscard(context);
+              final confirmed = await IncidentFormDialog._confirmDiscard(
+                context,
+              );
               if (confirmed && context.mounted) {
                 setState(() => _isDiscarding = true);
                 Navigator.of(context).pop();
@@ -375,7 +365,8 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                             // ── Seksi 1: Kategori Insiden ────────────────────
                             AppFormSection(
                               title: 'Kategori insiden',
-                              subtitle: 'Pilih klasifikasi jenis insiden '
+                              subtitle:
+                                  'Pilih klasifikasi jenis insiden '
                                   'operasional.',
                               child: Wrap(
                                 spacing: AppSpacing.space100,
@@ -401,7 +392,8 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                             // ── Seksi 2: Informasi Detail Laporan ────────────
                             AppFormSection(
                               title: 'Detail laporan',
-                              subtitle: 'Informasi lengkap mengenai '
+                              subtitle:
+                                  'Informasi lengkap mengenai '
                                   'peristiwa yang terjadi.',
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -413,7 +405,8 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                                     controller: _titleController,
                                     focusNode: _titleFocusNode,
                                     enabled: !state.isSubmitting,
-                                    errorText: (state.validationAttempt > 0 ||
+                                    errorText:
+                                        (state.validationAttempt > 0 ||
                                             state.title.isNotEmpty)
                                         ? state.titleError
                                         : null,
@@ -429,7 +422,8 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                                     controller: _descriptionController,
                                     focusNode: _descriptionFocusNode,
                                     enabled: !state.isSubmitting,
-                                    errorText: (state.validationAttempt > 0 ||
+                                    errorText:
+                                        (state.validationAttempt > 0 ||
                                             state.description.isNotEmpty)
                                         ? state.descriptionError
                                         : null,
@@ -468,11 +462,8 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                                   cubit.removePhoto(photos[index].id);
                                 }
                               },
-                              onMoreOptions: (index) => _showPhotoActionMenu(
-                                context,
-                                cubit,
-                                index,
-                              ),
+                              onMoreOptions: (index) =>
+                                  _showPhotoActionMenu(context, cubit, index),
                             ),
                           ],
                         ),

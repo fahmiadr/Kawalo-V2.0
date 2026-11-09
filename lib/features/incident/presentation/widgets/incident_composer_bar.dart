@@ -98,7 +98,8 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    final canSend = !widget.isPosting &&
+    final canSend =
+        !widget.isPosting &&
         (widget.draftMessage.trim().isNotEmpty ||
             widget.draftPhotos.isNotEmpty);
 
@@ -151,8 +152,8 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
                                 : colorScheme.primary,
                           ),
                           tooltip: 'Ambil Foto',
-                          onPressed: widget.draftPhotos.length >= 2 ||
-                                  widget.isPosting
+                          onPressed:
+                              widget.draftPhotos.length >= 2 || widget.isPosting
                               ? null
                               : _openCamera,
                         ),
@@ -169,8 +170,9 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
                         color: colorScheme.surface,
                         borderRadius: AppRadius.borderMedium,
                         border: Border.all(
-                          color:
-                              colorScheme.outlineVariant.withValues(alpha: 0.6),
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                       child: TextField(

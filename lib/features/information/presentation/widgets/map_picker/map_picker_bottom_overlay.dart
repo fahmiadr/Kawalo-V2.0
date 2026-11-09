@@ -71,10 +71,7 @@ class MapPickerBottomOverlay extends StatelessWidget {
                         size: AppLoadingIndicatorSize.small,
                       ),
                     )
-                  : const AppSvgIcon(
-                      KawaloVectors.gps01,
-                      size: 24,
-                    ),
+                  : const AppSvgIcon(KawaloVectors.gps01, size: 24),
             ),
             AppSpacing.vGap150,
             AppCard(

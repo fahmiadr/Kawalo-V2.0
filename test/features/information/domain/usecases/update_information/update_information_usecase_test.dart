@@ -109,31 +109,32 @@ void main() {
     test(
       'isValidId returns false for empty, whitespace, or non-numeric id',
       () {
-      expect(
-        const UpdateInformationParams(
-          id: '',
-          session: tSessionAdmin,
-          item: tItem,
-        ).isValidId,
-        isFalse,
-      );
-      expect(
-        const UpdateInformationParams(
-          id: '   ',
-          session: tSessionAdmin,
-          item: tItem,
-        ).isValidId,
-        isFalse,
-      );
-      expect(
-        const UpdateInformationParams(
-          id: 'abc',
-          session: tSessionAdmin,
-          item: tItem,
-        ).isValidId,
-        isFalse,
-      );
-    });
+        expect(
+          const UpdateInformationParams(
+            id: '',
+            session: tSessionAdmin,
+            item: tItem,
+          ).isValidId,
+          isFalse,
+        );
+        expect(
+          const UpdateInformationParams(
+            id: '   ',
+            session: tSessionAdmin,
+            item: tItem,
+          ).isValidId,
+          isFalse,
+        );
+        expect(
+          const UpdateInformationParams(
+            id: 'abc',
+            session: tSessionAdmin,
+            item: tItem,
+          ).isValidId,
+          isFalse,
+        );
+      },
+    );
 
     test('isAuthorized returns true for ADMIN', () {
       const params = UpdateInformationParams(
@@ -162,25 +163,27 @@ void main() {
       expect(params.isAuthorized, isFalse);
     });
 
-    test('isAuthorized returns false for CITIZEN or null session or null item',
-        () {
-      expect(
-        const UpdateInformationParams(
-          id: '123',
-          session: tSessionCitizen,
-          item: tItem,
-        ).isAuthorized,
-        isFalse,
-      );
+    test(
+      'isAuthorized returns false for CITIZEN or null session or null item',
+      () {
+        expect(
+          const UpdateInformationParams(
+            id: '123',
+            session: tSessionCitizen,
+            item: tItem,
+          ).isAuthorized,
+          isFalse,
+        );
 
-      expect(
-        const UpdateInformationParams(
-          id: '123',
-          session: tSessionAdmin,
-        ).isAuthorized,
-        isFalse,
-      );
-    });
+        expect(
+          const UpdateInformationParams(
+            id: '123',
+            session: tSessionAdmin,
+          ).isAuthorized,
+          isFalse,
+        );
+      },
+    );
   });
 
   group('UpdateInformationUseCase Execution Tests', () {
@@ -194,16 +197,13 @@ void main() {
       final result = await useCase(invalidIdParams);
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ValidationFailure>());
-          expect(
-            failure.message,
-            'ID informasi wajib diisi dan harus berupa angka valid.',
-          );
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ValidationFailure>());
+        expect(
+          failure.message,
+          'ID informasi wajib diisi dan harus berupa angka valid.',
+        );
+      }, (_) => fail('Should be Left'));
       verifyZeroInteractions(mockRepository);
     });
 
@@ -217,22 +217,20 @@ void main() {
       final result = await useCase(unauthorizedParams);
 
       expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) {
-          expect(failure, isA<ForbiddenFailure>());
-          expect(
-            failure.message,
-            'Anda tidak memiliki izin untuk mengubah informasi ini.',
-          );
-        },
-        (_) => fail('Should be Left'),
-      );
+      result.fold((failure) {
+        expect(failure, isA<ForbiddenFailure>());
+        expect(
+          failure.message,
+          'Anda tidak memiliki izin untuk mengubah informasi ini.',
+        );
+      }, (_) => fail('Should be Left'));
       verifyZeroInteractions(mockRepository);
     });
 
     test('delegates to repository and returns entity on success', () async {
-      when(() => mockRepository.updateInformation(any()))
-          .thenAnswer((_) async => const Right(tResultEntity));
+      when(
+        () => mockRepository.updateInformation(any()),
+      ).thenAnswer((_) async => const Right(tResultEntity));
 
       final result = await useCase(tParams);
 
@@ -257,22 +255,25 @@ void main() {
         item: tItem,
         cancelToken: token,
       );
-      when(() => mockRepository.updateInformation(any()))
-          .thenAnswer((_) async => const Right(tResultEntity));
+      when(
+        () => mockRepository.updateInformation(any()),
+      ).thenAnswer((_) async => const Right(tResultEntity));
 
       final result = await useCase(tParamsWithToken);
 
       expect(result.isRight(), isTrue);
       verify(
-        () => mockRepository
-            .updateInformation(tParamsWithToken.toRepositoryData()),
+        () => mockRepository.updateInformation(
+          tParamsWithToken.toRepositoryData(),
+        ),
       ).called(1);
     });
 
     test('returns failure when repository fails', () async {
       const tFailure = ServerFailure('Koneksi database bermasalah.');
-      when(() => mockRepository.updateInformation(any()))
-          .thenAnswer((_) async => const Left(tFailure));
+      when(
+        () => mockRepository.updateInformation(any()),
+      ).thenAnswer((_) async => const Left(tFailure));
 
       final result = await useCase(tParams);
 

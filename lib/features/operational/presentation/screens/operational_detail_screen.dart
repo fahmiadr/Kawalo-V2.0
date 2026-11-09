@@ -25,7 +25,8 @@ Future<void> navigateToOperationalDetailScreen(
   required OperationalItemEntity item,
   OperationalCubit? cubit,
 }) {
-  final resolvedCubit = cubit ??
+  final resolvedCubit =
+      cubit ??
       (() {
         try {
           return context.read<OperationalCubit>();
@@ -34,18 +35,12 @@ Future<void> navigateToOperationalDetailScreen(
         }
       })();
 
-  final screen = OperationalDetailScreen(
-    item: item,
-    cubit: resolvedCubit,
-  );
+  final screen = OperationalDetailScreen(item: item, cubit: resolvedCubit);
 
   return Navigator.of(context).push<void>(
     AppPageRoute.forwardBackward<void>(
       builder: (_) => resolvedCubit != null
-          ? BlocProvider.value(
-              value: resolvedCubit,
-              child: screen,
-            )
+          ? BlocProvider.value(value: resolvedCubit, child: screen)
           : screen,
     ),
   );
@@ -129,7 +124,8 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
     OperationalItemEntity target,
   ) {
     for (final operational in list) {
-      final isMatch = operational.userEmail == target.userEmail &&
+      final isMatch =
+          operational.userEmail == target.userEmail &&
           ((operational.dutyDate != null && target.dutyDate != null)
               ? operational.dutyDate == target.dutyDate
               : operational.latestDutyDt == target.latestDutyDt);
@@ -192,12 +188,8 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
 
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        appBar: OperationalDetailAppBar(
-          greeting: greeting,
-        ),
-        bottomNavigationBar: AppBottomOfflineBanner(
-          isOffline: isOffline,
-        ),
+        appBar: OperationalDetailAppBar(greeting: greeting),
+        bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
         body: SafeArea(
           top: false,
           child: AppRefreshIndicator.contained(
@@ -259,8 +251,8 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
           final effectiveGreeting = state.lastSync.isNotEmpty
               ? state.lastSync
               : (cubit.currentGreeting.isNotEmpty
-                  ? cubit.currentGreeting
-                  : AppDateFormat.formatGreeting(DateTime.now()));
+                    ? cubit.currentGreeting
+                    : AppDateFormat.formatGreeting(DateTime.now()));
           return buildScaffold(
             currentItem: effectiveItem,
             greeting: effectiveGreeting,

@@ -92,11 +92,7 @@ class HomePttFloatingCard extends StatelessWidget {
                     color: accentColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: accentColor,
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: accentColor, size: 24),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(

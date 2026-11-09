@@ -54,65 +54,55 @@ void main() {
   );
 
   group('AttendanceRepositoryImpl Tests', () {
-    test(
-      'returns Right and caches data when remote fetch succeeds',
-      () async {
-        const expectedQuery = AttendanceQueryModel(
+    test('returns Right and caches data when remote fetch succeeds', () async {
+      const expectedQuery = AttendanceQueryModel(
+        search: 'Guard',
+        limit: 10,
+        offset: 0,
+        startDate: '2026-09-01T00:00:00.000Z',
+        endDate: '2026-09-20T23:59:59.000Z',
+      );
+
+      when(
+        () => mockRemoteDataSource.getAttendances(query: expectedQuery),
+      ).thenAnswer((_) async => [sampleModel]);
+
+      when(
+        () => mockLocalDataSource.cacheAttendances(any()),
+      ).thenAnswer((_) async {});
+
+      when(
+        () => mockLocalDataSource.deleteOlderThan(any()),
+      ).thenAnswer((_) async {});
+
+      final result = await repository.getAttendances(
+        const GetAttendancesParams(
           search: 'Guard',
           limit: 10,
           offset: 0,
           startDate: '2026-09-01T00:00:00.000Z',
           endDate: '2026-09-20T23:59:59.000Z',
-        );
+        ),
+      );
 
-        when(
-          () => mockRemoteDataSource.getAttendances(
-            query: expectedQuery,
-          ),
-        ).thenAnswer((_) async => [sampleModel]);
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Expected Right but got Left: $failure'), (
+        resultEntity,
+      ) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first.id, 'att_01');
+        expect(resultEntity.items.first.category, 'MASUK');
+        expect(resultEntity.isFromCache, isFalse);
+      });
 
-        when(
-          () => mockLocalDataSource.cacheAttendances(any()),
-        ).thenAnswer((_) async {});
-
-        when(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).thenAnswer((_) async {});
-
-        final result = await repository.getAttendances(
-          const GetAttendancesParams(
-            search: 'Guard',
-            limit: 10,
-            offset: 0,
-            startDate: '2026-09-01T00:00:00.000Z',
-            endDate: '2026-09-20T23:59:59.000Z',
-          ),
-        );
-
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Expected Right but got Left: $failure'),
-          (resultEntity) {
-            expect(resultEntity.items.length, 1);
-            expect(resultEntity.items.first.id, 'att_01');
-            expect(resultEntity.items.first.category, 'MASUK');
-            expect(resultEntity.isFromCache, isFalse);
-          },
-        );
-
-        verify(
-          () => mockRemoteDataSource.getAttendances(
-            query: expectedQuery,
-          ),
-        ).called(1);
-        verify(
-          () => mockLocalDataSource.cacheAttendances([sampleModel]),
-        ).called(1);
-        verify(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).called(1);
-      },
-    );
+      verify(
+        () => mockRemoteDataSource.getAttendances(query: expectedQuery),
+      ).called(1);
+      verify(
+        () => mockLocalDataSource.cacheAttendances([sampleModel]),
+      ).called(1);
+      verify(() => mockLocalDataSource.deleteOlderThan(any())).called(1);
+    });
 
     test(
       'falls back to cached data upon network exception and marks isFromCache',
@@ -182,74 +172,64 @@ void main() {
       },
     );
 
-    test(
-      'triggers remote fetch when offline if isRefresh is true',
-      () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-        when(
-          () => mockRemoteDataSource.getAttendances(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) async => [sampleModel]);
-        when(
-          () => mockLocalDataSource.cacheAttendances(any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalDataSource.deleteOlderThan(any()),
-        ).thenAnswer((_) async {});
+    test('triggers remote fetch when offline if isRefresh is true', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      when(
+        () => mockRemoteDataSource.getAttendances(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) async => [sampleModel]);
+      when(
+        () => mockLocalDataSource.cacheAttendances(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDataSource.deleteOlderThan(any()),
+      ).thenAnswer((_) async {});
 
-        final result = await repository.getAttendances(
-          const GetAttendancesParams(
-            search: 'Guard',
-            isRefresh: true,
-          ),
-        );
+      final result = await repository.getAttendances(
+        const GetAttendancesParams(search: 'Guard', isRefresh: true),
+      );
 
-        expect(result.isRight(), isTrue);
-        verify(
-          () => mockRemoteDataSource.getAttendances(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      verify(
+        () => mockRemoteDataSource.getAttendances(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
+    });
 
-    test(
-      'does not trigger remote fetch when offline and returns empty cache '
-      'result when no data found',
-      () async {
-        when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-        when(
-          () => mockLocalDataSource.getCachedAttendances(
-            search: any(named: 'search'),
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => []);
+    test('does not trigger remote fetch when offline and returns empty cache '
+        'result when no data found', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      when(
+        () => mockLocalDataSource.getCachedAttendances(
+          search: any(named: 'search'),
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => []);
 
-        final result = await repository.getAttendances(
-          const GetAttendancesParams(search: 'NonExistent'),
-        );
+      final result = await repository.getAttendances(
+        const GetAttendancesParams(search: 'NonExistent'),
+      );
 
-        expect(result.isRight(), isTrue);
-        result.fold(
-          (failure) => fail('Expected Right but got Left: $failure'),
-          (resultEntity) {
-            expect(resultEntity.items, isEmpty);
-            expect(resultEntity.isFromCache, isTrue);
-          },
-        );
+      expect(result.isRight(), isTrue);
+      result.fold((failure) => fail('Expected Right but got Left: $failure'), (
+        resultEntity,
+      ) {
+        expect(resultEntity.items, isEmpty);
+        expect(resultEntity.isFromCache, isTrue);
+      });
 
-        verifyNever(
-          () => mockRemoteDataSource.getAttendances(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        );
-      },
-    );
+      verifyNever(
+        () => mockRemoteDataSource.getAttendances(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      );
+    });
 
     test(
       'returns Right with empty items and isFromCache true when remote throws '
@@ -309,26 +289,23 @@ void main() {
       },
     );
 
-    test(
-      'returns RequestCancelledFailure on cancelled exception',
-      () async {
-        when(
-          () => mockRemoteDataSource.getAttendances(
-            query: any(named: 'query'),
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenThrow(const RequestCancelledException('Cancelled'));
+    test('returns RequestCancelledFailure on cancelled exception', () async {
+      when(
+        () => mockRemoteDataSource.getAttendances(
+          query: any(named: 'query'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenThrow(const RequestCancelledException('Cancelled'));
 
-        final result = await repository.getAttendances(
-          const GetAttendancesParams(),
-        );
+      final result = await repository.getAttendances(
+        const GetAttendancesParams(),
+      );
 
-        expect(result.isLeft(), isTrue);
-        result.fold(
-          (failure) => expect(failure, isA<RequestCancelledFailure>()),
-          (_) => fail('Expected Left but got Right'),
-        );
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<RequestCancelledFailure>()),
+        (_) => fail('Expected Left but got Right'),
+      );
+    });
   });
 }

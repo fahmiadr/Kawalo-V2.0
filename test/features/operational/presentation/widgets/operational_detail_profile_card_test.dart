@@ -37,31 +37,32 @@ void main() {
   Widget buildTestWidget(OperationalItemEntity item) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: Scaffold(
-        body: OperationalDetailProfileCard(item: item),
-      ),
+      home: Scaffold(body: OperationalDetailProfileCard(item: item)),
     );
   }
 
   group('OperationalDetailProfileCard Tests', () {
-    testWidgets('renders basic profile info, tags, and fallback vector avatar',
-        (tester) async {
-      await tester.pumpWidget(buildTestWidget(sampleWorkerOnDuty));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'renders basic profile info, tags, and fallback vector avatar',
+      (tester) async {
+        await tester.pumpWidget(buildTestWidget(sampleWorkerOnDuty));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppCard), findsOneWidget);
-      expect(find.text('Budi Santoso'), findsOneWidget);
-      expect(find.text('budi@kawalo.id'), findsOneWidget);
-      expect(find.text('ON DUTY'), findsOneWidget);
+        expect(find.byType(AppCard), findsOneWidget);
+        expect(find.text('Budi Santoso'), findsOneWidget);
+        expect(find.text('budi@kawalo.id'), findsOneWidget);
+        expect(find.text('ON DUTY'), findsOneWidget);
 
-      // Verify on-duty uses primary tag variant
-      final tags = tester.widgetList<AppTag>(find.byType(AppTag)).toList();
-      final dutyTag = tags.firstWhere((tag) => tag.label == 'ON DUTY');
-      expect(dutyTag.variant, AppTagVariant.primary);
-    });
+        // Verify on-duty uses primary tag variant
+        final tags = tester.widgetList<AppTag>(find.byType(AppTag)).toList();
+        final dutyTag = tags.firstWhere((tag) => tag.label == 'ON DUTY');
+        expect(dutyTag.variant, AppTagVariant.primary);
+      },
+    );
 
-    testWidgets('renders off-duty tag variant tertiary and handles photo URL',
-        (tester) async {
+    testWidgets('renders off-duty tag variant tertiary and handles photo URL', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget(sampleWorkerWithPic));
       await tester.pump();
 

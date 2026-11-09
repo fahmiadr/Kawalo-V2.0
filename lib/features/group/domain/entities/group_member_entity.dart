@@ -7,11 +7,7 @@ import 'package:equatable/equatable.dart';
 /// di Operasional) dengan prinsip zero legacy.
 class GroupMemberEntity extends Equatable {
   /// Membuat instance [GroupMemberEntity].
-  const GroupMemberEntity({
-    required this.email,
-    this.name,
-    this.profilePic,
-  });
+  const GroupMemberEntity({required this.email, this.name, this.profilePic});
 
   /// Alamat email unik pengguna anggota grup.
   final String email;

@@ -36,33 +36,24 @@ void main() {
     glat: -6.2,
     glong: 106.816666,
   );
-  const tResult = InformationResult(
-    items: [tEntity],
-  );
+  const tResult = InformationResult(items: [tEntity]);
 
   group('GetInformationUseCase Tests', () {
     test('returns InformationResult on success', () async {
       const tParams = GetInformationParams(search: 'Pos Jaga');
       when(
         () => mockRepository.getInformation(any()),
-      ).thenAnswer(
-        (_) async => const Right(tResult),
-      );
+      ).thenAnswer((_) async => const Right(tResult));
 
       final result = await getInformationUseCase(tParams);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (failure) => fail('Should be Right'),
-        (resultEntity) {
-          expect(resultEntity.items.length, 1);
-          expect(resultEntity.items.first.title, 'Pemeriksaan Pos Jaga');
-          expect(resultEntity.isFromCache, isFalse);
-        },
-      );
-      verify(
-        () => mockRepository.getInformation(tParams),
-      ).called(1);
+      result.fold((failure) => fail('Should be Right'), (resultEntity) {
+        expect(resultEntity.items.length, 1);
+        expect(resultEntity.items.first.title, 'Pemeriksaan Pos Jaga');
+        expect(resultEntity.isFromCache, isFalse);
+      });
+      verify(() => mockRepository.getInformation(tParams)).called(1);
     });
 
     test('returns Failure when repository fails', () async {
@@ -79,9 +70,7 @@ void main() {
         (failure) => expect(failure.message, 'Gagal memuat feed'),
         (_) => fail('Should be Left'),
       );
-      verify(
-        () => mockRepository.getInformation(tParams),
-      ).called(1);
+      verify(() => mockRepository.getInformation(tParams)).called(1);
     });
   });
 }

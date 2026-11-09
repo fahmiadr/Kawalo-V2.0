@@ -45,11 +45,11 @@ class IncidentResolvedStreamEvent extends IncidentStreamEvent {
 
   @override
   List<Object?> get props => [
-        incidentId,
-        resolvedBy,
-        resolvedByName,
-        resolvedAt,
-      ];
+    incidentId,
+    resolvedBy,
+    resolvedByName,
+    resolvedAt,
+  ];
 }
 
 /// Event saat insiden dihapus secara administratif (soft-delete) oleh admin.

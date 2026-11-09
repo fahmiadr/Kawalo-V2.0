@@ -43,7 +43,7 @@ class IncidentAttachmentPreview extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: photos.length,
-        separatorBuilder: (_, __) => AppSpacing.hGapSm,
+        separatorBuilder: (_, _) => AppSpacing.hGapSm,
         itemBuilder: (context, index) {
           final photo = photos[index];
 
@@ -68,8 +68,8 @@ class IncidentAttachmentPreview extends StatelessWidget {
               width: 72,
               height: 72,
               fit: BoxFit.cover,
-              placeholder: (_, __) => const AppImagePlaceholder(),
-              errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
+              placeholder: (_, _) => const AppImagePlaceholder(),
+              errorWidget: (_, _, _) => const Icon(Icons.broken_image),
             );
           } else {
             imageWidget = Container(
@@ -85,11 +85,7 @@ class IncidentAttachmentPreview extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: AppRadius.borderMedium,
-                child: SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: imageWidget,
-                ),
+                child: SizedBox(width: 72, height: 72, child: imageWidget),
               ),
               Positioned(
                 top: -8,

@@ -43,10 +43,10 @@ class AppBottomSheet extends StatefulWidget {
     this.maxHeightFactor = 0.85,
     super.key,
   }) : assert(
-          maxHeightFactor > 0 && maxHeightFactor <= 0.90,
-          'maxHeightFactor must be between 0.0 and 0.90 (per Material 3, '
-          'bottom sheets must not cover the full screen)',
-        );
+         maxHeightFactor > 0 && maxHeightFactor <= 0.90,
+         'maxHeightFactor must be between 0.0 and 0.90 (per Material 3, '
+         'bottom sheets must not cover the full screen)',
+       );
 
   /// The primary content inside the bottom sheet.
   final Widget child;
@@ -94,9 +94,8 @@ class _AppBottomSheetState extends State<AppBottomSheet>
   @override
   void initState() {
     super.initState();
-    _snapController = AnimationController.unbounded(
-      vsync: this,
-    )..addListener(() {
+    _snapController = AnimationController.unbounded(vsync: this)
+      ..addListener(() {
         setState(() {
           _dragOffset = _snapController.value;
         });
@@ -220,7 +219,8 @@ class _AppBottomSheetState extends State<AppBottomSheet>
 
     final visualOffset = _dragOffset.clamp(0.0, double.infinity);
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final effectiveMaxHeight = widget.maxHeight ??
+    final effectiveMaxHeight =
+        widget.maxHeight ??
         (screenHeight > 0
             ? screenHeight * widget.maxHeightFactor
             : double.infinity);
@@ -291,9 +291,7 @@ class _AppBottomSheetState extends State<AppBottomSheet>
 
   Widget _buildHandle(M3EColorScheme scheme, M3EBottomSheetTheme sheetTheme) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: sheetTheme.handleVerticalPadding,
-      ),
+      padding: EdgeInsets.symmetric(vertical: sheetTheme.handleVerticalPadding),
       child: Center(
         child: Container(
           width: sheetTheme.handleWidth,
@@ -381,10 +379,10 @@ class _AppBottomSheetRoute<T> extends PopupRoute<T> {
     this.maxHeightFactor = 0.85,
     super.settings,
   }) : assert(
-          maxHeightFactor > 0 && maxHeightFactor <= 0.90,
-          'maxHeightFactor must be between 0.0 and 0.90 (per Material 3, '
-          'bottom sheets must not cover the full screen)',
-        );
+         maxHeightFactor > 0 && maxHeightFactor <= 0.90,
+         'maxHeightFactor must be between 0.0 and 0.90 (per Material 3, '
+         'bottom sheets must not cover the full screen)',
+       );
 
   final WidgetBuilder builder;
   final M3EBottomSheetTheme sheetTheme;
@@ -474,16 +472,10 @@ class _AppBottomSheetRoute<T> extends PopupRoute<T> {
     );
 
     if (m3eTheme != null) {
-      content = M3ETheme(
-        data: m3eTheme!,
-        child: content,
-      );
+      content = M3ETheme(data: m3eTheme!, child: content);
     }
     if (themeData != null) {
-      content = Theme(
-        data: themeData!,
-        child: content,
-      );
+      content = Theme(data: themeData!, child: content);
     }
 
     return content;
@@ -532,15 +524,15 @@ class _AppBottomSheetGestureDetector extends StatelessWidget {
       gestures: <Type, GestureRecognizerFactory<GestureRecognizer>>{
         VerticalDragGestureRecognizer:
             GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
-          () => VerticalDragGestureRecognizer(debugOwner: this),
-          (instance) {
-            instance
-              ..onStart = onVerticalDragStart
-              ..onUpdate = onVerticalDragUpdate
-              ..onEnd = onVerticalDragEnd
-              ..onlyAcceptDragOnThreshold = true;
-          },
-        ),
+              () => VerticalDragGestureRecognizer(debugOwner: this),
+              (instance) {
+                instance
+                  ..onStart = onVerticalDragStart
+                  ..onUpdate = onVerticalDragUpdate
+                  ..onEnd = onVerticalDragEnd
+                  ..onlyAcceptDragOnThreshold = true;
+              },
+            ),
       },
       child: child,
     );

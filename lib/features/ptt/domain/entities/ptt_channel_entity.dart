@@ -1,12 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 /// Status konektivitas soket latar belakang saluran PTT.
-enum PttConnectionStatus {
-  disconnected,
-  connecting,
-  connected,
-  reconnecting,
-}
+enum PttConnectionStatus { disconnected, connecting, connected, reconnecting }
 
 /// Pure Domain Entity yang merepresentasikan sesi saluran PTT aktif.
 class PttChannelEntity extends Equatable {

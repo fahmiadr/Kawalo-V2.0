@@ -6,14 +6,13 @@ import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendanc
 
 void main() {
   group('AttendanceCardSkeleton Widget Tests', () {
-    testWidgets('renders skeleton layout correctly with AppCard wrapper',
-        (tester) async {
+    testWidgets('renders skeleton layout correctly with AppCard wrapper', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
-          home: const Scaffold(
-            body: AttendanceCardSkeleton(),
-          ),
+          home: const Scaffold(body: AttendanceCardSkeleton()),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
@@ -22,16 +21,15 @@ void main() {
       expect(find.byType(AppCard), findsOneWidget);
     });
 
-    testWidgets('renders safely under reduced motion mode without animation',
-        (tester) async {
+    testWidgets('renders safely under reduced motion mode without animation', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
           home: const MediaQuery(
             data: MediaQueryData(disableAnimations: true),
-            child: Scaffold(
-              body: AttendanceCardSkeleton(),
-            ),
+            child: Scaffold(body: AttendanceCardSkeleton()),
           ),
         ),
       );

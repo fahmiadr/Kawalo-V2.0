@@ -69,8 +69,9 @@ class InformationCard extends StatelessWidget {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final photoInfo =
-        item.photos.isNotEmpty ? ', ${item.photos.length} foto terlampir' : '';
+    final photoInfo = item.photos.isNotEmpty
+        ? ', ${item.photos.length} foto terlampir'
+        : '';
     final fileInfo = item.hasFileAttachment ? ', berkas lampiran tersedia' : '';
     final selectedInfo = isSelected ? ', terpilih' : '';
     final semanticLabel =
@@ -84,10 +85,7 @@ class InformationCard extends StatelessWidget {
       semanticLabel: semanticLabel,
       color: isSelected ? colorScheme.surfaceContainerHighest : null,
       border: isSelected
-          ? BorderSide(
-              color: colorScheme.primary,
-              width: 2,
-            )
+          ? BorderSide(color: colorScheme.primary, width: 2)
           : null,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space200,
@@ -149,10 +147,7 @@ class InformationCard extends StatelessWidget {
             runSpacing: AppSpacing.space50,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              AppTag(
-                label: item.typeLabel,
-                variant: item.typeVariant,
-              ),
+              AppTag(label: item.typeLabel, variant: item.typeVariant),
               if (item.hasFileAttachment)
                 const AppTag(
                   label: 'Lampiran',
@@ -167,10 +162,7 @@ class InformationCard extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const AppSvgIcon.color(
-                KawaloColorVectors.calendar1,
-                size: 14,
-              ),
+              const AppSvgIcon.color(KawaloColorVectors.calendar1, size: 14),
               AppSpacing.hGapXs,
               Text(
                 item.displayFeedDt,
@@ -238,7 +230,7 @@ class InformationCard extends StatelessWidget {
                   : 'Edit informasi',
               semanticLabel: effectiveIsOffline
                   ? 'Edit informasi ${item.displayTitle} tidak '
-                      'tersedia saat offline'
+                        'tersedia saat offline'
                   : 'Edit informasi ${item.displayTitle}',
               icon: AppSvgIcon(
                 effectiveIsOffline
@@ -378,7 +370,8 @@ class InformationCard extends StatelessWidget {
 
   Widget _buildAvatarImage(BuildContext context) {
     final pic = item.userProfilePic;
-    final isNetworkUrl = pic != null &&
+    final isNetworkUrl =
+        pic != null &&
         (pic.startsWith('http://') || pic.startsWith('https://'));
 
     if (isNetworkUrl) {
@@ -389,8 +382,8 @@ class InformationCard extends StatelessWidget {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildAvatarFallback(),
-          errorWidget: (_, __, ___) => _buildAvatarFallback(),
+          placeholder: (_, _) => _buildAvatarFallback(),
+          errorWidget: (_, _, _) => _buildAvatarFallback(),
         ),
       );
     }
@@ -400,10 +393,7 @@ class InformationCard extends StatelessWidget {
   Widget _buildAvatarFallback() {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.patrol3,
-        size: 40,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 40),
     );
   }
 }

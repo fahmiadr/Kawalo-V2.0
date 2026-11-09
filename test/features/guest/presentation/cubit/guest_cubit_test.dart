@@ -29,8 +29,7 @@ class MockDeleteGuestUseCase extends Mock implements DeleteGuestUseCase {}
 class MockDeleteBatchGuestUseCase extends Mock
     implements DeleteBatchGuestUseCase {}
 
-class MockCheckoutGuestUseCase extends Mock
-    implements CheckoutGuestUseCase {}
+class MockCheckoutGuestUseCase extends Mock implements CheckoutGuestUseCase {}
 
 class MockGetGroupMembersUseCase extends Mock
     implements GetGroupMembersUseCase {}
@@ -55,11 +54,7 @@ void main() {
     registerFallbackValue(const GetGuestsParams());
     registerFallbackValue(const GetGroupMembersParams());
     registerFallbackValue(
-      const DeleteGuestParams(
-        id: '1',
-        session: dummySession,
-        item: dummyGuest,
-      ),
+      const DeleteGuestParams(id: '1', session: dummySession, item: dummyGuest),
     );
     registerFallbackValue(
       const CheckoutGuestParams(
@@ -112,10 +107,7 @@ void main() {
   );
   const tGuestList = [tGuest];
   const tResult = GuestResult(items: tGuestList);
-  const tCachedResult = GuestResult(
-    items: tGuestList,
-    isFromCache: true,
-  );
+  const tCachedResult = GuestResult(items: tGuestList, isFromCache: true);
 
   test('initial state should be GuestInitial', () {
     expect(cubit.state, const GuestInitial());
@@ -141,8 +133,9 @@ void main() {
     blocTest<GuestCubit, GuestState>(
       'emits [GuestLoading, GuestLoaded] when successful',
       build: () {
-        when(() => mockGetGuestsUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.fetchGuests(),
@@ -166,8 +159,9 @@ void main() {
       'emits [GuestLoading, GuestLoaded] with isFromCache true when '
       'serving cache',
       build: () {
-        when(() => mockGetGuestsUseCase(any()))
-            .thenAnswer((_) async => const Right(tCachedResult));
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Right(tCachedResult));
         return cubit;
       },
       act: (cubit) => cubit.fetchGuests(),
@@ -203,8 +197,9 @@ void main() {
     blocTest<GuestCubit, GuestState>(
       'emits [GuestLoaded] with updated lastSync on pull to refresh',
       build: () {
-        when(() => mockGetGuestsUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.refreshGuests(),
@@ -228,12 +223,7 @@ void main() {
       ),
       build: () {
         when(() => mockGetGuestsUseCase(any())).thenAnswer(
-          (_) async => const Right(
-            GuestResult(
-              items: [],
-              isFromCache: true,
-            ),
-          ),
+          (_) async => const Right(GuestResult(items: [], isFromCache: true)),
         );
         return cubit;
       },
@@ -273,9 +263,9 @@ void main() {
     blocTest<GuestCubit, GuestState>(
       'clears cachedGuests when fetchGuests with new query fails',
       build: () {
-        when(() => mockGetGuestsUseCase(any())).thenAnswer(
-          (_) async => const Left(ServerFailure('Server Error')),
-        );
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Server Error')));
         return cubit;
       },
       seed: () => const GuestLoaded(
@@ -300,8 +290,9 @@ void main() {
         endDate: DateTime(2026, 9, 5),
       ),
       build: () {
-        when(() => mockGetGuestsUseCase(any()))
-            .thenAnswer((_) async => const Left(ServerFailure('Timeout')));
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Timeout')));
         return cubit;
       },
       act: (cubit) => cubit.fetchGuests(
@@ -334,8 +325,9 @@ void main() {
         searchQuery: 'cari',
       ),
       build: () {
-        when(() => mockGetGuestsUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetFilters(),
@@ -370,8 +362,9 @@ void main() {
         filterCreatorEmail: 'satpam.budi@kawalo.id',
       ),
       build: () {
-        when(() => mockGetGuestsUseCase(any()))
-            .thenAnswer((_) async => const Right(tResult));
+        when(
+          () => mockGetGuestsUseCase(any()),
+        ).thenAnswer((_) async => const Right(tResult));
         return cubit;
       },
       act: (cubit) => cubit.resetDateFilter(),
@@ -402,28 +395,19 @@ void main() {
   });
 
   group('GuestLoaded filter helper getters', () {
-    test(
-      'searchQuery getter returns assigned search value or null',
-      () {
-        const stateDefault = GuestLoaded(
-          guests: [],
-          lastSync: 'Waktu',
-        );
-        expect(stateDefault.searchQuery, isNull);
+    test('searchQuery getter returns assigned search value or null', () {
+      const stateDefault = GuestLoaded(guests: [], lastSync: 'Waktu');
+      expect(stateDefault.searchQuery, isNull);
 
-        final stateWithSearch = stateDefault.copyWith(searchQuery: 'john');
-        expect(stateWithSearch.searchQuery, 'john');
-      },
-    );
+      final stateWithSearch = stateDefault.copyWith(searchQuery: 'john');
+      expect(stateWithSearch.searchQuery, 'john');
+    });
 
     test(
       'hasActiveDateFilter bernilai true jika filter period bukan today atau '
       'ada custom date',
       () {
-        const stateDefault = GuestLoaded(
-          guests: [],
-          lastSync: 'Waktu',
-        );
+        const stateDefault = GuestLoaded(guests: [], lastSync: 'Waktu');
         expect(stateDefault.hasActiveDateFilter, isFalse);
 
         final stateWeek = stateDefault.copyWith(
@@ -439,205 +423,150 @@ void main() {
       },
     );
 
-    test(
-      'hasActiveFilter mendeteksi kombinasi pencarian atau tanggal',
-      () {
-        const stateDefault = GuestLoaded(
-          guests: [],
-          lastSync: 'Waktu',
-        );
-        expect(stateDefault.hasActiveFilter, isFalse);
+    test('hasActiveFilter mendeteksi kombinasi pencarian atau tanggal', () {
+      const stateDefault = GuestLoaded(guests: [], lastSync: 'Waktu');
+      expect(stateDefault.hasActiveFilter, isFalse);
 
-        expect(
-          stateDefault.copyWith(searchQuery: 'tamu').hasActiveFilter,
-          isTrue,
-        );
-      },
-    );
+      expect(
+        stateDefault.copyWith(searchQuery: 'tamu').hasActiveFilter,
+        isTrue,
+      );
+    });
   });
 
   group('RequestSequenceGuard in GuestCubit', () {
-    test(
-      'mengabaikan respons dari request lama yang datang terlambat '
-      '(out-of-order)',
-      () async {
-        const guestA = [
-          GuestItemEntity(
-            id: 'guest_A',
-            guestNumber: 'B 1234 CD',
-            guestCategory: 'Tamu',
-            guestDestination: 'Blok A',
-            guestToUserName: 'John Doe',
-            guestPurpose: 'Kunjungan',
-            guestDt: 'Hari ini, 10.00',
-          ),
-        ];
-        const guestB = [
-          GuestItemEntity(
-            id: 'guest_B',
-            guestNumber: 'B 1234 CD',
-            guestCategory: 'Tamu',
-            guestDestination: 'Blok B',
-            guestToUserName: 'John Doe',
-            guestPurpose: 'Kunjungan',
-            guestDt: 'Hari ini, 10.00',
-          ),
-        ];
+    test('mengabaikan respons dari request lama yang datang terlambat '
+        '(out-of-order)', () async {
+      const guestA = [
+        GuestItemEntity(
+          id: 'guest_A',
+          guestNumber: 'B 1234 CD',
+          guestCategory: 'Tamu',
+          guestDestination: 'Blok A',
+          guestToUserName: 'John Doe',
+          guestPurpose: 'Kunjungan',
+          guestDt: 'Hari ini, 10.00',
+        ),
+      ];
+      const guestB = [
+        GuestItemEntity(
+          id: 'guest_B',
+          guestNumber: 'B 1234 CD',
+          guestCategory: 'Tamu',
+          guestDestination: 'Blok B',
+          guestToUserName: 'John Doe',
+          guestPurpose: 'Kunjungan',
+          guestDt: 'Hari ini, 10.00',
+        ),
+      ];
 
-        var firstCallCompleted = false;
+      var firstCallCompleted = false;
 
-        when(
-          () => mockGetGuestsUseCase(
-            any(
-              that: predicate<GetGuestsParams>(
-                (p) => p.search == 'first',
-              ),
-            ),
-          ),
-        ).thenAnswer((_) async {
-          await Future<void>.delayed(const Duration(milliseconds: 100));
-          firstCallCompleted = true;
-          return const Right(GuestResult(items: guestA));
-        });
+      when(
+        () => mockGetGuestsUseCase(
+          any(that: predicate<GetGuestsParams>((p) => p.search == 'first')),
+        ),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        firstCallCompleted = true;
+        return const Right(GuestResult(items: guestA));
+      });
 
-        when(
-          () => mockGetGuestsUseCase(
-            any(
-              that: predicate<GetGuestsParams>(
-                (p) => p.search == 'second',
-              ),
-            ),
-          ),
-        ).thenAnswer((_) async {
-          await Future<void>.delayed(const Duration(milliseconds: 20));
-          return const Right(GuestResult(items: guestB));
-        });
+      when(
+        () => mockGetGuestsUseCase(
+          any(that: predicate<GetGuestsParams>((p) => p.search == 'second')),
+        ),
+      ).thenAnswer((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        return const Right(GuestResult(items: guestB));
+      });
 
-        // Panggil search 'first' lalu segera panggil 'second'
-        final futureFirst = cubit.fetchGuests(search: 'first');
-        final futureSecond = cubit.fetchGuests(search: 'second');
+      // Panggil search 'first' lalu segera panggil 'second'
+      final futureFirst = cubit.fetchGuests(search: 'first');
+      final futureSecond = cubit.fetchGuests(search: 'second');
 
-        await Future.wait([futureFirst, futureSecond]);
+      await Future.wait([futureFirst, futureSecond]);
 
-        expect(firstCallCompleted, isTrue);
-        // State akhir HARUS guestB (karena second adalah yang terbaru),
-        // bukan tertimpa oleh guestA!
-        expect(cubit.state, isA<GuestLoaded>());
-        final loaded = cubit.state as GuestLoaded;
-        expect(loaded.searchQuery, 'second');
-        expect(loaded.guests.first.id, 'guest_B');
-      },
-    );
+      expect(firstCallCompleted, isTrue);
+      // State akhir HARUS guestB (karena second adalah yang terbaru),
+      // bukan tertimpa oleh guestA!
+      expect(cubit.state, isA<GuestLoaded>());
+      final loaded = cubit.state as GuestLoaded;
+      expect(loaded.searchQuery, 'second');
+      expect(loaded.guests.first.id, 'guest_B');
+    });
   });
 
   group('deleteGuest', () {
-    test(
-      'removes item from GuestLoaded state on success',
-      () async {
-        when(() => mockDeleteGuestUseCase(any())).thenAnswer(
-          (_) async => const Right(null),
-        );
+    test('removes item from GuestLoaded state on success', () async {
+      when(
+        () => mockDeleteGuestUseCase(any()),
+      ).thenAnswer((_) async => const Right(null));
 
-        cubit.emit(
-          const GuestLoaded(
-            guests: [tGuest],
-            lastSync: '10:00',
-          ),
-        );
+      cubit.emit(const GuestLoaded(guests: [tGuest], lastSync: '10:00'));
 
-        final result = await cubit.deleteGuest(
-          tGuest,
-          session: tSession,
-        );
+      final result = await cubit.deleteGuest(tGuest, session: tSession);
 
-        expect(result.isRight(), isTrue);
-        expect(cubit.state, isA<GuestLoaded>());
-        final loaded = cubit.state as GuestLoaded;
-        expect(loaded.guests, isEmpty);
-      },
-    );
+      expect(result.isRight(), isTrue);
+      expect(cubit.state, isA<GuestLoaded>());
+      final loaded = cubit.state as GuestLoaded;
+      expect(loaded.guests, isEmpty);
+    });
 
-    test(
-      'does not mutate GuestLoaded state on failure',
-      () async {
-        when(() => mockDeleteGuestUseCase(any())).thenAnswer(
-          (_) async => const Left(ServerFailure('Gagal menghapus data tamu.')),
-        );
+    test('does not mutate GuestLoaded state on failure', () async {
+      when(() => mockDeleteGuestUseCase(any())).thenAnswer(
+        (_) async => const Left(ServerFailure('Gagal menghapus data tamu.')),
+      );
 
-        cubit.emit(
-          const GuestLoaded(
-            guests: [tGuest],
-            lastSync: '10:00',
-          ),
-        );
+      cubit.emit(const GuestLoaded(guests: [tGuest], lastSync: '10:00'));
 
-        final result = await cubit.deleteGuest(
-          tGuest,
-          session: tSession,
-        );
+      final result = await cubit.deleteGuest(tGuest, session: tSession);
 
-        expect(result.isLeft(), isTrue);
-        final loaded = cubit.state as GuestLoaded;
-        expect(loaded.guests.length, 1);
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      final loaded = cubit.state as GuestLoaded;
+      expect(loaded.guests.length, 1);
+    });
   });
 
   group('deleteMultipleGuests', () {
     const tDeleteResult = DeleteBatchResult(deletedCount: 1);
 
-    test(
-      'removes items from GuestLoaded state on success',
-      () async {
-        when(() => mockDeleteBatchGuestUseCase(any())).thenAnswer(
-          (_) async => const Right(tDeleteResult),
-        );
+    test('removes items from GuestLoaded state on success', () async {
+      when(
+        () => mockDeleteBatchGuestUseCase(any()),
+      ).thenAnswer((_) async => const Right(tDeleteResult));
 
-        const guest2 = GuestItemEntity(id: 'guest_2', guestName: 'Guest 2');
-        cubit.emit(
-          const GuestLoaded(
-            guests: [tGuest, guest2],
-            lastSync: '10:00',
-          ),
-        );
+      const guest2 = GuestItemEntity(id: 'guest_2', guestName: 'Guest 2');
+      cubit.emit(
+        const GuestLoaded(guests: [tGuest, guest2], lastSync: '10:00'),
+      );
 
-        final result = await cubit.deleteMultipleGuests(
-          {'guest_1'},
-          session: tSession,
-        );
+      final result = await cubit.deleteMultipleGuests({
+        'guest_1',
+      }, session: tSession);
 
-        expect(result.isRight(), isTrue);
-        expect(cubit.state, isA<GuestLoaded>());
-        final loaded = cubit.state as GuestLoaded;
-        expect(loaded.guests.length, 1);
-        expect(loaded.guests.first.id, 'guest_2');
-      },
-    );
+      expect(result.isRight(), isTrue);
+      expect(cubit.state, isA<GuestLoaded>());
+      final loaded = cubit.state as GuestLoaded;
+      expect(loaded.guests.length, 1);
+      expect(loaded.guests.first.id, 'guest_2');
+    });
 
-    test(
-      'does not mutate GuestLoaded state on failure',
-      () async {
-        when(() => mockDeleteBatchGuestUseCase(any())).thenAnswer(
-          (_) async => const Left(ServerFailure('Gagal menghapus data tamu.')),
-        );
+    test('does not mutate GuestLoaded state on failure', () async {
+      when(() => mockDeleteBatchGuestUseCase(any())).thenAnswer(
+        (_) async => const Left(ServerFailure('Gagal menghapus data tamu.')),
+      );
 
-        cubit.emit(
-          const GuestLoaded(
-            guests: [tGuest],
-            lastSync: '10:00',
-          ),
-        );
+      cubit.emit(const GuestLoaded(guests: [tGuest], lastSync: '10:00'));
 
-        final result = await cubit.deleteMultipleGuests(
-          {'guest_1'},
-          session: tSession,
-        );
+      final result = await cubit.deleteMultipleGuests({
+        'guest_1',
+      }, session: tSession);
 
-        expect(result.isLeft(), isTrue);
-        final loaded = cubit.state as GuestLoaded;
-        expect(loaded.guests.length, 1);
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      final loaded = cubit.state as GuestLoaded;
+      expect(loaded.guests.length, 1);
+    });
   });
 
   group('changeCreatorFilter', () {
@@ -648,9 +577,7 @@ void main() {
     );
 
     test('changes creator filter and fetches server-filtered guests', () async {
-      when(
-        () => mockGetGuestsUseCase(any()),
-      ).thenAnswer((invocation) async {
+      when(() => mockGetGuestsUseCase(any())).thenAnswer((invocation) async {
         final params = invocation.positionalArguments.first as GetGuestsParams;
         if (params.createdBy == 'satpam@kawalo.id') {
           return const Right(GuestResult(items: [tGuest]));
@@ -659,10 +586,7 @@ void main() {
       });
 
       cubit.emit(
-        const GuestLoaded(
-          guests: [tGuest, tGuestOther],
-          lastSync: '10:00',
-        ),
+        const GuestLoaded(guests: [tGuest, tGuestOther], lastSync: '10:00'),
       );
 
       final initialLoaded = cubit.state as GuestLoaded;
@@ -720,18 +644,13 @@ void main() {
 
       test('returns remote group members when use case succeeds', () async {
         const tMembers = [
-          GroupMemberEntity(
-            email: 'member1@kawalo.id',
-            name: 'Member One',
-          ),
-          GroupMemberEntity(
-            email: 'member2@kawalo.id',
-            name: 'Member Two',
-          ),
+          GroupMemberEntity(email: 'member1@kawalo.id', name: 'Member One'),
+          GroupMemberEntity(email: 'member2@kawalo.id', name: 'Member Two'),
         ];
 
-        when(() => mockGetGroupMembersUseCase(any()))
-            .thenAnswer((_) async => const Right(tMembers));
+        when(
+          () => mockGetGroupMembersUseCase(any()),
+        ).thenAnswer((_) async => const Right(tMembers));
 
         final cubitWithMembers = GuestCubit(
           getGuestsUseCase: mockGetGuestsUseCase,
@@ -749,9 +668,9 @@ void main() {
 
       test('returns failure when remote fetch fails', () async {
         const tFailure = ServerFailure('Server Error');
-        when(() => mockGetGroupMembersUseCase(any())).thenAnswer(
-          (_) async => const Left(tFailure),
-        );
+        when(
+          () => mockGetGroupMembersUseCase(any()),
+        ).thenAnswer((_) async => const Left(tFailure));
 
         final cubitWithMembers = GuestCubit(
           getGuestsUseCase: mockGetGuestsUseCase,
@@ -802,10 +721,7 @@ void main() {
       });
 
       test('returns ServerFailure when checkoutGuestUseCase is null', () async {
-        final result = await cubit.checkoutGuest(
-          tGuest,
-          session: tSession,
-        );
+        final result = await cubit.checkoutGuest(tGuest, session: tSession);
 
         expect(
           result,
@@ -815,19 +731,19 @@ void main() {
         );
       });
 
-      test(
-        'delegates to checkoutGuestUseCase and updates item in '
-        'GuestLoaded state',
-        () async {
-          when(() => mockCheckoutGuestUseCase(any()))
-              .thenAnswer((_) async => const Right(tUpdatedGuest));
+      test('delegates to checkoutGuestUseCase and updates item in '
+          'GuestLoaded state', () async {
+        when(
+          () => mockCheckoutGuestUseCase(any()),
+        ).thenAnswer((_) async => const Right(tUpdatedGuest));
 
-          final cubitWithCheckout = GuestCubit(
-            getGuestsUseCase: mockGetGuestsUseCase,
-            deleteGuestUseCase: mockDeleteGuestUseCase,
-            deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
-            checkoutGuestUseCase: mockCheckoutGuestUseCase,
-          )..emit(
+        final cubitWithCheckout =
+            GuestCubit(
+              getGuestsUseCase: mockGetGuestsUseCase,
+              deleteGuestUseCase: mockDeleteGuestUseCase,
+              deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
+              checkoutGuestUseCase: mockCheckoutGuestUseCase,
+            )..emit(
               const GuestLoaded(
                 guests: [tGuest],
                 lastSync: 'Sync',
@@ -835,62 +751,57 @@ void main() {
               ),
             );
 
-          final result = await cubitWithCheckout.checkoutGuest(
-            tGuest,
-            session: tSession,
-            qrUid: 'QR-1',
-          );
+        final result = await cubitWithCheckout.checkoutGuest(
+          tGuest,
+          session: tSession,
+          qrUid: 'QR-1',
+        );
 
-          expect(
-            result,
-            const Right<Failure, GuestItemEntity>(tUpdatedGuest),
-          );
-          verify(
-            () => mockCheckoutGuestUseCase(
-              const CheckoutGuestParams(
-                id: '1',
-                session: tSession,
-                item: tGuest,
-                qrUid: 'QR-1',
-              ),
+        expect(result, const Right<Failure, GuestItemEntity>(tUpdatedGuest));
+        verify(
+          () => mockCheckoutGuestUseCase(
+            const CheckoutGuestParams(
+              id: '1',
+              session: tSession,
+              item: tGuest,
+              qrUid: 'QR-1',
             ),
-          ).called(1);
+          ),
+        ).called(1);
 
-          expect(
-            (cubitWithCheckout.state as GuestLoaded).guests.first.isExited,
-            isTrue,
-          );
-          await cubitWithCheckout.close();
-        },
-      );
+        expect(
+          (cubitWithCheckout.state as GuestLoaded).guests.first.isExited,
+          isTrue,
+        );
+        await cubitWithCheckout.close();
+      });
 
       test('does not modify state when checkoutGuestUseCase fails', () async {
         const tFailure = ValidationFailure('Invalid ID');
-        when(() => mockCheckoutGuestUseCase(any()))
-            .thenAnswer((_) async => const Left(tFailure));
+        when(
+          () => mockCheckoutGuestUseCase(any()),
+        ).thenAnswer((_) async => const Left(tFailure));
 
-        final cubitWithCheckout = GuestCubit(
-          getGuestsUseCase: mockGetGuestsUseCase,
-          deleteGuestUseCase: mockDeleteGuestUseCase,
-          deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
-          checkoutGuestUseCase: mockCheckoutGuestUseCase,
-        )..emit(
-            const GuestLoaded(
-              guests: [tGuest],
-              lastSync: 'Sync',
-              hasMore: false,
-            ),
-          );
+        final cubitWithCheckout =
+            GuestCubit(
+              getGuestsUseCase: mockGetGuestsUseCase,
+              deleteGuestUseCase: mockDeleteGuestUseCase,
+              deleteBatchGuestUseCase: mockDeleteBatchGuestUseCase,
+              checkoutGuestUseCase: mockCheckoutGuestUseCase,
+            )..emit(
+              const GuestLoaded(
+                guests: [tGuest],
+                lastSync: 'Sync',
+                hasMore: false,
+              ),
+            );
 
         final result = await cubitWithCheckout.checkoutGuest(
           tGuest,
           session: tSession,
         );
 
-        expect(
-          result,
-          const Left<Failure, GuestItemEntity>(tFailure),
-        );
+        expect(result, const Left<Failure, GuestItemEntity>(tFailure));
         expect(
           (cubitWithCheckout.state as GuestLoaded).guests.first.isExited,
           isFalse,

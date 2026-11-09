@@ -18,11 +18,7 @@ import 'package:kawalo_mobile/features/incident/presentation/screens/incident_sc
 /// serta konsisten dan serasi dengan tampilan kartu fitur Guest.
 class IncidentCard extends StatelessWidget {
   /// Membuat instance [IncidentCard].
-  const IncidentCard({
-    required this.incident,
-    required this.onTap,
-    super.key,
-  });
+  const IncidentCard({required this.incident, required this.onTap, super.key});
 
   /// Entitas insiden yang ditampilkan pada kartu.
   final IncidentEntity incident;
@@ -78,10 +74,7 @@ class IncidentCard extends StatelessWidget {
                           ),
                         ),
                         AppSpacing.hGapXs,
-                        const AppSvgIcon(
-                          KawaloVectors.arrowRight01,
-                          size: 24,
-                        ),
+                        const AppSvgIcon(KawaloVectors.arrowRight01, size: 24),
                       ],
                     ),
                     Text(
@@ -133,10 +126,7 @@ class IncidentCard extends StatelessWidget {
   Widget _buildAvatar(BuildContext context) {
     return const ClipRRect(
       borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(
-        KawaloColorVectors.incident1,
-        size: 40,
-      ),
+      child: AppSvgIcon.color(KawaloColorVectors.incident1, size: 40),
     );
   }
 
@@ -151,10 +141,7 @@ class IncidentCard extends StatelessWidget {
 
     return Row(
       children: [
-        AppSvgIcon.color(
-          iconPath,
-          size: 20,
-        ),
+        AppSvgIcon.color(iconPath, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(
@@ -170,9 +157,7 @@ class IncidentCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTimestampAndStatusRow({
-    required BuildContext context,
-  }) {
+  Widget _buildTimestampAndStatusRow({required BuildContext context}) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
@@ -183,10 +168,7 @@ class IncidentCard extends StatelessWidget {
 
     return Row(
       children: [
-        const AppSvgIcon.color(
-          KawaloColorVectors.timeRotation,
-          size: 20,
-        ),
+        const AppSvgIcon.color(KawaloColorVectors.timeRotation, size: 20),
         AppSpacing.hGapSm,
         Expanded(
           child: Text(

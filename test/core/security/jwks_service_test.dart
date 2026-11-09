@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,7 +17,8 @@ void main() {
     'kid': 'kawalo-key-1',
     'use': 'sig',
     'alg': 'RS256',
-    'n': 't6ZwGLvl13nmBXjmgVZJeW2oZfmMAxoqtggMeMTJxHD9G2tu64579Ptw54Z8'
+    'n':
+        't6ZwGLvl13nmBXjmgVZJeW2oZfmMAxoqtggMeMTJxHD9G2tu64579Ptw54Z8'
         '-S9eyqyehNyOjVfibuHKy2UhbyYpex8W3mE_JYxxMWZaEzpdYWaoR1L893PY'
         'Od1F88TvXSxHnwJl30gvUMoyKbZWDnwBBflmBiFWbS3WZo9Uv50=',
     'e': 'AQAB',
@@ -27,7 +29,8 @@ void main() {
     'kid': 'kawalo-key-2',
     'use': 'sig',
     'alg': 'RS256',
-    'n': 't6ZwGLvl13nmBXjmgVZJeW2oZfmMAxoqtggMeMTJxHD9G2tu64579Ptw54Z8'
+    'n':
+        't6ZwGLvl13nmBXjmgVZJeW2oZfmMAxoqtggMeMTJxHD9G2tu64579Ptw54Z8'
         '-S9eyqyehNyOjVfibuHKy2UhbyYpex8W3mE_JYxxMWZaEzpdYWaoR1L893PY'
         'Od1F88TvXSxHnwJl30gvUMoyKbZWDnwBBflmBiFWbS3WZo9Uv50=',
     'e': 'AQAB',
@@ -54,8 +57,9 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
       final cachedJwks = jsonEncode({
         'keys': [sampleJwk],
       });
-      when(() => mockStorage.getJwksCache())
-          .thenAnswer((_) async => cachedJwks);
+      when(
+        () => mockStorage.getJwksCache(),
+      ).thenAnswer((_) async => cachedJwks);
 
       final jwksService = JwksService(storageService: mockStorage);
       await jwksService.initialize();
@@ -91,10 +95,7 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
           ),
         );
 
-        final jwksService = JwksService(
-          storageService: mockStorage,
-          dio: dio,
-        );
+        final jwksService = JwksService(storageService: mockStorage, dio: dio);
 
         final pem = await jwksService.getPublicKeyPemForKid('kawalo-key-2');
         expect(pem, isNotNull);
@@ -123,10 +124,7 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
           ),
         );
 
-        final jwksService = JwksService(
-          storageService: mockStorage,
-          dio: dio,
-        );
+        final jwksService = JwksService(storageService: mockStorage, dio: dio);
 
         final pem = await jwksService.getPublicKeyPemForKid('unknown-kid');
         expect(pem, equals(EnvConfig.jwtPublicKeyPem));
@@ -134,9 +132,12 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
     );
 
     test('clearCache clears in-memory and persistent storage', () async {
-      final cachedJwks = jsonEncode({'keys': [sampleJwk]});
-      when(() => mockStorage.getJwksCache())
-          .thenAnswer((_) async => cachedJwks);
+      final cachedJwks = jsonEncode({
+        'keys': [sampleJwk],
+      });
+      when(
+        () => mockStorage.getJwksCache(),
+      ).thenAnswer((_) async => cachedJwks);
       when(() => mockStorage.clearJwksCache()).thenAnswer((_) async {});
 
       final jwksService = JwksService(storageService: mockStorage);

@@ -71,13 +71,11 @@ void main() {
 
     final mockInformationCubit = MockInformationCubit();
     when(() => mockInformationCubit.state).thenReturn(
-      const InformationLoaded(
-        information: [],
-        lastSync: 'Baru saja',
-      ),
+      const InformationLoaded(information: [], lastSync: 'Baru saja'),
     );
-    when(mockInformationCubit.fetchInformation)
-        .thenAnswer((_) async => AppFetchResult.success);
+    when(
+      mockInformationCubit.fetchInformation,
+    ).thenAnswer((_) async => AppFetchResult.success);
 
     Widget child = MultiBlocProvider(
       providers: [
@@ -88,9 +86,7 @@ void main() {
             logoutUseCase: mockLogout,
           )..add(const AuthCheckRequested()),
         ),
-        BlocProvider<InformationCubit>.value(
-          value: mockInformationCubit,
-        ),
+        BlocProvider<InformationCubit>.value(value: mockInformationCubit),
       ],
       child: MainNavigationScreen(initialIndex: initialIndex),
     );
@@ -102,15 +98,13 @@ void main() {
       );
     }
 
-    return MaterialApp(
-      theme: AppTheme.lightThemeData(),
-      home: child,
-    );
+    return MaterialApp(theme: AppTheme.lightThemeData(), home: child);
   }
 
   group('MainNavigationScreen Tests', () {
-    testWidgets('renders custom AppHomeAppBar on home destination',
-        (tester) async {
+    testWidgets('renders custom AppHomeAppBar on home destination', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -120,37 +114,36 @@ void main() {
       );
 
       expect(find.byType(AppHomeAppBar), findsOneWidget);
-      expect(
-        find.text(expectedGreeting),
-        findsOneWidget,
-      );
+      expect(find.text(expectedGreeting), findsOneWidget);
       expect(find.byType(KawaloLogoText), findsOneWidget);
     });
 
     testWidgets(
-        'pull-to-refresh on dashboard content area triggers refresh indicator',
-        (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+      'pull-to-refresh on dashboard content area triggers refresh indicator',
+      (tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppHomeAppBar), findsOneWidget);
+        expect(find.byType(AppHomeAppBar), findsOneWidget);
 
-      // Fling down pada area konten dashboard
-      await tester.fling(
-        find.text('Tamu Terakhir'),
-        const Offset(0, 300),
-        1000,
-      );
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pumpAndSettle();
+        // Fling down pada area konten dashboard
+        await tester.fling(
+          find.text('Tamu Terakhir'),
+          const Offset(0, 300),
+          1000,
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
 
-      // Memastikan AppRefreshIndicator terpasang
-      expect(find.byType(AppRefreshIndicator), findsWidgets);
-    });
+        // Memastikan AppRefreshIndicator terpasang
+        expect(find.byType(AppRefreshIndicator), findsWidgets);
+      },
+    );
 
-    testWidgets('renders all 4 navigation destinations correctly',
-        (tester) async {
+    testWidgets('renders all 4 navigation destinations correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -170,8 +163,9 @@ void main() {
       expect(find.text('Pintasan'), findsOneWidget);
     });
 
-    testWidgets('switches content when tapping different navigation items',
-        (tester) async {
+    testWidgets('switches content when tapping different navigation items', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -180,10 +174,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Pusat informasi'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Cari informasi'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Cari informasi'), findsOneWidget);
       expect(find.text('Belum ada informasi'), findsOneWidget);
 
       // Tap tab "Laporan"
@@ -223,8 +214,9 @@ void main() {
       );
     });
 
-    testWidgets('contains designated Kawalo vectors for all destinations',
-        (tester) async {
+    testWidgets('contains designated Kawalo vectors for all destinations', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -273,8 +265,9 @@ void main() {
       'renders AppBottomOfflineBanner below AppNavigationBar when offline',
       (tester) async {
         final mockConnectivity = MockConnectivityCubit();
-        when(() => mockConnectivity.state)
-            .thenReturn(ConnectivityStatus.offline);
+        when(
+          () => mockConnectivity.state,
+        ).thenReturn(ConnectivityStatus.offline);
 
         await tester.pumpWidget(
           buildTestWidget(connectivityCubit: mockConnectivity),
@@ -294,8 +287,9 @@ void main() {
       'hides offline banner content and keeps safe area spacer when online',
       (tester) async {
         final mockConnectivity = MockConnectivityCubit();
-        when(() => mockConnectivity.state)
-            .thenReturn(ConnectivityStatus.online);
+        when(
+          () => mockConnectivity.state,
+        ).thenReturn(ConnectivityStatus.online);
 
         await tester.pumpWidget(
           buildTestWidget(connectivityCubit: mockConnectivity),

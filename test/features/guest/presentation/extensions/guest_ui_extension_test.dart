@@ -115,16 +115,18 @@ void main() {
       expect(tGuest.hasCheckout, isTrue);
     });
 
-    test('isConfirmed and hasCheckout return false when data is absent or "-"',
-        () {
-      const guestHyphen = GuestItemEntity(
-        id: 'HYPHEN',
-        guestAckDt: '-',
-        guestCheckoutByEmail: '-',
-        guestCheckoutByName: '-',
-      );
-      expect(guestHyphen.isConfirmed, isFalse);
-      expect(guestHyphen.hasCheckout, isFalse);
-    });
+    test(
+      'isConfirmed and hasCheckout return false when data is absent or "-"',
+      () {
+        const guestHyphen = GuestItemEntity(
+          id: 'HYPHEN',
+          guestAckDt: '-',
+          guestCheckoutByEmail: '-',
+          guestCheckoutByName: '-',
+        );
+        expect(guestHyphen.isConfirmed, isFalse);
+        expect(guestHyphen.hasCheckout, isFalse);
+      },
+    );
   });
 }

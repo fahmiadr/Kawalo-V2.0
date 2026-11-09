@@ -28,10 +28,5 @@ class PostIncidentReplyData extends Equatable {
   final AppCancellationToken? cancelToken;
 
   @override
-  List<Object?> get props => [
-        incidentId,
-        message,
-        photos,
-        cancelToken,
-      ];
+  List<Object?> get props => [incidentId, message, photos, cancelToken];
 }

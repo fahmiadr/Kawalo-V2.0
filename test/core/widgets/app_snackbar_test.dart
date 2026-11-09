@@ -7,8 +7,9 @@ void main() {
   group('AppSnackbar / M3ESnackbar Tests', () {
     tearDown(AppSnackbar.hideCurrent);
 
-    testWidgets('renders snackbar message and action directly as widget',
-        (WidgetTester tester) async {
+    testWidgets('renders snackbar message and action directly as widget', (
+      WidgetTester tester,
+    ) async {
       var actionTapped = false;
 
       await tester.pumpWidget(
@@ -31,8 +32,9 @@ void main() {
       expect(actionTapped, isTrue);
     });
 
-    testWidgets('AppSnackbar.show displays snackbar over Overlay',
-        (WidgetTester tester) async {
+    testWidgets('AppSnackbar.show displays snackbar over Overlay', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -40,10 +42,7 @@ void main() {
             body: Builder(
               builder: (context) => ElevatedButton(
                 onPressed: () {
-                  AppSnackbar.show(
-                    context,
-                    message: 'Operasi berhasil',
-                  );
+                  AppSnackbar.show(context, message: 'Operasi berhasil');
                 },
                 child: const Text('Tampilkan'),
               ),
@@ -59,8 +58,9 @@ void main() {
       expect(find.text('Operasi berhasil'), findsOneWidget);
     });
 
-    testWidgets('AppSnackbar.show deduplicates identical rapid calls',
-        (WidgetTester tester) async {
+    testWidgets('AppSnackbar.show deduplicates identical rapid calls', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -68,10 +68,7 @@ void main() {
             body: Builder(
               builder: (context) => ElevatedButton(
                 onPressed: () {
-                  AppSnackbar.show(
-                    context,
-                    message: 'Pesan Duplikat',
-                  );
+                  AppSnackbar.show(context, message: 'Pesan Duplikat');
                 },
                 child: const Text('Spam'),
               ),
@@ -92,8 +89,9 @@ void main() {
       expect(find.text('Pesan Duplikat'), findsOneWidget);
     });
 
-    testWidgets('AppSnackbar.hideCurrent dismisses active overlay',
-        (WidgetTester tester) async {
+    testWidgets('AppSnackbar.hideCurrent dismisses active overlay', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -101,10 +99,7 @@ void main() {
             body: Builder(
               builder: (context) => ElevatedButton(
                 onPressed: () {
-                  AppSnackbar.show(
-                    context,
-                    message: 'Pesan Sementara',
-                  );
+                  AppSnackbar.show(context, message: 'Pesan Sementara');
                 },
                 child: const Text('Show'),
               ),
@@ -124,80 +119,83 @@ void main() {
     });
 
     testWidgets(
-        'displays close button when no action is given and dismisses on tap',
-        (WidgetTester tester) async {
-      var customClosed = false;
+      'displays close button when no action is given and dismisses on tap',
+      (WidgetTester tester) async {
+        var customClosed = false;
 
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  AppSnackbar.show(
-                    context,
-                    message: 'Notifikasi tanpa action',
-                    onClose: () => customClosed = true,
-                  );
-                },
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () {
+                    AppSnackbar.show(
+                      context,
+                      message: 'Notifikasi tanpa action',
+                      onClose: () => customClosed = true,
+                    );
+                  },
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Show'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Show'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Notifikasi tanpa action'), findsOneWidget);
-      final closeButtonFinder = find.bySemanticsLabel('Tutup notifikasi');
-      expect(closeButtonFinder, findsOneWidget);
+        expect(find.text('Notifikasi tanpa action'), findsOneWidget);
+        final closeButtonFinder = find.bySemanticsLabel('Tutup notifikasi');
+        expect(closeButtonFinder, findsOneWidget);
 
-      await tester.tap(closeButtonFinder);
-      await tester.pumpAndSettle();
+        await tester.tap(closeButtonFinder);
+        await tester.pumpAndSettle();
 
-      expect(customClosed, isTrue);
-      expect(find.text('Notifikasi tanpa action'), findsNothing);
-    });
+        expect(customClosed, isTrue);
+        expect(find.text('Notifikasi tanpa action'), findsNothing);
+      },
+    );
 
     testWidgets(
-        'does not display close button when action is provided by default',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  AppSnackbar.show(
-                    context,
-                    message: 'Notifikasi dengan action',
-                    actionLabel: 'Lihat',
-                    onAction: () {},
-                  );
-                },
-                child: const Text('Show'),
+      'does not display close button when action is provided by default',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () {
+                    AppSnackbar.show(
+                      context,
+                      message: 'Notifikasi dengan action',
+                      actionLabel: 'Lihat',
+                      onAction: () {},
+                    );
+                  },
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Show'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text('Show'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Notifikasi dengan action'), findsOneWidget);
-      expect(find.text('Lihat'), findsOneWidget);
-      expect(find.bySemanticsLabel('Tutup notifikasi'), findsNothing);
-    });
+        expect(find.text('Notifikasi dengan action'), findsOneWidget);
+        expect(find.text('Lihat'), findsOneWidget);
+        expect(find.bySemanticsLabel('Tutup notifikasi'), findsNothing);
+      },
+    );
 
-    testWidgets('respects showCloseIcon: false even when action is null',
-        (WidgetTester tester) async {
+    testWidgets('respects showCloseIcon: false even when action is null', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),

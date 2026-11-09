@@ -8,11 +8,7 @@ void main() {
     testWidgets(
       'OnboardingScreen renders progress bar, hero image, title, and action',
       (WidgetTester tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: OnboardingScreen(),
-          ),
-        );
+        await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
 
         await tester.pump();
         expect(find.byType(OnboardingScreen), findsOneWidget);
@@ -30,10 +26,7 @@ void main() {
       'mode',
       (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.dark(),
-            home: const OnboardingScreen(),
-          ),
+          MaterialApp(theme: ThemeData.dark(), home: const OnboardingScreen()),
         );
 
         await tester.pump();
@@ -89,9 +82,7 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: MediaQuery(
-              data: MediaQueryData(
-                textScaler: TextScaler.linear(2),
-              ),
+              data: MediaQueryData(textScaler: TextScaler.linear(2)),
               child: OnboardingScreen(),
             ),
           ),

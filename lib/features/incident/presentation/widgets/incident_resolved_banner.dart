@@ -16,10 +16,7 @@ import 'package:kawalo_mobile/features/incident/presentation/extensions/incident
 /// [AppMotion.spatialFast], dan ikon vektor Kawalo standar.
 class IncidentResolvedBanner extends StatelessWidget {
   /// Membuat instance [IncidentResolvedBanner].
-  const IncidentResolvedBanner({
-    required this.incident,
-    super.key,
-  });
+  const IncidentResolvedBanner({required this.incident, super.key});
 
   /// Entitas insiden yang telah diselesaikan.
   final IncidentEntity incident;

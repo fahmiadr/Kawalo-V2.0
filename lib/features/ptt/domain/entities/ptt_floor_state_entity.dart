@@ -38,11 +38,11 @@ class PttFloorStateEntity extends Equatable {
 
   /// Factory untuk kondisi channel IDLE tanpa pembicara aktif.
   const PttFloorStateEntity.idle({int memberCount = 1})
-      : this(
-          status: PttFloorStatus.idle,
-          speaker: null,
-          memberCount: memberCount,
-        );
+    : this(
+        status: PttFloorStatus.idle,
+        speaker: null,
+        memberCount: memberCount,
+      );
 
   final PttFloorStatus status;
   final PttSpeakerEntity? speaker;

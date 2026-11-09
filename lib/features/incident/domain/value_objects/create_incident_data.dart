@@ -45,13 +45,13 @@ class CreateIncidentData extends Equatable {
 
   @override
   List<Object?> get props => [
-        title,
-        groupId,
-        description,
-        category,
-        glat,
-        glong,
-        photos,
-        cancelToken,
-      ];
+    title,
+    groupId,
+    description,
+    category,
+    glat,
+    glong,
+    photos,
+    cancelToken,
+  ];
 }

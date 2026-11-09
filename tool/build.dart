@@ -83,8 +83,7 @@ Future<void> main(List<String> args) async {
     exit(1);
   }
 
-  final defaultType =
-      platform == BuildPlatform.android ? 'appbundle' : 'ipa';
+  final defaultType = platform == BuildPlatform.android ? 'appbundle' : 'ipa';
   final buildType = typeArg ?? defaultType;
 
   final stopwatch = Stopwatch()..start();
@@ -99,25 +98,13 @@ Future<void> main(List<String> args) async {
   // --- QUALITY GATES ---
   if (!skipGates) {
     print('📦 [1/3] Quality Gate: Sinkronisasi Dependensi (pub get)...');
-    await _runCommand(
-      'flutter',
-      ['pub', 'get'],
-      'Dependency Sync',
-    );
+    await _runCommand('flutter', ['pub', 'get'], 'Dependency Sync');
 
     print('\n🔍 [2/3] Quality Gate: Static Analysis (flutter analyze)...');
-    await _runCommand(
-      'flutter',
-      ['analyze'],
-      'Static Analysis',
-    );
+    await _runCommand('flutter', ['analyze'], 'Static Analysis');
 
     print('\n🧪 [3/3] Quality Gate: Automated Test Suite (flutter test)...');
-    await _runCommand(
-      'flutter',
-      ['test'],
-      'Automated Tests',
-    );
+    await _runCommand('flutter', ['test'], 'Automated Tests');
 
     print('\n✅ Seluruh Quality Gates berhasil dilewati dengan sempurna!\n');
   } else {
@@ -143,8 +130,7 @@ Future<void> main(List<String> args) async {
   await _runCommand('flutter', buildArgs, 'Flutter Build $buildType');
 
   stopwatch.stop();
-  final elapsed =
-      (stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(1);
+  final elapsed = (stopwatch.elapsedMilliseconds / 1000).toStringAsFixed(1);
 
   _printSuccess(
     platform: platform,

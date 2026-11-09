@@ -40,18 +40,14 @@ void main() {
           userEmail: 'agus@kawalo.id',
           userName: 'Agus Setiawan',
           totalActivities: 2,
-          timeline: [
-            DutyTimelineEntity(id: '1', duty: 'Patroli'),
-          ],
+          timeline: [DutyTimelineEntity(id: '1', duty: 'Patroli')],
         );
         const worker2 = OperationalItemEntity(
           id: 'agus@kawalo.id_2026-09-10',
           userEmail: 'agus@kawalo.id',
           userName: 'Agus Setiawan',
           totalActivities: 2,
-          timeline: [
-            DutyTimelineEntity(id: '1', duty: 'Patroli'),
-          ],
+          timeline: [DutyTimelineEntity(id: '1', duty: 'Patroli')],
         );
         const worker3 = OperationalItemEntity(
           id: 'hendra@kawalo.id_2026-09-10',

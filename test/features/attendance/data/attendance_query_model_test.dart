@@ -25,10 +25,7 @@ void main() {
     );
 
     test('toQueryParams omits null fields and preserves search value', () {
-      const query = AttendanceQueryModel(
-        search: 'raw query',
-        offset: 0,
-      );
+      const query = AttendanceQueryModel(search: 'raw query', offset: 0);
 
       final params = query.toQueryParams();
 

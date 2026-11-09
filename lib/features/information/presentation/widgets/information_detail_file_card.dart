@@ -24,11 +24,7 @@ import 'package:path_provider/path_provider.dart';
 ///    "Unduh" (dengan indikator status progres unduhan).
 class InformationDetailFileSection extends StatefulWidget {
   /// Membuat instance [InformationDetailFileSection].
-  const InformationDetailFileSection({
-    required this.item,
-    this.dio,
-    super.key,
-  });
+  const InformationDetailFileSection({required this.item, this.dio, super.key});
 
   /// Data feed informasi yang memuat berkas lampiran.
   final InformationItemEntity item;
@@ -183,10 +179,7 @@ class _InformationDetailFileSectionState
         setState(() {
           _isDownloading = false;
         });
-        AppSnackbar.show(
-          context,
-          message: 'Gagal mengunduh berkas: $e',
-        );
+        AppSnackbar.show(context, message: 'Gagal mengunduh berkas: $e');
       }
     }
   }
@@ -201,7 +194,8 @@ class _InformationDetailFileSectionState
     final colorScheme = theme.colorScheme;
     final emphasizedTypeScale = theme.typography.emphasized;
 
-    final semanticLabel = 'Seksi berkas lampiran $_fileName, '
+    final semanticLabel =
+        'Seksi berkas lampiran $_fileName, '
         'format $_formatDescription';
 
     return AppCard(
@@ -277,10 +271,7 @@ class _InformationDetailFileSectionState
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppSvgIcon(
-                  KawaloVectors.linkSquare02,
-                  size: 16,
-                ),
+                AppSvgIcon(KawaloVectors.linkSquare02, size: 16),
                 AppSpacing.hGapXs,
                 Text('Buka'),
               ],
@@ -303,10 +294,7 @@ class _InformationDetailFileSectionState
                     ),
                   )
                 else
-                  const AppSvgIcon(
-                    KawaloVectors.download01,
-                    size: 16,
-                  ),
+                  const AppSvgIcon(KawaloVectors.download01, size: 16),
                 AppSpacing.hGapXs,
                 Text(_isDownloading ? 'Mengunduh...' : 'Unduh'),
               ],

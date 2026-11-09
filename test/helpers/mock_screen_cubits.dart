@@ -18,9 +18,9 @@ class MockGuestCubit extends MockCubit<GuestState> implements GuestCubit {}
 /// `fetchInformation` berhasil tanpa efek samping.
 MockInformationCubit createStubbedInformationCubit() {
   final cubit = MockInformationCubit();
-  when(() => cubit.state).thenReturn(
-    const InformationLoaded(information: [], lastSync: 'Baru saja'),
-  );
+  when(
+    () => cubit.state,
+  ).thenReturn(const InformationLoaded(information: [], lastSync: 'Baru saja'));
   when(cubit.fetchInformation).thenAnswer((_) async => AppFetchResult.success);
   return cubit;
 }
@@ -29,9 +29,9 @@ MockInformationCubit createStubbedInformationCubit() {
 /// `fetchGuests` berhasil tanpa efek samping.
 MockGuestCubit createStubbedGuestCubit() {
   final cubit = MockGuestCubit();
-  when(() => cubit.state).thenReturn(
-    const GuestLoaded(guests: [], lastSync: 'Baru saja'),
-  );
+  when(
+    () => cubit.state,
+  ).thenReturn(const GuestLoaded(guests: [], lastSync: 'Baru saja'));
   when(cubit.fetchGuests).thenAnswer((_) async => AppFetchResult.success);
   return cubit;
 }

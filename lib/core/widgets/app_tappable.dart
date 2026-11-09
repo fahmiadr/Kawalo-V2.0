@@ -44,14 +44,14 @@ class AppTappable extends StatelessWidget {
     this.onStateChanged,
     this.materialInk = false,
     this.haptic = M3EHapticFeedback.light,
-  })  : _child = child,
-        _builder = null;
+  }) : _child = child,
+       _builder = null;
 
   /// Membuat [AppTappable] dengan [builder] yang peka terhadap interaksi
   /// status.
   const AppTappable.builder({
     required Widget Function(BuildContext context, AppInteractionState state)
-        builder,
+    builder,
     super.key,
     this.onTap,
     this.onLongPress,
@@ -67,12 +67,12 @@ class AppTappable extends StatelessWidget {
     this.onStateChanged,
     this.materialInk = false,
     this.haptic = M3EHapticFeedback.light,
-  })  : _builder = builder,
-        _child = null;
+  }) : _builder = builder,
+       _child = null;
 
   final Widget? _child;
   final Widget Function(BuildContext context, AppInteractionState state)?
-      _builder;
+  _builder;
 
   /// Callback ketika permukaan ditekan.
   final VoidCallback? onTap;
@@ -135,7 +135,7 @@ class AppTappable extends StatelessWidget {
       haptic: haptic,
       builder: (context, state) {
         if (_builder != null) {
-          return _builder!(context, state);
+          return _builder(context, state);
         }
         return _child!;
       },

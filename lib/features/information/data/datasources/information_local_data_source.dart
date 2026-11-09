@@ -69,41 +69,41 @@ class InformationLocalDataSourceImpl implements InformationLocalDataSource {
     if (search != null && search.isNotEmpty) {
       final q = search;
       query = query.and().group(
-            (qBuilder) => qBuilder
-                .titleContains(q, caseSensitive: false)
-                .or()
-                .textContains(q, caseSensitive: false)
-                .or()
-                .userNameContains(q, caseSensitive: false)
-                .or()
-                .userEmailContains(q, caseSensitive: false)
-                .or()
-                .feedTypeContains(q, caseSensitive: false)
-                .or()
-                .eventLocationContains(q, caseSensitive: false),
-          );
+        (qBuilder) => qBuilder
+            .titleContains(q, caseSensitive: false)
+            .or()
+            .textContains(q, caseSensitive: false)
+            .or()
+            .userNameContains(q, caseSensitive: false)
+            .or()
+            .userEmailContains(q, caseSensitive: false)
+            .or()
+            .feedTypeContains(q, caseSensitive: false)
+            .or()
+            .eventLocationContains(q, caseSensitive: false),
+      );
     }
 
     if (startDate != null) {
       final startSpace = startDate.replaceFirst('T', ' ');
       final startT = startDate.replaceFirst(' ', 'T');
       query = query.and().group(
-            (q) => q
-                .feedDtGreaterThan(startSpace, include: true)
-                .or()
-                .feedDtGreaterThan(startT, include: true),
-          );
+        (q) => q
+            .feedDtGreaterThan(startSpace, include: true)
+            .or()
+            .feedDtGreaterThan(startT, include: true),
+      );
     }
 
     if (endDate != null) {
       final endSpace = endDate.replaceFirst('T', ' ');
       final endT = endDate.replaceFirst(' ', 'T');
       query = query.and().group(
-            (q) => q
-                .feedDtLessThan(endSpace, include: true)
-                .or()
-                .feedDtLessThan(endT, include: true),
-          );
+        (q) => q
+            .feedDtLessThan(endSpace, include: true)
+            .or()
+            .feedDtLessThan(endT, include: true),
+      );
     }
 
     final collections = await query.sortByFeedDtDesc().findAll();

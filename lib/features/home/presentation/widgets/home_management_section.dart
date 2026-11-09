@@ -35,30 +35,21 @@ class HomeManagementSection extends StatelessWidget {
         title: 'Manajemen Shift',
         iconPath: KawaloColorVectors.personRotation3,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Manajemen Shift...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Manajemen Shift...');
         },
       ),
       AppShortcutItem(
         title: 'Manajemen Jadwal',
         iconPath: KawaloColorVectors.calendarAdd,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Manajemen Jadwal...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Manajemen Jadwal...');
         },
       ),
       AppShortcutItem(
         title: 'Manajemen Personil',
         iconPath: KawaloColorVectors.patrolAdd,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Manajemen Personil...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Manajemen Personil...');
         },
       ),
       AppShortcutItem(
@@ -66,10 +57,7 @@ class HomeManagementSection extends StatelessWidget {
         subtitle: 'Grup Personil',
         iconPath: KawaloColorVectors.groupAdd1,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Manajemen Grup...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Manajemen Grup...');
         },
       ),
       AppShortcutItem(
@@ -78,10 +66,7 @@ class HomeManagementSection extends StatelessWidget {
         badgeText: 'BARU!',
         iconPath: KawaloColorVectors.fileValidation,
         onTap: () {
-          AppSnackbar.show(
-            context,
-            message: 'Membuka Laporan Bulanan...',
-          );
+          AppSnackbar.show(context, message: 'Membuka Laporan Bulanan...');
         },
       ),
     ];
@@ -90,8 +75,9 @@ class HomeManagementSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveItems = items ?? _getDefaultItems(context);
-    final totalCount =
-        showAddCard ? effectiveItems.length + 1 : effectiveItems.length;
+    final totalCount = showAddCard
+        ? effectiveItems.length + 1
+        : effectiveItems.length;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -102,7 +88,8 @@ class HomeManagementSection extends StatelessWidget {
           title: 'Manajemen',
           linkText: 'Edit',
           semanticLabel: 'Edit susunan manajemen',
-          onPressed: onEditPressed ??
+          onPressed:
+              onEditPressed ??
               () {
                 AppSnackbar.show(
                   context,
@@ -139,7 +126,8 @@ class HomeManagementSection extends StatelessWidget {
                 }
                 return AppAddShortcutCard(
                   label: 'Tambah Manajemen',
-                  onPressed: onAddPressed ??
+                  onPressed:
+                      onAddPressed ??
                       () {
                         AppSnackbar.show(
                           context,

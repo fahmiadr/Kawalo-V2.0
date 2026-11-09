@@ -20,15 +20,12 @@ class MockReverseGeocodeService extends Mock implements ReverseGeocodeService {}
 
 void main() {
   Widget buildTestableWidget(Widget child) {
-    return MaterialApp(
-      theme: AppTheme.lightThemeData(),
-      home: child,
-    );
+    return MaterialApp(theme: AppTheme.lightThemeData(), home: child);
   }
 
   Finder findAddressShimmer() => find.byWidgetPredicate(
-        (w) => w is Semantics && w.properties.label == 'Memuat alamat lokasi',
-      );
+    (w) => w is Semantics && w.properties.label == 'Memuat alamat lokasi',
+  );
 
   group('AppMapPickerDialog Widget Tests', () {
     late MockReverseGeocodeService mockGeocodeService;
@@ -101,16 +98,10 @@ void main() {
         expect(gpsSvgFinder, findsOneWidget);
 
         // 3. Teks Koordinat muncul
-        expect(
-          find.text('Koordinat: -6.208800, 106.845600'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.208800, 106.845600'), findsOneWidget);
 
         // 4. Pastikan teks konfirmasi tombol muncul
-        expect(
-          find.text('Pilih titik ini'),
-          findsOneWidget,
-        );
+        expect(find.text('Pilih titik ini'), findsOneWidget);
 
         // 5. Penanda titik pusat peta menggunakan custom shape M3 dan
         // ground dot
@@ -135,109 +126,104 @@ void main() {
       },
     );
 
-    testWidgets(
-      'confirms selected coordinates and pops AppMapPickerResult',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('confirms selected coordinates and pops AppMapPickerResult', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        AppMapPickerResult? result;
+      AppMapPickerResult? result;
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            Builder(
-              builder: (context) {
-                return Scaffold(
-                  body: ElevatedButton(
-                    onPressed: () async {
-                      result = await AppMapPickerDialog.show(
-                        context,
-                        initialLatitude: -6.1754,
-                        initialLongitude: 106.8272,
-                        initialAddress: 'Monas, Jakarta',
-                        reverseGeocodeService: mockGeocodeService,
-                      );
-                    },
-                    child: const Text('Buka Dialog'),
-                  ),
-                );
-              },
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          Builder(
+            builder: (context) {
+              return Scaffold(
+                body: ElevatedButton(
+                  onPressed: () async {
+                    result = await AppMapPickerDialog.show(
+                      context,
+                      initialLatitude: -6.1754,
+                      initialLongitude: 106.8272,
+                      initialAddress: 'Monas, Jakarta',
+                      reverseGeocodeService: mockGeocodeService,
+                    );
+                  },
+                  child: const Text('Buka Dialog'),
+                ),
+              );
+            },
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Buka dialog
-        await tester.tap(find.text('Buka Dialog'));
-        await tester.pumpAndSettle();
+      // Buka dialog
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('Pilih di peta'), findsOneWidget);
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+      expect(find.text('Pilih di peta'), findsOneWidget);
+      expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
 
-        // Tekan tombol konfirmasi
-        final confirmButton = find.widgetWithText(AppButton, 'Pilih titik ini');
-        expect(confirmButton, findsOneWidget);
-        await tester.tap(confirmButton);
-        await tester.pumpAndSettle();
+      // Tekan tombol konfirmasi
+      final confirmButton = find.widgetWithText(AppButton, 'Pilih titik ini');
+      expect(confirmButton, findsOneWidget);
+      await tester.tap(confirmButton);
+      await tester.pumpAndSettle();
 
-        // Dialog tertutup dan result terisi
-        expect(find.text('Pilih di peta'), findsNothing);
-        expect(result, isNotNull);
-        expect(result!.latitude, equals(-6.1754));
-        expect(result!.longitude, equals(106.8272));
-        expect(result!.address, equals('Monas, Jakarta'));
-      },
-    );
+      // Dialog tertutup dan result terisi
+      expect(find.text('Pilih di peta'), findsNothing);
+      expect(result, isNotNull);
+      expect(result!.latitude, equals(-6.1754));
+      expect(result!.longitude, equals(106.8272));
+      expect(result!.address, equals('Monas, Jakarta'));
+    });
 
-    testWidgets(
-      'pops without result when close button is tapped',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('pops without result when close button is tapped', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        AppMapPickerResult? result = const AppMapPickerResult(
-          latitude: 0,
-          longitude: 0,
-        );
+      AppMapPickerResult? result = const AppMapPickerResult(
+        latitude: 0,
+        longitude: 0,
+      );
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            Builder(
-              builder: (context) {
-                return Scaffold(
-                  body: ElevatedButton(
-                    onPressed: () async {
-                      result = await AppMapPickerDialog.show(
-                        context,
-                        initialLatitude: -6.1754,
-                        initialLongitude: 106.8272,
-                        reverseGeocodeService: mockGeocodeService,
-                      );
-                    },
-                    child: const Text('Buka Dialog'),
-                  ),
-                );
-              },
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          Builder(
+            builder: (context) {
+              return Scaffold(
+                body: ElevatedButton(
+                  onPressed: () async {
+                    result = await AppMapPickerDialog.show(
+                      context,
+                      initialLatitude: -6.1754,
+                      initialLongitude: 106.8272,
+                      reverseGeocodeService: mockGeocodeService,
+                    );
+                  },
+                  child: const Text('Buka Dialog'),
+                ),
+              );
+            },
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Buka Dialog'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pumpAndSettle();
 
-        // Tutup via tombol close
-        await tester.tap(find.bySemanticsLabel('Tutup'));
-        await tester.pumpAndSettle();
+      // Tutup via tombol close
+      await tester.tap(find.bySemanticsLabel('Tutup'));
+      await tester.pumpAndSettle();
 
-        expect(result, isNull);
-      },
-    );
+      expect(result, isNull);
+    });
 
     testWidgets(
       'acquires GPS position and confirms selected location when GPS FAB '
@@ -314,14 +300,8 @@ void main() {
 
         // Titik terdeteksi sesuai posisi GPS pengguna setelah tombol
         // GPS ditekan
-        expect(
-          find.text('Koordinat: -7.250445, 112.768845'),
-          findsOneWidget,
-        );
-        expect(
-          find.text('Jl. Tunjungan No. 1, Surabaya'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -7.250445, 112.768845'), findsOneWidget);
+        expect(find.text('Jl. Tunjungan No. 1, Surabaya'), findsOneWidget);
 
         // Konfirmasi titik lokasi GPS
         await tester.tap(find.widgetWithText(AppButton, 'Pilih titik ini'));
@@ -334,38 +314,32 @@ void main() {
       },
     );
 
-    testWidgets(
-      'falls back to default coordinates when GPS fails and initial '
-      'coordinates are null',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('falls back to default coordinates when GPS fails and initial '
+        'coordinates are null', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              reverseGeocodeService: mockGeocodeService,
-              locationProvider: () async =>
-                  const LocationResult.serviceDisabled(),
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            reverseGeocodeService: mockGeocodeService,
+            locationProvider: () async =>
+                const LocationResult.serviceDisabled(),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Tetap menggunakan koordinat default (Jakarta) secara aman tanpa crash
-        expect(
-          find.text('Koordinat: -6.208800, 106.845600'),
-          findsOneWidget,
-        );
+      // Tetap menggunakan koordinat default (Jakarta) secara aman tanpa crash
+      expect(find.text('Koordinat: -6.208800, 106.845600'), findsOneWidget);
 
-        // Tombol konfirmasi harus disabled saat tidak ada fix GPS atau input
-        final confirmButton = tester.widget<AppButton>(
-          find.widgetWithText(AppButton, 'Pilih titik ini'),
-        );
-        expect(confirmButton.onPressed, isNull);
-      },
-    );
+      // Tombol konfirmasi harus disabled saat tidak ada fix GPS atau input
+      final confirmButton = tester.widget<AppButton>(
+        find.widgetWithText(AppButton, 'Pilih titik ini'),
+      );
+      expect(confirmButton.onPressed, isNull);
+    });
 
     testWidgets(
       'uses lastKnownLocationProvider as camera viewport hint while confirm '
@@ -404,10 +378,7 @@ void main() {
         await tester.pump();
 
         // Kamera awal berpusat pada koordinat cache sebagai viewport hint
-        expect(
-          find.text('Koordinat: -7.797068, 110.370529'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -7.797068, 110.370529'), findsOneWidget);
 
         // Tombol konfirmasi dinonaktifkan karena cache bukan titik
         // terkonfirmasi
@@ -442,10 +413,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Koordinat terupdate ke posisi fresh GPS
-        expect(
-          find.text('Koordinat: -7.795000, 110.365000'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -7.795000, 110.365000'), findsOneWidget);
 
         // Tombol konfirmasi sekarang aktif
         confirmButton = tester.widget<AppButton>(
@@ -491,10 +459,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Kamera tetap di hint viewport cache
-        expect(
-          find.text('Koordinat: -7.797068, 110.370529'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -7.797068, 110.370529'), findsOneWidget);
 
         // Tombol konfirmasi tetap nonaktif karena cache DILARANG jadi fallback
         var confirmButton = tester.widget<AppButton>(
@@ -764,120 +729,108 @@ void main() {
         // 4. Modal tertutup & lokasi GPS berhasil didapat pada percobaan ulang
         expect(find.text('Izin akses lokasi dibutuhkan'), findsNothing);
         expect(callCount, equals(2));
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'explicit tap on "Izinkan akses" keeps bottom sheet open when '
-      'permission is still denied',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('explicit tap on "Izinkan akses" keeps bottom sheet open when '
+        'permission is still denied', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        var callCount = 0;
-        Future<LocationResult> testLocationProvider() async {
-          callCount++;
-          return const LocationResult.permissionDenied();
-        }
+      var callCount = 0;
+      Future<LocationResult> testLocationProvider() async {
+        callCount++;
+        return const LocationResult.permissionDenied();
+      }
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              initialLatitude: -6.2088,
-              initialLongitude: 106.8456,
-              reverseGeocodeService: mockGeocodeService,
-              locationProvider: testLocationProvider,
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            initialLatitude: -6.2088,
+            initialLongitude: 106.8456,
+            reverseGeocodeService: mockGeocodeService,
+            locationProvider: testLocationProvider,
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(AppFab));
-        await tester.pumpAndSettle();
+      await tester.tap(find.byType(AppFab));
+      await tester.pumpAndSettle();
 
-        expect(find.text('Izin akses lokasi dibutuhkan'), findsOneWidget);
+      expect(find.text('Izin akses lokasi dibutuhkan'), findsOneWidget);
 
-        // Ketuk tombol aksi primer 'Izinkan akses'
-        await tester.tap(find.widgetWithText(AppButton, 'Izinkan akses'));
-        await tester.pumpAndSettle();
+      // Ketuk tombol aksi primer 'Izinkan akses'
+      await tester.tap(find.widgetWithText(AppButton, 'Izinkan akses'));
+      await tester.pumpAndSettle();
 
-        // Izin masih ditolak: bottom sheet TETAP terbuka di layar
-        expect(callCount, equals(2));
-        expect(find.text('Izin akses lokasi dibutuhkan'), findsOneWidget);
-      },
-    );
+      // Izin masih ditolak: bottom sheet TETAP terbuka di layar
+      expect(callCount, equals(2));
+      expect(find.text('Izin akses lokasi dibutuhkan'), findsOneWidget);
+    });
 
-    testWidgets(
-      'explicit tap on GPS FAB when timeout shows AppSnackbar with '
-      'action Coba lagi',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('explicit tap on GPS FAB when timeout shows AppSnackbar with '
+        'action Coba lagi', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        var retryTriggered = false;
+      var retryTriggered = false;
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              initialLatitude: -6.2088,
-              initialLongitude: 106.8456,
-              reverseGeocodeService: mockGeocodeService,
-              locationProvider: () async {
-                if (retryTriggered) {
-                  return LocationResult.success(
-                    Position(
-                      latitude: -6.1754,
-                      longitude: 106.8272,
-                      timestamp: DateTime.now(),
-                      accuracy: 5,
-                      altitude: 10,
-                      altitudeAccuracy: 1,
-                      heading: 0,
-                      headingAccuracy: 1,
-                      speed: 0,
-                      speedAccuracy: 1,
-                    ),
-                  );
-                }
-                return const LocationResult.timeout();
-              },
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            initialLatitude: -6.2088,
+            initialLongitude: 106.8456,
+            reverseGeocodeService: mockGeocodeService,
+            locationProvider: () async {
+              if (retryTriggered) {
+                return LocationResult.success(
+                  Position(
+                    latitude: -6.1754,
+                    longitude: 106.8272,
+                    timestamp: DateTime.now(),
+                    accuracy: 5,
+                    altitude: 10,
+                    altitudeAccuracy: 1,
+                    heading: 0,
+                    headingAccuracy: 1,
+                    speed: 0,
+                    speedAccuracy: 1,
+                  ),
+                );
+              }
+              return const LocationResult.timeout();
+            },
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. Ketuk tombol GPS FAB
-        await tester.tap(find.byType(AppFab));
-        await tester.pumpAndSettle();
+      // 1. Ketuk tombol GPS FAB
+      await tester.tap(find.byType(AppFab));
+      await tester.pumpAndSettle();
 
-        // 2. AppSnackbar muncul (bukan modal bottom sheet)
-        expect(
-          find.text(
-            'Waktu deteksi lokasi habis. Pastikan berada di area terbuka.',
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('Waktu deteksi lokasi habis'), findsNothing);
-        expect(find.text('Coba lagi'), findsOneWidget);
+      // 2. AppSnackbar muncul (bukan modal bottom sheet)
+      expect(
+        find.text(
+          'Waktu deteksi lokasi habis. Pastikan berada di area terbuka.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Waktu deteksi lokasi habis'), findsNothing);
+      expect(find.text('Coba lagi'), findsOneWidget);
 
-        // 3. Ketuk 'Coba lagi' pada snackbar
-        retryTriggered = true;
-        await tester.tap(find.text('Coba lagi'));
-        await tester.pumpAndSettle();
+      // 3. Ketuk 'Coba lagi' pada snackbar
+      retryTriggered = true;
+      await tester.tap(find.text('Coba lagi'));
+      await tester.pumpAndSettle();
 
-        // 4. Berhasil memperoleh lokasi pada percobaan ulang
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
-      },
-    );
+      // 4. Berhasil memperoleh lokasi pada percobaan ulang
+      expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
+    });
 
     testWidgets(
       'explicit tap on GPS FAB when unexpected exception is thrown catches '
@@ -936,10 +889,7 @@ void main() {
         // 4. Modal tertutup dan lokasi berhasil diperoleh
         expect(find.text('Gagal mendeteksi lokasi'), findsNothing);
         expect(callCount, equals(2));
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
       },
     );
 
@@ -1363,47 +1313,40 @@ void main() {
       },
     );
 
-    testWidgets(
-      'updates coordinate text in real time during drag gesture',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('updates coordinate text in real time during drag gesture', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              initialLatitude: -6.2088,
-              initialLongitude: 106.8456,
-              initialAddress: 'Alamat Awal',
-              reverseGeocodeService: mockGeocodeService,
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            initialLatitude: -6.2088,
+            initialLongitude: 106.8456,
+            initialAddress: 'Alamat Awal',
+            reverseGeocodeService: mockGeocodeService,
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('Koordinat: -6.208800, 106.845600'),
-          findsOneWidget,
-        );
+      expect(find.text('Koordinat: -6.208800, 106.845600'), findsOneWidget);
 
-        // Lakukan gesture drag pada peta
-        await tester.drag(find.byType(FlutterMap), const Offset(0, -50));
-        await tester.pump();
+      // Lakukan gesture drag pada peta
+      await tester.drag(find.byType(FlutterMap), const Offset(0, -50));
+      await tester.pump();
 
-        // Koordinat teks langsung berubah seketika tanpa menunggu debounce
-        expect(
-          find.text('Koordinat: -6.208800, 106.845600'),
-          findsNothing,
-        );
-        expect(
-          find.byWidgetPredicate(
-            (w) => w is Text && (w.data?.startsWith('Koordinat: ') ?? false),
-          ),
-          findsOneWidget,
-        );
-      },
-    );
+      // Koordinat teks langsung berubah seketika tanpa menunggu debounce
+      expect(find.text('Koordinat: -6.208800, 106.845600'), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is Text && (w.data?.startsWith('Koordinat: ') ?? false),
+        ),
+        findsOneWidget,
+      );
+    });
 
     testWidgets(
       'automatically self-heals via AppLifecycleState.resumed when GPS is '
@@ -1455,31 +1398,23 @@ void main() {
 
         // Tombol konfirmasi dinonaktifkan
         final confirmFinder = find.widgetWithText(AppButton, 'Pilih titik ini');
-        expect(
-          tester.widget<AppButton>(confirmFinder).onPressed,
-          isNull,
-        );
+        expect(tester.widget<AppButton>(confirmFinder).onPressed, isNull);
 
         // Pengguna menyalakan sakelar GPS di Pengaturan OS dan kembali ke app
         isGpsTurnedOnInSettings = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // Verifikasi Self-Healing: GPS fix otomatis diperoleh, kamera berpindah
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
 
         // Lembar galat otomatis tertutup setelah perolehan GPS berhasil
         expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
 
         // Tombol konfirmasi sekarang otomatis aktif tanpa ketukan manual
-        expect(
-          tester.widget<AppButton>(confirmFinder).onPressed,
-          isNotNull,
-        );
+        expect(tester.widget<AppButton>(confirmFinder).onPressed, isNotNull);
       },
     );
 
@@ -1531,33 +1466,29 @@ void main() {
         expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
 
         // 2. Pengguna mengusap bilah status (membuka panel Quick Settings)
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
         await tester.pump();
 
         // 3. Pengguna mengaktifkan sakelar Lokasi di Quick Settings
         isGpsTurnedOnInQuickSettings = true;
 
         // 4. Pengguna menutup panel Quick Settings (kembali ke aplikasi)
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // 5. Verifikasi Self-Healing: GPS fix otomatis diperoleh, kamera
         //    berpindah
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
 
         // Lembar galat otomatis tertutup setelah perolehan GPS berhasil
         expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
 
         final confirmFinder = find.widgetWithText(AppButton, 'Pilih titik ini');
-        expect(
-          tester.widget<AppButton>(confirmFinder).onPressed,
-          isNotNull,
-        );
+        expect(tester.widget<AppButton>(confirmFinder).onPressed, isNotNull);
       },
     );
 
@@ -1608,122 +1539,116 @@ void main() {
         expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
 
         // Pengguna membuka Quick Settings tetapi TIDAK menyalakan GPS
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
         await tester.pump();
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // Lembar galat tetap satu (tidak ada duplikasi modal)
         expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
 
         // Pengguna membuka Quick Settings kedua kalinya dan menyalakan GPS
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
         await tester.pump();
         isGpsTurnedOn = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // Galat otomatis tertutup dan lokasi diperoleh
         expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'does not trigger auto-recovery on resume if user has manually '
-      'interacted with map, protecting manual coordinates',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('does not trigger auto-recovery on resume if user has manually '
+        'interacted with map, protecting manual coordinates', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        var isGpsTurnedOnInSettings = false;
-        var gpsCallCount = 0;
+      var isGpsTurnedOnInSettings = false;
+      var gpsCallCount = 0;
 
-        Future<LocationResult> testLocationProvider() async {
-          gpsCallCount++;
-          if (!isGpsTurnedOnInSettings) {
-            return const LocationResult.serviceDisabled();
-          }
-          return LocationResult.success(
-            Position(
-              latitude: -6.1754,
-              longitude: 106.8272,
-              timestamp: DateTime.now(),
-              accuracy: 5,
-              altitude: 10,
-              altitudeAccuracy: 1,
-              heading: 0,
-              headingAccuracy: 1,
-              speed: 0,
-              speedAccuracy: 1,
-            ),
-          );
+      Future<LocationResult> testLocationProvider() async {
+        gpsCallCount++;
+        if (!isGpsTurnedOnInSettings) {
+          return const LocationResult.serviceDisabled();
         }
-
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              autoTriggerGps: false,
-              reverseGeocodeService: mockGeocodeService,
-              locationProvider: testLocationProvider,
-            ),
+        return LocationResult.success(
+          Position(
+            latitude: -6.1754,
+            longitude: 106.8272,
+            timestamp: DateTime.now(),
+            accuracy: 5,
+            altitude: 10,
+            altitudeAccuracy: 1,
+            heading: 0,
+            headingAccuracy: 1,
+            speed: 0,
+            speedAccuracy: 1,
           ),
         );
-        await tester.pumpAndSettle();
+      }
 
-        // 1. Pengguna mengetuk tombol GPS FAB -> galat muncul
-        await tester.tap(find.byType(AppFab));
-        await tester.pumpAndSettle();
-        expect(gpsCallCount, equals(1));
-        expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            autoTriggerGps: false,
+            reverseGeocodeService: mockGeocodeService,
+            locationProvider: testLocationProvider,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 2. Pengguna menutup lembar galat dengan menekan "Pilih manual"
-        await tester.tap(find.widgetWithText(AppButton, 'Pilih manual'));
-        await tester.pumpAndSettle();
-        expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
+      // 1. Pengguna mengetuk tombol GPS FAB -> galat muncul
+      await tester.tap(find.byType(AppFab));
+      await tester.pumpAndSettle();
+      expect(gpsCallCount, equals(1));
+      expect(find.text('Layanan lokasi belum diaktifkan'), findsOneWidget);
 
-        // 3. Pengguna menggeser peta secara manual
-        await tester.drag(find.byType(FlutterMap), const Offset(0, -100));
-        await tester.pumpAndSettle();
+      // 2. Pengguna menutup lembar galat dengan menekan "Pilih manual"
+      await tester.tap(find.widgetWithText(AppButton, 'Pilih manual'));
+      await tester.pumpAndSettle();
+      expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
 
-        final manualCoordFinder = find.byWidgetPredicate(
-          (widget) =>
-              widget is Text &&
-              (widget.data?.startsWith('Koordinat:') ?? false),
-        );
-        final manualCoordText = tester.widget<Text>(manualCoordFinder).data;
+      // 3. Pengguna menggeser peta secara manual
+      await tester.drag(find.byType(FlutterMap), const Offset(0, -100));
+      await tester.pumpAndSettle();
 
-        // 4. Aplikasi berpindah ke background dan kembali
-        isGpsTurnedOnInSettings = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-        await tester.pump();
-        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-        await tester.pumpAndSettle();
+      final manualCoordFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is Text && (widget.data?.startsWith('Koordinat:') ?? false),
+      );
+      final manualCoordText = tester.widget<Text>(manualCoordFinder).data;
 
-        // 5. Verifikasi: GPS TIDAK dipanggil lagi dan koordinat manual tidak
-        //    tertimpa
-        expect(gpsCallCount, equals(1));
-        expect(
-          tester.widget<Text>(manualCoordFinder).data,
-          equals(manualCoordText),
-        );
-      },
-    );
+      // 4. Aplikasi berpindah ke background dan kembali
+      isGpsTurnedOnInSettings = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      // 5. Verifikasi: GPS TIDAK dipanggil lagi dan koordinat manual tidak
+      //    tertimpa
+      expect(gpsCallCount, equals(1));
+      expect(
+        tester.widget<Text>(manualCoordFinder).data,
+        equals(manualCoordText),
+      );
+    });
 
     testWidgets(
       'concurrency guard: ignores duplicate calls when GPS locating is busy',
@@ -1761,9 +1686,7 @@ void main() {
         await tester.pump();
         expect(callCount, equals(1));
 
-        slowCompleter.complete(
-          const LocationResult.serviceDisabled(),
-        );
+        slowCompleter.complete(const LocationResult.serviceDisabled());
         await tester.pumpAndSettle();
       },
     );
@@ -1802,9 +1725,7 @@ void main() {
         expect(capturedToken!.isCancelled, isFalse);
 
         // Unmount widget (dispose dialog)
-        await tester.pumpWidget(
-          buildTestableWidget(const SizedBox.shrink()),
-        );
+        await tester.pumpWidget(buildTestableWidget(const SizedBox.shrink()));
 
         // Verifikasi cancelToken dibatalkan saat dialog di-dispose
         expect(capturedToken!.isCancelled, isTrue);
@@ -1855,8 +1776,9 @@ void main() {
         expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
 
         // 3. Aplikasi beralih ke background dan kembali aktif (resumed)
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // 4. Verifikasi: GPS TIDAK dipanggil lagi dan lembar galat TIDAK muncul
@@ -1914,17 +1836,15 @@ void main() {
 
         // 2. GPS diaktifkan di Pengaturan OS dan aplikasi resume
         isGpsTurnedOn = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // 3. Verifikasi: Lembar galat otomatis tertutup dan koordinat
         //    diperbarui
         expect(find.text('Layanan lokasi belum diaktifkan'), findsNothing);
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
       },
     );
 
@@ -1977,115 +1897,107 @@ void main() {
 
         // 2. Izin presisi diaktifkan pengguna di Pengaturan OS lalu resume
         isPreciseGranted = true;
-        tester.binding
-            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
         await tester.pumpAndSettle();
 
         // 3. Verifikasi: Lembar galat otomatis tertutup dan posisi diperbarui
         expect(find.text('Akses lokasi presisi diperlukan'), findsNothing);
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'immediately triggers reverse geocoding on initial coordinates '
-      'without delay when initialAddress is null',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('immediately triggers reverse geocoding on initial coordinates '
+        'without delay when initialAddress is null', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        final completer = Completer<ReverseGeocodeResult>();
-        when(
-          () => mockGeocodeService.reverseGeocode(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer((_) => completer.future);
+      final completer = Completer<ReverseGeocodeResult>();
+      when(
+        () => mockGeocodeService.reverseGeocode(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer((_) => completer.future);
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              initialLatitude: -6.2088,
-              initialLongitude: 106.8456,
-              reverseGeocodeService: mockGeocodeService,
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            initialLatitude: -6.2088,
+            initialLongitude: 106.8456,
+            reverseGeocodeService: mockGeocodeService,
           ),
-        );
-        // Single pump (first frame): reverse geocode must already be triggered
-        await tester.pump();
-        expect(findAddressShimmer(), findsOneWidget);
-        verify(
-          () => mockGeocodeService.reverseGeocode(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
+        ),
+      );
+      // Single pump (first frame): reverse geocode must already be triggered
+      await tester.pump();
+      expect(findAddressShimmer(), findsOneWidget);
+      verify(
+        () => mockGeocodeService.reverseGeocode(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
 
-        // Resolve geocoding
-        completer.complete(
-          const ReverseGeocodeResult.success(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            address: 'Jl. Merdeka No. 45',
-          ),
-        );
-        await tester.pumpAndSettle();
+      // Resolve geocoding
+      completer.complete(
+        const ReverseGeocodeResult.success(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          address: 'Jl. Merdeka No. 45',
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(findAddressShimmer(), findsNothing);
-        expect(find.text('Jl. Merdeka No. 45'), findsOneWidget);
-      },
-    );
+      expect(findAddressShimmer(), findsNothing);
+      expect(find.text('Jl. Merdeka No. 45'), findsOneWidget);
+    });
 
-    testWidgets(
-      'immediately triggers reverse geocoding on initial coordinates '
-      'when initialAddress is empty string or whitespace',
-      (tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(() => tester.view.reset());
+    testWidgets('immediately triggers reverse geocoding on initial coordinates '
+        'when initialAddress is empty string or whitespace', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(() => tester.view.reset());
 
-        when(
-          () => mockGeocodeService.reverseGeocode(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).thenAnswer(
-          (_) async => const ReverseGeocodeResult.success(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            address: 'Jl. Sudirman No. 10',
-          ),
-        );
+      when(
+        () => mockGeocodeService.reverseGeocode(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).thenAnswer(
+        (_) async => const ReverseGeocodeResult.success(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          address: 'Jl. Sudirman No. 10',
+        ),
+      );
 
-        await tester.pumpWidget(
-          buildTestableWidget(
-            AppMapPickerDialog(
-              initialLatitude: -6.2088,
-              initialLongitude: 106.8456,
-              initialAddress: '   ',
-              reverseGeocodeService: mockGeocodeService,
-            ),
+      await tester.pumpWidget(
+        buildTestableWidget(
+          AppMapPickerDialog(
+            initialLatitude: -6.2088,
+            initialLongitude: 106.8456,
+            initialAddress: '   ',
+            reverseGeocodeService: mockGeocodeService,
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.text('Jl. Sudirman No. 10'), findsOneWidget);
-        verify(
-          () => mockGeocodeService.reverseGeocode(
-            latitude: -6.2088,
-            longitude: 106.8456,
-            cancelToken: any(named: 'cancelToken'),
-          ),
-        ).called(1);
-      },
-    );
+      expect(find.text('Jl. Sudirman No. 10'), findsOneWidget);
+      verify(
+        () => mockGeocodeService.reverseGeocode(
+          latitude: -6.2088,
+          longitude: 106.8456,
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      ).called(1);
+    });
 
     testWidgets(
       'automatically triggers GPS search on open when without initial '
@@ -2134,10 +2046,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verifikasi bahwa titik GPS berhasil dikunci dan tombol aktif
-        expect(
-          find.text('Koordinat: -6.175400, 106.827200'),
-          findsOneWidget,
-        );
+        expect(find.text('Koordinat: -6.175400, 106.827200'), findsOneWidget);
         expect(find.text('Jl. Monas No. 1'), findsOneWidget);
         final confirmButton = tester.widget<AppButton>(
           find.widgetWithText(AppButton, 'Pilih titik ini'),

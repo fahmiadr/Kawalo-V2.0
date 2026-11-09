@@ -4,10 +4,7 @@ import 'package:kawalo_mobile/core/widgets/kawalo_logo.dart';
 
 /// Responsive brand typography logo for KAWALO Splash Screen.
 class BrandLogoWidget extends StatelessWidget {
-  const BrandLogoWidget({
-    super.key,
-    this.fontSize,
-  });
+  const BrandLogoWidget({super.key, this.fontSize});
 
   final double? fontSize;
 

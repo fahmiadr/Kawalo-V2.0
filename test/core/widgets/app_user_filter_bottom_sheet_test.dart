@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart' show Left, Right;
@@ -16,14 +17,8 @@ void main() {
   group('AppUserFilterBottomSheet Widget Tests', () {
     tearDown(AppSnackbar.hideCurrent);
     const testUsers = [
-      UserFilterOption(
-        email: 'budi@kawalo.id',
-        name: 'Budi Santoso',
-      ),
-      UserFilterOption(
-        email: 'siti@kawalo.id',
-        name: 'Siti Rahmawati',
-      ),
+      UserFilterOption(email: 'budi@kawalo.id', name: 'Budi Santoso'),
+      UserFilterOption(email: 'siti@kawalo.id', name: 'Siti Rahmawati'),
     ];
 
     const testSession = AuthSessionEntity(
@@ -36,8 +31,9 @@ void main() {
       role: 'ADMIN',
     );
 
-    testWidgets('renders users and returns selected user on apply',
-        (tester) async {
+    testWidgets('renders users and returns selected user on apply', (
+      tester,
+    ) async {
       AppUserFilterResult? selected;
 
       await tester.pumpWidget(
@@ -109,8 +105,9 @@ void main() {
       expect(find.text('Siti Rahmawati'), findsOneWidget);
     });
 
-    testWidgets('debounces search input before filtering user list',
-        (tester) async {
+    testWidgets('debounces search input before filtering user list', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -183,8 +180,9 @@ void main() {
       expect(appliedResult!.selectedUser, isNull);
     });
 
-    testWidgets('selects "Saya" option and applies current session user',
-        (tester) async {
+    testWidgets('selects "Saya" option and applies current session user', (
+      tester,
+    ) async {
       AppUserFilterResult? appliedResult;
 
       await tester.pumpWidget(
@@ -224,8 +222,9 @@ void main() {
       expect(appliedResult!.selectedUser!.email, 'admin@kawalo.id');
     });
 
-    testWidgets('clears search text via clear button in search bar',
-        (tester) async {
+    testWidgets('clears search text via clear button in search bar', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
@@ -260,8 +259,9 @@ void main() {
       expect(find.text('Budi Santoso'), findsOneWidget);
     });
 
-    testWidgets('shows loading indicator when onLoadUsers is fetching',
-        (tester) async {
+    testWidgets('shows loading indicator when onLoadUsers is fetching', (
+      tester,
+    ) async {
       final completer = Completer<List<UserFilterOption>>();
 
       await tester.pumpWidget(
@@ -297,8 +297,7 @@ void main() {
       expect(find.text('Siti Rahmawati'), findsOneWidget);
     });
 
-    testWidgets(
-        'shows AppSnackbar and error view when onLoadUsers returns '
+    testWidgets('shows AppSnackbar and error view when onLoadUsers returns '
         'Left(NoInternetFailure)', (tester) async {
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -311,8 +310,8 @@ void main() {
                     context: context,
                     onLoadUsers: () async =>
                         const Left<Failure, List<UserFilterOption>>(
-                      NoInternetFailure('Koneksi internet tidak tersedia.'),
-                    ),
+                          NoInternetFailure('Koneksi internet tidak tersedia.'),
+                        ),
                     currentUserSession: testSession,
                   ),
                   child: const Text('Buka'),
@@ -334,8 +333,7 @@ void main() {
       expect(find.text('Coba lagi'), findsOneWidget);
     });
 
-    testWidgets(
-        'shows AppSnackbar and error view when onLoadUsers returns '
+    testWidgets('shows AppSnackbar and error view when onLoadUsers returns '
         'Left(ServerFailure)', (tester) async {
       await tester.pumpWidget(
         M3EMaterialApp(
@@ -348,8 +346,8 @@ void main() {
                     context: context,
                     onLoadUsers: () async =>
                         const Left<Failure, List<UserFilterOption>>(
-                      ServerFailure('Terjadi kendala pada server.'),
-                    ),
+                          ServerFailure('Terjadi kendala pada server.'),
+                        ),
                     currentUserSession: testSession,
                   ),
                   child: const Text('Buka'),
@@ -368,8 +366,9 @@ void main() {
       expect(find.text('Coba lagi'), findsOneWidget);
     });
 
-    testWidgets('retries fetching users when "Coba lagi" is tapped',
-        (tester) async {
+    testWidgets('retries fetching users when "Coba lagi" is tapped', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -431,82 +430,83 @@ void main() {
       expect(find.text('Siti Rahmawati'), findsOneWidget);
     });
 
-    testWidgets('shows AppSnackbar when onLoadUsers throws unhandled exception',
-        (tester) async {
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: ElevatedButton(
-                  onPressed: () => showAppUserFilterBottomSheet(
-                    context: context,
-                    onLoadUsers: () async =>
-                        throw Exception('Koneksi terputus tiba-tiba'),
-                    currentUserSession: testSession,
+    testWidgets(
+      'shows AppSnackbar when onLoadUsers throws unhandled exception',
+      (tester) async {
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: Builder(
+              builder: (context) {
+                return Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () => showAppUserFilterBottomSheet(
+                      context: context,
+                      onLoadUsers: () async =>
+                          throw Exception('Koneksi terputus tiba-tiba'),
+                      currentUserSession: testSession,
+                    ),
+                    child: const Text('Buka'),
                   ),
-                  child: const Text('Buka'),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Buka'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Buka'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AppSnackbar), findsOneWidget);
-      expect(find.text('Coba lagi'), findsOneWidget);
-    });
+        expect(find.byType(AppSnackbar), findsOneWidget);
+        expect(find.text('Coba lagi'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'renders default app filter bottom sheet within max height constraint',
-        (tester) async {
-      tester.view.physicalSize = const Size(800, 1000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+      'renders default app filter bottom sheet within max height constraint',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1000);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: Builder(
-            builder: (context) {
-              return Scaffold(
-                body: ElevatedButton(
-                  onPressed: () => showAppUserFilterBottomSheet(
-                    context: context,
-                    users: testUsers,
-                    currentUserSession: testSession,
+        await tester.pumpWidget(
+          M3EMaterialApp(
+            data: AppTheme.m3eLight(),
+            home: Builder(
+              builder: (context) {
+                return Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () => showAppUserFilterBottomSheet(
+                      context: context,
+                      users: testUsers,
+                      currentUserSession: testSession,
+                    ),
+                    child: const Text('Buka'),
                   ),
-                  child: const Text('Buka'),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Buka'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Buka'));
+        await tester.pumpAndSettle();
 
-      final sheetInitialSize = tester.getSize(
-        find.byKey(const ValueKey('app_bottom_sheet_constrained_box')),
-      );
-      expect(sheetInitialSize.height, lessThanOrEqualTo(850.0));
-      expect(find.text('Terapkan'), findsOneWidget);
-    });
+        final sheetInitialSize = tester.getSize(
+          find.byKey(const ValueKey('app_bottom_sheet_constrained_box')),
+        );
+        expect(sheetInitialSize.height, lessThanOrEqualTo(850.0));
+        expect(find.text('Terapkan'), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'keeps search bar and quick options sticky while scrolling users list',
       (tester) async {
         final manyUsers = List.generate(
           20,
-          (i) => UserFilterOption(
-            email: 'user$i@kawalo.id',
-            name: 'User Ke-$i',
-          ),
+          (i) =>
+              UserFilterOption(email: 'user$i@kawalo.id', name: 'User Ke-$i'),
         );
 
         await tester.pumpWidget(
@@ -533,8 +533,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verifikasi posisi awal widget sticky
-        final searchBarInitialTop =
-            tester.getTopLeft(find.byType(AppSearchBar)).dy;
+        final searchBarInitialTop = tester
+            .getTopLeft(find.byType(AppSearchBar))
+            .dy;
         final siapapunInitialTop = tester.getTopLeft(find.text('Siapapun')).dy;
         final sayaInitialTop = tester.getTopLeft(find.text('Saya')).dy;
 
@@ -551,10 +552,7 @@ void main() {
           tester.getTopLeft(find.text('Siapapun')).dy,
           equals(siapapunInitialTop),
         );
-        expect(
-          tester.getTopLeft(find.text('Saya')).dy,
-          equals(sayaInitialTop),
-        );
+        expect(tester.getTopLeft(find.text('Saya')).dy, equals(sayaInitialTop));
       },
     );
 

@@ -26,24 +26,26 @@ void main() {
         verify(() => mockPlugin.application).called(1);
       });
 
-      test('returns fallback 1.0 when plugin throws PlatformException',
-          () async {
-        when(() => mockPlugin.application).thenThrow(
-          PlatformException(
-            code: 'UNAVAILABLE',
-            message: 'Screen brightness unavailable',
-          ),
-        );
+      test(
+        'returns fallback 1.0 when plugin throws PlatformException',
+        () async {
+          when(() => mockPlugin.application).thenThrow(
+            PlatformException(
+              code: 'UNAVAILABLE',
+              message: 'Screen brightness unavailable',
+            ),
+          );
 
-        final brightness = await service.currentBrightness;
+          final brightness = await service.currentBrightness;
 
-        expect(brightness, equals(1.0));
-      });
+          expect(brightness, equals(1.0));
+        },
+      );
 
       test('returns fallback 1.0 when plugin throws general Object', () async {
-        when(() => mockPlugin.application).thenThrow(
-          Exception('Native channel error'),
-        );
+        when(
+          () => mockPlugin.application,
+        ).thenThrow(Exception('Native channel error'));
 
         final brightness = await service.currentBrightness;
 
@@ -52,20 +54,26 @@ void main() {
     });
 
     group('setBrightness', () {
-      test('sets valid brightness value clamped to plugin and returns true',
-          () async {
-        when(() => mockPlugin.setApplicationScreenBrightness(any()))
-            .thenAnswer((_) async {});
+      test(
+        'sets valid brightness value clamped to plugin and returns true',
+        () async {
+          when(
+            () => mockPlugin.setApplicationScreenBrightness(any()),
+          ).thenAnswer((_) async {});
 
-        final result = await service.setBrightness(0.75);
+          final result = await service.setBrightness(0.75);
 
-        expect(result, isTrue);
-        verify(() => mockPlugin.setApplicationScreenBrightness(0.75)).called(1);
-      });
+          expect(result, isTrue);
+          verify(
+            () => mockPlugin.setApplicationScreenBrightness(0.75),
+          ).called(1);
+        },
+      );
 
       test('clamps value below 0.0 to 0.0 and returns true', () async {
-        when(() => mockPlugin.setApplicationScreenBrightness(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockPlugin.setApplicationScreenBrightness(any()),
+        ).thenAnswer((_) async {});
 
         final result = await service.setBrightness(-0.5);
 
@@ -74,8 +82,9 @@ void main() {
       });
 
       test('clamps value above 1.0 to 1.0 and returns true', () async {
-        when(() => mockPlugin.setApplicationScreenBrightness(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockPlugin.setApplicationScreenBrightness(any()),
+        ).thenAnswer((_) async {});
 
         final result = await service.setBrightness(1.5);
 
@@ -83,13 +92,15 @@ void main() {
         verify(() => mockPlugin.setApplicationScreenBrightness(1)).called(1);
       });
 
-      test('safely ignores double.nan and returns false without plugin call',
-          () async {
-        final result = await service.setBrightness(double.nan);
+      test(
+        'safely ignores double.nan and returns false without plugin call',
+        () async {
+          final result = await service.setBrightness(double.nan);
 
-        expect(result, isFalse);
-        verifyNever(() => mockPlugin.setApplicationScreenBrightness(any()));
-      });
+          expect(result, isFalse);
+          verifyNever(() => mockPlugin.setApplicationScreenBrightness(any()));
+        },
+      );
 
       test('safely ignores double.infinity and returns false', () async {
         final result = await service.setBrightness(double.infinity);
@@ -101,33 +112,38 @@ void main() {
       test(
         'safely ignores double.negativeInfinity and returns false',
         () async {
-          final result =
-              await service.setBrightness(double.negativeInfinity);
+          final result = await service.setBrightness(double.negativeInfinity);
 
           expect(result, isFalse);
-          verifyNever(
-            () => mockPlugin.setApplicationScreenBrightness(any()),
-          );
+          verifyNever(() => mockPlugin.setApplicationScreenBrightness(any()));
         },
       );
 
-      test('returns false when plugin throws exception without re-throwing',
-          () async {
-        when(() => mockPlugin.setApplicationScreenBrightness(any())).thenThrow(
-          PlatformException(code: 'ERROR', message: 'Failed to set brightness'),
-        );
+      test(
+        'returns false when plugin throws exception without re-throwing',
+        () async {
+          when(
+            () => mockPlugin.setApplicationScreenBrightness(any()),
+          ).thenThrow(
+            PlatformException(
+              code: 'ERROR',
+              message: 'Failed to set brightness',
+            ),
+          );
 
-        final result = await service.setBrightness(0.8);
+          final result = await service.setBrightness(0.8);
 
-        expect(result, isFalse);
-      });
+          expect(result, isFalse);
+        },
+      );
     });
 
     group('resetBrightness', () {
       test('delegates resetApplicationScreenBrightness to plugin and returns '
           'true', () async {
-        when(mockPlugin.resetApplicationScreenBrightness)
-            .thenAnswer((_) async {});
+        when(
+          mockPlugin.resetApplicationScreenBrightness,
+        ).thenAnswer((_) async {});
 
         final result = await service.resetBrightness();
 
@@ -135,19 +151,21 @@ void main() {
         verify(mockPlugin.resetApplicationScreenBrightness).called(1);
       });
 
-      test('returns false when plugin throws exception without re-throwing',
-          () async {
-        when(mockPlugin.resetApplicationScreenBrightness).thenThrow(
-          PlatformException(
-            code: 'ERROR',
-            message: 'Failed to reset brightness',
-          ),
-        );
+      test(
+        'returns false when plugin throws exception without re-throwing',
+        () async {
+          when(mockPlugin.resetApplicationScreenBrightness).thenThrow(
+            PlatformException(
+              code: 'ERROR',
+              message: 'Failed to reset brightness',
+            ),
+          );
 
-        final result = await service.resetBrightness();
+          final result = await service.resetBrightness();
 
-        expect(result, isFalse);
-      });
+          expect(result, isFalse);
+        },
+      );
     });
 
     group('Default Constructor & Pure DI', () {

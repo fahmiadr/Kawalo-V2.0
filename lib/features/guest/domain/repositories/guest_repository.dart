@@ -14,25 +14,19 @@ import 'package:kawalo_mobile/features/guest/domain/value_objects/update_guest_d
 abstract class GuestRepository {
   /// Mengambil daftar data tamu dengan filter pencarian, rentang waktu,
   /// dan pembuat data tamu opsional.
-  Future<Either<Failure, GuestResult>> getGuests(
-    GetGuestsParams params,
-  );
+  Future<Either<Failure, GuestResult>> getGuests(GetGuestsParams params);
 
   /// Mendaftarkan tamu baru ke sistem backend.
   ///
   /// Menerima [data] yang berisi payload pendaftaran tamu.
   /// Mengembalikan [GuestItemEntity] yang berhasil dibuat.
-  Future<Either<Failure, GuestItemEntity>> createGuest(
-    CreateGuestData data,
-  );
+  Future<Either<Failure, GuestItemEntity>> createGuest(CreateGuestData data);
 
   /// Memperbarui data tamu yang sudah ada ke sistem backend.
   ///
   /// Menerima [data] yang berisi payload pembaruan tamu.
   /// Mengembalikan [GuestItemEntity] terbaru dari server.
-  Future<Either<Failure, GuestItemEntity>> updateGuest(
-    UpdateGuestData data,
-  );
+  Future<Either<Failure, GuestItemEntity>> updateGuest(UpdateGuestData data);
 
   /// Melakukan check-out tamu dari sistem backend.
   ///

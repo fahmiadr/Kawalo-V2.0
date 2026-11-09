@@ -233,10 +233,7 @@ class _InformationScreenState extends State<InformationScreen> {
   Future<void> _onOpenCreateForm() async {
     if (_selectionController.isSelectionMode) return;
     final cubit = _resolveCubit(context);
-    await InformationFormDialog.showCreate(
-      context,
-      informationCubit: cubit,
-    );
+    await InformationFormDialog.showCreate(context, informationCubit: cubit);
   }
 
   Future<void> _onEditInformation(InformationItemEntity item) async {
@@ -368,10 +365,7 @@ class _InformationScreenState extends State<InformationScreen> {
 
     result.fold(
       (failure) {
-        AppSnackbar.show(
-          context,
-          message: failure.message,
-        );
+        AppSnackbar.show(context, message: failure.message);
       },
       (_) {
         AppSnackbar.show(
@@ -391,7 +385,8 @@ class _InformationScreenState extends State<InformationScreen> {
 
   void _onCloseSearch() {
     _clearSelection();
-    final hasActiveSearch = _searchController.text.isNotEmpty ||
+    final hasActiveSearch =
+        _searchController.text.isNotEmpty ||
         _resolveCubit(context).state.searchQuery != null &&
             _resolveCubit(context).state.searchQuery!.isNotEmpty;
     _searchController.clear();
@@ -406,9 +401,7 @@ class _InformationScreenState extends State<InformationScreen> {
   Future<void> _onSearch(String query) async {
     _clearSelection();
     final currentCubit = _resolveCubit(context);
-    final result = await currentCubit.fetchInformation(
-      search: query,
-    );
+    final result = await currentCubit.fetchInformation(search: query);
     if (!mounted) return;
     AppFetchFeedback.show(
       context,
@@ -509,10 +502,7 @@ class _InformationScreenState extends State<InformationScreen> {
 
     final fetchResult = isCurrentlyMine
         ? await cubit.changeAuthorFilter()
-        : await cubit.changeAuthorFilter(
-            email: userEmail,
-            name: userName,
-          );
+        : await cubit.changeAuthorFilter(email: userEmail, name: userName);
     if (mounted) {
       AppFetchFeedback.show(
         context,
@@ -688,8 +678,9 @@ class _InformationScreenState extends State<InformationScreen> {
     if (isAdmin) {
       final isAuthorActive = state.hasActiveAuthorFilter;
       final authorName = state.filterAuthorName ?? state.filterAuthorEmail;
-      final authorLabel =
-          isAuthorActive ? 'Dibuat oleh $authorName' : 'Dibuat oleh';
+      final authorLabel = isAuthorActive
+          ? 'Dibuat oleh $authorName'
+          : 'Dibuat oleh';
 
       authorChip = AppChip(
         type: AppChipType.filter,
@@ -864,9 +855,7 @@ class _InformationScreenState extends State<InformationScreen> {
               AppIconButton(
                 onPressed: _isDeleting || isOffline
                     ? null
-                    : () => _onDeleteSelectedPressed(
-                          items: currentInformation,
-                        ),
+                    : () => _onDeleteSelectedPressed(items: currentInformation),
                 semanticLabel: 'Hapus informasi terpilih',
                 icon: AppSvgIcon(
                   KawaloVectors.delete01Filled,
@@ -880,15 +869,13 @@ class _InformationScreenState extends State<InformationScreen> {
               ),
             ],
           ),
-          floatingActionButton: _selectionController.isSelectionMode ||
+          floatingActionButton:
+              _selectionController.isSelectionMode ||
                   !InformationItemEntity.canBeCreatedBySession(session)
               ? null
               : AppExtendedFab(
                   onPressed: isOffline ? null : _onOpenCreateForm,
-                  icon: const AppSvgIcon(
-                    KawaloVectors.add01,
-                    size: 24,
-                  ),
+                  icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
                   label: 'Posting',
                 ),
           body: SafeArea(
@@ -905,8 +892,8 @@ class _InformationScreenState extends State<InformationScreen> {
                       semanticsLabel: 'Memuat ulang pusat informasi',
                       notificationPredicate:
                           _selectionController.isSelectionMode
-                              ? (_) => false
-                              : defaultScrollNotificationPredicate,
+                          ? (_) => false
+                          : defaultScrollNotificationPredicate,
                       onRefresh: () => _handleRefresh(cubit),
                       child: bodyContent,
                     ),
@@ -930,10 +917,9 @@ class _InformationScreenState extends State<InformationScreen> {
         bottom: AppLayout.fabScrollClearance,
       ),
       itemCount: 4,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
-      itemBuilder: (_, index) => InformationCardSkeleton(
-        showMedia: index.isEven,
-      ),
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      itemBuilder: (_, index) =>
+          InformationCardSkeleton(showMedia: index.isEven),
     );
   }
 
@@ -956,20 +942,19 @@ class _InformationScreenState extends State<InformationScreen> {
         bottom: AppLayout.fabScrollClearance,
       ),
       itemCount: totalCount,
-      separatorBuilder: (_, __) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap200,
       itemBuilder: (context, index) {
         if (index == information.length) {
           return const Padding(
             padding: AppSpacing.paddingVertical200,
-            child: Center(
-              child: AppLoadingIndicator(),
-            ),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
 
         final item = information[index];
         final isSelectable = _canSelectOrDelete(item, session);
-        final isSelected = _selectionController.isSelected(index) ||
+        final isSelected =
+            _selectionController.isSelected(index) ||
             _selectedIds.contains(item.id);
 
         return RepaintBoundary(
@@ -1005,7 +990,8 @@ class _InformationScreenState extends State<InformationScreen> {
   Widget _buildEmptySearchResult(BuildContext context) {
     return AppEmptyState.search(
       title: 'Informasi tidak ditemukan',
-      description: 'Tidak ada informasi yang cocok dengan '
+      description:
+          'Tidak ada informasi yang cocok dengan '
           'pencarian atau filter yang diterapkan.',
       actionLabel: 'Reset filter & pencarian',
       onActionPressed: _resetAllFilters,
@@ -1023,9 +1009,7 @@ class _InformationScreenState extends State<InformationScreen> {
       retryLabel: 'Coba lagi',
       onRetry: () {
         final query = _searchController.text;
-        cubit.fetchInformation(
-          search: query.isEmpty ? null : query,
-        );
+        cubit.fetchInformation(search: query.isEmpty ? null : query);
       },
     );
   }

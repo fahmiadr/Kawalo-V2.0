@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
@@ -119,7 +120,8 @@ class AppKeyboardAutoScroller with WidgetsBindingObserver {
       _lastKeyboardActiveTime = DateTime.now();
     }
 
-    final isKeyboardActive = currentInset >= 50 ||
+    final isKeyboardActive =
+        currentInset >= 50 ||
         (_lastKnownKeyboardHeight >= 50 &&
             DateTime.now().difference(_lastKeyboardActiveTime).inMilliseconds <
                 600);
@@ -185,7 +187,8 @@ class AppKeyboardAutoScroller with WidgetsBindingObserver {
       if (targetNode != null && targetNode.hasFocus) {
         // Jika keyboard telah mendekati tinggi maksimum yang diketahui,
         // jadwalkan scroll langsung untuk responsivitas instan.
-        final isNearTarget = _lastKnownKeyboardHeight >= 120 &&
+        final isNearTarget =
+            _lastKnownKeyboardHeight >= 120 &&
             currentInset >= _lastKnownKeyboardHeight - 12;
 
         _insetsSettlingTimer?.cancel();
@@ -194,27 +197,21 @@ class AppKeyboardAutoScroller with WidgetsBindingObserver {
           _scheduleScrollTo(targetNode);
         } else if (isOpening) {
           // Debounce penyesuaian hingga keyboard berhenti beranimasi (stabil)
-          _insetsSettlingTimer = Timer(
-            const Duration(milliseconds: 50),
-            () {
-              if (_isDisposed) return;
-              if (targetNode.hasFocus) {
-                _pendingFocusNode = null;
-                _scheduleScrollTo(targetNode);
-              }
-            },
-          );
+          _insetsSettlingTimer = Timer(const Duration(milliseconds: 50), () {
+            if (_isDisposed) return;
+            if (targetNode.hasFocus) {
+              _pendingFocusNode = null;
+              _scheduleScrollTo(targetNode);
+            }
+          });
         } else {
           // Keyboard berubah ukuran atau stabil pada posisi baru
-          _insetsSettlingTimer = Timer(
-            const Duration(milliseconds: 40),
-            () {
-              if (_isDisposed) return;
-              if (targetNode.hasFocus) {
-                _scheduleScrollTo(targetNode);
-              }
-            },
-          );
+          _insetsSettlingTimer = Timer(const Duration(milliseconds: 40), () {
+            if (_isDisposed) return;
+            if (targetNode.hasFocus) {
+              _scheduleScrollTo(targetNode);
+            }
+          });
         }
       }
     } else if (currentInset == 0) {
@@ -298,13 +295,11 @@ class AppKeyboardAutoScroller with WidgetsBindingObserver {
     final renderObject = targetContext.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.hasSize) return;
 
-    final effectiveDuration =
-        AppMotion.isReducedMotion(targetContext) ? Duration.zero : duration;
+    final effectiveDuration = AppMotion.isReducedMotion(targetContext)
+        ? Duration.zero
+        : duration;
 
-    renderObject.showOnScreen(
-      duration: effectiveDuration,
-      curve: curve,
-    );
+    renderObject.showOnScreen(duration: effectiveDuration, curve: curve);
   }
 
   /// Membersihkan seluruh observer, listener, dan timer saat widget di-dispose.
@@ -365,9 +360,7 @@ class AppScrollPadding extends SingleChildRenderObjectWidget {
   final GlobalKey? revealTargetKey;
 
   @override
-  RenderScrollPadding createRenderObject(
-    BuildContext context,
-  ) {
+  RenderScrollPadding createRenderObject(BuildContext context) {
     final isReduced = AppMotion.isReducedMotion(context);
     return RenderScrollPadding(
       padding: padding,

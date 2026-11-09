@@ -29,23 +29,19 @@ void main() {
   }
 
   group('GuestDetailAppBar Tests', () {
-    testWidgets('renders title, greeting, and back button without trailing',
-        (tester) async {
+    testWidgets('renders title, greeting, and back button without trailing', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestApp());
       await tester.pumpAndSettle();
 
       expect(find.text('Detail tamu'), findsOneWidget);
       expect(find.text('Diperbarui Hari ini, 15.00'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('Kembali'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Kembali'), findsOneWidget);
     });
 
     test('has correct preferredSize without search bar', () {
-      const appBar = GuestDetailAppBar(
-        greeting: 'Status',
-      );
+      const appBar = GuestDetailAppBar(greeting: 'Status');
 
       expect(
         appBar.preferredSize.height,
@@ -53,14 +49,13 @@ void main() {
       );
     });
 
-    testWidgets('triggers onBackPressed when back button is tapped',
-        (tester) async {
+    testWidgets('triggers onBackPressed when back button is tapped', (
+      tester,
+    ) async {
       var backTapped = false;
 
       await tester.pumpWidget(
-        buildTestApp(
-          onBackPressed: () => backTapped = true,
-        ),
+        buildTestApp(onBackPressed: () => backTapped = true),
       );
       await tester.pumpAndSettle();
 
@@ -69,14 +64,13 @@ void main() {
       expect(backTapped, isTrue);
     });
 
-    testWidgets('renders check-out button when onCheckout is provided',
-        (tester) async {
+    testWidgets('renders check-out button when onCheckout is provided', (
+      tester,
+    ) async {
       var checkoutTapped = false;
 
       await tester.pumpWidget(
-        buildTestApp(
-          onCheckout: () => checkoutTapped = true,
-        ),
+        buildTestApp(onCheckout: () => checkoutTapped = true),
       );
       await tester.pumpAndSettle();
 
@@ -89,28 +83,27 @@ void main() {
     });
 
     testWidgets(
-        'disables check-out button when isCheckingOut or enabled is false',
-        (tester) async {
-      var checkoutTapped = false;
+      'disables check-out button when isCheckingOut or enabled is false',
+      (tester) async {
+        var checkoutTapped = false;
 
-      await tester.pumpWidget(
-        buildTestApp(
-          onCheckout: () => checkoutTapped = true,
-          isCheckingOut: true,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildTestApp(
+            onCheckout: () => checkoutTapped = true,
+            isCheckingOut: true,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Check-out'));
-      await tester.pumpAndSettle();
-      expect(checkoutTapped, isFalse);
-    });
+        await tester.tap(find.text('Check-out'));
+        await tester.pumpAndSettle();
+        expect(checkoutTapped, isFalse);
+      },
+    );
 
     testWidgets('renders custom trailing widget when provided', (tester) async {
       await tester.pumpWidget(
-        buildTestApp(
-          trailing: const Text('Custom Trailing'),
-        ),
+        buildTestApp(trailing: const Text('Custom Trailing')),
       );
       await tester.pumpAndSettle();
 

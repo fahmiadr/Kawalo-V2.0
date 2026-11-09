@@ -34,9 +34,7 @@ void main() {
     });
 
     test('toJson omits null optional fields for partial update', () {
-      const partialModel = UpdateInformationModel(
-        title: 'Hanya Judul',
-      );
+      const partialModel = UpdateInformationModel(title: 'Hanya Judul');
 
       final json = partialModel.toJson();
 
@@ -50,32 +48,28 @@ void main() {
       expect(json.containsKey('glong'), isFalse);
     });
 
-    test(
-      'toJson includes null optional fields when includeNulls is true',
-      () {
-        const clearModel = UpdateInformationModel(
-          title: 'Judul Baru',
-          feedType: 'EVENT',
-          includeNulls: true,
-        );
+    test('toJson includes null optional fields when includeNulls is true', () {
+      const clearModel = UpdateInformationModel(
+        title: 'Judul Baru',
+        feedType: 'EVENT',
+        includeNulls: true,
+      );
 
-        final json = clearModel.toJson();
+      final json = clearModel.toJson();
 
-        expect(json['title'], 'Judul Baru');
-        expect(json['feed_type'], 'EVENT');
-        expect(json.containsKey('text'), isTrue);
-        expect(json['text'], isNull);
-        expect(json.containsKey('feed_file'), isTrue);
-        expect(json['feed_file'], isNull);
-        expect(json.containsKey('event_location'), isTrue);
-        expect(json['event_location'], isNull);
-        expect(json.containsKey('glat'), isTrue);
-        expect(json['glat'], isNull);
-        expect(json.containsKey('glong'), isTrue);
-        expect(json['glong'], isNull);
-      },
-    );
-
+      expect(json['title'], 'Judul Baru');
+      expect(json['feed_type'], 'EVENT');
+      expect(json.containsKey('text'), isTrue);
+      expect(json['text'], isNull);
+      expect(json.containsKey('feed_file'), isTrue);
+      expect(json['feed_file'], isNull);
+      expect(json.containsKey('event_location'), isTrue);
+      expect(json['event_location'], isNull);
+      expect(json.containsKey('glat'), isTrue);
+      expect(json['glat'], isNull);
+      expect(json.containsKey('glong'), isTrue);
+      expect(json['glong'], isNull);
+    });
 
     test('props supports value equality', () {
       const model1 = UpdateInformationModel(

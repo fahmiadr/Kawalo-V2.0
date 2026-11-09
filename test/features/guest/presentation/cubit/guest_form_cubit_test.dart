@@ -49,10 +49,7 @@ void main() {
   ];
 
   const sampleGroupMembers = [
-    GroupMemberEntity(
-      name: 'Wisnu Wijayadi',
-      email: 'wisnu@kawalo.id',
-    ),
+    GroupMemberEntity(name: 'Wisnu Wijayadi', email: 'wisnu@kawalo.id'),
   ];
 
   const sampleGuest = GuestItemEntity(
@@ -77,17 +74,9 @@ void main() {
         guestType: 'TAMU',
       ),
     );
-    registerFallbackValue(
-      const UpdateGuestParams(
-        id: '123',
-      ),
-    );
-    registerFallbackValue(
-      const GetMasterGuestTypesParams(),
-    );
-    registerFallbackValue(
-      const GetGroupMembersParams(),
-    );
+    registerFallbackValue(const UpdateGuestParams(id: '123'));
+    registerFallbackValue(const GetMasterGuestTypesParams());
+    registerFallbackValue(const GetGroupMembersParams());
   });
 
   setUp(() {
@@ -96,10 +85,12 @@ void main() {
     mockGetMasterTypesUseCase = MockGetMasterGuestTypesUseCase();
     mockGetGroupMembersUseCase = MockGetGroupMembersUseCase();
 
-    when(() => mockGetMasterTypesUseCase(any()))
-        .thenAnswer((_) async => const Right(sampleMasterTypes));
-    when(() => mockGetGroupMembersUseCase(any()))
-        .thenAnswer((_) async => const Right(sampleGroupMembers));
+    when(
+      () => mockGetMasterTypesUseCase(any()),
+    ).thenAnswer((_) async => const Right(sampleMasterTypes));
+    when(
+      () => mockGetGroupMembersUseCase(any()),
+    ).thenAnswer((_) async => const Right(sampleGroupMembers));
   });
 
   GuestFormCubit createCubit({GuestItemEntity? initialItem}) {
@@ -113,24 +104,26 @@ void main() {
   }
 
   group('GuestFormCubit - Initialization', () {
-    test('initializes in create mode with empty fields and loads master data',
-        () async {
-      final cubit = createCubit();
+    test(
+      'initializes in create mode with empty fields and loads master data',
+      () async {
+        final cubit = createCubit();
 
-      expect(cubit.state.isCreateMode, isTrue);
-      expect(cubit.state.name, isEmpty);
-      expect(cubit.state.destination, isEmpty);
-      expect(cubit.state.guestType, isEmpty);
-      expect(cubit.state.identityType, isNull);
-      expect(cubit.state.identityNumber, isEmpty);
-      expect(cubit.state.isDirty, isFalse);
+        expect(cubit.state.isCreateMode, isTrue);
+        expect(cubit.state.name, isEmpty);
+        expect(cubit.state.destination, isEmpty);
+        expect(cubit.state.guestType, isEmpty);
+        expect(cubit.state.identityType, isNull);
+        expect(cubit.state.identityNumber, isEmpty);
+        expect(cubit.state.isDirty, isFalse);
 
-      await Future<void>.delayed(Duration.zero);
-      expect(cubit.state.masterTypes, sampleMasterTypes);
-      expect(cubit.state.masterHosts, sampleGroupMembers);
+        await Future<void>.delayed(Duration.zero);
+        expect(cubit.state.masterTypes, sampleMasterTypes);
+        expect(cubit.state.masterHosts, sampleGroupMembers);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     test('initializes in update mode with initial item populated', () async {
       final cubit = createCubit(initialItem: sampleGuest);
@@ -216,67 +209,75 @@ void main() {
   });
 
   group('GuestFormCubit - Submission', () {
-    test('submit rejects when required fields are empty and sets errors',
-        () async {
-      final cubit = createCubit();
+    test(
+      'submit rejects when required fields are empty and sets errors',
+      () async {
+        final cubit = createCubit();
 
-      await cubit.submit(session: dummySession);
+        await cubit.submit(session: dummySession);
 
-      expect(cubit.state.validationAttempt, 1);
-      expect(cubit.state.nameError, isNotNull);
-      expect(cubit.state.destinationError, isNotNull);
-      expect(cubit.state.typeError, isNotNull);
-      expect(cubit.state.isSubmitting, isFalse);
+        expect(cubit.state.validationAttempt, 1);
+        expect(cubit.state.nameError, isNotNull);
+        expect(cubit.state.destinationError, isNotNull);
+        expect(cubit.state.typeError, isNotNull);
+        expect(cubit.state.isSubmitting, isFalse);
 
-      verifyNever(() => mockCreateGuestUseCase(any()));
-      await cubit.close();
-    });
+        verifyNever(() => mockCreateGuestUseCase(any()));
+        await cubit.close();
+      },
+    );
 
-    test('submit in create mode calls CreateGuestUseCase and succeeds',
-        () async {
-      when(() => mockCreateGuestUseCase(any()))
-          .thenAnswer((_) async => const Right(sampleGuest));
+    test(
+      'submit in create mode calls CreateGuestUseCase and succeeds',
+      () async {
+        when(
+          () => mockCreateGuestUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleGuest));
 
-      final cubit = createCubit()
-        ..onNameChanged('Budi Santoso')
-        ..onDestinationChanged('Blok A1 No. 5')
-        ..onGuestTypeChanged('TAMU')
-        ..onIdentityTypeChanged('KTP')
-        ..onIdentityNumberChanged('3201234567890001');
+        final cubit = createCubit()
+          ..onNameChanged('Budi Santoso')
+          ..onDestinationChanged('Blok A1 No. 5')
+          ..onGuestTypeChanged('TAMU')
+          ..onIdentityTypeChanged('KTP')
+          ..onIdentityNumberChanged('3201234567890001');
 
-      await cubit.submit(session: dummySession);
+        await cubit.submit(session: dummySession);
 
-      expect(cubit.state.status, GuestFormStatus.success);
-      expect(cubit.state.createdOrUpdatedItem, sampleGuest);
-      verify(() => mockCreateGuestUseCase(any())).called(1);
+        expect(cubit.state.status, GuestFormStatus.success);
+        expect(cubit.state.createdOrUpdatedItem, sampleGuest);
+        verify(() => mockCreateGuestUseCase(any())).called(1);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
-    test('submit in update mode calls UpdateGuestUseCase and succeeds',
-        () async {
-      const updatedGuest = GuestItemEntity(
-        id: '123',
-        guestName: 'Budi Santoso Refactored',
-        guestDestination: 'Blok B2 No. 10',
-        guestType: 'TAMU',
-      );
+    test(
+      'submit in update mode calls UpdateGuestUseCase and succeeds',
+      () async {
+        const updatedGuest = GuestItemEntity(
+          id: '123',
+          guestName: 'Budi Santoso Refactored',
+          guestDestination: 'Blok B2 No. 10',
+          guestType: 'TAMU',
+        );
 
-      when(() => mockUpdateGuestUseCase(any()))
-          .thenAnswer((_) async => const Right(updatedGuest));
+        when(
+          () => mockUpdateGuestUseCase(any()),
+        ).thenAnswer((_) async => const Right(updatedGuest));
 
-      final cubit = createCubit(initialItem: sampleGuest)
-        ..onNameChanged('Budi Santoso Refactored')
-        ..onDestinationChanged('Blok B2 No. 10');
+        final cubit = createCubit(initialItem: sampleGuest)
+          ..onNameChanged('Budi Santoso Refactored')
+          ..onDestinationChanged('Blok B2 No. 10');
 
-      await cubit.submit(session: dummySession);
+        await cubit.submit(session: dummySession);
 
-      expect(cubit.state.status, GuestFormStatus.success);
-      expect(cubit.state.createdOrUpdatedItem, updatedGuest);
-      verify(() => mockUpdateGuestUseCase(any())).called(1);
+        expect(cubit.state.status, GuestFormStatus.success);
+        expect(cubit.state.createdOrUpdatedItem, updatedGuest);
+        verify(() => mockUpdateGuestUseCase(any())).called(1);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
     test('submit emits failure when use case returns Failure', () async {
       when(() => mockCreateGuestUseCase(any())).thenAnswer(
