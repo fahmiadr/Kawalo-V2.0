@@ -19,6 +19,9 @@ import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/upload/upload_remote_data_source.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository_impl.dart';
 import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
 import 'package:kawalo_mobile/features/auth/auth_module.dart';
@@ -56,6 +59,7 @@ class _MyAppState extends State<MyApp> {
   late final CacheWiper _cacheWiper;
   late final JwksService _jwksService;
   late final NetworkInfoImpl _networkInfo;
+  late final UploadRepository _uploadRepository;
   late final GuestModule _guestModule;
   late final InformationModule _informationModule;
   late final AttendanceModule _attendanceModule;
@@ -85,6 +89,10 @@ class _MyAppState extends State<MyApp> {
     _storageService = SecureStorageService();
     _apiClient = ApiClient(storage: _storageService);
     _networkInfo = NetworkInfoImpl();
+    _uploadRepository = UploadRepositoryImpl(
+      remoteDataSource: UploadRemoteDataSource(apiClient: _apiClient),
+      networkInfo: _networkInfo,
+    );
 
     final syncStorage = SyncStorageService(storageService: _storageService);
 
@@ -216,6 +224,7 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider<CacheWiper>.value(value: _cacheWiper),
         RepositoryProvider<SecureStorageService>.value(value: _storageService),
         RepositoryProvider<NetworkInfo>.value(value: _networkInfo),
+        RepositoryProvider<UploadRepository>.value(value: _uploadRepository),
         RepositoryProvider<Isar>.value(value: isar),
         RepositoryProvider<GuestModule>.value(value: _guestModule),
         RepositoryProvider<InformationModule>.value(value: _informationModule),
