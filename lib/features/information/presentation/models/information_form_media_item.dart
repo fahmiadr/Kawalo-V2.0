@@ -2,6 +2,21 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 
+/// Upload lifecycle of a form attachment.
+enum MediaUploadStatus {
+  /// Not sent yet (local file) or already hosted (remote file).
+  idle,
+
+  /// Being sent to the upload endpoint.
+  uploading,
+
+  /// The last attempt failed; submitting again retries only this file.
+  failed,
+
+  /// Uploaded; [InformationFormMediaItem.remoteUrl] holds the hosted URL.
+  done,
+}
+
 /// Model item media (foto atau dokumen) pada formulir informasi.
 ///
 /// Mendukung berkas lokal (hasil jepretan kamera / pemilihan galeri / dokumen)
@@ -18,6 +33,9 @@ class InformationFormMediaItem extends Equatable {
     this.isLocal = true,
     this.fileSize,
     this.isLoading = false,
+    this.uploadStatus = MediaUploadStatus.idle,
+    this.uploadProgress = 0,
+    this.uploadError,
   });
 
   /// Factory untuk membuat item dari [AppMediaFile] lokal.
@@ -84,6 +102,30 @@ class InformationFormMediaItem extends Equatable {
   /// Menandakan apakah foto sedang dalam proses pemuatan atau kompresi.
   final bool isLoading;
 
+  /// Where this file is in the upload flow.
+  final MediaUploadStatus uploadStatus;
+
+  /// Upload progress as a fraction between 0 and 1.
+  final double uploadProgress;
+
+  /// User-facing reason of the last failed upload.
+  final String? uploadError;
+
+  /// A local file that has not been hosted yet.
+  bool get needsUpload => isLocal && (remoteUrl ?? '').isEmpty;
+
+  /// Converts the local file for the upload repository.
+  AppMediaFile toAppMediaFile() {
+    final dot = name.lastIndexOf('.');
+    return AppMediaFile(
+      name: name,
+      path: path,
+      bytes: bytes,
+      sizeInBytes: fileSize,
+      extension: dot == -1 ? null : name.substring(dot + 1).toLowerCase(),
+    );
+  }
+
   /// Sumber tampilan visual atau tautan utama.
   String get displaySource => isLocal ? (path ?? name) : (remoteUrl ?? name);
 
@@ -97,6 +139,9 @@ class InformationFormMediaItem extends Equatable {
     bool? isLocal,
     int? fileSize,
     bool? isLoading,
+    MediaUploadStatus? uploadStatus,
+    double? uploadProgress,
+    String? Function()? uploadError,
   }) {
     return InformationFormMediaItem(
       id: id ?? this.id,
@@ -107,6 +152,9 @@ class InformationFormMediaItem extends Equatable {
       isLocal: isLocal ?? this.isLocal,
       fileSize: fileSize ?? this.fileSize,
       isLoading: isLoading ?? this.isLoading,
+      uploadStatus: uploadStatus ?? this.uploadStatus,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
+      uploadError: uploadError != null ? uploadError() : this.uploadError,
     );
   }
 
@@ -120,5 +168,8 @@ class InformationFormMediaItem extends Equatable {
     isLocal,
     fileSize,
     isLoading,
+    uploadStatus,
+    uploadProgress,
+    uploadError,
   ];
 }

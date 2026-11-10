@@ -1,11 +1,34 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_file_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_tooltip.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_detail_file_card.dart';
+import 'package:mocktail/mocktail.dart';
+
+class _MockDio extends Mock implements Dio {}
+
+class _FakeLauncher extends Fake implements AppLauncherService {
+  _FakeLauncher({this.succeeds = true});
+
+  final bool succeeds;
+  final List<Uri> opened = [];
+
+  @override
+  Future<bool> openBrowser(
+    Uri url, {
+    AppLaunchMode mode = AppLaunchMode.externalApplication,
+  }) async {
+    opened.add(url);
+    return succeeds;
+  }
+}
 
 void main() {
   group('InformationDetailFileSection Widget Tests', () {
@@ -21,7 +44,7 @@ void main() {
       id: '2',
       photos: [],
       title: 'SOP Evakuasi',
-      feedFile: 'sop_evakuasi_2026.pdf',
+      feedFile: 'https://cdn.test/uploads/sop_evakuasi_2026.pdf',
     );
 
     const feedExcel = InformationItemEntity(
@@ -117,12 +140,44 @@ void main() {
       expect(find.text('Unduh'), findsOneWidget);
     });
 
-    testWidgets('tapping Buka shows snackbar feedback', (tester) async {
+    testWidgets('tapping Buka opens the file url in the external browser', (
+      tester,
+    ) async {
+      final launcher = _FakeLauncher();
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: InformationDetailFileSection(item: feedPdf),
+          home: Scaffold(
+            body: InformationDetailFileSection(
+              item: feedPdf,
+              launcher: launcher,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Buka'));
+      await tester.pump();
+
+      expect(launcher.opened, [
+        Uri.parse('https://cdn.test/uploads/sop_evakuasi_2026.pdf'),
+      ]);
+      expect(find.textContaining('Tidak dapat membuka'), findsNothing);
+    });
+
+    testWidgets('tapping Buka shows an error when the launcher fails', (
+      tester,
+    ) async {
+      final launcher = _FakeLauncher(succeeds: false);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: Scaffold(
+            body: InformationDetailFileSection(
+              item: feedPdf,
+              launcher: launcher,
+            ),
           ),
         ),
       );
@@ -132,7 +187,7 @@ void main() {
       await tester.pump();
 
       expect(
-        find.textContaining('Membuka "sop_evakuasi_2026.pdf"'),
+        find.textContaining('Tidak dapat membuka "sop_evakuasi_2026.pdf"'),
         findsOneWidget,
       );
 
@@ -140,14 +195,51 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('tapping Unduh triggers download progress and snackbar', (
+    testWidgets('tapping Buka on a non-url value never launches anything', (
       tester,
     ) async {
+      final launcher = _FakeLauncher();
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightThemeData(),
-          home: const Scaffold(
-            body: InformationDetailFileSection(item: feedPdf),
+          home: Scaffold(
+            body: InformationDetailFileSection(
+              item: feedExcel,
+              launcher: launcher,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Buka'));
+      await tester.pump();
+
+      expect(launcher.opened, isEmpty);
+      expect(find.textContaining('Tidak dapat membuka'), findsOneWidget);
+
+      AppSnackbar.hideCurrent();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('tapping Unduh shows download progress', (
+      tester,
+    ) async {
+      final dio = _MockDio();
+      final gate = Completer<Response<dynamic>>();
+      when(
+        () => dio.download(
+          any(),
+          any<dynamic>(),
+          onReceiveProgress: any(named: 'onReceiveProgress'),
+        ),
+      ).thenAnswer((_) => gate.future);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: Scaffold(
+            body: InformationDetailFileSection(item: feedPdf, dio: dio),
           ),
         ),
       );
@@ -157,6 +249,8 @@ void main() {
       await tester.pump();
 
       expect(find.text('Mengunduh...'), findsOneWidget);
+
+      gate.complete(Response<dynamic>(requestOptions: RequestOptions()));
     });
   });
 }

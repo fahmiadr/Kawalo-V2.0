@@ -4,6 +4,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/utils/trimmed_or_null.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
@@ -16,6 +17,7 @@ import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update
 import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_validators.dart';
+import 'package:kawalo_mobile/features/information/presentation/cubit/form_media_uploader.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 
 /// Cubit pengelola alur logika bisnis dan validasi formulir pendaftaran
@@ -27,8 +29,10 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     required this.updateGuestUseCase,
     required this.guestRepository,
     required this.groupRepository,
+    required UploadRepository uploadRepository,
     GuestItemEntity? initialItem,
-  }) : super(GuestFormState.initial(initialItem)) {
+  }) : _uploadRepository = uploadRepository,
+       super(GuestFormState.initial(initialItem)) {
     loadMasterData();
   }
 
@@ -43,6 +47,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
 
   /// Repositori grup untuk memuat daftar anggota (host warga).
   final GroupRepository groupRepository;
+
+  final UploadRepository _uploadRepository;
 
   AppCancellationToken? _masterCancelToken;
   AppCancellationToken? _submitCancelToken;
@@ -300,18 +306,27 @@ class GuestFormCubit extends Cubit<GuestFormState> {
   /// Menghapus lampiran foto tamu.
   void onRemovePhoto() => onPhotoMediaChanged(null);
 
-  /// Memperbarui kategori kunjungan tamu.
-  void onCategoryChanged(String value) {
-    _emitInput(state.copyWith(category: value));
+  void _patchPhoto(
+    String id,
+    InformationFormMediaItem Function(InformationFormMediaItem) update,
+  ) {
+    final media = state.photoMedia;
+    if (isClosed || media == null || media.id != id) return;
+    emit(state.copyWith(photoMedia: () => update(media)));
   }
 
-  /// Resolusi URL foto (mendukung berkas remote maupun berkas lokal).
-  String? _resolvePhotoUrl() {
+  /// Hosts the local photo (if any) and returns how many uploads failed.
+  Future<int> _uploadPendingPhoto() {
     final media = state.photoMedia;
-    if (media == null) return state.photoUrl.trimmedOrNull;
-    final remoteUrl = media.remoteUrl;
-    if (remoteUrl != null && remoteUrl.isNotEmpty) return remoteUrl;
-    return 'https://cdn.kawalo.internal/guests/photos/${media.name}';
+    return FormMediaUploader.uploadPending(
+      [?media],
+      patch: _patchPhoto,
+      isCancelled: () => isClosed,
+      upload: (item, onProgress) => _uploadRepository.uploadImage(
+        item.toAppMediaFile(),
+        onProgress: onProgress,
+      ),
+    );
   }
 
   /// Mengirim formulir pendaftaran atau pembaruan tamu ke server backend.
@@ -372,7 +387,21 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       ),
     );
 
-    final resolvedPhotoUrl = _resolvePhotoUrl();
+    // The local photo is hosted first so the payload only carries a real URL.
+    final failedUploads = await _uploadPendingPhoto();
+    if (isClosed) return;
+    if (failedUploads > 0) {
+      emit(
+        state.copyWith(
+          status: GuestFormStatus.failure,
+          errorMessage: () => FormMediaUploader.failureMessage(failedUploads),
+        ),
+      );
+      return;
+    }
+
+    final resolvedPhotoUrl =
+        state.photoMedia?.remoteUrl ?? state.photoUrl.trimmedOrNull;
     final identityNumberPayload = isIdentityRequired
         ? idNumberTrimmed.trimmedOrNull
         : null;

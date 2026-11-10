@@ -14,6 +14,7 @@ import 'package:kawalo_mobile/features/guest/domain/usecases/update_guest/update
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../../information/upload_test_helpers.dart';
 
 class MockCreateGuestUseCase extends Mock implements CreateGuestUseCase {}
 
@@ -93,6 +94,7 @@ void main() {
 
   GuestFormCubit createCubit({GuestItemEntity? initialItem}) {
     return GuestFormCubit(
+      uploadRepository: FakeUploadRepository(),
       createGuestUseCase: mockCreateGuestUseCase,
       updateGuestUseCase: mockUpdateGuestUseCase,
       guestRepository: mockGuestRepository,

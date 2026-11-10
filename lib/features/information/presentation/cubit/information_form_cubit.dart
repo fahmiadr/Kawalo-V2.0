@@ -5,12 +5,14 @@ import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/utils/trimmed_or_null.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_usecase.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/update_information/update_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/update_information/update_information_usecase.dart';
+import 'package:kawalo_mobile/features/information/presentation/cubit/form_media_uploader.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_photos.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_validators.dart';
@@ -23,9 +25,11 @@ class InformationFormCubit extends Cubit<InformationFormState> {
   InformationFormCubit({
     required this.createInformationUseCase,
     required this.updateInformationUseCase,
+    required UploadRepository uploadRepository,
     LocationService locationService = const DefaultLocationService(),
     InformationItemEntity? initialItem,
-  }) : _locationService = locationService,
+  }) : _uploadRepository = uploadRepository,
+       _locationService = locationService,
        super(InformationFormState.initial(initialItem));
 
   /// Use case untuk mempublikasikan feed informasi baru.
@@ -34,6 +38,7 @@ class InformationFormCubit extends Cubit<InformationFormState> {
   /// Use case untuk memperbarui feed informasi yang sudah ada.
   final UpdateInformationUseCase updateInformationUseCase;
 
+  final UploadRepository _uploadRepository;
   final LocationService _locationService;
 
   AppCancellationToken? _submitCancelToken;
@@ -298,6 +303,41 @@ class InformationFormCubit extends Cubit<InformationFormState> {
   /// Menghapus dokumen yang terpasang.
   void onClearDocumentMedia() => onSetDocumentMedia(null);
 
+  void _patchMedia(
+    String id,
+    InformationFormMediaItem Function(InformationFormMediaItem) update,
+  ) {
+    if (isClosed) return;
+    final doc = state.documentMedia;
+    if (doc != null && doc.id == id) {
+      emit(state.copyWith(documentMedia: () => update(doc)));
+      return;
+    }
+    final index = state.photos.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+    emit(
+      state.copyWith(
+        photos: List.of(state.photos)..[index] = update(state.photos[index]),
+      ),
+    );
+  }
+
+  /// Uploads local photos and the document; returns how many files failed.
+  Future<int> _uploadPendingMedia() {
+    final doc = state.documentMedia;
+    return FormMediaUploader.uploadPending(
+      [...state.photos, ?doc],
+      patch: _patchMedia,
+      isCancelled: () => isClosed,
+      upload: (item, onProgress) {
+        final file = item.toAppMediaFile();
+        return item.id == doc?.id
+            ? _uploadRepository.uploadDocument(file, onProgress: onProgress)
+            : _uploadRepository.uploadImage(file, onProgress: onProgress);
+      },
+    );
+  }
+
   /// Mengirim formulir ke backend sesuai mode aktif (Create / Update).
   Future<void> submit({required AuthSessionEntity? session}) async {
     // 1. Guard terhadap concurrent submissions
@@ -354,22 +394,24 @@ class InformationFormCubit extends Cubit<InformationFormState> {
       ),
     );
 
-    // Pembuatan payload URL/key (Mendukung berkas lokal via mock upload)
-    final resolvedPhotos = InformationFormPhotos.payloadUrls(state.photos);
-
-    String? resolvedFile;
-    if (state.documentMedia != null) {
-      final doc = state.documentMedia!;
-      if (doc.isLocal) {
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        resolvedFile =
-            'https://cdn.kawalo.internal/feeds/docs/${timestamp}_${doc.name}';
-      } else {
-        resolvedFile = doc.remoteUrl ?? doc.displaySource;
-      }
-    } else {
-      resolvedFile = state.feedFile.trimmedOrNull;
+    // Local files are hosted first so the payload only carries real URLs.
+    final failedUploads = await _uploadPendingMedia();
+    if (isClosed) return;
+    if (failedUploads > 0) {
+      emit(
+        state.copyWith(
+          status: InformationFormStatus.failure,
+          errorMessage: () => FormMediaUploader.failureMessage(failedUploads),
+        ),
+      );
+      return;
     }
+
+    final resolvedPhotos = InformationFormPhotos.payloadUrls(state.photos);
+    final doc = state.documentMedia;
+    final resolvedFile = doc != null
+        ? doc.remoteUrl
+        : state.feedFile.trimmedOrNull;
 
     final titleTrimmed = state.title.trim();
     final photosPayload = state.isUpdateMode || resolvedPhotos.isNotEmpty

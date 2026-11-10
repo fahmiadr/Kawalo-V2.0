@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -29,7 +30,12 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/app_file
 ///    "Unduh" (dengan indikator status progres unduhan).
 class InformationDetailFileSection extends StatelessWidget {
   /// Membuat instance [InformationDetailFileSection].
-  const InformationDetailFileSection({required this.item, this.dio, super.key});
+  const InformationDetailFileSection({
+    required this.item,
+    this.dio,
+    this.launcher = const DefaultAppLauncherService(),
+    super.key,
+  });
 
   /// Data feed informasi yang memuat berkas lampiran.
   final InformationItemEntity item;
@@ -37,14 +43,24 @@ class InformationDetailFileSection extends StatelessWidget {
   /// Klien HTTP Dio opsional untuk pengujian atau custom transport.
   final Dio? dio;
 
-  /// Membuka berkas menggunakan aplikasi eksternal di perangkat.
+  /// Peluncur aplikasi eksternal; dapat diganti pada pengujian.
+  final AppLauncherService launcher;
+
+  /// Membuka berkas di peramban atau aplikasi eksternal perangkat.
   Future<void> _openExternal(BuildContext context) async {
-    AppSnackbar.show(
-      context,
-      message:
-          'Membuka "${attachmentFileName(item.feedFile ?? '')}" '
-          'dengan aplikasi eksternal...',
-    );
+    final uri = Uri.tryParse(item.feedFile ?? '');
+    final opened =
+        uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        await launcher.openBrowser(uri);
+    if (!opened && context.mounted) {
+      AppSnackbar.show(
+        context,
+        message:
+            'Tidak dapat membuka "${attachmentFileName(item.feedFile ?? '')}". '
+            'Periksa koneksi lalu coba lagi.',
+      );
+    }
   }
 
   void _onDownloadState(BuildContext context, FileDownloadState state) {

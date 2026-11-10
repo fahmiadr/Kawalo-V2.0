@@ -11,6 +11,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/app_file_tile.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/media_upload_status.dart';
 
 /// Organism seksi dokumen lampiran (maksimal 1 berkas).
 class InformationDocumentSection extends StatelessWidget {
@@ -67,6 +68,8 @@ class InformationDocumentSection extends StatelessWidget {
                 )
               else ...[
                 AppFileTile(fileName: docName),
+                if (data.doc case final doc?)
+                  MediaUploadStatusLine(item: doc, isSubmitting: isSubmitting),
                 AppSpacing.vGap150,
 
                 // Tombol Aksi: Ubah & Hapus

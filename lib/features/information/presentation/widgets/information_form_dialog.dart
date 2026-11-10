@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/utils/app_keyboard_auto_scroller.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
@@ -204,6 +205,7 @@ class InformationFormDialog extends StatefulWidget {
     } on Object catch (_) {}
 
     final newCubit = context.read<InformationModule>().createFormCubit(
+      uploadRepository: context.read<UploadRepository>(),
       initialItem: initialItem,
     );
     return (newCubit, true);

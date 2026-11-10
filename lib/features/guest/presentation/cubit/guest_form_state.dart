@@ -61,7 +61,6 @@ class GuestFormState extends Equatable {
     this.photoUrl,
     this.photoMedia,
     this.photoError,
-    this.category = '',
     this.masterTypes = const <MasterGuestTypeEntity>[],
     this.isLoadingMasterTypes = false,
     this.masterTypesError,
@@ -101,7 +100,6 @@ class GuestFormState extends Equatable {
       hostEmail: initialItem.guestToUserEmail,
       photoUrl: initialItem.guestPhoto,
       photoMedia: initialPhotoMedia,
-      category: initialItem.guestCategory ?? '',
     );
   }
 
@@ -174,9 +172,6 @@ class GuestFormState extends Equatable {
 
   /// Pesan error validasi untuk lampiran foto.
   final String? photoError;
-
-  /// Kategori kunjungan tamu.
-  final String category;
 
   /// Daftar master tipe tamu aktif yang diambil dari backend.
   final List<MasterGuestTypeEntity> masterTypes;
@@ -373,7 +368,6 @@ class GuestFormState extends Equatable {
     String? Function()? photoUrl,
     InformationFormMediaItem? Function()? photoMedia,
     String? Function()? photoError,
-    String? category,
     List<MasterGuestTypeEntity>? masterTypes,
     bool? isLoadingMasterTypes,
     String? Function()? masterTypesError,
@@ -416,7 +410,6 @@ class GuestFormState extends Equatable {
       photoUrl: photoUrl != null ? photoUrl() : this.photoUrl,
       photoMedia: photoMedia != null ? photoMedia() : this.photoMedia,
       photoError: photoError != null ? photoError() : this.photoError,
-      category: category ?? this.category,
       masterTypes: masterTypes ?? this.masterTypes,
       isLoadingMasterTypes: isLoadingMasterTypes ?? this.isLoadingMasterTypes,
       masterTypesError: masterTypesError != null
@@ -458,7 +451,6 @@ class GuestFormState extends Equatable {
     photoUrl,
     photoMedia,
     photoError,
-    category,
     masterTypes,
     isLoadingMasterTypes,
     masterTypesError,

@@ -99,20 +99,9 @@ class InformationFormPhotos {
     return updated;
   }
 
-  /// URL/key yang dikirim ke backend: berkas lokal diberi URL CDN tiruan
-  /// (mock upload), berkas remote memakai URL aslinya.
-  static List<String> payloadUrls(
-    List<InformationFormMediaItem> current, {
-    DateTime Function() now = DateTime.now,
-  }) {
-    return current.map((item) {
-      if (item.isLocal) {
-        final timestamp = now().millisecondsSinceEpoch;
-        return 'https://cdn.kawalo.internal/feeds/photos/'
-            '${timestamp}_${item.name}';
-      }
-      return item.remoteUrl ?? item.displaySource;
-    }).toList();
+  /// URLs sent to the backend: only hosted files (uploaded or already remote).
+  static List<String> payloadUrls(List<InformationFormMediaItem> current) {
+    return current.map((i) => i.remoteUrl).whereType<String>().toList();
   }
 
   /// Validasi saat submit: batas jumlah, dan tidak boleh ada foto yang masih

@@ -82,18 +82,11 @@ void main() {
   );
 
   blocTest<FileDownloadCubit, FileDownloadState>(
-    'local file simulates five progress steps without touching Dio',
+    'non-network value fails without touching Dio',
     build: () => FileDownloadCubit(dio, documentsDirectory: docs),
     act: (cubit) => cubit.download('sop.pdf'),
-    wait: const Duration(milliseconds: 800),
     expect: () => const [
-      FileDownloadInProgress(0.1),
-      FileDownloadInProgress(0.2),
-      FileDownloadInProgress(0.4),
-      FileDownloadInProgress(0.6),
-      FileDownloadInProgress(0.8),
-      FileDownloadInProgress(1),
-      FileDownloadDone(),
+      FileDownloadFailure('Berkas ini tidak dapat diunduh.'),
     ],
     verify: (_) => verifyZeroInteractions(dio),
   );
@@ -120,9 +113,13 @@ void main() {
   );
 
   test('ignores a second download while one is in progress', () async {
+    stubDownload((_) async {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      return ok();
+    });
     final cubit = FileDownloadCubit(dio, documentsDirectory: docs);
-    final first = cubit.download('sop.pdf');
-    await cubit.download('sop.pdf');
+    final first = cubit.download('https://x.id/sop.pdf');
+    await cubit.download('https://x.id/sop.pdf');
     expect(cubit.state, const FileDownloadInProgress(0.1));
     await first;
     expect(cubit.state, const FileDownloadDone());

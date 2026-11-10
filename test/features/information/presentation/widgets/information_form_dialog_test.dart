@@ -19,6 +19,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_form_dialog.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../upload_test_helpers.dart';
 
 class MockCreateInformationUseCase extends Mock
     implements CreateInformationUseCase {}
@@ -140,6 +141,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -176,6 +178,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
         initialItem: dummyItem,
@@ -200,6 +203,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -232,6 +236,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -260,6 +265,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -317,6 +323,7 @@ void main() {
       );
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -361,6 +368,7 @@ void main() {
         );
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -403,6 +411,7 @@ void main() {
       );
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -428,6 +437,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
         initialItem: dummyItem,
@@ -459,6 +469,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -499,6 +510,7 @@ void main() {
         );
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -540,6 +552,7 @@ void main() {
       );
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -565,6 +578,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -613,6 +627,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -654,6 +669,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -706,6 +722,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -758,6 +775,7 @@ void main() {
       );
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
         initialItem: dummyItem,
@@ -798,6 +816,7 @@ void main() {
       var locationCallCount = 0;
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -856,6 +875,7 @@ void main() {
         var locationCallCount = 0;
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -906,6 +926,7 @@ void main() {
       var locationCallCount = 0;
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );

@@ -13,6 +13,7 @@ import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_morphing_surface.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/media_upload_status.dart';
 
 /// Molecule widget untuk thumbnail foto individual dalam Grid 2-kolom
 /// lengkap dengan badge urutan, tombol hapus cepat, menu opsi,
@@ -190,6 +191,8 @@ class InformationPhotoThumbnail extends StatelessWidget {
                   ),
                 ),
               ),
+
+            MediaUploadOverlay(item: item, isSubmitting: isSubmitting),
 
             // ── Bar Kontrol Atas (Badge Urutan & Tombol Hapus Sejajar) ──
             Positioned(

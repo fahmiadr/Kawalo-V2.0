@@ -19,6 +19,7 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/media_upload_status.dart';
 
 class GuestFormPhotoSection extends StatelessWidget {
   const GuestFormPhotoSection({
@@ -110,6 +111,11 @@ class GuestFormPhotoSection extends StatelessWidget {
                   overlay: Stack(
                     fit: StackFit.expand,
                     children: [
+                      if (photoMedia != null)
+                        MediaUploadOverlay(
+                          item: photoMedia,
+                          isSubmitting: isSubmitting,
+                        ),
                       // Tombol Hapus Silang Cepat di Kanan Atas
                       Positioned(
                         top: AppSpacing.space100,

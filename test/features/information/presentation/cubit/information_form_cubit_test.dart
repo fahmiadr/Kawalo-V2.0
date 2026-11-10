@@ -14,6 +14,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../upload_test_helpers.dart';
 
 class MockCreateInformationUseCase extends Mock
     implements CreateInformationUseCase {}
@@ -62,6 +63,7 @@ void main() {
   group('InformationFormCubit - Initialization', () {
     test('initializes in create mode when initialItem is null', () {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -79,6 +81,7 @@ void main() {
 
     test('initializes in update mode when initialItem is provided', () {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
         initialItem: dummyItem,
@@ -113,6 +116,7 @@ void main() {
       () async {
         // 1. Initial typing / clearing does NOT trigger premature titleError
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         )..onTitleChanged('   ');
@@ -138,6 +142,7 @@ void main() {
 
     test('onFeedTypeChanged updates category and validates', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       )..onFeedTypeChanged('INCIDENT');
@@ -155,6 +160,7 @@ void main() {
       'onAddPhoto, onRemovePhoto, onClearAllPhotos, and onReorderPhotos',
       () async {
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -219,6 +225,7 @@ void main() {
     test('submit is blocked when any photo is in loading state', () async {
       final cubit =
           InformationFormCubit(
+              uploadRepository: FakeUploadRepository(),
               createInformationUseCase: mockCreateUseCase,
               updateInformationUseCase: mockUpdateUseCase,
             )
@@ -243,6 +250,7 @@ void main() {
 
     test('onAddMediaPhotos adds multiple items and caps at 4', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -281,6 +289,7 @@ void main() {
 
     test('onAddMediaPhotos filters duplicates', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -311,6 +320,7 @@ void main() {
 
     test('onSetLocationCoordinates and onClearLocationCoordinates', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -341,6 +351,7 @@ void main() {
 
     test('onSetDocumentMedia and onClearDocumentMedia', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       );
@@ -362,6 +373,7 @@ void main() {
 
     test('onGlatChanged and onGlongChanged validate coordinates', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       )..onGlatChanged('100.5'); // out of range
@@ -388,6 +400,7 @@ void main() {
 
       final cubit =
           InformationFormCubit(
+              uploadRepository: FakeUploadRepository(),
               createInformationUseCase: mockCreateUseCase,
               updateInformationUseCase: mockUpdateUseCase,
             )
@@ -409,6 +422,7 @@ void main() {
       ).thenAnswer((_) async => const Right(dummyItem));
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
         initialItem: dummyItem,
@@ -429,6 +443,7 @@ void main() {
       );
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       )..onTitleChanged('Pengumuman');
@@ -458,6 +473,7 @@ void main() {
         );
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
           initialItem: itemWithPhotos,
@@ -487,6 +503,7 @@ void main() {
     test('validates coordinate pairing and blocks submit if partial', () async {
       final cubit =
           InformationFormCubit(
+              uploadRepository: FakeUploadRepository(),
               createInformationUseCase: mockCreateUseCase,
               updateInformationUseCase: mockUpdateUseCase,
             )
@@ -511,6 +528,7 @@ void main() {
 
     test('canSubmit evaluates loading photos correctly', () async {
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       )..onTitleChanged('Kegiatan');
@@ -545,6 +563,7 @@ void main() {
     );
 
     InformationFormCubit build() => InformationFormCubit(
+      uploadRepository: FakeUploadRepository(),
       createInformationUseCase: mockCreateUseCase,
       updateInformationUseCase: mockUpdateUseCase,
     );
@@ -647,6 +666,7 @@ void main() {
         service.getCurrentPosition,
       ).thenAnswer((_) async => LocationResult.success(position));
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
         locationService: service,

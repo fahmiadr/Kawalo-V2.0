@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_section.dart';
@@ -149,6 +150,7 @@ class GuestFormDialog extends StatefulWidget {
       return (existing, false);
     } on Object catch (_) {
       final created = context.read<GuestModule>().createGuestFormCubit(
+        uploadRepository: context.read<UploadRepository>(),
         initialItem: initialItem,
       );
       return (created, true);

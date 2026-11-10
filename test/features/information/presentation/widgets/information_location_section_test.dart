@@ -12,6 +12,7 @@ import 'package:kawalo_mobile/features/information/domain/usecases/update_inform
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_location_section.dart';
 import 'package:mocktail/mocktail.dart';
+import '../../upload_test_helpers.dart';
 
 class MockCreateInformationUseCase extends Mock
     implements CreateInformationUseCase {}
@@ -105,6 +106,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         );
@@ -142,6 +144,7 @@ void main() {
       configureTestView(tester);
 
       final cubit = InformationFormCubit(
+        uploadRepository: FakeUploadRepository(),
         createInformationUseCase: mockCreateUseCase,
         updateInformationUseCase: mockUpdateUseCase,
       )..onSetLocationCoordinates(lat: -6.2088, lng: 106.8456);
@@ -190,6 +193,7 @@ void main() {
         locationController.text = 'Ruang Rapat Utama';
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         )..onEventLocationChanged('Ruang Rapat Utama');
@@ -248,6 +252,7 @@ void main() {
         configureTestView(tester);
 
         final cubit = InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
           createInformationUseCase: mockCreateUseCase,
           updateInformationUseCase: mockUpdateUseCase,
         )..onSetLocationCoordinates(lat: -6.2088, lng: 106.8456);

@@ -4,6 +4,7 @@ import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/information/data/datasources/information_local_data_source.dart';
@@ -71,10 +72,14 @@ final class InformationModule implements CacheWipeableModule {
 
   /// Merakit dan mengembalikan instance [InformationFormCubit] yang siap
   /// pakai untuk operasi posting (tambah) maupun pembaruan (edit) informasi.
-  InformationFormCubit createFormCubit({InformationItemEntity? initialItem}) {
+  InformationFormCubit createFormCubit({
+    required UploadRepository uploadRepository,
+    InformationItemEntity? initialItem,
+  }) {
     return InformationFormCubit(
       createInformationUseCase: CreateInformationUseCase(repository),
       updateInformationUseCase: UpdateInformationUseCase(repository),
+      uploadRepository: uploadRepository,
       locationService: _locationService,
       initialItem: initialItem,
     );

@@ -22,11 +22,16 @@ class FileDownloadCubit extends Cubit<FileDownloadState> {
   Future<void> download(String file) async {
     if (state is FileDownloadInProgress) return;
 
+    // Attachments are hosted by the upload endpoint; anything else (a stale
+    // local path) has nothing to fetch.
+    if (!file.startsWith('http://') && !file.startsWith('https://')) {
+      emit(const FileDownloadFailure('Berkas ini tidak dapat diunduh.'));
+      return;
+    }
+
     emit(const FileDownloadInProgress(0.1));
 
     try {
-      final isNetwork =
-          file.startsWith('http://') || file.startsWith('https://');
       final fileName = attachmentFileName(file);
 
       String savePath;
@@ -37,23 +42,15 @@ class FileDownloadCubit extends Cubit<FileDownloadState> {
         savePath = '/downloads/$fileName';
       }
 
-      if (isNetwork) {
-        await _dio.download(
-          file,
-          savePath,
-          onReceiveProgress: (received, total) {
-            if (total > 0 && !isClosed) {
-              emit(FileDownloadInProgress(received / total));
-            }
-          },
-        );
-      } else {
-        // Local paths and mock links have nothing to fetch; simulate progress.
-        for (var step = 1; step <= 5; step++) {
-          await Future<void>.delayed(const Duration(milliseconds: 150));
-          if (!isClosed) emit(FileDownloadInProgress(step / 5));
-        }
-      }
+      await _dio.download(
+        file,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total > 0 && !isClosed) {
+            emit(FileDownloadInProgress(received / total));
+          }
+        },
+      );
 
       if (!isClosed) emit(const FileDownloadDone());
     } on Object catch (e) {

@@ -148,15 +148,13 @@ void main() {
   });
 
   group('InformationFormPhotos.payloadUrls', () {
-    test('mocks an upload url for local files and keeps remote urls', () {
+    test('keeps only hosted urls and never invents one for local files', () {
       final urls = InformationFormPhotos.payloadUrls([
         local('a'),
-        remote('https://x/b.jpg'),
-      ], now: () => DateTime.fromMillisecondsSinceEpoch(1234));
-      expect(urls, [
-        'https://cdn.kawalo.internal/feeds/photos/1234_a.jpg',
-        'https://x/b.jpg',
+        local('b').copyWith(remoteUrl: 'https://cdn.test/b.webp'),
+        remote('https://x/c.jpg'),
       ]);
+      expect(urls, ['https://cdn.test/b.webp', 'https://x/c.jpg']);
     });
   });
 

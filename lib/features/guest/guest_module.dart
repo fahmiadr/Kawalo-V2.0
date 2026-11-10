@@ -3,6 +3,7 @@ import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/guest/data/datasources/guest_local_data_source.dart';
@@ -67,12 +68,16 @@ final class GuestModule implements CacheWipeableModule {
   }
 
   /// Merakit dan mengembalikan instance [GuestFormCubit] yang siap pakai.
-  GuestFormCubit createGuestFormCubit({GuestItemEntity? initialItem}) {
+  GuestFormCubit createGuestFormCubit({
+    required UploadRepository uploadRepository,
+    GuestItemEntity? initialItem,
+  }) {
     return GuestFormCubit(
       createGuestUseCase: CreateGuestUseCase(repository),
       updateGuestUseCase: UpdateGuestUseCase(repository),
       guestRepository: repository,
       groupRepository: _groupRepository,
+      uploadRepository: uploadRepository,
       initialItem: initialItem,
     );
   }
