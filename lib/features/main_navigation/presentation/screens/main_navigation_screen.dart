@@ -20,6 +20,7 @@ import 'package:kawalo_mobile/features/home/presentation/utils/home_greeting_hel
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_dashboard_view.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/screens/information_screen.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/screens/more_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart';
@@ -114,12 +115,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     'Daftar laporan dan validasi akan ditampilkan di sini.',
                 iconPath: KawaloVectors.documentValidationFilled,
               ),
-              const _PlaceholderView(
-                title: 'Lainnya',
-                description:
-                    'Pengaturan dan menu lainnya akan ditampilkan di sini.',
-                iconPath: KawaloVectors.moreHorizontalCircle01Filled,
-              ),
+              const MoreScreen(),
             ],
           ),
         ),
