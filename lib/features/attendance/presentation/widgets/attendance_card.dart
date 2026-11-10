@@ -10,6 +10,7 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/extensions/attendance_item_ui_extension.dart';
+import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_shift_marker.dart';
 
 /// Komponen kartu daftar absensi mandiri, ramping, dan scannable.
 ///
@@ -101,6 +102,7 @@ class AttendanceCard extends StatelessWidget {
             context: context,
             iconPath: KawaloColorVectors.timeRotation,
             text: item.displayShift,
+            trailing: AttendanceShiftMarker(item: item),
           ),
           AppSpacing.vGap50,
           _buildDetailRow(
@@ -119,6 +121,7 @@ class AttendanceCard extends StatelessWidget {
     required BuildContext context,
     required String iconPath,
     required String text,
+    Widget? trailing,
   }) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
@@ -138,6 +141,7 @@ class AttendanceCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        if (trailing != null) ...[AppSpacing.hGapSm, trailing],
       ],
     );
   }

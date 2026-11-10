@@ -15,6 +15,7 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/extensions/attendance_item_ui_extension.dart';
+import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_shift_marker.dart';
 
 /// Bottom sheet interaktif yang menyajikan rincian lengkap catatan absensi
 /// personil disertai peta OpenStreetMap (OSM) legal untuk penggunaan komersial.
@@ -214,6 +215,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
             iconPath: KawaloColorVectors.timeRotation,
             label: 'Shift kerja',
             value: item.displayShift,
+            trailingWidget: AttendanceShiftMarker(item: item),
           ),
           const AppDivider(),
           _buildInfoItem(

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Color, HSVColor;
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/utils/app_display_formatter.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
@@ -51,6 +52,25 @@ extension AttendanceItemUiExtension on AttendanceItemEntity {
       return shiftTimeWindow!;
     }
     return AppDisplayFormatter.emDash;
+  }
+
+  /// Shift marker colour parsed from `#RRGGBB` / `RRGGBB`, or `null` when the
+  /// value is empty or invalid.
+  ///
+  /// Purple hues are dropped on purpose: the app never shows purple, and the
+  /// colour is free text chosen by the group admin.
+  Color? get shiftAccentColor {
+    final raw = shiftColor?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    final hex = raw.startsWith('#') ? raw.substring(1) : raw;
+    if (hex.length != 6) return null;
+    final rgb = int.tryParse(hex, radix: 16);
+    if (rgb == null) return null;
+
+    final color = Color(0xFF000000 | rgb);
+    final hsv = HSVColor.fromColor(color);
+    final isPurple = hsv.saturation > 0.15 && hsv.hue >= 250 && hsv.hue <= 330;
+    return isPurple ? null : color;
   }
 
   /// Menentukan varian [AppTagVariant] berbasis kategori atau kata kunci pada

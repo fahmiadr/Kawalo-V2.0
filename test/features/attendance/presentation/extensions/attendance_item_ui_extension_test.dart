@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
@@ -100,6 +101,33 @@ void main() {
       expect(emptyEntity.displayShiftTimeWindow, '—');
       expect(emptyEntity.displayShift, '—');
       expect(emptyEntity.displayCategory, '—');
+    });
+
+    group('shiftAccentColor', () {
+      AttendanceItemEntity withColor(String? value) => AttendanceItemEntity(
+        id: '1',
+        category: 'MASUK',
+        diffMinutes: 0,
+        shiftColor: value,
+      );
+
+      test('parses #RRGGBB and RRGGBB into an opaque colour', () {
+        expect(withColor('#FF5722').shiftAccentColor, const Color(0xFFFF5722));
+        expect(withColor(' 2e7d32 ').shiftAccentColor, const Color(0xFF2E7D32));
+      });
+
+      test('ignores empty, malformed and non-hex values', () {
+        for (final value in [null, '', '  ', '#FFF', 'merah', '#GG0000']) {
+          expect(withColor(value).shiftAccentColor, isNull, reason: '$value');
+        }
+      });
+
+      test('drops purple hues but keeps greys and other colours', () {
+        expect(withColor('#7B1FA2').shiftAccentColor, isNull);
+        expect(withColor('#9C27B0').shiftAccentColor, isNull);
+        expect(withColor('#808080').shiftAccentColor, isNotNull);
+        expect(withColor('#1565C0').shiftAccentColor, isNotNull);
+      });
     });
   });
 }

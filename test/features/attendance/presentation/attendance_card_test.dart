@@ -77,5 +77,48 @@ void main() {
       );
       expect(onTimeTag.variant, AppTagVariant.primary);
     });
+
+    testWidgets('shows a shift colour marker only for a usable colour', (
+      tester,
+    ) async {
+      const withColor = AttendanceItemEntity(
+        id: '3',
+        category: 'MASUK',
+        diffMinutes: 0,
+        shiftName: 'Shift Pagi',
+        shiftColor: '#2E7D32',
+      );
+      await tester.pumpWidget(
+        buildTestableWidget(const AttendanceCard(item: withColor)),
+      );
+      final marker = tester.widget<Container>(
+        find.byKey(const ValueKey('attendance_shift_marker')),
+      );
+      expect(
+        (marker.decoration! as BoxDecoration).color,
+        const Color(0xFF2E7D32),
+      );
+
+      for (final invalid in [null, 'bukan-warna', '#7B1FA2']) {
+        await tester.pumpWidget(
+          buildTestableWidget(
+            AttendanceCard(
+              item: AttendanceItemEntity(
+                id: '4',
+                category: 'MASUK',
+                diffMinutes: 0,
+                shiftName: 'Shift Pagi',
+                shiftColor: invalid,
+              ),
+            ),
+          ),
+        );
+        expect(
+          find.byKey(const ValueKey('attendance_shift_marker')),
+          findsNothing,
+          reason: '$invalid',
+        );
+      }
+    });
   });
 }
