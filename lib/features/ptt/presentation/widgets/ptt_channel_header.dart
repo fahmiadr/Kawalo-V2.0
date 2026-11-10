@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
+import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
@@ -8,10 +10,20 @@ import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 class PttChannelHeader extends StatelessWidget {
   const PttChannelHeader({super.key});
 
+  static const _fallbackTitle = 'SALURAN TAKTIS PATROLI';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final authState = context.watch<AuthBloc?>()?.state;
+    final groupName = authState is Authenticated
+        ? authState.user.activeGroup?.groupName?.trim()
+        : null;
+    final channelTitle = (groupName == null || groupName.isEmpty)
+        ? _fallbackTitle
+        : groupName.toUpperCase();
 
     return BlocBuilder<PttCubit, PttState>(
       builder: (context, state) {
@@ -68,7 +80,7 @@ class PttChannelHeader extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'SALURAN TAKTIS PATROLI',
+                      channelTitle,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                         letterSpacing: 1.2,
@@ -86,34 +98,35 @@ class PttChannelHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.people_alt_rounded,
-                      size: 16,
-                      color: colorScheme.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$memberCount Online',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
+              if (memberCount != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.people_alt_rounded,
+                        size: 16,
+                        color: colorScheme.primary,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        '$memberCount Online',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         );

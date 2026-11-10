@@ -61,6 +61,51 @@ void main() {
       expect(find.byIcon(Icons.radio_rounded), findsOneWidget);
     });
 
+    testWidgets('does not show a member count before the server sent one', (
+      tester,
+    ) async {
+      when(() => mockPttCubit.state).thenReturn(
+        const PttIdle(
+          channel: PttChannelEntity(groupUid: 'grp_01'),
+          floorState: PttFloorStateEntity.idle(),
+        ),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Anggota Terhubung'), findsNothing);
+      expect(find.text('Saluran terhubung'), findsOneWidget);
+    });
+
+    testWidgets('shows connecting text instead of a member count', (
+      tester,
+    ) async {
+      when(() => mockPttCubit.state).thenReturn(
+        const PttConnecting(
+          channel: PttChannelEntity(groupUid: 'grp_01'),
+          floorState: PttFloorStateEntity.idle(),
+        ),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Menyambung ke saluran...'), findsOneWidget);
+    });
+
+    testWidgets('is hidden on iOS where the native PTT engine does not exist', (
+      tester,
+    ) async {
+      when(() => mockPttCubit.state).thenReturn(const PttInitial());
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Walkie-Talkie Taktis'), findsNothing);
+      expect(find.byType(InkWell), findsNothing);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
     testWidgets('renders card in Transmitting state', (tester) async {
       when(() => mockPttCubit.state).thenReturn(
         const PttTransmitting(
@@ -106,6 +151,9 @@ void main() {
     });
 
     testWidgets('tapping card navigates to PttChannelScreen', (tester) async {
+      when(
+        () => mockPttCubit.checkAndRequestMicrophonePermission(),
+      ).thenAnswer((_) async => true);
       when(() => mockPttCubit.state).thenReturn(
         const PttIdle(
           channel: PttChannelEntity(groupUid: 'grp_01'),

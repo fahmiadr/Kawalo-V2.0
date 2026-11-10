@@ -5,6 +5,7 @@ import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/screens/ptt_channel_screen.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart';
 
 /// Quick-access card yang disematkan pada Dashboard Kawalo Home,
 /// memungkinkan petugas keamanan langsung melihat status saluran PTT dan
@@ -12,13 +13,24 @@ import 'package:kawalo_mobile/features/ptt/presentation/screens/ptt_channel_scre
 class HomePttFloatingCard extends StatelessWidget {
   const HomePttFloatingCard({super.key});
 
+  static String _idleSubtitle(PttState state) {
+    final memberCount = state.channel.memberCount;
+    return switch (state) {
+      PttIdle() when memberCount != null => '$memberCount Anggota Terhubung',
+      PttIdle() => 'Saluran terhubung',
+      PttConnecting() || PttReconnecting() => 'Menyambung ke saluran...',
+      PttDisconnected() => 'Saluran terputus',
+      _ => 'Belum terhubung ke saluran',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final pttCubit = context.watch<PttCubit?>();
 
-    if (pttCubit == null) {
+    if (pttCubit == null || !isPttSupportedPlatform) {
       return const SizedBox.shrink();
     }
 
@@ -47,7 +59,7 @@ class HomePttFloatingCard extends StatelessWidget {
       cardColor = colorScheme.surfaceContainerHigh;
       accentColor = colorScheme.primary;
       title = 'Walkie-Talkie Taktis';
-      subtitle = '${state.channel.memberCount} Anggota Terhubung';
+      subtitle = _idleSubtitle(state);
       icon = Icons.radio_rounded;
     }
 

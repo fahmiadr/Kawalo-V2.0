@@ -24,6 +24,17 @@ class PttSpeakerEntity extends Equatable {
   /// Memeriksa apakah pembicara memiliki wewenang administratif.
   bool get isAdmin => role.toUpperCase() == 'ADMIN';
 
+  /// Honest label for the speaker role; unknown roles are shown as-is.
+  String get roleLabel {
+    final upper = role.trim().toUpperCase();
+    return switch (upper) {
+      '' => 'ANGGOTA',
+      'ADMIN' => 'ADMIN',
+      'GUARD' => 'PETUGAS',
+      _ => upper,
+    };
+  }
+
   @override
   List<Object?> get props => [userId, name, role];
 }
@@ -33,11 +44,11 @@ class PttFloorStateEntity extends Equatable {
   const PttFloorStateEntity({
     required this.status,
     this.speaker,
-    this.memberCount = 1,
+    this.memberCount,
   });
 
   /// Factory untuk kondisi channel IDLE tanpa pembicara aktif.
-  const PttFloorStateEntity.idle({int memberCount = 1})
+  const PttFloorStateEntity.idle({int? memberCount})
     : this(
         status: PttFloorStatus.idle,
         speaker: null,
@@ -46,7 +57,9 @@ class PttFloorStateEntity extends Equatable {
 
   final PttFloorStatus status;
   final PttSpeakerEntity? speaker;
-  final int memberCount;
+
+  /// `null` when the server did not report a count.
+  final int? memberCount;
 
   /// Menandakan apakah saluran sedang ditempati oleh pembicara lain.
   bool get isOccupied =>

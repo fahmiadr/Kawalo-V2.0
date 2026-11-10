@@ -14,7 +14,7 @@ class PttSpeakerDto extends Equatable {
     return PttSpeakerDto(
       userId: map['userId']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
-      role: map['role']?.toString() ?? 'GUARD',
+      role: map['role']?.toString() ?? '',
     );
   }
 
@@ -33,11 +33,7 @@ class PttSpeakerDto extends Equatable {
 }
 
 class PttFloorStateDto extends Equatable {
-  const PttFloorStateDto({
-    required this.state,
-    this.speaker,
-    this.memberCount = 1,
-  });
+  const PttFloorStateDto({required this.state, this.speaker, this.memberCount});
 
   factory PttFloorStateDto.fromMap(Map<dynamic, dynamic> map) {
     final speakerMap = map['speaker'];
@@ -46,13 +42,13 @@ class PttFloorStateDto extends Equatable {
       speaker: speakerMap is Map<dynamic, dynamic>
           ? PttSpeakerDto.fromMap(speakerMap)
           : null,
-      memberCount: (map['memberCount'] as num?)?.toInt() ?? 1,
+      memberCount: (map['memberCount'] as num?)?.toInt(),
     );
   }
 
   final String state;
   final PttSpeakerDto? speaker;
-  final int memberCount;
+  final int? memberCount;
 
   @override
   List<Object?> get props => [state, speaker, memberCount];

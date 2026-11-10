@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
@@ -485,6 +486,58 @@ void main() {
       await cubit.joinForGroup('grp_01');
 
       verify(() => mockJoinChannel(any())).called(1);
+      await cubit.close();
+    });
+
+    test('leaves the old group channel before joining a new group', () async {
+      final calls = <String>[];
+      when(() => mockRepository.leaveChannel()).thenAnswer((_) async {
+        calls.add('leave');
+        return const Right(null);
+      });
+      when(() => mockJoinChannel(any())).thenAnswer((_) async {
+        calls.add('join');
+        return const Right(null);
+      });
+      final cubit = createCubit(storage: storage)
+        ..emit(
+          const PttIdle(
+            channel: PttChannelEntity(groupUid: 'grp_01'),
+            floorState: PttFloorStateEntity.idle(),
+          ),
+        );
+
+      await cubit.joinForGroup('grp_02');
+
+      expect(calls, ['leave', 'join']);
+      expect(cubit.state.channel.groupUid, 'grp_02');
+      await cubit.close();
+    });
+
+    test('does not leave when the same group is already joined', () async {
+      final cubit = createCubit(storage: storage)
+        ..emit(
+          const PttIdle(
+            channel: PttChannelEntity(groupUid: 'grp_01'),
+            floorState: PttFloorStateEntity.idle(),
+          ),
+        );
+
+      await cubit.joinForGroup('grp_01');
+
+      verifyNever(() => mockRepository.leaveChannel());
+      verifyNever(() => mockJoinChannel(any()));
+      await cubit.close();
+    });
+
+    test('does nothing on iOS', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final cubit = createCubit(storage: storage);
+
+      await cubit.joinForGroup('grp_01');
+
+      verifyNever(() => mockJoinChannel(any()));
       await cubit.close();
     });
 

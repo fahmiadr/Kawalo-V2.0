@@ -129,10 +129,12 @@ class PttRepositoryImpl implements PttRepository {
   @override
   Stream<int> watchMemberCount() {
     return dataSource.eventStream
-        .where((event) => event.eventType == 'memberCountChanged')
-        .map((event) {
-          return (event.rawMap['memberCount'] as num?)?.toInt() ?? 1;
-        });
+        .where(
+          (event) =>
+              event.eventType == 'memberCountChanged' &&
+              event.rawMap['memberCount'] is num,
+        )
+        .map((event) => (event.rawMap['memberCount'] as num).toInt());
   }
 
   @override

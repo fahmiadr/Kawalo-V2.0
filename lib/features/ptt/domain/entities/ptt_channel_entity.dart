@@ -8,12 +8,14 @@ class PttChannelEntity extends Equatable {
   const PttChannelEntity({
     required this.groupUid,
     this.connectionStatus = PttConnectionStatus.disconnected,
-    this.memberCount = 1,
+    this.memberCount,
   });
 
   final String groupUid;
   final PttConnectionStatus connectionStatus;
-  final int memberCount;
+
+  /// `null` until the server reports it; never assume a count.
+  final int? memberCount;
 
   PttChannelEntity copyWith({
     String? groupUid,

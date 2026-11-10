@@ -10,6 +10,7 @@ import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_cha
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_params.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart';
 
 class PttCubit extends Cubit<PttState> {
   PttCubit({
@@ -200,12 +201,20 @@ class PttCubit extends Cubit<PttState> {
 
   /// Joins the PTT channel of [groupUid] using the stored access token.
   ///
-  /// A no-op without a group, a usable token or base URL, or while a channel is
-  /// already connecting/connected. Never throws: the PTT channel is optional for
-  /// the caller.
+  /// A no-op on non-Android platforms, without a group, a usable token or base
+  /// URL, or while a channel of the same group is already connecting/connected.
+  /// A channel still bound to a different group (after `switch-group`) is left
+  /// first. Never throws: the PTT channel is optional for the caller.
   Future<void> joinForGroup(String? groupUid) async {
     try {
+      if (!isPttSupportedPlatform) return;
       if (groupUid == null || groupUid.isEmpty) return;
+      final boundGroup = state.channel.groupUid;
+      if (state is! PttInitial &&
+          boundGroup.isNotEmpty &&
+          boundGroup != groupUid) {
+        await leaveChannel();
+      }
       if (state is! PttInitial && state is! PttDisconnected) return;
 
       final token = await storageService?.getAccessToken();

@@ -85,12 +85,10 @@ class _PttChannelScreenState extends State<PttChannelScreen> {
                               } else if (state is PttListening) {
                                 final speaker = state.floorState.speaker;
                                 final speakerName = speaker?.name ?? 'Petugas';
-                                final speakerRole = speaker?.isAdmin ?? false
-                                    ? 'SUPERVISOR ADMIN'
-                                    : 'PETUGAS REGULER';
                                 bannerTitle = speakerName.toUpperCase();
-                                bannerSubtitle =
-                                    'Sedang berbicara ($speakerRole)';
+                                bannerSubtitle = speaker == null
+                                    ? 'Sedang berbicara'
+                                    : 'Sedang berbicara (${speaker.roleLabel})';
                                 bannerColor = colorScheme.tertiary;
                                 bannerIcon = Icons.volume_up_rounded;
                               } else if (state is PttRequestingFloor) {
