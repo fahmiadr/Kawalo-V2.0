@@ -26,9 +26,17 @@ import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection
 /// Follows Material 3 Expressive standards, accessible touch targets, and
 /// design system tokens.
 class GroupSelectionScreen extends StatefulWidget {
-  const GroupSelectionScreen({required this.user, super.key});
+  const GroupSelectionScreen({
+    required this.user,
+    this.allowCancel = false,
+    super.key,
+  });
 
   final UserEntity user;
+
+  /// True when the screen is pushed over the main shell (switching group from
+  /// the Lainnya tab): back then returns to the shell instead of logging out.
+  final bool allowCancel;
 
   @override
   State<GroupSelectionScreen> createState() => _GroupSelectionScreenState();
@@ -115,6 +123,14 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
     context.read<AuthBloc>().add(const LogoutRequested());
   }
 
+  void _onBackPressed() {
+    if (widget.allowCancel) {
+      Navigator.of(context).maybePop();
+    } else {
+      _onLogoutPressed();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
@@ -148,8 +164,10 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
                   elevation: 0,
                   leading: AppIconButton(
                     icon: const AppSvgIcon(KawaloVectors.arrowLeft02, size: 24),
-                    onPressed: isLoading ? null : _onLogoutPressed,
-                    semanticLabel: 'Kembali ke halaman login',
+                    onPressed: isLoading ? null : _onBackPressed,
+                    semanticLabel: widget.allowCancel
+                        ? 'Kembali'
+                        : 'Kembali ke halaman login',
                   ),
                   actions: [
                     Padding(

@@ -203,10 +203,8 @@ void main() {
       await tester.tap(find.text('Lainnya'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Pengaturan dan menu lainnya akan ditampilkan di sini.'),
-        findsOneWidget,
-      );
+      expect(find.text('AHMAD ZAKI FAUZAN'), findsOneWidget);
+      expect(find.text('Keluar'), findsOneWidget);
 
       // Tap kembali ke tab "Beranda"
       await tester.tap(find.text('Beranda').last);

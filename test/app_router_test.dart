@@ -117,6 +117,25 @@ void main() {
     );
   });
 
+  testWidgets('pushGroupSelection keeps the stack and allows cancelling', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+
+    unawaited(router.pushGroupSelection(user));
+    await tester.pumpAndSettle();
+
+    final screen = tester.widget<GroupSelectionScreen>(
+      find.byType(GroupSelectionScreen),
+    );
+    expect(screen.allowCancel, isTrue);
+    expect(observer.currentRouteName, AppRouteNames.groupSelection);
+
+    navKey.currentState!.pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(GroupSelectionScreen), findsNothing);
+  });
+
   testWidgets('toOnboarding clears the stack and shows OnboardingScreen', (
     tester,
   ) async {
