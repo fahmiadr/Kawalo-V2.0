@@ -47,7 +47,7 @@ class AttendanceCubit
     return null;
   }
 
-  /// Mengambil data absensi dari repositori (mock atau REST API backend).
+  /// Mengambil data absensi dari REST API (fallback ke cache lokal saat offline).
   Future<AppFetchResult> fetchAttendances({
     String? search,
     AppDateFilterPeriod? filterPeriod,

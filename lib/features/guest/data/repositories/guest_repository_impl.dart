@@ -42,7 +42,7 @@ class GuestRepositoryImpl implements GuestRepository {
     this.networkInfo,
   });
 
-  /// Sumber data tamu jarak jauh (bisa dummy atau REST API).
+  /// Sumber data tamu jarak jauh (REST API).
   final GuestRemoteDataSource remoteDataSource;
 
   /// Sumber data tamu lokal untuk mode offline dan caching.

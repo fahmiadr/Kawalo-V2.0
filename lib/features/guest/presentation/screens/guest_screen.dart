@@ -36,8 +36,8 @@ import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form_dia
 
 /// Layar utama fitur Data Tamu.
 ///
-/// Mendukung pengambilan data baik melalui remote API maupun mock data
-/// secara otomatis dengan isolasi data grup aktif multi-tenant.
+/// Mengambil data dari REST API (cache lokal saat offline) dengan isolasi
+/// data grup aktif multi-tenant.
 ///
 /// Fitur:
 /// - Menggunakan [AppSelectionAppBar] dengan mode seleksi kontekstual

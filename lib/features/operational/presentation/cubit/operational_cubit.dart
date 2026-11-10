@@ -47,7 +47,7 @@ class OperationalCubit
     return null;
   }
 
-  /// Mengambil aktifitas operasional dari repositori (mock atau REST API).
+  /// Mengambil aktifitas operasional dari REST API (fallback ke cache lokal saat offline).
   Future<AppFetchResult> fetchOperationals({
     String? search,
     AppDateFilterPeriod? filterPeriod,

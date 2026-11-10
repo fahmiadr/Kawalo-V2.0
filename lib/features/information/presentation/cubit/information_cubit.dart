@@ -70,7 +70,7 @@ class InformationCubit
     return null;
   }
 
-  /// Mengambil data informasi dari repositori (mock atau REST API backend).
+  /// Mengambil data informasi dari REST API (fallback ke cache lokal saat offline).
   Future<AppFetchResult> fetchInformation({
     String? search,
     AppDateFilterPeriod? filterPeriod,

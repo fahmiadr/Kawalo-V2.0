@@ -81,7 +81,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     return null;
   }
 
-  /// Mengambil data tamu dari repositori (baik mock maupun remote).
+  /// Mengambil data tamu dari REST API (fallback ke cache lokal saat offline).
   Future<AppFetchResult> fetchGuests({
     String? search,
     AppDateFilterPeriod? filterPeriod,
