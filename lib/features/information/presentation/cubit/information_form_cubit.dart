@@ -322,19 +322,35 @@ class InformationFormCubit extends Cubit<InformationFormState> {
     );
   }
 
-  /// Uploads local photos and the document; returns how many files failed.
-  Future<int> _uploadPendingMedia() {
+  /// Uploads the document, then the local photos; returns how many files
+  /// failed.
+  ///
+  /// The document goes first because it is the only file with checks that can
+  /// reject it locally (size, extension). If it fails, no photo is sent, so a
+  /// rejected document never leaves already-hosted photos orphaned on the
+  /// server.
+  Future<int> _uploadPendingMedia() async {
     final doc = state.documentMedia;
-    return FormMediaUploader.uploadPending(
-      [...state.photos, ?doc],
+    if (doc != null) {
+      final failedDocument = await FormMediaUploader.uploadPending(
+        [doc],
+        patch: _patchMedia,
+        isCancelled: () => isClosed,
+        upload: (item, onProgress) => _uploadRepository.uploadDocument(
+          item.toAppMediaFile(),
+          onProgress: onProgress,
+        ),
+      );
+      if (failedDocument > 0 || isClosed) return failedDocument;
+    }
+    return await FormMediaUploader.uploadPending(
+      state.photos,
       patch: _patchMedia,
       isCancelled: () => isClosed,
-      upload: (item, onProgress) {
-        final file = item.toAppMediaFile();
-        return item.id == doc?.id
-            ? _uploadRepository.uploadDocument(file, onProgress: onProgress)
-            : _uploadRepository.uploadImage(file, onProgress: onProgress);
-      },
+      upload: (item, onProgress) => _uploadRepository.uploadImage(
+        item.toAppMediaFile(),
+        onProgress: onProgress,
+      ),
     );
   }
 

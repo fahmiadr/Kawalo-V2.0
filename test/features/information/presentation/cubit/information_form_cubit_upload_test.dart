@@ -93,6 +93,36 @@ void main() {
   );
 
   test(
+    'a rejected document stops the submit before any photo is sent',
+    () async {
+      uploads.failing.add('besar.pdf');
+      final cubit = build()
+        ..onAddMediaPhotos([_photo('a.jpg'), _photo('b.jpg')])
+        ..onSetDocumentMedia(
+          const InformationFormMediaItem(
+            id: 'd',
+            name: 'besar.pdf',
+            path: '/t/d',
+          ),
+        );
+
+      await cubit.submit(session: session);
+
+      expect(uploads.documents, ['besar.pdf']);
+      expect(uploads.images, isEmpty);
+      expect(cubit.state.status, InformationFormStatus.failure);
+      expect(cubit.state.errorMessage, contains('1 berkas gagal diunggah'));
+      expect(cubit.state.documentMedia?.uploadStatus, MediaUploadStatus.failed);
+      expect(
+        cubit.state.photos.map((p) => p.uploadStatus),
+        everyElement(MediaUploadStatus.idle),
+      );
+      verifyNever(() => create(any()));
+      await cubit.close();
+    },
+  );
+
+  test(
     'partial failure blocks the request; retry uploads only failed files',
     () async {
       uploads.failing.add('b.jpg');
