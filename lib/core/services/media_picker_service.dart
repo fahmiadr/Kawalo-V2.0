@@ -156,8 +156,10 @@ final class DefaultMediaPickerService implements MediaPickerService {
   /// Resolusi tinggi maksimum standar dalam piksel (Full HD boundary).
   static const double defaultMaxHeight = 1920;
 
-  /// Nilai kualitas kompresi citra JPEG standar (0–100).
-  static const int defaultImageQuality = 85;
+  /// Quality of the intermediate JPEG handed back by the picker. It stays at
+  /// 100 because `ImageCompressor` re-encodes it to WebP (90-100) afterwards;
+  /// a lossy intermediate would be compressed twice.
+  static const int defaultImageQuality = 100;
 
   /// Kapasitas maksimum standar jepretan kamera multi-shot.
   static const int defaultMaxPhotos = 4;

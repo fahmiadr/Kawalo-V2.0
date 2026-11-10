@@ -84,8 +84,10 @@ class CropImagePayload extends Equatable {
   /// agar hasil tangkapan selaras dengan tampilan pratinjau viewfinder.
   final bool isFrontCamera;
 
-  /// Kualitas kompresi JPEG standar (85, selaras dengan galeri).
-  static const int defaultQuality = 85;
+  /// Quality of the intermediate JPEG (100, same as the gallery): the upload
+  /// step re-encodes it to WebP, so a lossy intermediate would be compressed
+  /// twice.
+  static const int defaultQuality = 100;
 
   /// Resolusi lebar maksimum standar (Full HD boundary 1920 piksel).
   static const double defaultMaxWidth = 1920;

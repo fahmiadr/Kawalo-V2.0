@@ -61,7 +61,7 @@ void main() {
     test('exposes standard industry compression constants', () {
       expect(DefaultMediaPickerService.defaultMaxWidth, 1920);
       expect(DefaultMediaPickerService.defaultMaxHeight, 1920);
-      expect(DefaultMediaPickerService.defaultImageQuality, 85);
+      expect(DefaultMediaPickerService.defaultImageQuality, 100);
       expect(DefaultMediaPickerService.defaultMaxPhotos, 4);
       expect(
         DefaultMediaPickerService.defaultAllowedDocumentExtensions,
