@@ -39,6 +39,8 @@ import 'package:kawalo_mobile/features/operational/operational_module.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/ptt_module.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
+import 'package:kawalo_mobile/features/schedule/schedule_module.dart';
 import 'package:kawalo_mobile/features/splash/presentation/screens/splash_screen.dart';
 
 void main() => bootstrap(AppEnvironment.dev);
@@ -65,6 +67,7 @@ class _MyAppState extends State<MyApp> {
   late final AttendanceModule _attendanceModule;
   late final OperationalModule _operationalModule;
   late final IncidentModule _incidentModule;
+  late final ScheduleModule _scheduleModule;
   late final AuthBloc _authBloc;
   late final UserSessionCubit _userSessionCubit;
   StreamSubscription<AuthState>? _authSubscription;
@@ -121,6 +124,10 @@ class _MyAppState extends State<MyApp> {
       isar: isar,
       networkInfo: _networkInfo,
       syncStorageService: syncStorage,
+    );
+    _scheduleModule = ScheduleModule(
+      apiClient: _apiClient,
+      networkInfo: _networkInfo,
     );
     _operationalModule = OperationalModule(
       apiClient: _apiClient,
@@ -229,6 +236,7 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider<GuestModule>.value(value: _guestModule),
         RepositoryProvider<InformationModule>.value(value: _informationModule),
         RepositoryProvider<IncidentModule>.value(value: _incidentModule),
+        RepositoryProvider<ScheduleModule>.value(value: _scheduleModule),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -245,6 +253,9 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider<AttendanceCubit>(
             create: (context) => _attendanceModule.createCubit(),
+          ),
+          BlocProvider<ScheduleCubit>(
+            create: (context) => _scheduleModule.createCubit(),
           ),
           BlocProvider<InformationCubit>(
             create: (context) => _informationModule.createCubit(),

@@ -16,6 +16,10 @@ import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_ca
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/screens/incident_screen.dart';
 import 'package:kawalo_mobile/features/operational/presentation/screens/operational_screen.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_state.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/extensions/schedule_ui_extension.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/screens/schedule_screen.dart';
 
 export 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 export 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
@@ -52,13 +56,15 @@ class HomeShortcutsSection extends StatelessWidget {
     BuildContext context, {
     VoidCallback? onLogoutPressed,
     int openIncidents = 0,
+    String? scheduleSubtitle,
   }) {
     return [
       AppShortcutItem(
         title: 'Jadwal Kerja',
+        subtitle: scheduleSubtitle,
         iconPath: KawaloColorVectors.calendar2,
         onTap: () {
-          AppSnackbar.show(context, message: 'Membuka Jadwal Kerja...');
+          Navigator.of(context).push(ScheduleScreen.route());
         },
       ),
       AppShortcutItem(
@@ -133,12 +139,20 @@ class HomeShortcutsSection extends StatelessWidget {
     final incidentState = context.watch<IncidentListCubit?>()?.state;
     final openIncidents =
         incidentState?.displayedIncidents.where((i) => i.isOpen).length ?? 0;
+    final scheduleState = context.watch<ScheduleCubit?>()?.state;
     final items =
         shortcuts ??
         _getDefaultShortcuts(
           context,
           onLogoutPressed: onLogoutPressed,
           openIncidents: openIncidents,
+          scheduleSubtitle: switch (scheduleState) {
+            ScheduleLoaded(:final schedules) => nextShiftSubtitle(
+              schedules,
+              DateTime.now(),
+            ),
+            _ => null,
+          },
         );
     final totalCount = showAddCard ? items.length + 1 : items.length;
 
