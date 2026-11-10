@@ -51,6 +51,15 @@ class AppRouter {
     (_) => GroupSelectionScreen(user: user),
   );
 
+  /// Opens the group picker on top of the main shell so back cancels the
+  /// switch; unlike [toGroupSelection] it does not clear the stack.
+  Future<void> pushGroupSelection(UserEntity user) => _navigator().push<void>(
+    AppPageRoute.forwardBackward<void>(
+      builder: (_) => GroupSelectionScreen(user: user, allowCancel: true),
+      settings: const RouteSettings(name: AppRouteNames.groupSelection),
+    ),
+  );
+
   Future<void> toMain() =>
       _resetTo(AppRouteNames.main, (_) => const MainNavigationScreen());
 

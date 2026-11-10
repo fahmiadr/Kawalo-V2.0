@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
@@ -112,6 +113,26 @@ void main() {
 
     expect(find.byType(GroupSelectionScreen), findsOneWidget);
     expect(find.text('PT Maju Bersama'), findsOneWidget);
+  });
+
+  testWidgets('back on the group picker cancels the switch without logout', (
+    tester,
+  ) async {
+    await pump(tester, Authenticated(user: _user(groups: [_admin, _guard])));
+    await tester.tap(find.text('Ganti Grup'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byType(AppIconButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GroupSelectionScreen), findsNothing);
+    expect(find.byType(MoreScreen), findsOneWidget);
+    verifyNever(() => authBloc.add(any()));
   });
 
   testWidgets('Keluar asks for confirmation before dispatching logout', (

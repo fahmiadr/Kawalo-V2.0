@@ -168,7 +168,7 @@ class _MoreBody extends StatelessWidget {
                   size: 20,
                 ),
                 onTap: () =>
-                    unawaited(AppRouter.of(context).toGroupSelection(user)),
+                    unawaited(AppRouter.of(context).pushGroupSelection(user)),
               ),
             AppActionTile(
               title: 'Keluar',
