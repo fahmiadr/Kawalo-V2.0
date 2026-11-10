@@ -59,10 +59,24 @@ void main() {
       expect(IncidentEntity.canBeCreatedBySession(noGroupSession), isFalse);
     });
 
-    test('canBeViewedBySession enforces group match or admin override', () {
+    test('canBeViewedBySession enforces group match, even for admins', () {
       expect(tIncident.canBeViewedBySession(guardSession), isTrue);
       expect(tIncident.canBeViewedBySession(otherGroupGuardSession), isFalse);
-      expect(tIncident.canBeViewedBySession(adminSession), isTrue);
+      expect(tIncident.canBeViewedBySession(adminSession), isFalse);
+      expect(
+        tIncident.canBeViewedBySession(
+          const AuthSessionEntity(
+            userId: 'usr_admin',
+            email: 'admin@kawalo.id',
+            name: 'Dewi Sartika',
+            allowAdmin: true,
+            allowPatrol: false,
+            allowMonPatrol: true,
+            groupUid: 'grp_sakura',
+          ),
+        ),
+        isTrue,
+      );
       expect(tIncident.canBeViewedBySession(null), isFalse);
     });
 
@@ -81,7 +95,7 @@ void main() {
 
     test('canBeResolvedBySession allows resolution on open incident', () {
       expect(tIncident.canBeResolvedBySession(guardSession), isTrue);
-      expect(tIncident.canBeResolvedBySession(adminSession), isTrue);
+      expect(tIncident.canBeResolvedBySession(adminSession), isFalse);
       expect(tIncident.canBeResolvedBySession(otherGroupGuardSession), isFalse);
 
       final resolvedIncident = tIncident.copyWith(

@@ -52,7 +52,7 @@ class IncidentDetailBody extends StatelessWidget {
     final incident = state.incident;
     if (incident == null) return const SizedBox.shrink();
 
-    final currentUserId = session?.userId;
+    final currentEmail = session?.email.trim().toLowerCase();
 
     return Center(
       child: ConstrainedBox(
@@ -78,8 +78,11 @@ class IncidentDetailBody extends StatelessWidget {
             }
 
             final reply = state.replies[index - 1];
+            // The API sends the sender's email as `senderId`, not the JWT `sub`.
             final isMe =
-                currentUserId != null && reply.senderId == currentUserId;
+                currentEmail != null &&
+                currentEmail.isNotEmpty &&
+                reply.senderId.trim().toLowerCase() == currentEmail;
 
             return IncidentThreadBubble(reply: reply, isMe: isMe);
           },

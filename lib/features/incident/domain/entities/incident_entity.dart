@@ -99,11 +99,11 @@ class IncidentEntity extends Equatable {
     return groupUid != null && groupUid.trim().isNotEmpty;
   }
 
-  /// Kebijakan domain: Sesi berhak melihat insiden jika berada pada grup
-  /// yang sama atau memiliki hak akses administratif global.
+  /// Kebijakan domain: Sesi berhak melihat insiden hanya jika berada pada grup
+  /// yang sama; server membatasi per grup (`group_uid` token), termasuk admin.
   bool canBeViewedBySession(AuthSessionEntity? session) {
     if (session == null) return false;
-    return session.groupUid == groupId || session.allowAdmin;
+    return session.groupUid == groupId;
   }
 
   /// Kebijakan domain: Pengguna dapat membalas thread jika insiden masih
