@@ -19,6 +19,7 @@ import 'package:kawalo_mobile/features/home/presentation/widgets/home_recent_gue
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_shortcuts_section.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_state.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
 
 /// Konten tampilan dashboard utama pada tab Beranda.
 ///
@@ -79,8 +80,12 @@ class _HomeDashboardViewState extends State<HomeDashboardView> {
   Future<void> _loadInitial() async {
     final guestCubit = context.read<GuestCubit?>();
     final incidentCubit = context.read<IncidentListCubit?>();
+    final scheduleCubit = context.read<ScheduleCubit?>();
     final session = context.read<UserSessionCubit?>()?.state;
     await Future.wait([
+      // Always reloaded: the schedule is personal and per group, so a state
+      // left by a previous session or group must not be shown.
+      if (scheduleCubit != null) scheduleCubit.fetch(),
       if (guestCubit != null && guestCubit.state is GuestInitial)
         guestCubit.fetchGuests(),
       if (incidentCubit != null && incidentCubit.state is IncidentInitial)
@@ -94,10 +99,15 @@ class _HomeDashboardViewState extends State<HomeDashboardView> {
   Future<void> _refresh() async {
     final guestCubit = context.read<GuestCubit?>();
     final incidentCubit = context.read<IncidentListCubit?>();
+    final scheduleCubit = context.read<ScheduleCubit?>();
     final session = context.read<UserSessionCubit?>()?.state;
     final filter = AppDateFilterResult.defaultFilter();
 
     final results = await Future.wait([
+      if (scheduleCubit != null)
+        scheduleCubit
+            .fetch(silent: true)
+            .then((ok) => ok ? AppFetchResult.success : AppFetchResult.failure),
       if (guestCubit != null)
         guestCubit.refreshGuests(
           search: '',

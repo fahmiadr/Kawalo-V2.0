@@ -17,6 +17,16 @@ class AppDateFormat {
     'Des',
   ];
 
+  static const List<String> _weekdays = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu',
+  ];
+
   static const Map<String, int> _monthMap = {
     'jan': 1,
     'feb': 2,
@@ -147,6 +157,15 @@ class AppDateFormat {
     final year = dateTime.year;
     return '$day $month $year';
   }
+
+  /// Format objek [DateTime] menjadi tanggal dan bulan saja: "8 Jul".
+  static String formatDayMonth(DateTime dateTime) =>
+      '${dateTime.day} ${_months[dateTime.month - 1]}';
+
+  /// Format objek [DateTime] dengan nama hari: "Rabu, 8 Jul 2026".
+  static String formatWeekdayDate(DateTime dateTime) =>
+      '${_weekdays[dateTime.weekday - 1]}, '
+      '${dateTime.day} ${_months[dateTime.month - 1]} ${dateTime.year}';
 
   /// Format rentang dua objek [DateTime] secara ringkas dan manusiawi
   /// mengikuti kaidah Material Design 3 Expressive, UX Writing, dan PUEBI:
