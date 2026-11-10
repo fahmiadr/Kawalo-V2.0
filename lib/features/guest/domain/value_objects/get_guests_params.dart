@@ -14,6 +14,7 @@ class GetGuestsParams extends Equatable {
     this.startDate,
     this.endDate,
     this.createdBy,
+    this.isActive,
     this.cancelToken,
     this.isRefresh = false,
   });
@@ -36,6 +37,10 @@ class GetGuestsParams extends Equatable {
   /// Filter berdasarkan email pembuat data tamu.
   final String? createdBy;
 
+  /// `true` hanya tamu yang masih di lokasi (belum keluar), `false` hanya yang
+  /// sudah keluar, `null` semuanya.
+  final bool? isActive;
+
   /// Token pembatalan request (opsional).
   final AppCancellationToken? cancelToken;
 
@@ -51,6 +56,7 @@ class GetGuestsParams extends Equatable {
     startDate,
     endDate,
     createdBy,
+    isActive,
     cancelToken,
     isRefresh,
   ];

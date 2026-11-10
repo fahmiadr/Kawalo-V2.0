@@ -23,6 +23,13 @@ abstract class GuestState extends Equatable implements ListFilterState {
   /// Nama pembuat data tamu yang sedang difilter (ADMIN).
   String? get filterCreatorName => null;
 
+  /// Filter status kunjungan: `true` hanya yang masih di lokasi, `false` hanya
+  /// yang sudah keluar, `null` semua.
+  bool? get filterIsActive => null;
+
+  /// Apakah filter status "Masih di lokasi" sedang aktif.
+  bool get hasActiveStatusFilter => false;
+
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
   @override
   DateTime? get startDate => null;
@@ -99,6 +106,7 @@ class GuestLoaded extends GuestState implements ListLoadedState {
     this.filterPeriod = AppDateFilterPeriod.today,
     this.filterCreatorEmail,
     this.filterCreatorName,
+    this.filterIsActive,
     this.startDate,
     this.endDate,
     this.startDateIso,
@@ -133,6 +141,12 @@ class GuestLoaded extends GuestState implements ListLoadedState {
   /// Nama pembuat data tamu yang sedang difilter.
   @override
   final String? filterCreatorName;
+
+  @override
+  final bool? filterIsActive;
+
+  @override
+  bool get hasActiveStatusFilter => filterIsActive != null;
 
   /// Accessor seragam untuk presentation layer yang menyajikan data tamu
   /// aktif (filter `created_by` telah diterapkan pada sumber data backend atau
@@ -169,7 +183,8 @@ class GuestLoaded extends GuestState implements ListLoadedState {
   bool get hasActiveFilter =>
       (searchQuery != null && searchQuery!.isNotEmpty) ||
       hasActiveDateFilter ||
-      hasActiveCreatorFilter;
+      hasActiveCreatorFilter ||
+      hasActiveStatusFilter;
 
   /// Membuat salinan [GuestLoaded] dengan atribut baru.
   GuestLoaded copyWith({
@@ -182,6 +197,7 @@ class GuestLoaded extends GuestState implements ListLoadedState {
     String? filterCreatorEmail,
     String? filterCreatorName,
     bool clearCreatorFilter = false,
+    bool? filterIsActive,
     DateTime? startDate,
     DateTime? endDate,
     String? startDateIso,
@@ -201,6 +217,7 @@ class GuestLoaded extends GuestState implements ListLoadedState {
       filterCreatorName: clearCreatorFilter
           ? null
           : (filterCreatorName ?? this.filterCreatorName),
+      filterIsActive: filterIsActive ?? this.filterIsActive,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       startDateIso: startDateIso ?? this.startDateIso,
@@ -219,6 +236,7 @@ class GuestLoaded extends GuestState implements ListLoadedState {
     filterPeriod,
     filterCreatorEmail,
     filterCreatorName,
+    filterIsActive,
     startDate,
     endDate,
     startDateIso,
@@ -238,6 +256,7 @@ class GuestError extends GuestState {
     this.filterPeriod = AppDateFilterPeriod.today,
     this.filterCreatorEmail,
     this.filterCreatorName,
+    this.filterIsActive,
     this.startDate,
     this.endDate,
     this.startDateIso,
@@ -268,6 +287,12 @@ class GuestError extends GuestState {
 
   @override
   final String? filterCreatorName;
+
+  @override
+  final bool? filterIsActive;
+
+  @override
+  bool get hasActiveStatusFilter => filterIsActive != null;
 
   /// Accessor seragam untuk presentation layer yang menyajikan data tamu
   /// cadangan dari cache offline saat terjadi error.
@@ -303,7 +328,8 @@ class GuestError extends GuestState {
   bool get hasActiveFilter =>
       (searchQuery != null && searchQuery!.isNotEmpty) ||
       hasActiveDateFilter ||
-      hasActiveCreatorFilter;
+      hasActiveCreatorFilter ||
+      hasActiveStatusFilter;
 
   @override
   List<Object?> get props => [
@@ -314,6 +340,7 @@ class GuestError extends GuestState {
     filterPeriod,
     filterCreatorEmail,
     filterCreatorName,
+    filterIsActive,
     startDate,
     endDate,
     startDateIso,

@@ -11,6 +11,7 @@ import 'package:kawalo_mobile/features/guest/data/datasources/guest_remote_data_
 import 'package:kawalo_mobile/features/guest/data/repositories/guest_repository_impl.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
+import 'package:kawalo_mobile/features/guest/domain/usecases/acknowledge_guest/acknowledge_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
@@ -62,6 +63,7 @@ final class GuestModule implements CacheWipeableModule {
       deleteGuestUseCase: DeleteGuestUseCase(repository),
       deleteBatchGuestUseCase: DeleteBatchGuestUseCase(repository),
       checkoutGuestUseCase: CheckoutGuestUseCase(repository),
+      acknowledgeGuestUseCase: AcknowledgeGuestUseCase(repository),
       groupRepository: _groupRepository,
       syncStorageService: _syncStorage,
     );

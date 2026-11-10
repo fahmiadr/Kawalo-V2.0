@@ -36,6 +36,21 @@ void main() {
       expect(params.containsKey('end_date'), isFalse);
     });
 
+    test('toQueryParams maps isActive to is_active only when set', () {
+      expect(
+        const GuestQueryModel(isActive: true).toQueryParams()['is_active'],
+        isTrue,
+      );
+      expect(
+        const GuestQueryModel(isActive: false).toQueryParams()['is_active'],
+        isFalse,
+      );
+      expect(
+        const GuestQueryModel().toQueryParams().containsKey('is_active'),
+        isFalse,
+      );
+    });
+
     test('props equality compares models correctly', () {
       const q1 = GuestQueryModel(search: 'Bambang', limit: 10);
       const q2 = GuestQueryModel(search: 'Bambang', limit: 10);

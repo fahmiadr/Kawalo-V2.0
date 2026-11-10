@@ -178,6 +178,31 @@ class GuestItemEntity extends Equatable {
   bool get isExited =>
       guestOutDt != null && guestOutDt!.isNotEmpty && guestOutDt != '-';
 
+  /// Menentukan apakah kunjungan tamu sudah dikonfirmasi.
+  bool get isAcknowledged =>
+      guestAckDt != null && guestAckDt!.isNotEmpty && guestAckDt != '-';
+
+  /// Memeriksa apakah sesi pengguna aktif boleh mengonfirmasi kunjungan tamu
+  /// ini.
+  ///
+  /// Mengikuti backend `PATCH /guests/:id/acknowledge`:
+  /// - Tamu belum keluar dan belum dikonfirmasi.
+  /// - `ADMIN` / `GUARD` boleh mengonfirmasi tamu apa pun dalam grup.
+  /// - Penghuni lain hanya boleh bila ia adalah penghuni tujuan
+  ///   (`guestToUserEmail` sama dengan email sesi).
+  bool canBeAcknowledgedBySession(AuthSessionEntity? session) {
+    if (session == null || isExited || isAcknowledged) return false;
+
+    final role = session.role?.toUpperCase();
+    if (role == 'ADMIN' || session.allowAdmin) return true;
+    if (role == 'GUARD' || session.allowPatrol) return true;
+
+    final host = guestToUserEmail?.trim().toLowerCase();
+    return host != null &&
+        host.isNotEmpty &&
+        host == session.email.trim().toLowerCase();
+  }
+
   /// Memeriksa apakah sesi pengguna aktif memiliki hak akses untuk
   /// melakukan check-out data tamu ini.
   ///

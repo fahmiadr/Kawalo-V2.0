@@ -11,6 +11,7 @@ class GuestQueryModel extends Equatable {
     this.startDate,
     this.endDate,
     this.createdBy,
+    this.isActive,
   });
 
   /// Kata kunci pencarian multi-kolom (nama, nomor plat, identitas,
@@ -32,6 +33,10 @@ class GuestQueryModel extends Equatable {
   /// Filter berdasarkan email pembuat data tamu.
   final String? createdBy;
 
+  /// `true` hanya tamu yang belum keluar, `false` hanya yang sudah keluar,
+  /// `null` semuanya (`is_active`).
+  final bool? isActive;
+
   /// Membangun map parameter query HTTP berformat snake_case sesuai
   /// kontrak backend `GetGuestsQueryDto`.
   Map<String, dynamic> toQueryParams() {
@@ -42,6 +47,7 @@ class GuestQueryModel extends Equatable {
       if (startDate != null) 'start_date': startDate,
       if (endDate != null) 'end_date': endDate,
       if (createdBy != null) 'created_by': createdBy,
+      if (isActive != null) 'is_active': isActive,
     };
   }
 
@@ -53,5 +59,6 @@ class GuestQueryModel extends Equatable {
     startDate,
     endDate,
     createdBy,
+    isActive,
   ];
 }

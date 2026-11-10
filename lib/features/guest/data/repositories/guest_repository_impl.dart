@@ -21,6 +21,7 @@ import 'package:kawalo_mobile/features/guest/data/models/update_guest_model.dart
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
+import 'package:kawalo_mobile/features/guest/domain/value_objects/acknowledge_guest_data.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/checkout_guest_data.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/create_guest_data.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/delete_batch_result.dart';
@@ -69,6 +70,7 @@ class GuestRepositoryImpl implements GuestRepository {
           startDate: params.startDate,
           endDate: params.endDate,
           createdBy: params.createdBy,
+          isActive: params.isActive,
         ),
         cancelToken: params.cancelToken,
       ),
@@ -84,6 +86,7 @@ class GuestRepositoryImpl implements GuestRepository {
                 startDate: params.startDate,
                 endDate: params.endDate,
                 createdBy: params.createdBy,
+                isActive: params.isActive,
               ),
               write: local.cacheGuests,
               deleteOlderThan: local.deleteOlderThan,
@@ -168,6 +171,46 @@ class GuestRepositoryImpl implements GuestRepository {
       );
 
       final updatedModel = await remoteDataSource.updateGuest(
+        params: paramsModel,
+        data: model,
+        cancelToken: data.cancelToken,
+      );
+
+      // 3. Sinkronisasi Cache Lokal: Simpan data terupdate ke Isar cache
+      // jika tersedia.
+      final local = localDataSource;
+      await bestEffortCache(
+        local == null ? null : () => local.cacheGuests([updatedModel]),
+      );
+
+      final entity = GuestMapper.toEntity(updatedModel);
+      return Right(entity);
+    } on AppException catch (e) {
+      if (e is RequestCancelledException) {
+        return const Left(RequestCancelledFailure());
+      }
+      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    } on Exception catch (e) {
+      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, GuestItemEntity>> acknowledgeGuest(
+    AcknowledgeGuestData data,
+  ) async {
+    // 1. Guard Jaringan: Operasi konfirmasi tamu membutuhkan koneksi aktif
+    final isConnected = await (networkInfo?.isConnected ?? Future.value(true));
+    if (!isConnected) {
+      return const Left(NoInternetFailure());
+    }
+
+    // 2. Mode Online: Eksekusi pengiriman request konfirmasi ke remote server
+    try {
+      final paramsModel = GuestIdParamsModel(id: data.id);
+      final model = CheckoutGuestModel(qrUid: data.qrUid);
+
+      final updatedModel = await remoteDataSource.acknowledgeGuest(
         params: paramsModel,
         data: model,
         cancelToken: data.cancelToken,

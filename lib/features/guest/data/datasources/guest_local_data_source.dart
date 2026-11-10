@@ -10,12 +10,14 @@ abstract class GuestLocalDataSource implements CacheWipeable {
   Future<void> cacheGuests(List<GuestModel> items);
 
   /// Mengambil data tamu dari cache lokal Isar dengan filter pencarian,
-  /// grup, rentang tanggal, dan pembuat data tamu (`createdBy` / `guestCreatorEmail`).
+  /// grup, rentang tanggal, pembuat data tamu (`createdBy` / `guestCreatorEmail`),
+  /// dan status masih di lokasi (`isActive`, berdasarkan `guestOutDt`).
   Future<List<GuestModel>> getCachedGuests({
     String? search,
     String? startDate,
     String? endDate,
     String? createdBy,
+    bool? isActive,
   });
 
   /// Menghapus data tamu lokal yang lebih lama dari [threshold]
@@ -58,8 +60,15 @@ class GuestLocalDataSourceImpl implements GuestLocalDataSource {
     String? startDate,
     String? endDate,
     String? createdBy,
+    bool? isActive,
   }) async {
     var query = isar.guestLocalModels.where().filter().idIsNotEmpty();
+
+    if (isActive != null) {
+      query = isActive
+          ? query.and().guestOutDtIsNull()
+          : query.and().guestOutDtIsNotNull();
+    }
 
     if (createdBy != null && createdBy.isNotEmpty) {
       query = query.and().guestCreatorEmailEqualTo(

@@ -11,6 +11,8 @@ import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
+import 'package:kawalo_mobile/features/guest/domain/usecases/acknowledge_guest/acknowledge_guest_params.dart';
+import 'package:kawalo_mobile/features/guest/domain/usecases/acknowledge_guest/acknowledge_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/checkout_guest/checkout_guest_usecase.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_params.dart';
@@ -33,6 +35,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     required this.deleteBatchGuestUseCase,
     required super.syncStorageService,
     this.checkoutGuestUseCase,
+    this.acknowledgeGuestUseCase,
     this.groupRepository,
     String initialGreeting = '',
     super.pageSize = AppConstants.defaultPageSize,
@@ -58,6 +61,9 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
 
   /// Use case untuk melakukan check-out tamu.
   final CheckoutGuestUseCase? checkoutGuestUseCase;
+
+  /// Use case untuk mengonfirmasi kunjungan tamu.
+  final AcknowledgeGuestUseCase? acknowledgeGuestUseCase;
 
   /// Repositori grup untuk mengambil daftar anggota on-demand.
   final GroupRepository? groupRepository;
@@ -86,6 +92,8 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     String? creatorEmail,
     String? creatorName,
     bool clearCreatorFilter = false,
+    bool? isActive,
+    bool clearActiveFilter = false,
   }) => _fetch(
     search: search,
     filterPeriod: filterPeriod,
@@ -96,6 +104,8 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     creatorEmail: creatorEmail,
     creatorName: creatorName,
     clearCreatorFilter: clearCreatorFilter,
+    isActive: isActive,
+    clearActiveFilter: clearActiveFilter,
     isRefresh: false,
   );
 
@@ -110,6 +120,8 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     String? creatorEmail,
     String? creatorName,
     bool clearCreatorFilter = false,
+    bool? isActive,
+    bool clearActiveFilter = false,
   }) => _fetch(
     search: search,
     filterPeriod: filterPeriod,
@@ -120,6 +132,8 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     creatorEmail: creatorEmail,
     creatorName: creatorName,
     clearCreatorFilter: clearCreatorFilter,
+    isActive: isActive,
+    clearActiveFilter: clearActiveFilter,
     isRefresh: true,
   );
 
@@ -134,7 +148,12 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     String? creatorEmail,
     String? creatorName,
     bool clearCreatorFilter = false,
+    bool? isActive,
+    bool clearActiveFilter = false,
   }) {
+    final effectiveIsActive = clearActiveFilter
+        ? null
+        : (isActive ?? state.filterIsActive);
     final effectiveCreatorEmail = clearCreatorFilter
         ? null
         : (creatorEmail ?? state.filterCreatorEmail);
@@ -152,7 +171,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
     return runFetch(
       isRefresh: isRefresh,
       filter: filter,
-      extraKey: '$effectiveCreatorEmail',
+      extraKey: '$effectiveCreatorEmail|$effectiveIsActive',
       currentItems: state.displayedGuests,
       loading: (lastSync) => GuestLoading(lastSync: lastSync),
       request: (limit, cancelToken) async => (await guestRepository.getGuests(
@@ -163,6 +182,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
           startDate: filter.startIso,
           endDate: filter.endIso,
           createdBy: effectiveCreatorEmail,
+          isActive: effectiveIsActive,
           cancelToken: cancelToken,
           isRefresh: isRefresh,
         ),
@@ -175,6 +195,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
         filterPeriod: filter.period,
         filterCreatorEmail: effectiveCreatorEmail,
         filterCreatorName: effectiveCreatorName,
+        filterIsActive: effectiveIsActive,
         startDate: filter.start,
         endDate: filter.end,
         startDateIso: filter.startIso,
@@ -189,6 +210,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
         filterPeriod: filter.period,
         filterCreatorEmail: effectiveCreatorEmail,
         filterCreatorName: effectiveCreatorName,
+        filterIsActive: effectiveIsActive,
         startDate: filter.start,
         endDate: filter.end,
         startDateIso: filter.startIso,
@@ -208,6 +230,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
         startDate: current.startDateIso,
         endDate: current.endDateIso,
         createdBy: current.filterCreatorEmail,
+        isActive: current.filterIsActive,
       ),
     )).map((r) => ListPage(r.items, isFromCache: r.isFromCache)),
     setLoadingMore: (current, {required loadingMore}) =>
@@ -235,7 +258,12 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
         clearCreatorFilter: email == null,
       );
 
-  /// Mengatur ulang seluruh filter waktu, pencarian, dan pembuat ke default.
+  /// Menyalakan (`true`) atau mematikan (`null`) filter "Masih di lokasi".
+  Future<AppFetchResult> changeActiveFilter({bool? isActive}) =>
+      fetchGuests(isActive: isActive, clearActiveFilter: isActive == null);
+
+  /// Mengatur ulang seluruh filter waktu, pencarian, pembuat, dan status ke
+  /// default.
   Future<AppFetchResult> resetFilters() => resetAllFiltersWith(
     ({search, filterPeriod, startDate, endDate, startDateIso, endDateIso}) =>
         fetchGuests(
@@ -246,6 +274,7 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
           startDateIso: startDateIso,
           endDateIso: endDateIso,
           clearCreatorFilter: true,
+          clearActiveFilter: true,
         ),
   );
 
@@ -346,6 +375,36 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
 
     final result = await useCase(
       CheckoutGuestParams(
+        id: item.id,
+        session: session,
+        item: item,
+        qrUid: qrUid,
+      ),
+    );
+
+    result.fold((failure) => null, onGuestUpdated);
+
+    return result;
+  }
+
+  /// Mengonfirmasi kunjungan tamu [item] atas nama [session].
+  ///
+  /// Otorisasi (ADMIN, GUARD, atau penghuni tujuan) ditegakkan oleh use case.
+  /// Jika berhasil, item di state aktif diganti dengan hasil dari server.
+  Future<Either<Failure, GuestItemEntity>> acknowledgeGuest(
+    GuestItemEntity item, {
+    required AuthSessionEntity? session,
+    String? qrUid,
+  }) async {
+    final useCase = acknowledgeGuestUseCase;
+    if (useCase == null) {
+      return const Left(
+        ServerFailure('Layanan konfirmasi tamu tidak tersedia.'),
+      );
+    }
+
+    final result = await useCase(
+      AcknowledgeGuestParams(
         id: item.id,
         session: session,
         item: item,

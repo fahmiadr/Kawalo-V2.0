@@ -3,6 +3,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/cancellation_token.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
+import 'package:kawalo_mobile/features/guest/domain/value_objects/acknowledge_guest_data.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/checkout_guest_data.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/create_guest_data.dart';
 import 'package:kawalo_mobile/features/guest/domain/value_objects/delete_batch_result.dart';
@@ -27,6 +28,13 @@ abstract class GuestRepository {
   /// Menerima [data] yang berisi payload pembaruan tamu.
   /// Mengembalikan [GuestItemEntity] terbaru dari server.
   Future<Either<Failure, GuestItemEntity>> updateGuest(UpdateGuestData data);
+
+  /// Mengonfirmasi kunjungan tamu ke sistem backend
+  /// (`PATCH /guests/:id/acknowledge`). Mengembalikan [GuestItemEntity]
+  /// terbaru dengan waktu konfirmasi terisi.
+  Future<Either<Failure, GuestItemEntity>> acknowledgeGuest(
+    AcknowledgeGuestData data,
+  );
 
   /// Melakukan check-out tamu dari sistem backend.
   ///

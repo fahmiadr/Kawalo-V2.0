@@ -95,6 +95,7 @@ class GuestDetailScreen extends StatefulWidget {
 class _GuestDetailScreenState extends State<GuestDetailScreen> {
   bool _isDeleting = false;
   bool _isCheckingOut = false;
+  bool _isAcknowledging = false;
   late final AppToolbarVisibilityController _toolbarVisibilityController;
   late final AppToolbarScrollBehavior _scrollBehavior;
 
@@ -272,6 +273,59 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
     }
   }
 
+  Future<void> _onAcknowledgePressed(
+    BuildContext context,
+    GuestItemEntity currentItem,
+  ) async {
+    if (_isAcknowledging) return;
+
+    if (_resolveIsOffline(context)) {
+      AppSnackbar.show(
+        context,
+        message: 'Tidak dapat mengonfirmasi tamu saat offline.',
+      );
+      return;
+    }
+
+    final confirmed = await showAppConfirmationDialog(
+      context: context,
+      title: 'Konfirmasi kunjungan?',
+      message:
+          'Kunjungan tamu "${currentItem.displayGuestName}" '
+          'akan ditandai telah dikonfirmasi.',
+      confirmText: 'Konfirmasi',
+      confirmStyle: AppButtonColor.filled,
+      isDestructive: false,
+    );
+
+    if (!(confirmed ?? false) || !context.mounted) return;
+    final cubit = _resolveCubit(context);
+    if (cubit == null) return;
+
+    setState(() {
+      _isAcknowledging = true;
+    });
+
+    final result = await cubit.acknowledgeGuest(
+      currentItem,
+      session: _resolveSession(context),
+    );
+
+    if (!context.mounted) return;
+    setState(() {
+      _isAcknowledging = false;
+    });
+    result.fold(
+      (failure) => AppSnackbar.show(context, message: failure.message),
+      (updatedItem) => AppSnackbar.show(
+        context,
+        message:
+            'Kunjungan tamu "${updatedItem.displayGuestName}" '
+            'berhasil dikonfirmasi.',
+      ),
+    );
+  }
+
   Future<void> _onCreatePressed(BuildContext context) async {
     final cubit = _resolveCubit(context);
     await GuestFormDialog.showCreate(context, guestCubit: cubit);
@@ -306,15 +360,22 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
       final canCheckout = currentItem.canBeCheckedOutBySession(
         effectiveSession,
       );
+      final canAcknowledge = currentItem.canBeAcknowledgedBySession(
+        effectiveSession,
+      );
       final hasAnyAction = canCreate || canUpdate || canDelete;
       final isOffline = _resolveIsOffline(context, listen: true);
 
       return AppLoadingOverlay(
-        isLoading: _isDeleting || _isCheckingOut,
-        semanticLabel: _isCheckingOut
+        isLoading: _isDeleting || _isCheckingOut || _isAcknowledging,
+        semanticLabel: _isAcknowledging
+            ? 'Memproses konfirmasi tamu'
+            : _isCheckingOut
             ? 'Memproses check-out tamu'
             : 'Menghapus data tamu',
-        message: _isCheckingOut
+        message: _isAcknowledging
+            ? 'Memproses konfirmasi tamu...'
+            : _isCheckingOut
             ? 'Memproses check-out tamu...'
             : 'Menghapus data tamu...',
         child: Scaffold(
@@ -359,6 +420,27 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
                                 GuestDetailTopMeta(item: currentItem),
 
                                 AppSpacing.vGap200,
+
+                                // ── Aksi: Konfirmasi Kunjungan ──────────────
+                                if (canAcknowledge) ...[
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: AppButton(
+                                      enabled: !isOffline && !_isAcknowledging,
+                                      semanticLabel:
+                                          'Konfirmasi kunjungan tamu '
+                                          '${currentItem.displayGuestName}',
+                                      onPressed: isOffline || _isAcknowledging
+                                          ? null
+                                          : () => _onAcknowledgePressed(
+                                              context,
+                                              currentItem,
+                                            ),
+                                      child: const Text('Konfirmasi tamu'),
+                                    ),
+                                  ),
+                                  AppSpacing.vGap200,
+                                ],
 
                                 // ── Card 1: Log Aktivitas Tamu (Timeline) ───
                                 GuestDetailTimelineCard(item: currentItem),

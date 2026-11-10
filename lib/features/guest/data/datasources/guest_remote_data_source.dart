@@ -35,6 +35,15 @@ abstract class GuestRemoteDataSource {
     AppCancellationToken? cancelToken,
   });
 
+  /// Mengonfirmasi kunjungan tamu ke server backend
+  /// `PATCH /v1/guests/:id/acknowledge`. Body-nya sama dengan check-out
+  /// (`qr_uid` opsional).
+  Future<GuestModel> acknowledgeGuest({
+    required GuestIdParamsModel params,
+    CheckoutGuestModel? data,
+    AppCancellationToken? cancelToken,
+  });
+
   /// Melakukan check-out tamu ke server backend `PATCH /v1/guests/:id/checkout`.
   Future<GuestModel> checkoutGuest({
     required GuestIdParamsModel params,
@@ -113,6 +122,22 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
     final response = await apiClient.put(
       '/v1/guests/${params.id}',
       body: data.toJson(),
+      cancelToken: cancelToken?.toDio(),
+    );
+
+    final rawData = response['data'] as Map<String, dynamic>;
+    return GuestModel.fromJson(rawData);
+  }
+
+  @override
+  Future<GuestModel> acknowledgeGuest({
+    required GuestIdParamsModel params,
+    CheckoutGuestModel? data,
+    AppCancellationToken? cancelToken,
+  }) async {
+    final response = await apiClient.patch(
+      '/v1/guests/${params.id}/acknowledge',
+      body: data?.toJson() ?? const {},
       cancelToken: cancelToken?.toDio(),
     );
 

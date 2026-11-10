@@ -8,8 +8,11 @@ import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
+import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
+import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
@@ -351,6 +354,16 @@ class _GuestScreenState extends State<GuestScreen> {
     _showFeedback(cubit, fetchResult);
   }
 
+  Future<void> _onToggleActive() async {
+    _selection.clear();
+    final cubit = _resolveCubit(context);
+    final isOn = cubit.state.hasActiveStatusFilter;
+    _showFeedback(
+      cubit,
+      await cubit.changeActiveFilter(isActive: isOn ? null : true),
+    );
+  }
+
   Future<void> _resetAllFilters() async {
     _selection.clear();
     final cubit = _resolveCubit(context);
@@ -503,6 +516,7 @@ class _GuestScreenState extends State<GuestScreen> {
     required AuthSessionEntity? session,
     required GuestState state,
   }) {
+    final colorScheme = AppTheme.of(context).colorScheme;
     return ListFilterBar(
       isLoading: isLoading,
       isDateActive: state.hasActiveDateFilter,
@@ -522,6 +536,23 @@ class _GuestScreenState extends State<GuestScreen> {
           onOpenPicker: _onOpenCreatorPicker,
           onReset: _onResetCreatorFilter,
           onToggleMine: _onToggleMine,
+        ),
+        AppChip(
+          type: AppChipType.filter,
+          label: 'Masih di lokasi',
+          selected: state.hasActiveStatusFilter,
+          leading: state.hasActiveStatusFilter
+              ? AppSvgIcon(
+                  KawaloVectors.checkFilled,
+                  size: 18,
+                  color: isLoading
+                      ? colorScheme.onSurface.withValues(
+                          alpha: AppStateLayer.disabledOpacity,
+                        )
+                      : colorScheme.onSecondaryContainer,
+                )
+              : null,
+          onPressed: isLoading ? null : _onToggleActive,
         ),
       ],
     );
