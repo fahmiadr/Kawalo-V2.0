@@ -1,23 +1,34 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
+import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
+import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
+import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_management_section.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_ptt_floating_card.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_quick_actions.dart';
-import 'package:kawalo_mobile/features/home/presentation/widgets/home_recent_guests_card.dart';
+import 'package:kawalo_mobile/features/home/presentation/widgets/home_recent_guests_section.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_shortcuts_section.dart';
+import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
+import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_state.dart';
 
 /// Konten tampilan dashboard utama pada tab Beranda.
 ///
 /// Disusun secara modular, scrollable, dan adaptif mengikuti sistem
-/// grid Material 3 Expressive.
-class HomeDashboardView extends StatelessWidget {
+/// grid Material 3 Expressive. Memuat data tamu dan insiden dari cubit global
+/// saat pertama tampil, dan menyegarkannya lewat pull-to-refresh.
+class HomeDashboardView extends StatefulWidget {
   /// Membuat instance [HomeDashboardView].
   const HomeDashboardView({
     super.key,
-    this.guestPages,
     this.shortcuts,
     this.managementItems,
     this.onRefresh,
@@ -28,16 +39,13 @@ class HomeDashboardView extends StatelessWidget {
     this.onLogoutPressed,
   });
 
-  /// Data kustom halaman tamu terakhir (opsional).
-  final List<List<RecentGuestItem>>? guestPages;
-
   /// Data kustom daftar pintasan (opsional).
   final List<AppShortcutItem>? shortcuts;
 
   /// Data kustom daftar modul manajemen (opsional).
   final List<AppShortcutItem>? managementItems;
 
-  /// Callback ketika user melakukan swipe pull-to-refresh.
+  /// Menggantikan refresh bawaan (guest + insiden) bila diberikan.
   final Future<void> Function()? onRefresh;
 
   /// Callback saat tombol "Absensi" ditekan.
@@ -55,10 +63,73 @@ class HomeDashboardView extends StatelessWidget {
   /// Callback saat aksi "Logout" ditekan (opsional).
   final VoidCallback? onLogoutPressed;
 
-  Future<void> _defaultOnRefresh(BuildContext context) async {
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-    if (context.mounted) {
-      AppSnackbar.show(context, message: 'Data beranda berhasil diperbarui.');
+  @override
+  State<HomeDashboardView> createState() => _HomeDashboardViewState();
+}
+
+class _HomeDashboardViewState extends State<HomeDashboardView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_loadInitial());
+    });
+  }
+
+  Future<void> _loadInitial() async {
+    final guestCubit = context.read<GuestCubit?>();
+    final incidentCubit = context.read<IncidentListCubit?>();
+    final session = context.read<UserSessionCubit?>()?.state;
+    await Future.wait([
+      if (guestCubit != null && guestCubit.state is GuestInitial)
+        guestCubit.fetchGuests(),
+      if (incidentCubit != null && incidentCubit.state is IncidentInitial)
+        incidentCubit.fetchIncidents(session: session),
+    ]);
+  }
+
+  /// Refreshes both lists back to their default (today) view. The cubits are
+  /// shared with the guest/incident screens, so a filter set there must not
+  /// leak into the Beranda summary.
+  Future<void> _refresh() async {
+    final guestCubit = context.read<GuestCubit?>();
+    final incidentCubit = context.read<IncidentListCubit?>();
+    final session = context.read<UserSessionCubit?>()?.state;
+    final filter = AppDateFilterResult.defaultFilter();
+
+    final results = await Future.wait([
+      if (guestCubit != null)
+        guestCubit.refreshGuests(
+          search: '',
+          filterPeriod: filter.period,
+          startDate: filter.startDate,
+          endDate: filter.endDate,
+          startDateIso: filter.startDateIso,
+          endDateIso: filter.endDateIso,
+          clearCreatorFilter: true,
+        ),
+      if (incidentCubit != null)
+        incidentCubit.refreshIncidents(
+          session: session,
+          search: '',
+          clearStatusFilter: true,
+          filterPeriod: filter.period,
+          startDate: filter.startDate,
+          endDate: filter.endDate,
+          startDateIso: filter.startDateIso,
+          endDateIso: filter.endDateIso,
+        ),
+    ]);
+    if (!mounted) return;
+
+    if (results.contains(AppFetchResult.failure)) {
+      AppSnackbar.show(context, message: 'Gagal memperbarui data beranda.');
+    } else if (results.contains(AppFetchResult.cachedFallback)) {
+      AppFetchFeedback.show(
+        context,
+        result: AppFetchResult.cachedFallback,
+        hasData: guestCubit?.state.displayedGuests.isNotEmpty ?? false,
+      );
     }
   }
 
@@ -66,7 +137,7 @@ class HomeDashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppRefreshIndicator.contained(
       semanticsLabel: 'Memuat ulang data beranda',
-      onRefresh: onRefresh ?? () => _defaultOnRefresh(context),
+      onRefresh: widget.onRefresh ?? _refresh,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(
@@ -82,24 +153,14 @@ class HomeDashboardView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // ── Bagian 1: Kartu Tamu Terakhir (Carousel) ───
-                HomeRecentGuestsCard(
-                  guestPages: guestPages,
-                  onTapItem: (item) {
-                    AppSnackbar.show(
-                      context,
-                      message:
-                          'Detail tamu: ${item.identifier} '
-                          '(${item.location})',
-                    );
-                  },
-                ),
+                const HomeRecentGuestsSection(),
 
                 AppSpacing.vGap200,
 
                 // ── Bagian 2: Tombol Aksi Utama ─────────────────
                 HomeQuickActions(
-                  onAbsensiPressed: onAbsensiPressed,
-                  onCheckpointPressed: onCheckpointPressed,
+                  onAbsensiPressed: widget.onAbsensiPressed,
+                  onCheckpointPressed: widget.onCheckpointPressed,
                 ),
 
                 AppSpacing.vGap300,
@@ -111,17 +172,17 @@ class HomeDashboardView extends StatelessWidget {
 
                 // ── Bagian 3: Bagian Pintasan (Shortcuts) ────────
                 HomeShortcutsSection(
-                  shortcuts: shortcuts,
-                  onEditPressed: onEditShortcutsPressed,
-                  onLogoutPressed: onLogoutPressed,
+                  shortcuts: widget.shortcuts,
+                  onEditPressed: widget.onEditShortcutsPressed,
+                  onLogoutPressed: widget.onLogoutPressed,
                 ),
 
                 AppSpacing.vGap300,
 
                 // ── Bagian 4: Bagian Manajemen ───────────────────
                 HomeManagementSection(
-                  items: managementItems,
-                  onEditPressed: onEditManagementPressed,
+                  items: widget.managementItems,
+                  onEditPressed: widget.onEditManagementPressed,
                 ),
 
                 // Spacing bawah ekstra agar konten tidak tertutup

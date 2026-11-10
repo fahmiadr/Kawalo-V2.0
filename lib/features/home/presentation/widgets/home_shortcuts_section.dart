@@ -13,6 +13,7 @@ import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
+import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/screens/incident_screen.dart';
 import 'package:kawalo_mobile/features/operational/presentation/screens/operational_screen.dart';
 
@@ -50,11 +51,11 @@ class HomeShortcutsSection extends StatelessWidget {
   static List<AppShortcutItem> _getDefaultShortcuts(
     BuildContext context, {
     VoidCallback? onLogoutPressed,
+    int openIncidents = 0,
   }) {
     return [
       AppShortcutItem(
         title: 'Jadwal Kerja',
-        subtitle: 'Masuk 30 Jun 2026 08:00',
         iconPath: KawaloColorVectors.calendar2,
         onTap: () {
           AppSnackbar.show(context, message: 'Membuka Jadwal Kerja...');
@@ -93,7 +94,7 @@ class HomeShortcutsSection extends StatelessWidget {
       AppShortcutItem(
         title: 'Insiden',
         subtitle: 'Laporan Kejadian',
-        badgeText: 'BARU!',
+        badgeText: openIncidents > 0 ? '$openIncidents aktif' : null,
         iconPath: KawaloColorVectors.incident1,
         onTap: () {
           Navigator.of(context).push(IncidentScreen.route());
@@ -129,9 +130,16 @@ class HomeShortcutsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final incidentState = context.watch<IncidentListCubit?>()?.state;
+    final openIncidents =
+        incidentState?.displayedIncidents.where((i) => i.isOpen).length ?? 0;
     final items =
         shortcuts ??
-        _getDefaultShortcuts(context, onLogoutPressed: onLogoutPressed);
+        _getDefaultShortcuts(
+          context,
+          onLogoutPressed: onLogoutPressed,
+          openIncidents: openIncidents,
+        );
     final totalCount = showAddCard ? items.length + 1 : items.length;
 
     return Column(

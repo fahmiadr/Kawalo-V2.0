@@ -332,6 +332,121 @@ void main() {
     });
 
     testWidgets(
+      'notification bell has no fake badge and says it is unavailable',
+      (tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        expect(
+          tester
+              .widget<AppHomeAppBar>(find.byType(AppHomeAppBar))
+              .unreadNotificationsCount,
+          0,
+        );
+
+        await tester.tap(find.bySemanticsLabel('Notifikasi'));
+        await tester.pump();
+
+        expect(find.text('Notifikasi belum tersedia.'), findsOneWidget);
+        expect(find.textContaining('belum dibaca'), findsNothing);
+        await tester.pumpAndSettle(const Duration(seconds: 6));
+      },
+    );
+
+    testWidgets('placeholder tabs have no fake pull-to-refresh', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(initialIndex: 2));
+      await tester.pumpAndSettle();
+
+      // Beranda is offstage; the visible placeholder has no refresh indicator.
+      expect(find.byType(AppRefreshIndicator), findsNothing);
+      await tester.fling(
+        find.text('Daftar laporan dan validasi akan ditampilkan di sini.'),
+        const Offset(0, 400),
+        1000,
+      );
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+
+      expect(find.textContaining('berhasil diperbarui'), findsNothing);
+    });
+
+    testWidgets('rejoins PTT with the new group after switch-group', (
+      tester,
+    ) async {
+      final pttCubit = MockPttCubit();
+      when(() => pttCubit.state).thenReturn(const PttInitial());
+      when(() => pttCubit.joinForGroup(any())).thenAnswer((_) async {});
+      final session = UserSessionCubit(
+        const AuthSessionEntity(
+          userId: 'usr_1',
+          email: 'admin@kawalo.co.id',
+          name: 'Admin',
+          allowAdmin: true,
+          allowPatrol: false,
+          allowMonPatrol: false,
+          groupUid: 'grp_1',
+        ),
+      );
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          extraProviders: [
+            BlocProvider<PttCubit>.value(value: pttCubit),
+            BlocProvider<UserSessionCubit>.value(value: session),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      verifyNever(() => pttCubit.joinForGroup('grp_2'));
+
+      session.updateSession(
+        const AuthSessionEntity(
+          userId: 'usr_1',
+          email: 'admin@kawalo.co.id',
+          name: 'Admin',
+          allowAdmin: true,
+          allowPatrol: false,
+          allowMonPatrol: false,
+          groupUid: 'grp_2',
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      verify(() => pttCubit.joinForGroup('grp_2')).called(1);
+    });
+
+    testWidgets('never touches the PTT channel on iOS', (tester) async {
+      final pttCubit = MockPttCubit();
+      when(() => pttCubit.state).thenReturn(const PttInitial());
+      when(() => pttCubit.joinForGroup(any())).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          extraProviders: [
+            BlocProvider<PttCubit>.value(value: pttCubit),
+            BlocProvider<UserSessionCubit>.value(
+              value: UserSessionCubit(
+                const AuthSessionEntity(
+                  userId: 'usr_1',
+                  email: 'admin@kawalo.co.id',
+                  name: 'Admin',
+                  allowAdmin: true,
+                  allowPatrol: false,
+                  allowMonPatrol: false,
+                  groupUid: 'grp_1',
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      verifyNever(() => pttCubit.joinForGroup(any()));
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+    testWidgets(
       'hides offline banner content and keeps safe area spacer when online',
       (tester) async {
         final mockConnectivity = MockConnectivityCubit();

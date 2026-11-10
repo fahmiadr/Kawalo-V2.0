@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
@@ -11,7 +12,6 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
@@ -22,6 +22,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/screens/information_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart';
 
 /// Halaman shell navigasi utama aplikasi Kawalo.
 ///
@@ -51,6 +52,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _joinPttChannelIfAvailable() {
+    if (!isPttSupportedPlatform) return;
     try {
       final groupUid = context.read<UserSessionCubit?>()?.state?.groupUid;
       final pttCubit = context.read<PttCubit?>();
@@ -170,8 +172,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
     );
 
+    // `switch-group` changes the session's group; PttCubit leaves the channel
+    // of the old group before joining the new one.
+    final withGroupSync = context.read<UserSessionCubit?>() == null
+        ? scaffold
+        : BlocListener<UserSessionCubit, AuthSessionEntity?>(
+            listenWhen: (previous, current) =>
+                previous?.groupUid != current?.groupUid,
+            listener: (_, _) => _joinPttChannelIfAvailable(),
+            child: scaffold,
+          );
+
     if (!hasAuthBloc) {
-      return scaffold;
+      return withGroupSync;
     }
 
     return BlocListener<AuthBloc, AuthState>(
@@ -179,15 +192,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         if (state is Authenticated) {
           _joinPttChannelIfAvailable();
         } else if (state is Unauthenticated) {
-          try {
-            unawaited(context.read<PttCubit?>()?.leaveChannel());
-          } on Object catch (_) {}
+          if (isPttSupportedPlatform) {
+            try {
+              unawaited(context.read<PttCubit?>()?.leaveChannel());
+            } on Object catch (_) {}
+          }
           unawaited(
             AppRouter.of(context).toLogin(sessionExpiredMessage: state.message),
           );
         }
       },
-      child: scaffold,
+      child: withGroupSync,
     );
   }
 }
@@ -214,40 +229,30 @@ class _PlaceholderView extends StatelessWidget {
       bottom: false,
       maintainBottomViewPadding: true,
       child: Center(
-        child: AppRefreshIndicator.contained(
-          semanticsLabel: 'Memuat ulang data $title',
-          onRefresh: () async {
-            await Future<void>.delayed(const Duration(milliseconds: 600));
-            if (context.mounted) {
-              AppSnackbar.show(context, message: '$title berhasil diperbarui.');
-            }
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: AppSpacing.paddingAll300,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AppSvgIcon(iconPath, size: 64, color: colorScheme.primary),
-                AppSpacing.vGap300,
-                Text(
-                  title,
-                  style: typeScale.titleLarge.copyWith(
-                    color: colorScheme.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+        child: SingleChildScrollView(
+          padding: AppSpacing.paddingAll300,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AppSvgIcon(iconPath, size: 64, color: colorScheme.primary),
+              AppSpacing.vGap300,
+              Text(
+                title,
+                style: typeScale.titleLarge.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
                 ),
-                AppSpacing.vGapSm,
-                Text(
-                  description,
-                  style: typeScale.bodyMedium.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              AppSpacing.vGapSm,
+              Text(
+                description,
+                style: typeScale.bodyMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
@@ -264,6 +269,11 @@ class _HomeAppBarWithAuth extends StatelessWidget
   Size get preferredSize =>
       const Size.fromHeight(AppHomeAppBar.defaultPreferredHeight);
 
+  // The backend has no notification feature yet, so the bell shows no badge.
+  static void _showNotificationsUnavailable(BuildContext context) {
+    AppSnackbar.show(context, message: 'Notifikasi belum tersedia.');
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasAuthBloc =
@@ -272,10 +282,7 @@ class _HomeAppBarWithAuth extends StatelessWidget
     if (!hasAuthBloc) {
       return AppHomeAppBar(
         greeting: HomeGreetingHelper.formatGreeting(),
-        unreadNotificationsCount: 9,
-        onNotificationPressed: () {
-          AppSnackbar.show(context, message: '9 Notifikasi baru belum dibaca.');
-        },
+        onNotificationPressed: () => _showNotificationsUnavailable(context),
       );
     }
 
@@ -291,13 +298,7 @@ class _HomeAppBarWithAuth extends StatelessWidget
 
         return AppHomeAppBar(
           greeting: greeting,
-          unreadNotificationsCount: 9,
-          onNotificationPressed: () {
-            AppSnackbar.show(
-              context,
-              message: '9 Notifikasi baru belum dibaca.',
-            );
-          },
+          onNotificationPressed: () => _showNotificationsUnavailable(context),
         );
       },
     );

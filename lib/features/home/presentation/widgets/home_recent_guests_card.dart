@@ -4,42 +4,103 @@ import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/utils/app_date_format.dart';
+import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tappable.dart';
+import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
+import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_extension.dart';
 
-/// Data model representasi riwayat tamu terakhir pada beranda.
+/// View model of one row of the "Tamu Terakhir" card.
 class RecentGuestItem {
-  /// Membuat instance [RecentGuestItem].
   const RecentGuestItem({
     required this.identifier,
     required this.location,
     required this.timestamp,
     required this.iconPath,
+    this.guest,
   });
 
-  /// Nomor kendaraan / identitas tamu (misal: "CN 10719", "GRAB CAR").
+  factory RecentGuestItem.fromGuest(GuestItemEntity guest) {
+    final destination = guest.guestDestination?.trim() ?? '';
+    final purpose = guest.guestPurpose?.trim() ?? '';
+    return RecentGuestItem(
+      identifier: guest.identifier,
+      location: destination.isNotEmpty
+          ? destination
+          : (purpose.isNotEmpty ? purpose : '-'),
+      timestamp: guest.displayEntryTime,
+      // Same tag icon as the guest list card: the API has no per-type icon.
+      iconPath: KawaloColorVectors.cardTag2,
+      guest: guest,
+    );
+  }
+
+  /// Guest name, or the vehicle/guest number when there is no name.
   final String identifier;
 
-  /// Nama gerbang / pos checkpoint (misal: "JKN Veranda").
+  /// Destination of the visit, falling back to its purpose.
   final String location;
 
-  /// Waktu kedatangan / pencatatan tamu.
   final String timestamp;
 
-  /// Path aset SVG ikon berwarna untuk jenis tamu / kendaraan.
   final String iconPath;
+
+  /// Source entity, used to open the detail screen.
+  final GuestItemEntity? guest;
+}
+
+/// The newest [maxItems] guests by `guestDt` (descending), split into carousel
+/// pages of [perPage] rows.
+List<List<RecentGuestItem>> buildRecentGuestPages(
+  List<GuestItemEntity> guests, {
+  int maxItems = 12,
+  int perPage = 3,
+}) {
+  final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+  final sorted = [...guests]
+    ..sort(
+      (a, b) => (AppDateFormat.tryParse(b.guestDt) ?? epoch).compareTo(
+        AppDateFormat.tryParse(a.guestDt) ?? epoch,
+      ),
+    );
+  final items = sorted
+      .take(maxItems)
+      .map(RecentGuestItem.fromGuest)
+      .toList(growable: false);
+  return [
+    for (var i = 0; i < items.length; i += perPage)
+      items.sublist(i, (i + perPage).clamp(0, items.length)),
+  ];
 }
 
 /// Komponen kartu "Tamu Terakhir" dengan carousel multi-halaman
-/// dan indikator titik.
+/// dan indikator titik. Murni presentasional: data dan status disuplai
+/// pemanggil.
 class HomeRecentGuestsCard extends StatefulWidget {
-  /// Membuat instance [HomeRecentGuestsCard].
-  const HomeRecentGuestsCard({super.key, this.guestPages, this.onTapItem});
+  const HomeRecentGuestsCard({
+    super.key,
+    this.guestPages = const [],
+    this.isLoading = false,
+    this.errorMessage,
+    this.isFromCache = false,
+    this.onRetry,
+    this.onTapItem,
+  });
 
-  /// Daftar halaman data tamu.
-  final List<List<RecentGuestItem>>? guestPages;
+  final List<List<RecentGuestItem>> guestPages;
 
-  /// Callback saat salah satu item tamu ditekan.
+  /// Shows skeleton rows instead of [guestPages].
+  final bool isLoading;
+
+  /// Shows an error with a retry button when there is nothing to display.
+  final String? errorMessage;
+
+  /// Marks the shown data as a saved (offline) copy.
+  final bool isFromCache;
+
+  final VoidCallback? onRetry;
+
   final void Function(RecentGuestItem item)? onTapItem;
 
   @override
@@ -49,89 +110,6 @@ class HomeRecentGuestsCard extends StatefulWidget {
 class _HomeRecentGuestsCardState extends State<HomeRecentGuestsCard> {
   late final PageController _pageController;
   int _currentPage = 0;
-
-  static const List<List<RecentGuestItem>> _defaultPages = [
-    [
-      RecentGuestItem(
-        identifier: 'CN 10719',
-        location: 'JKN Veranda',
-        timestamp: '29 Jun 2026 23:49',
-        iconPath: KawaloColorVectors.cardTag1,
-      ),
-      RecentGuestItem(
-        identifier: 'GRAB CAR',
-        location: 'JKN Veranda',
-        timestamp: '29 Jun 2026 06:49',
-        iconPath: KawaloColorVectors.cardTag2,
-      ),
-      RecentGuestItem(
-        identifier: 'CB 3063',
-        location: 'JKN Veranda',
-        timestamp: '28 Jun 2026 04:21',
-        iconPath: KawaloColorVectors.cardTag1,
-      ),
-    ],
-    [
-      RecentGuestItem(
-        identifier: 'B 1234 ABC',
-        location: 'Pos Utama',
-        timestamp: '28 Jun 2026 02:15',
-        iconPath: KawaloColorVectors.cardTag2,
-      ),
-      RecentGuestItem(
-        identifier: 'GO-JEK',
-        location: 'Pos Barat',
-        timestamp: '27 Jun 2026 21:30',
-        iconPath: KawaloColorVectors.guestValidation,
-      ),
-      RecentGuestItem(
-        identifier: 'D 5678 EFG',
-        location: 'Pos Timur',
-        timestamp: '27 Jun 2026 18:04',
-        iconPath: KawaloColorVectors.cardTag1,
-      ),
-    ],
-    [
-      RecentGuestItem(
-        identifier: 'KURIR J&T',
-        location: 'JKN Veranda',
-        timestamp: '27 Jun 2026 14:22',
-        iconPath: KawaloColorVectors.guestValidation,
-      ),
-      RecentGuestItem(
-        identifier: 'B 9999 VIP',
-        location: 'Pos Utama',
-        timestamp: '26 Jun 2026 11:10',
-        iconPath: KawaloColorVectors.cardTag2,
-      ),
-      RecentGuestItem(
-        identifier: 'TAXI BLUEBIRD',
-        location: 'JKN Veranda',
-        timestamp: '26 Jun 2026 09:45',
-        iconPath: KawaloColorVectors.cardTag1,
-      ),
-    ],
-    [
-      RecentGuestItem(
-        identifier: 'TAMU DIREKSI',
-        location: 'Lobi Utama',
-        timestamp: '25 Jun 2026 16:00',
-        iconPath: KawaloColorVectors.guestValidation,
-      ),
-      RecentGuestItem(
-        identifier: 'B 8888 XYZ',
-        location: 'Pos Selatan',
-        timestamp: '25 Jun 2026 13:12',
-        iconPath: KawaloColorVectors.cardTag1,
-      ),
-      RecentGuestItem(
-        identifier: 'GRAB FOOD',
-        location: 'JKN Veranda',
-        timestamp: '25 Jun 2026 12:05',
-        iconPath: KawaloColorVectors.cardTag2,
-      ),
-    ],
-  ];
 
   @override
   void initState() {
@@ -145,12 +123,48 @@ class _HomeRecentGuestsCardState extends State<HomeRecentGuestsCard> {
     super.dispose();
   }
 
+  Widget _buildBody(BuildContext context) {
+    final pages = widget.guestPages;
+    if (widget.isLoading) return const _GuestRowsSkeleton();
+    if (pages.isNotEmpty) {
+      return PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) => setState(() => _currentPage = index),
+        itemCount: pages.length,
+        itemBuilder: (context, pageIndex) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.space200,
+              vertical: AppSpacing.space100,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                for (final item in pages[pageIndex])
+                  _GuestRowItem(
+                    item: item,
+                    onTap: widget.onTapItem == null
+                        ? null
+                        : () => widget.onTapItem!(item),
+                  ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+    return _GuestMessage(
+      message: widget.errorMessage ?? 'Belum ada data tamu.',
+      onRetry: widget.errorMessage == null ? null : widget.onRetry,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
-    final pages = widget.guestPages ?? _defaultPages;
+    final pageCount = widget.isLoading ? 0 : widget.guestPages.length;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -194,6 +208,13 @@ class _HomeRecentGuestsCardState extends State<HomeRecentGuestsCard> {
                           ),
                         ),
                       ),
+                      if (widget.isFromCache && !widget.isLoading)
+                        Text(
+                          'Data tersimpan',
+                          style: typeScale.labelSmall.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -204,66 +225,136 @@ class _HomeRecentGuestsCardState extends State<HomeRecentGuestsCard> {
                 ),
 
                 // ── Carousel Daftar Tamu ──────────────────────────────────
-                SizedBox(
-                  height: 168,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPage = index;
-                      });
-                    },
-                    itemCount: pages.length,
-                    itemBuilder: (context, pageIndex) {
-                      final items = pages[pageIndex];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.space200,
-                          vertical: AppSpacing.space100,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: items.map((item) {
-                            return _GuestRowItem(
-                              item: item,
-                              onTap: widget.onTapItem != null
-                                  ? () => widget.onTapItem!(item)
-                                  : null,
-                            );
-                          }).toList(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                SizedBox(height: 168, child: _buildBody(context)),
               ],
             ),
           ),
         ),
 
-        AppSpacing.vGap150,
+        if (pageCount > 1) ...[
+          AppSpacing.vGap150,
 
-        // ── Dot Page Indicator ────────────────────────────────────────────
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(pages.length, (index) {
-            final isSelected = index == _currentPage;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              margin: AppSpacing.paddingHorizontalXs,
-              width: isSelected ? 16 : 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? colorScheme.primary
-                    : colorScheme.primary.withValues(alpha: 0.2),
-                borderRadius: AppRadius.borderFull,
-              ),
-            );
-          }),
-        ),
+          // ── Dot Page Indicator ──────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(pageCount, (index) {
+              final isSelected = index == _currentPage.clamp(0, pageCount - 1);
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                margin: AppSpacing.paddingHorizontalXs,
+                width: isSelected ? 16 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.primary.withValues(alpha: 0.2),
+                  borderRadius: AppRadius.borderFull,
+                ),
+              );
+            }),
+          ),
+        ],
       ],
+    );
+  }
+}
+
+/// Empty or error message inside the card body.
+class _GuestMessage extends StatelessWidget {
+  const _GuestMessage({required this.message, this.onRetry});
+
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AppTheme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: AppSpacing.paddingHorizontalLg,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.typeScale.bodyMedium.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (onRetry != null) ...[
+              AppSpacing.vGapSm,
+              AppButton(
+                style: AppButtonColor.tonal,
+                onPressed: onRetry,
+                child: const Text('Coba Lagi'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Static placeholder rows (no fake data) shown while the first load runs.
+class _GuestRowsSkeleton extends StatelessWidget {
+  const _GuestRowsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = AppTheme.of(context).colorScheme.surfaceContainerHighest;
+
+    Widget bar(double width, double height) => Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: AppRadius.borderFull,
+      ),
+    );
+
+    return Semantics(
+      label: 'Memuat tamu terakhir',
+      child: ExcludeSemantics(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.space200,
+            vertical: AppSpacing.space100,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              for (var i = 0; i < 3; i++)
+                Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    AppSpacing.hGapSm,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          bar(120, 12),
+                          AppSpacing.vGapXs,
+                          bar(200, 10),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -282,7 +373,7 @@ class _GuestRowItem extends StatelessWidget {
     final typeScale = theme.typeScale;
 
     final semanticText =
-        'Tamu ${item.identifier}, lokasi ${item.location}, '
+        'Tamu ${item.identifier}, tujuan ${item.location}, '
         'waktu ${item.timestamp}';
 
     return AppTappable(
