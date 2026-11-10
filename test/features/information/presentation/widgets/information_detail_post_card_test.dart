@@ -61,7 +61,59 @@ void main() {
         expect(find.text('Cluster Magnolia'), findsNothing);
         // NO jadwal acara
         expect(find.text('Jadwal Acara'), findsNothing);
+        expect(find.textContaining('Jadwal acara'), findsNothing);
       },
     );
+
+    testWidgets('shows the schedule for an EVENT feed', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: const Scaffold(
+            body: SingleChildScrollView(
+              child: InformationDetailPostCard(
+                item: InformationItemEntity(
+                  id: 'post-2',
+                  photos: [],
+                  title: 'Kerja Bakti',
+                  feedType: 'EVENT',
+                  eventStartDt: '2026-10-01 13:00',
+                  eventEndDt: '2026-10-01 15:00',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Jadwal acara: '), findsOneWidget);
+      expect(find.textContaining('13:00 – 15:00'), findsOneWidget);
+    });
+
+    testWidgets('hides the schedule line for an EVENT without a start time', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: const Scaffold(
+            body: SingleChildScrollView(
+              child: InformationDetailPostCard(
+                item: InformationItemEntity(
+                  id: 'post-3',
+                  photos: [],
+                  title: 'Rapat',
+                  feedType: 'EVENT',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Jadwal acara'), findsNothing);
+    });
   });
 }

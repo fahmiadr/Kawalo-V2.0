@@ -18,6 +18,7 @@ import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/extensions/information_item_ui_extension.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/information_event_schedule.dart';
 
 /// Komponen kartu feed informasi (`InformationCard`) yang mengimplementasikan
 /// fondasi kartu resmi Kawalo ([AppCard]), Material 3 Expressive, dan
@@ -102,6 +103,7 @@ class InformationCard extends StatelessWidget {
 
           // ── 2. Tag Kategori, Lampiran, & Waktu Publikasi ────────────
           _buildPostMeta(context),
+          InformationEventSchedule(item: item),
 
           AppSpacing.vGapSm,
 

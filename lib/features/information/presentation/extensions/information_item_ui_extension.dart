@@ -72,6 +72,12 @@ extension InformationItemUiExtension on InformationItemEntity {
     }
   }
 
+  /// Jadwal acara untuk ditampilkan, hanya untuk feed bertipe EVENT.
+  String? get eventScheduleLabel =>
+      InformationFeedType.tryFromCode(feedType) == InformationFeedType.event
+      ? displayEventSchedule
+      : null;
+
   /// Label rentang jadwal acara terformat jika tersedia.
   String? get displayEventSchedule {
     final startDt = eventStartDt;

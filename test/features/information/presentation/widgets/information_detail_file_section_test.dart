@@ -222,9 +222,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('tapping Unduh shows download progress', (
-      tester,
-    ) async {
+    testWidgets('tapping Unduh shows download progress', (tester) async {
       final dio = _MockDio();
       final gate = Completer<Response<dynamic>>();
       when(

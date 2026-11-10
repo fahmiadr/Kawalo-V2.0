@@ -96,6 +96,23 @@ void main() {
       },
     );
 
+    test('eventScheduleLabel is only available for EVENT feeds', () {
+      const event = InformationItemEntity(
+        id: '1',
+        photos: [],
+        feedType: 'EVENT',
+        eventStartDt: '2026-09-12 10:00',
+      );
+      const general = InformationItemEntity(
+        id: '2',
+        photos: [],
+        feedType: 'GENERAL',
+        eventStartDt: '2026-09-12 10:00',
+      );
+      expect(event.eventScheduleLabel, isNotNull);
+      expect(general.eventScheduleLabel, isNull);
+    });
+
     test('hasFileAttachment identifies valid and invalid file attachments', () {
       const withValidFile = InformationItemEntity(
         id: '1',

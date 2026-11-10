@@ -47,6 +47,31 @@ void main() {
       },
     );
 
+    testWidgets('renders the event schedule only for EVENT feeds', (
+      tester,
+    ) async {
+      const event = InformationItemEntity(
+        id: 'info-ev',
+        title: 'Kerja Bakti',
+        feedType: 'EVENT',
+        eventStartDt: '2026-10-01 13:00',
+        eventEndDt: '2026-10-01 15:00',
+        photos: [],
+      );
+      await tester.pumpWidget(_buildCardTestApp(event));
+      expect(find.textContaining('Jadwal acara: '), findsOneWidget);
+
+      const general = InformationItemEntity(
+        id: 'info-gen',
+        title: 'Pengumuman',
+        feedType: 'GENERAL',
+        eventStartDt: '2026-10-01 13:00',
+        photos: [],
+      );
+      await tester.pumpWidget(_buildCardTestApp(general));
+      expect(find.textContaining('Jadwal acara'), findsNothing);
+    });
+
     testWidgets('renders file attachment tag when hasFileAttachment is true', (
       tester,
     ) async {

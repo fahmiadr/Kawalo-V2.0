@@ -11,6 +11,7 @@ import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/extensions/information_item_ui_extension.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/information_event_schedule.dart';
 
 /// Kartu postingan utama pada layar detail informasi
 /// (`InformationDetailPostCard`).
@@ -52,6 +53,7 @@ class InformationDetailPostCard extends StatelessWidget {
 
           // ── 2. Tag Kategori & Waktu Publikasi ────────────────────────
           _buildPostMeta(context),
+          InformationEventSchedule(item: item),
 
           AppSpacing.vGapSm,
 
