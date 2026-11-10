@@ -24,6 +24,7 @@ class IncidentPhotosSection extends StatelessWidget {
     required this.onTapPhoto,
     required this.onRemovePhoto,
     required this.onMoreOptions,
+    this.onRetryPhoto,
     this.cubit,
     this.heroTagPrefix = 'incident_form_photo',
     super.key,
@@ -32,7 +33,7 @@ class IncidentPhotosSection extends StatelessWidget {
   /// Instance [IncidentFormCubit] opsional untuk seleksi state.
   final IncidentFormCubit? cubit;
 
-  /// Status proses submit formulir.
+  /// Apakah form sibuk (mengunggah atau mengirim); mengunci aksi foto.
   final bool isSubmitting;
 
   /// Prefiks untuk kalkulasi tag Hero animasi transisi spasial.
@@ -52,6 +53,9 @@ class IncidentPhotosSection extends StatelessWidget {
 
   /// Callback saat tombol menu titik tiga pada foto ke-index diketuk.
   final void Function(int index) onMoreOptions;
+
+  /// Callback untuk mengunggah ulang foto ke-index yang gagal diunggah.
+  final void Function(int index)? onRetryPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +121,9 @@ class IncidentPhotosSection extends StatelessWidget {
                       onTap: () => onTapPhoto(index),
                       onRemove: () => onRemovePhoto(index),
                       onMoreOptions: () => onMoreOptions(index),
+                      onRetry: onRetryPhoto == null
+                          ? null
+                          : () => onRetryPhoto!(index),
                     );
                   },
                 ),

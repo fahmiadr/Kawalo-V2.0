@@ -9,6 +9,7 @@ import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_placeholder.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
+import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_photo_upload_overlay.dart';
 
 /// Bilah pratinjau thumbnail foto yang dilampirkan sebelum dikirimkan.
 ///
@@ -18,6 +19,8 @@ class IncidentAttachmentPreview extends StatelessWidget {
   const IncidentAttachmentPreview({
     required this.photos,
     required this.onRemove,
+    this.onRetry,
+    this.showWaiting = false,
     super.key,
   });
 
@@ -26,6 +29,12 @@ class IncidentAttachmentPreview extends StatelessWidget {
 
   /// Callback saat foto dihapus berdasarkan ID.
   final ValueChanged<String> onRemove;
+
+  /// Callback untuk mengunggah ulang foto yang gagal berdasarkan ID.
+  final ValueChanged<String>? onRetry;
+
+  /// Apakah foto yang belum diunggah ditampilkan sebagai "Menunggu".
+  final bool showWaiting;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +94,24 @@ class IncidentAttachmentPreview extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: AppRadius.borderMedium,
-                child: SizedBox(width: 72, height: 72, child: imageWidget),
+                child: SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      imageWidget,
+                      IncidentPhotoUploadOverlay(
+                        item: photo,
+                        compact: true,
+                        showWaiting: showWaiting,
+                        onRetry: onRetry == null
+                            ? null
+                            : () => onRetry!(photo.id),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               Positioned(
                 top: -8,

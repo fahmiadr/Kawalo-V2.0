@@ -25,6 +25,7 @@ class IncidentComposerBar extends StatefulWidget {
     required this.onAddPhoto,
     required this.onRemovePhoto,
     required this.onSend,
+    this.onRetryPhoto,
     super.key,
   });
 
@@ -48,6 +49,9 @@ class IncidentComposerBar extends StatefulWidget {
 
   /// Callback saat tombol kirim ditekan.
   final VoidCallback onSend;
+
+  /// Callback untuk mengunggah ulang foto draf yang gagal berdasarkan ID.
+  final ValueChanged<String>? onRetryPhoto;
 
   @override
   State<IncidentComposerBar> createState() => _IncidentComposerBarState();
@@ -100,6 +104,7 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
 
     final canSend =
         !widget.isPosting &&
+        !widget.draftPhotos.any((p) => p.isUploading) &&
         (widget.draftMessage.trim().isNotEmpty ||
             widget.draftPhotos.isNotEmpty);
 
@@ -122,6 +127,8 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
               IncidentAttachmentPreview(
                 photos: widget.draftPhotos,
                 onRemove: widget.onRemovePhoto,
+                onRetry: widget.onRetryPhoto,
+                showWaiting: widget.isPosting,
               ),
 
             Padding(

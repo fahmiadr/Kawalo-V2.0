@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
+import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
@@ -24,6 +26,7 @@ import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_state.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
+import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_location_section.dart';
 import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_photo_action_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_photo_source_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_photos_section.dart';
@@ -32,13 +35,21 @@ import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_ph
 /// Dialog, konsisten dan serasi dengan modul guest dan information.
 class IncidentFormDialog extends StatefulWidget {
   /// Membuat instance [IncidentFormDialog].
-  const IncidentFormDialog({super.key, this.cubit, this.mediaPickerService});
+  const IncidentFormDialog({
+    super.key,
+    this.cubit,
+    this.mediaPickerService,
+    this.reverseGeocodeService,
+  });
 
   /// Instance [IncidentFormCubit] opsional untuk injeksi atau pengujian.
   final IncidentFormCubit? cubit;
 
   /// Layanan pemilihan media opsional (kamera & galeri).
   final MediaPickerService? mediaPickerService;
+
+  /// Layanan reverse geocoding opsional untuk peta lokasi (seam pengujian).
+  final ReverseGeocodeService? reverseGeocodeService;
 
   /// Menampilkan dialog penambahan laporan insiden baru.
   static Future<IncidentEntity?> showCreate(
@@ -122,7 +133,12 @@ class IncidentFormDialog extends StatefulWidget {
       final cubit = context.read<IncidentFormCubit>();
       return (cubit, false);
     } on Object catch (_) {
-      return (context.read<IncidentModule>().createIncidentFormCubit(), true);
+      return (
+        context.read<IncidentModule>().createIncidentFormCubit(
+          uploadRepository: context.read<UploadRepository>(),
+        ),
+        true,
+      );
     }
   }
 
@@ -162,6 +178,11 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
     _titleFocusNode = FocusNode();
     _descriptionFocusNode = FocusNode();
     _scrollController = ScrollController();
+    // Fetch the GPS point once when the form opens; failure keeps the form
+    // usable without a location.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_resolveCubit(context).resolveLocation());
+    });
   }
 
   @override
@@ -324,10 +345,9 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
           final isSuccess = state.isSuccess;
 
           return PopScope(
-            canPop:
-                _isDiscarding || isSuccess || (!isDirty && !state.isSubmitting),
+            canPop: _isDiscarding || isSuccess || (!isDirty && !state.isBusy),
             onPopInvokedWithResult: (didPop, _) async {
-              if (didPop || state.isSubmitting) return;
+              if (didPop || state.isBusy) return;
               final confirmed = await IncidentFormDialog._confirmDiscard(
                 context,
               );
@@ -377,7 +397,7 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                                     type: AppChipType.filter,
                                     label: cat.displayName,
                                     selected: isSelected,
-                                    onPressed: state.isSubmitting
+                                    onPressed: state.isBusy
                                         ? null
                                         : () {
                                             cubit.updateCategory(cat);
@@ -404,7 +424,7 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                                     variant: AppTextFieldVariant.outlined,
                                     controller: _titleController,
                                     focusNode: _titleFocusNode,
-                                    enabled: !state.isSubmitting,
+                                    enabled: !state.isBusy,
                                     errorText:
                                         (state.validationAttempt > 0 ||
                                             state.title.isNotEmpty)
@@ -421,7 +441,7 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                                     variant: AppTextFieldVariant.outlined,
                                     controller: _descriptionController,
                                     focusNode: _descriptionFocusNode,
-                                    enabled: !state.isSubmitting,
+                                    enabled: !state.isBusy,
                                     errorText:
                                         (state.validationAttempt > 0 ||
                                             state.description.isNotEmpty)
@@ -441,7 +461,13 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                             // ── Seksi 3: Dokumentasi Foto Insiden ────────────
                             IncidentPhotosSection(
                               cubit: cubit,
-                              isSubmitting: state.isSubmitting,
+                              isSubmitting: state.isBusy,
+                              onRetryPhoto: (index) {
+                                final photos = cubit.state.photos;
+                                if (index >= 0 && index < photos.length) {
+                                  cubit.retryPhotoUpload(photos[index].id);
+                                }
+                              },
                               onPickPhoto: () => _handlePickPhoto(cubit),
                               onClearAll: () => _handleClearAllPhotos(cubit),
                               onTapPhoto: (index) {
@@ -464,6 +490,22 @@ class _IncidentFormDialogState extends State<IncidentFormDialog> {
                               },
                               onMoreOptions: (index) =>
                                   _showPhotoActionMenu(context, cubit, index),
+                            ),
+
+                            AppSpacing.vGap300,
+
+                            // ── Seksi 4: Lokasi Kejadian ─────────────────────
+                            IncidentLocationSection(
+                              latitude: state.glat,
+                              longitude: state.glong,
+                              isResolving: state.isResolvingLocation,
+                              isBusy: state.isBusy,
+                              error: state.locationError,
+                              reverseGeocodeService:
+                                  widget.reverseGeocodeService,
+                              onRefresh: () =>
+                                  unawaited(cubit.resolveLocation()),
+                              onClear: cubit.clearLocation,
                             ),
                           ],
                         ),

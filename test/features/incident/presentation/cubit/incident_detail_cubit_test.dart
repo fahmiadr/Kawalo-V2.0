@@ -4,8 +4,11 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
+import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_stream_event.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/delete_incident/delete_incident_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/delete_incident/delete_incident_usecase.dart';
@@ -21,6 +24,7 @@ import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_de
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_detail_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_detail_state.dart';
+import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockGetIncidentDetailUseCase extends Mock
@@ -36,6 +40,10 @@ class MockResolveIncidentUseCase extends Mock
     implements ResolveIncidentUseCase {}
 
 class MockDeleteIncidentUseCase extends Mock implements DeleteIncidentUseCase {}
+
+class MockUploadRepository extends Mock implements UploadRepository {}
+
+class FakeAppMediaFile extends Fake implements AppMediaFile {}
 
 class FakeGetIncidentDetailParams extends Fake
     implements GetIncidentDetailParams {}
@@ -59,6 +67,7 @@ void main() {
     registerFallbackValue(FakePostIncidentReplyParams());
     registerFallbackValue(FakeResolveIncidentParams());
     registerFallbackValue(FakeDeleteIncidentParams());
+    registerFallbackValue(FakeAppMediaFile());
   });
 
   late MockGetIncidentDetailUseCase mockGetDetail;
@@ -66,6 +75,7 @@ void main() {
   late MockPostIncidentReplyUseCase mockPostReply;
   late MockResolveIncidentUseCase mockResolve;
   late MockDeleteIncidentUseCase mockDelete;
+  late MockUploadRepository mockUpload;
   late IncidentDetailCubit cubit;
 
   setUp(() {
@@ -74,6 +84,7 @@ void main() {
     mockPostReply = MockPostIncidentReplyUseCase();
     mockResolve = MockResolveIncidentUseCase();
     mockDelete = MockDeleteIncidentUseCase();
+    mockUpload = MockUploadRepository();
 
     cubit = IncidentDetailCubit(
       incidentId: 'inc_1',
@@ -82,6 +93,7 @@ void main() {
       postIncidentReplyUseCase: mockPostReply,
       resolveIncidentUseCase: mockResolve,
       deleteIncidentUseCase: mockDelete,
+      uploadRepository: mockUpload,
     );
   });
 
@@ -139,11 +151,20 @@ void main() {
     );
 
     blocTest<IncidentDetailCubit, IncidentDetailState>(
-      'postReply catches HTTP 409 Conflict, locks thread, and preserves draft',
+      'postReply handles HTTP 400 "already resolved", locks thread, keeps '
+      'draft and reloads the detail',
       build: () {
         when(() => mockPostReply(any())).thenAnswer(
           (_) async => const Left(
-            ServerFailure('Already resolved', 409, 'ALREADY_RESOLVED'),
+            ServerFailure('Insiden sudah diselesaikan, diskusi ditutup.', 400),
+          ),
+        );
+        when(() => mockGetDetail(any())).thenAnswer(
+          (_) async => Right(
+            IncidentDetailResult(
+              incident: tIncident.copyWith(status: IncidentStatus.resolved),
+              replies: const [],
+            ),
           ),
         );
         return cubit;
@@ -162,6 +183,62 @@ void main() {
               s.draftMessage == 'Lagi diperbaiki' &&
               s.conflictNotice == 'Insiden telah diselesaikan oleh rekan Anda.';
         }),
+        predicate<IncidentDetailState>(
+          (s) => s.incident?.status == IncidentStatus.resolved && s.isReadOnly,
+        ),
+      ],
+      verify: (_) => verify(() => mockGetDetail(any())).called(1),
+    );
+
+    blocTest<IncidentDetailCubit, IncidentDetailState>(
+      'postReply with another HTTP 400 only shows the message',
+      build: () {
+        when(() => mockPostReply(any())).thenAnswer(
+          (_) async => const Left(ServerFailure('Pesan terlalu panjang.', 400)),
+        );
+        return cubit;
+      },
+      seed: () => IncidentDetailState(
+        status: IncidentDetailStatus.success,
+        incident: tIncident,
+        draftMessage: 'Halo',
+      ),
+      act: (c) => c.postReply(session: tSession),
+      expect: () => [
+        predicate<IncidentDetailState>((s) => s.isPostingReply),
+        predicate<IncidentDetailState>(
+          (s) =>
+              !s.isPostingReply &&
+              !s.isReadOnly &&
+              s.errorMessage == 'Pesan terlalu panjang.' &&
+              s.draftMessage == 'Halo',
+        ),
+      ],
+      verify: (_) => verifyNever(() => mockGetDetail(any())),
+    );
+
+    blocTest<IncidentDetailCubit, IncidentDetailState>(
+      'resolveIncident shows server errors without a conflict branch',
+      build: () {
+        when(() => mockResolve(any())).thenAnswer(
+          (_) async => const Left(ServerFailure('Gagal menyelesaikan.', 409)),
+        );
+        return cubit;
+      },
+      seed: () => IncidentDetailState(
+        status: IncidentDetailStatus.success,
+        incident: tIncident,
+      ),
+      act: (c) => c.resolveIncident(session: tSession),
+      expect: () => [
+        predicate<IncidentDetailState>((s) => s.isResolving),
+        predicate<IncidentDetailState>(
+          (s) =>
+              !s.isResolving &&
+              !s.isReadOnly &&
+              s.conflictNotice == null &&
+              s.errorMessage == 'Gagal menyelesaikan.',
+        ),
       ],
     );
 
@@ -190,5 +267,136 @@ void main() {
         }),
       ],
     );
+  });
+
+  group('IncidentDetailCubit reply photo upload', () {
+    IncidentMediaItem photo(int i) =>
+        IncidentMediaItem(id: 'p$i', name: 'foto_$i.jpg', path: '/tmp/$i.jpg');
+
+    void stubUpload(
+      Future<Either<Failure, String>> Function(AppMediaFile file) answer,
+    ) {
+      when(
+        () =>
+            mockUpload.uploadImage(any(), onProgress: any(named: 'onProgress')),
+      ).thenAnswer(
+        (inv) => answer(inv.positionalArguments.first as AppMediaFile),
+      );
+    }
+
+    Either<Failure, String> okUrl(AppMediaFile f) =>
+        Right('https://cdn.kawalo.id/${f.name}.webp');
+
+    IncidentDetailState seeded(List<IncidentMediaItem> photos) =>
+        IncidentDetailState(
+          status: IncidentDetailStatus.success,
+          incident: tIncident,
+          draftPhotos: photos,
+        );
+
+    void stubPostOk() {
+      when(() => mockPostReply(any())).thenAnswer(
+        (inv) async => Right(
+          IncidentReplyEntity(
+            id: 'rpl_1',
+            incidentId: 'inc_1',
+            senderId: 'guard@k.id',
+            senderName: 'Budi',
+            senderRole: 'GUARD',
+            message: 'ok',
+            photos: (inv.positionalArguments.first as PostIncidentReplyParams)
+                .photos,
+            createdAt: DateTime.now(),
+          ),
+        ),
+      );
+    }
+
+    test('uploads draft photos and posts only the uploaded URLs', () async {
+      stubUpload((f) async => okUrl(f));
+      stubPostOk();
+      cubit.emit(seeded([photo(1), photo(2)]));
+
+      await cubit.postReply(session: tSession);
+
+      final params =
+          verify(() => mockPostReply(captureAny())).captured.single
+              as PostIncidentReplyParams;
+      expect(params.photos, [
+        'https://cdn.kawalo.id/foto_1.jpg.webp',
+        'https://cdn.kawalo.id/foto_2.jpg.webp',
+      ]);
+      expect(cubit.state.draftPhotos, isEmpty);
+      expect(cubit.state.isPostingReply, isFalse);
+    });
+
+    test(
+      'partial failure keeps the draft and never posts a local file',
+      () async {
+        stubUpload(
+          (f) async => f.name == 'foto_2.jpg'
+              ? const Left(NetworkFailure('Koneksi terputus.'))
+              : okUrl(f),
+        );
+        cubit.emit(seeded([photo(1), photo(2)]));
+
+        await cubit.postReply(session: tSession);
+
+        verifyNever(() => mockPostReply(any()));
+        expect(cubit.state.isPostingReply, isFalse);
+        expect(cubit.state.errorMessage, contains('1 foto gagal diunggah'));
+        expect(cubit.state.draftPhotos[0].isUploaded, isTrue);
+        expect(
+          cubit.state.draftPhotos[1].uploadStatus,
+          IncidentUploadStatus.failed,
+        );
+        expect(cubit.state.draftPhotos[1].uploadError, 'Koneksi terputus.');
+      },
+    );
+
+    test('retryDraftPhotoUpload uploads only the failed photo', () async {
+      var fail = true;
+      stubUpload((f) async {
+        if (fail) return const Left(NetworkFailure('Koneksi terputus.'));
+        return okUrl(f);
+      });
+      stubPostOk();
+      cubit.emit(seeded([photo(1)]));
+      await cubit.postReply(session: tSession);
+      expect(cubit.state.draftPhotos.single.needsUpload, isTrue);
+
+      fail = false;
+      await cubit.retryDraftPhotoUpload('p1');
+      expect(cubit.state.draftPhotos.single.isUploaded, isTrue);
+
+      await cubit.postReply(session: tSession);
+      verify(
+        () =>
+            mockUpload.uploadImage(any(), onProgress: any(named: 'onProgress')),
+      ).called(2); // failed attempt + retry; the final post re-uploads nothing
+      verify(() => mockPostReply(any())).called(1);
+    });
+
+    test('postReply is ignored while a photo is uploading', () async {
+      final completer = Completer<Either<Failure, String>>();
+      stubUpload((_) => completer.future);
+      stubPostOk();
+      cubit.emit(seeded([photo(1)]));
+
+      final first = cubit.postReply(session: tSession);
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.isPostingReply, isTrue);
+      expect(cubit.state.isUploadingPhotos, isTrue);
+
+      await cubit.postReply(session: tSession); // ignored
+      completer.complete(const Right('https://cdn.kawalo.id/a.webp'));
+      await first;
+
+      verify(
+        () =>
+            mockUpload.uploadImage(any(), onProgress: any(named: 'onProgress')),
+      ).called(1);
+      verify(() => mockPostReply(any())).called(1);
+    });
   });
 }

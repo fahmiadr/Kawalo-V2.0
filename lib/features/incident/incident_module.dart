@@ -3,6 +3,7 @@ import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/network_info.dart';
 import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/features/incident/data/datasources/incident_local_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/datasources/incident_remote_data_source.dart';
 import 'package:kawalo_mobile/features/incident/data/repositories/incident_repository_impl.dart';
@@ -57,7 +58,10 @@ final class IncidentModule implements CacheWipeableModule {
 
   /// Merakit dan mengembalikan instance [IncidentDetailCubit] untuk layar
   /// detail insiden.
-  IncidentDetailCubit createIncidentDetailCubit({required String incidentId}) {
+  IncidentDetailCubit createIncidentDetailCubit({
+    required String incidentId,
+    required UploadRepository uploadRepository,
+  }) {
     return IncidentDetailCubit(
       incidentId: incidentId,
       getIncidentDetailUseCase: GetIncidentDetailUseCase(repository),
@@ -65,14 +69,18 @@ final class IncidentModule implements CacheWipeableModule {
       postIncidentReplyUseCase: PostIncidentReplyUseCase(repository),
       resolveIncidentUseCase: ResolveIncidentUseCase(repository),
       deleteIncidentUseCase: DeleteIncidentUseCase(repository),
+      uploadRepository: uploadRepository,
     );
   }
 
   /// Merakit dan mengembalikan instance [IncidentFormCubit] untuk pelaporan
   /// insiden baru.
-  IncidentFormCubit createIncidentFormCubit() {
+  IncidentFormCubit createIncidentFormCubit({
+    required UploadRepository uploadRepository,
+  }) {
     return IncidentFormCubit(
       createIncidentUseCase: CreateIncidentUseCase(repository),
+      uploadRepository: uploadRepository,
     );
   }
 }

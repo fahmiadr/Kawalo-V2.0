@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_divider.dart';
+import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/presentation/extensions/incident_ui_extension.dart';
@@ -12,10 +14,17 @@ import 'package:kawalo_mobile/features/incident/presentation/extensions/incident
 /// Kartu ringkasan insiden: judul, pelapor, deskripsi, dan koordinat GPS.
 class IncidentDetailSummaryCard extends StatelessWidget {
   /// Membuat instance [IncidentDetailSummaryCard].
-  const IncidentDetailSummaryCard({required this.incident, super.key});
+  const IncidentDetailSummaryCard({
+    required this.incident,
+    this.reverseGeocodeService,
+    super.key,
+  });
 
   /// Insiden yang diringkas.
   final IncidentEntity incident;
+
+  /// Layanan opsional untuk reverse geocoding alamat fisik dari koordinat.
+  final ReverseGeocodeService? reverseGeocodeService;
 
   @override
   Widget build(BuildContext context) {
@@ -92,22 +101,18 @@ class IncidentDetailSummaryCard extends StatelessWidget {
           ],
 
           // Titik Lokasi GPS jika ada
-          if (incident.glat != null && incident.glong != null) ...[
-            Row(
-              children: [
-                const AppSvgIcon.color(KawaloColorVectors.location1, size: 20),
-                AppSpacing.hGapSm,
-                Expanded(
-                  child: Text(
-                    'Koordinat GPS: ${incident.glat}, ${incident.glong}',
-                    style: typeScale.labelMedium.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
+          if (incident.glat != null && incident.glong != null)
+            ClipRRect(
+              borderRadius: AppRadius.borderMedium,
+              child: AppStaticMap(
+                latitude: incident.glat,
+                longitude: incident.glong,
+                markerStyle: AppStaticMapMarkerStyle.dot,
+                locationSemanticLabel:
+                    'Titik lokasi insiden ${incident.displayTitle}',
+                reverseGeocodeService: reverseGeocodeService,
+              ),
             ),
-          ],
         ],
       ),
     );

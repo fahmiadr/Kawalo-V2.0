@@ -65,7 +65,7 @@ class IncidentDetailState extends Equatable {
   /// Pesan kesalahan teknis atau jaringan.
   final String? errorMessage;
 
-  /// Pemberitahuan konflik resolusi (HTTP 409 Conflict).
+  /// Pemberitahuan konflik resolusi (insiden sudah diselesaikan pihak lain).
   final String? conflictNotice;
 
   /// Pemberitahuan informatif umum (toast/banner).
@@ -73,6 +73,9 @@ class IncidentDetailState extends Equatable {
 
   /// Apakah layar sedang dalam tahap pemuatan awal.
   bool get isLoading => status == IncidentDetailStatus.loading;
+
+  /// Apakah ada foto draf yang sedang diunggah.
+  bool get isUploadingPhotos => draftPhotos.any((p) => p.isUploading);
 
   /// ID event balasan terakhir yang diterima (untuk reconnect Last-Event-ID).
   String? get latestReplyId => replies.isNotEmpty ? replies.last.id : null;

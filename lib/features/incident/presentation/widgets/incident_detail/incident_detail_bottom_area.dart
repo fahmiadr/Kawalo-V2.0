@@ -43,6 +43,8 @@ class IncidentDetailBottomArea extends StatelessWidget {
           context.read<IncidentDetailCubit>().addDraftPhoto(photo),
       onRemovePhoto: (id) =>
           context.read<IncidentDetailCubit>().removeDraftPhoto(id),
+      onRetryPhoto: (id) =>
+          context.read<IncidentDetailCubit>().retryDraftPhotoUpload(id),
       onSend: () =>
           context.read<IncidentDetailCubit>().postReply(session: session),
     );

@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
@@ -47,8 +48,10 @@ class IncidentDetailScreen extends StatefulWidget {
       builder: (context) {
         final module = context.read<IncidentModule>();
         return BlocProvider<IncidentDetailCubit>(
-          create: (context) =>
-              module.createIncidentDetailCubit(incidentId: incidentId),
+          create: (context) => module.createIncidentDetailCubit(
+            incidentId: incidentId,
+            uploadRepository: context.read<UploadRepository>(),
+          ),
           child: IncidentDetailScreen(incidentId: incidentId),
         );
       },

@@ -16,6 +16,7 @@ import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_morphing_surface.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
+import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_photo_upload_overlay.dart';
 
 /// Thumbnail foto individual laporan insiden dalam Grid 2-kolom
 /// lengkap dengan badge urutan, tombol hapus cepat, tombol opsi,
@@ -30,6 +31,7 @@ class IncidentPhotoThumbnail extends StatelessWidget {
     required this.onTap,
     required this.onRemove,
     required this.onMoreOptions,
+    this.onRetry,
     this.borderRadius,
     this.heroTag,
     this.heroTagPrefix,
@@ -53,6 +55,9 @@ class IncidentPhotoThumbnail extends StatelessWidget {
 
   /// Callback saat tombol menu titik tiga diketuk.
   final VoidCallback onMoreOptions;
+
+  /// Callback untuk mengunggah ulang foto yang gagal diunggah.
+  final VoidCallback? onRetry;
 
   /// Radius sudut kustom opsional.
   final BorderRadius? borderRadius;
@@ -173,6 +178,15 @@ class IncidentPhotoThumbnail extends StatelessWidget {
         overlay: Stack(
           fit: StackFit.expand,
           children: [
+            // Lives in the overlay (not the child) so the retry button can
+            // receive taps; the control buttons below stay on top of it.
+            Positioned.fill(
+              child: IncidentPhotoUploadOverlay(
+                item: item,
+                onRetry: onRetry,
+                showWaiting: isSubmitting,
+              ),
+            ),
             // Bar Kontrol Atas (Badge Urutan & Tombol Hapus Cepat)
             Positioned(
               top: AppSpacing.space50,

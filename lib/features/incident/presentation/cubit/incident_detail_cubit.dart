@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_stream_event.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/delete_incident/delete_incident_params.dart';
@@ -20,11 +21,12 @@ import 'package:kawalo_mobile/features/incident/domain/usecases/watch_incident_r
 import 'package:kawalo_mobile/features/incident/domain/usecases/watch_incident_replies/watch_incident_replies_usecase.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_detail_state.dart';
+import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_photo_uploader.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 
 /// Cubit yang mengelola state detail insiden, langganan realtime HTTP+SSE,
-/// posting balasan, penyelesaian insiden, dan penanganan konkurensi
-/// (HTTP 409).
+/// posting balasan (termasuk unggah foto), penyelesaian insiden, dan
+/// penanganan konkurensi (balasan ke insiden yang sudah selesai).
 class IncidentDetailCubit extends Cubit<IncidentDetailState> {
   /// Membuat instance [IncidentDetailCubit].
   IncidentDetailCubit({
@@ -34,7 +36,9 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
     required this.postIncidentReplyUseCase,
     required this.resolveIncidentUseCase,
     required this.deleteIncidentUseCase,
-  }) : super(const IncidentDetailState());
+    required UploadRepository uploadRepository,
+  }) : _uploader = IncidentPhotoUploader(uploadRepository),
+       super(const IncidentDetailState());
 
   /// ID insiden aktif yang dikelola.
   final String incidentId;
@@ -53,6 +57,8 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
 
   /// Use case hapus insiden.
   final DeleteIncidentUseCase deleteIncidentUseCase;
+
+  final IncidentPhotoUploader _uploader;
 
   StreamSubscription<dynamic>? _sseSubscription;
   Timer? _reconnectTimer;
@@ -235,10 +241,64 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
     );
   }
 
+  void _patchDraftPhoto(
+    String id,
+    IncidentMediaItem Function(IncidentMediaItem current) change,
+  ) {
+    if (isClosed) return;
+    emit(
+      state.copyWith(
+        draftPhotos: [
+          for (final p in state.draftPhotos)
+            if (p.id == id) change(p) else p,
+        ],
+      ),
+    );
+  }
+
+  /// Retries the upload of a single failed draft photo.
+  Future<void> retryDraftPhotoUpload(String photoId) async {
+    if (state.isPostingReply) return;
+    final photo = state.draftPhotos.where((p) => p.id == photoId).firstOrNull;
+    if (photo == null || !photo.needsUpload) return;
+    await _uploader.upload([photo], _patchDraftPhoto);
+  }
+
+  /// Whether [failure] is the server rejecting a reply because the incident
+  /// was resolved in the meantime (HTTP 400, no dedicated error code).
+  static bool _isAlreadyResolved(Failure failure) {
+    return failure.statusCode == 400 &&
+        failure.message.toLowerCase().contains('diselesaikan');
+  }
+
+  /// Reloads incident and replies after the server reported a state we did not
+  /// know about. Keeps the current data when the reload fails.
+  Future<void> _refreshDetail(AuthSessionEntity? session) async {
+    final result = await getIncidentDetailUseCase(
+      GetIncidentDetailParams(incidentId: incidentId, session: session),
+    );
+    if (isClosed) return;
+    result.fold(
+      (_) {},
+      (detail) => emit(
+        state.copyWith(
+          incident: detail.incident,
+          replies: detail.replies,
+          isReadOnly: detail.incident.isResolved,
+        ),
+      ),
+    );
+  }
+
   /// Mengirim pesan balasan atau foto ke thread insiden.
   Future<void> postReply({required AuthSessionEntity? session}) async {
     final incident = state.incident;
-    if (incident == null || state.isReadOnly || state.isPostingReply) return;
+    if (incident == null ||
+        state.isReadOnly ||
+        state.isPostingReply ||
+        state.isUploadingPhotos) {
+      return;
+    }
 
     final trimmedText = state.draftMessage.trim();
     if (trimmedText.isEmpty && state.draftPhotos.isEmpty) return;
@@ -251,7 +311,24 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
       ),
     );
 
-    final photoUrls = state.draftPhotos.map((p) => p.toPhotoUrl()).toList();
+    await _uploader.upload(state.draftPhotos, _patchDraftPhoto);
+    if (isClosed) return;
+
+    // Only uploaded URLs may reach the payload; a local file must never leak.
+    final failedCount = state.draftPhotos.where((p) => !p.isUploaded).length;
+    if (failedCount > 0) {
+      emit(
+        state.copyWith(
+          isPostingReply: false,
+          errorMessage: () =>
+              '$failedCount foto gagal diunggah. Ketuk foto yang gagal untuk '
+              'mencoba lagi, lalu kirim ulang.',
+        ),
+      );
+      return;
+    }
+
+    final photoUrls = state.draftPhotos.map((p) => p.remoteUrl!).toList();
 
     final params = PostIncidentReplyParams(
       incident: incident,
@@ -261,12 +338,15 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
     );
 
     final result = await postIncidentReplyUseCase(params);
+    if (isClosed) return;
 
+    var refreshAfter = false;
     result.fold(
       (failure) {
-        if (failure is ServerFailure && failure.statusCode == 409) {
-          // HTTP 409 Conflict: Insiden telah diselesaikan oleh orang lain saat
-          // mengetik
+        if (_isAlreadyResolved(failure)) {
+          // The server answers 400 (not 409) when the incident was resolved by
+          // someone else while the user was typing; the draft is kept.
+          refreshAfter = true;
           emit(
             state.copyWith(
               isPostingReply: false,
@@ -303,6 +383,7 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
         );
       },
     );
+    if (refreshAfter) await _refreshDetail(session);
   }
 
   /// Menyelesaikan insiden dan mengunci thread diskusi.
@@ -324,23 +405,14 @@ class IncidentDetailCubit extends Cubit<IncidentDetailState> {
 
     result.fold(
       (failure) {
-        if (failure is ServerFailure && failure.statusCode == 409) {
-          emit(
-            state.copyWith(
-              isResolving: false,
-              isReadOnly: true,
-              conflictNotice: () =>
-                  'Insiden telah diselesaikan oleh rekan Anda.',
-            ),
-          );
-        } else {
-          emit(
-            state.copyWith(
-              isResolving: false,
-              errorMessage: () => failure.message,
-            ),
-          );
-        }
+        // Resolving is idempotent server-side (200), so there is no conflict
+        // case here.
+        emit(
+          state.copyWith(
+            isResolving: false,
+            errorMessage: () => failure.message,
+          ),
+        );
       },
       (resolvedIncident) {
         emit(

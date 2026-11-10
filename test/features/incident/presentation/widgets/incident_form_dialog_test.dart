@@ -7,7 +7,6 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_form_empty_placeholder.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_category.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_cubit.dart';
@@ -53,6 +52,9 @@ void main() {
     when(() => mockFormCubit.updateDescription(any())).thenReturn(null);
     when(() => mockFormCubit.removePhoto(any())).thenReturn(null);
     when(() => mockFormCubit.clearPhotos()).thenReturn(null);
+    when(() => mockFormCubit.resolveLocation()).thenAnswer((_) async {});
+    when(() => mockFormCubit.clearLocation()).thenReturn(null);
+    when(() => mockFormCubit.retryPhotoUpload(any())).thenAnswer((_) async {});
     when(() => mockFormCubit.reorderPhotos(any(), any())).thenReturn(null);
     when(
       () => mockFormCubit.submit(session: any(named: 'session')),
@@ -135,7 +137,6 @@ void main() {
       expect(find.text('Ambil foto'), findsNothing);
 
       // Area placeholder foto standar serasi dengan modul Information
-      expect(find.byType(AppFormEmptyPlaceholder), findsOneWidget);
       expect(find.text('Belum ada foto terlampir'), findsOneWidget);
       expect(
         find.text('Ketuk untuk memilih foto dari kamera atau galeri'),
@@ -169,7 +170,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Placeholder kosong tidak muncul lagi saat foto ada
-      expect(find.byType(AppFormEmptyPlaceholder), findsNothing);
+      expect(find.text('Belum ada foto terlampir'), findsNothing);
 
       // Header menampilkan jumlah foto (1/4) dan tombol Hapus semua
       expect(find.text('Dokumentasi foto (1/4)'), findsOneWidget);
@@ -439,6 +440,158 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('requests the GPS location when the form opens', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(state: const IncidentFormState()),
+      );
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockFormCubit.resolveLocation()).called(1);
+      expect(find.text('Lokasi kejadian'), findsOneWidget);
+      expect(find.text('Tanpa lokasi'), findsOneWidget);
+    });
+
+    testWidgets('shows the Indonesian reason when location is unavailable', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: const IncidentFormState(
+            locationError: 'Izin akses lokasi belum diberikan.',
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lokasi tidak tersedia'), findsOneWidget);
+      expect(
+        find.textContaining('Izin akses lokasi belum diberikan.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Ketuk untuk mencoba lagi.'), findsOneWidget);
+    });
+
+    testWidgets('shows searching indicator while resolving location', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: const IncidentFormState(isResolvingLocation: true),
+        ),
+      );
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('Mencari lokasi...'), findsOneWidget);
+    });
+
+    testWidgets('shows per-photo upload status and disables Kirim while '
+        'uploading', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: const IncidentFormState(
+            status: IncidentFormStatus.uploading,
+            title: 'Pagar rusak',
+            photos: [
+              IncidentMediaItem(
+                id: 'a',
+                name: 'a.jpg',
+                path: 'missing_a.jpg',
+                uploadStatus: IncidentUploadStatus.uploading,
+                uploadProgress: 0.4,
+              ),
+              IncidentMediaItem(id: 'b', name: 'b.jpg', path: 'missing_b.jpg'),
+              IncidentMediaItem(
+                id: 'c',
+                name: 'c.jpg',
+                path: 'missing_c.jpg',
+                uploadStatus: IncidentUploadStatus.done,
+                remoteUrl: 'https://cdn.kawalo.id/c.webp',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('40%'), findsOneWidget);
+      expect(find.text('Menunggu...'), findsOneWidget);
+      final kirim = tester.widget<AppButton>(
+        find.widgetWithText(AppButton, 'Kirim'),
+      );
+      expect(kirim.onPressed, isNull);
+    });
+
+    testWidgets('failed photo shows the error and retries on Coba lagi', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: const IncidentFormState(
+            title: 'Pagar rusak',
+            photos: [
+              IncidentMediaItem(
+                id: 'a',
+                name: 'a.jpg',
+                path: 'missing_a.jpg',
+                uploadStatus: IncidentUploadStatus.failed,
+                uploadError: 'Koneksi terputus.',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Koneksi terputus.'), findsOneWidget);
+      await tester.tap(find.widgetWithText(AppButton, 'Coba lagi'));
+      await tester.pump();
+      verify(() => mockFormCubit.retryPhotoUpload('a')).called(1);
     });
   });
 }

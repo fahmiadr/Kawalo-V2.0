@@ -2,6 +2,21 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 
+/// Upload lifecycle of a photo attached to an incident report or reply.
+enum IncidentUploadStatus {
+  /// Not uploaded yet (or queued behind the parallel upload limit).
+  pending,
+
+  /// Upload in flight; see [IncidentMediaItem.uploadProgress].
+  uploading,
+
+  /// Upload failed; see [IncidentMediaItem.uploadError]. Can be retried.
+  failed,
+
+  /// Uploaded; [IncidentMediaItem.remoteUrl] holds the public URL.
+  done,
+}
+
 /// Model item media presentasi untuk foto lampiran laporan insiden atau
 /// balasan thread.
 ///
@@ -17,6 +32,9 @@ class IncidentMediaItem extends Equatable {
     this.bytes,
     this.remoteUrl,
     this.isLocal = true,
+    this.uploadStatus = IncidentUploadStatus.pending,
+    this.uploadProgress = 0,
+    this.uploadError,
   });
 
   /// Factory untuk membuat item dari [AppMediaFile] jepretan kamera multi-shot.
@@ -42,6 +60,8 @@ class IncidentMediaItem extends Equatable {
       name: fileName,
       remoteUrl: url,
       isLocal: false,
+      uploadStatus: IncidentUploadStatus.done,
+      uploadProgress: 1,
     );
   }
 
@@ -63,18 +83,64 @@ class IncidentMediaItem extends Equatable {
   /// Penanda apakah foto berasal dari penyimpanan lokal.
   final bool isLocal;
 
-  /// Sumber visual efektif foto (jalur lokal, URL remote, atau URL kanonikal).
-  String get displaySource => path ?? remoteUrl ?? toPhotoUrl();
+  /// Status unggah foto.
+  final IncidentUploadStatus uploadStatus;
 
-  /// Menyelesaikan media menjadi string URL foto kanonikal untuk payload JSON
-  /// API.
-  String toPhotoUrl() {
-    if (remoteUrl != null && remoteUrl!.isNotEmpty) {
-      return remoteUrl!;
-    }
-    return 'https://cdn.kawalo.internal/incidents/photos/$name';
+  /// Progres unggah antara 0 dan 1.
+  final double uploadProgress;
+
+  /// Pesan galat unggah terakhir (Bahasa Indonesia) saat [uploadStatus] gagal.
+  final String? uploadError;
+
+  /// Sumber visual efektif foto (jalur lokal atau URL remote).
+  String get displaySource => path ?? remoteUrl ?? '';
+
+  /// Apakah foto sudah punya URL hasil unggah.
+  bool get isUploaded =>
+      uploadStatus == IncidentUploadStatus.done &&
+      remoteUrl != null &&
+      remoteUrl!.isNotEmpty;
+
+  /// Apakah foto sedang diunggah.
+  bool get isUploading => uploadStatus == IncidentUploadStatus.uploading;
+
+  /// Apakah foto masih perlu diunggah (menunggu atau gagal).
+  bool get needsUpload => !isUploaded && !isUploading;
+
+  /// Salinan dengan status unggah baru; [remoteUrl] hanya diisi saat selesai.
+  IncidentMediaItem withUpload({
+    required IncidentUploadStatus status,
+    double progress = 0,
+    String? error,
+    String? remoteUrl,
+  }) {
+    return IncidentMediaItem(
+      id: id,
+      name: name,
+      path: path,
+      bytes: bytes,
+      remoteUrl: remoteUrl ?? this.remoteUrl,
+      isLocal: isLocal,
+      uploadStatus: status,
+      uploadProgress: progress,
+      uploadError: error,
+    );
   }
 
+  /// Berkas sumber yang dikirim ke `UploadRepository`.
+  AppMediaFile toMediaFile() =>
+      AppMediaFile(name: name, path: path, bytes: bytes);
+
   @override
-  List<Object?> get props => [id, name, path, bytes, remoteUrl, isLocal];
+  List<Object?> get props => [
+    id,
+    name,
+    path,
+    bytes,
+    remoteUrl,
+    isLocal,
+    uploadStatus,
+    uploadProgress,
+    uploadError,
+  ];
 }

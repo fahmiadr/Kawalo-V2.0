@@ -4,7 +4,15 @@ import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_ca
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 
 /// Status siklus hidup formulir pelaporan insiden.
-enum IncidentFormStatus { initial, submitting, success, failure }
+enum IncidentFormStatus {
+  initial,
+
+  /// Photos are being uploaded before the report is sent.
+  uploading,
+  submitting,
+  success,
+  failure,
+}
 
 /// State representasi layar formulir pembuatan laporan insiden baru.
 class IncidentFormState extends Equatable {
@@ -19,6 +27,8 @@ class IncidentFormState extends Equatable {
     this.photos = const [],
     this.glat,
     this.glong,
+    this.isResolvingLocation = false,
+    this.locationError,
     this.errorMessage,
     this.createdIncident,
     this.validationAttempt = 0,
@@ -51,6 +61,13 @@ class IncidentFormState extends Equatable {
   /// Titik garis bujur GPS.
   final double? glong;
 
+  /// Apakah GPS sedang dicari.
+  final bool isResolvingLocation;
+
+  /// Alasan lokasi tidak diperoleh (Bahasa Indonesia); laporan tetap bisa
+  /// dikirim tanpa lokasi.
+  final String? locationError;
+
   /// Pesan kesalahan validasi atau jaringan.
   final String? errorMessage;
 
@@ -63,6 +80,18 @@ class IncidentFormState extends Equatable {
   /// Apakah form sedang dalam proses pengiriman ke server.
   bool get isSubmitting => status == IncidentFormStatus.submitting;
 
+  /// Apakah foto sedang diunggah sebelum laporan dikirim.
+  bool get isUploading => status == IncidentFormStatus.uploading;
+
+  /// Apakah ada foto yang sedang diunggah (termasuk coba-ulang per foto).
+  bool get isUploadingPhotos => photos.any((p) => p.isUploading);
+
+  /// Apakah form sedang sibuk mengunggah atau mengirim; mengunci foto.
+  bool get isBusy => isSubmitting || isUploading || isUploadingPhotos;
+
+  /// Apakah koordinat lengkap (lintang dan bujur harus berpasangan).
+  bool get hasLocation => glat != null && glong != null;
+
   /// Apakah formulir berhasil dikirimkan ke server.
   bool get isSuccess => status == IncidentFormStatus.success;
 
@@ -73,7 +102,7 @@ class IncidentFormState extends Equatable {
       photos.isNotEmpty;
 
   /// Menandakan apakah tombol aksi 'Kirim' dapat ditekan pengguna.
-  bool get canPressSubmit => !isSubmitting;
+  bool get canPressSubmit => !isBusy;
 
   /// Mengembalikan nama field pertama yang melanggar validasi agar
   /// lapisan antarmuka UI dapat secara otomatis memfokuskan keyboard ke sana.
@@ -110,6 +139,9 @@ class IncidentFormState extends Equatable {
     List<IncidentMediaItem>? photos,
     double? glat,
     double? glong,
+    bool clearLocation = false,
+    bool? isResolvingLocation,
+    String? Function()? locationError,
     String? Function()? errorMessage,
     IncidentEntity? createdIncident,
     int? validationAttempt,
@@ -124,8 +156,12 @@ class IncidentFormState extends Equatable {
           : this.descriptionError,
       category: category ?? this.category,
       photos: photos ?? this.photos,
-      glat: glat ?? this.glat,
-      glong: glong ?? this.glong,
+      glat: clearLocation ? null : glat ?? this.glat,
+      glong: clearLocation ? null : glong ?? this.glong,
+      isResolvingLocation: isResolvingLocation ?? this.isResolvingLocation,
+      locationError: locationError != null
+          ? locationError()
+          : this.locationError,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       createdIncident: createdIncident ?? this.createdIncident,
       validationAttempt: validationAttempt ?? this.validationAttempt,
@@ -143,6 +179,8 @@ class IncidentFormState extends Equatable {
     photos,
     glat,
     glong,
+    isResolvingLocation,
+    locationError,
     errorMessage,
     createdIncident,
     validationAttempt,
