@@ -163,6 +163,8 @@ class KawaloVectors {
   static const String pinLocation02Filled =
       '$_basePath/pin-location-02-filled.svg';
   static const String pinLocation02 = '$_basePath/pin-location-02.svg';
+  // Q
+  static const String qrCodeScan = '$_basePath/qr-code-scan.svg';
   // R
   static const String radioButtonChecked =
       '$_basePath/radio-button-checked.svg';

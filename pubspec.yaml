@@ -38,6 +38,7 @@ dependencies:
   latlong2: ^0.10.1
   material_3_expressive: ^1.1.2
   material_ui: ^1.2.0
+  mobile_scanner: ^7.5.0
   package_info_plus: ^10.2.1
   path_provider: ^2.1.6
   screen_brightness: ^2.1.11

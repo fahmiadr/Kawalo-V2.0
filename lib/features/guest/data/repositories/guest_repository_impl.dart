@@ -196,6 +196,35 @@ class GuestRepositoryImpl implements GuestRepository {
   }
 
   @override
+  Future<Either<Failure, GuestItemEntity>> getGuestByIdentifier(
+    String identifier, {
+    AppCancellationToken? cancelToken,
+  }) async {
+    final isConnected = await (networkInfo?.isConnected ?? Future.value(true));
+    if (!isConnected) {
+      return const Left(NoInternetFailure());
+    }
+
+    try {
+      final model = await remoteDataSource.getGuest(
+        params: GuestIdParamsModel(id: identifier),
+        cancelToken: cancelToken,
+      );
+      if (model == null) {
+        return const Left(ServerFailure('Data tamu tidak ditemukan.', 404));
+      }
+      return Right(GuestMapper.toEntity(model));
+    } on AppException catch (e) {
+      if (e is RequestCancelledException) {
+        return const Left(RequestCancelledFailure());
+      }
+      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    } on Exception catch (e) {
+      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, GuestItemEntity>> acknowledgeGuest(
     AcknowledgeGuestData data,
   ) async {

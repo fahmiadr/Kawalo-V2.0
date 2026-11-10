@@ -13,6 +13,7 @@ abstract final class AppRouteNames {
 
   static const String guests = '/guests';
   static const String guestDetail = '/guests/detail';
+  static const String guestQrScan = '/guests/scan';
   static const String attendance = '/attendance';
   static const String schedule = '/schedule';
   static const String information = '/information';

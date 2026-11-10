@@ -17,6 +17,14 @@ abstract class GuestRepository {
   /// dan pembuat data tamu opsional.
   Future<Either<Failure, GuestResult>> getGuests(GetGuestsParams params);
 
+  /// Mengambil satu tamu dari grup aktif lewat [identifier] (`qr_uid` atau id
+  /// numerik; server menerima keduanya). Hanya online. Tamu yang tidak ada,
+  /// atau milik grup lain, dikembalikan sebagai [ServerFailure] berstatus 404.
+  Future<Either<Failure, GuestItemEntity>> getGuestByIdentifier(
+    String identifier, {
+    AppCancellationToken? cancelToken,
+  });
+
   /// Mendaftarkan tamu baru ke sistem backend.
   ///
   /// Menerima [data] yang berisi payload pendaftaran tamu.

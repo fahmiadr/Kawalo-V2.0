@@ -16,6 +16,7 @@ import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
+import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
@@ -29,7 +30,9 @@ import 'package:kawalo_mobile/features/group/presentation/group_member_filter_op
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
+import 'package:kawalo_mobile/features/guest/presentation/qr_scan/guest_qr_scanner.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_detail_screen.dart';
+import 'package:kawalo_mobile/features/guest/presentation/screens/guest_qr_scan_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card_skeleton.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form_dialog.dart';
@@ -50,10 +53,13 @@ import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form_dia
 /// - Extended FAB "Tambah tamu" untuk pembuatan data tamu baru.
 class GuestScreen extends StatefulWidget {
   /// Membuat instance [GuestScreen].
-  const GuestScreen({super.key, this.cubit});
+  const GuestScreen({super.key, this.cubit, this.qrScannerFactory});
 
   /// Instance [GuestCubit] opsional untuk injeksi pengujian.
   final GuestCubit? cubit;
+
+  /// Camera factory of the QR scanner; replaced by a fake in tests.
+  final GuestQrScanner Function()? qrScannerFactory;
 
   static Route<void> route() => AppPageRoute.slideFade<void>(
     settings: const RouteSettings(name: AppRouteNames.guests),
@@ -214,6 +220,28 @@ class _GuestScreenState extends State<GuestScreen> {
     }
 
     _selection.toggle(index, item.id);
+  }
+
+  Future<void> _onScanPressed() async {
+    _selection.clear();
+    final cubit = _resolveCubit(context);
+    final scanned = await Navigator.of(context).push(
+      GuestQrScanScreen.route(
+        repository: cubit.guestRepository,
+        scannerFactory: widget.qrScannerFactory,
+      ),
+    );
+    if (scanned == null || !mounted) return;
+    // The detail screen reads the guest from the list state, so a guest that
+    // is outside the current page/filter is added for its actions to show up.
+    if (cubit.state.displayedGuests.any((g) => g.id == scanned.id)) {
+      cubit.onGuestUpdated(scanned);
+    } else {
+      cubit.onGuestCreated(scanned);
+    }
+    unawaited(
+      navigateToGuestDetailScreen(context, item: scanned, cubit: cubit),
+    );
   }
 
   Future<void> _onOpenCreateForm() async {
@@ -404,6 +432,28 @@ class _GuestScreenState extends State<GuestScreen> {
           searchLabel: 'Cari data tamu',
           refreshLabel: 'Memuat ulang data tamu',
           greeting: state.lastSync,
+          trailingActions: _isSearchExpanded
+              ? const []
+              : [
+                  AppIconButton(
+                    onPressed: isInitialLoading || isOffline
+                        ? null
+                        : _onScanPressed,
+                    semanticLabel: 'Scan QR tamu',
+                    tooltip: 'Scan QR',
+                    icon: AppSvgIcon(
+                      KawaloVectors.qrCodeScan,
+                      size: 24,
+                      color: isInitialLoading || isOffline
+                          ? AppTheme.colorSchemeOf(
+                              context,
+                            ).onSurface.withValues(
+                              alpha: AppStateLayer.disabledOpacity,
+                            )
+                          : AppTheme.colorSchemeOf(context).onSurface,
+                    ),
+                  ),
+                ],
           isInitialLoading: isInitialLoading,
           isOffline: isOffline,
           isSearchExpanded: _isSearchExpanded,

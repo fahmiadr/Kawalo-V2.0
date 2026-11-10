@@ -78,6 +78,7 @@ class ListScreenScaffold extends StatelessWidget {
     this.canRefresh = true,
     this.canPop = true,
     this.onPopBlocked,
+    this.trailingActions = const [],
   });
 
   final String title;
@@ -129,11 +130,30 @@ class ListScreenScaffold extends StatelessWidget {
 
   final VoidCallback? onPopBlocked;
 
+  /// Icon buttons shown to the left of the search button in the idle app bar.
+  final List<Widget> trailingActions;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = AppTheme.of(context).colorScheme;
     final selection = this.selection;
     final isSelecting = selection?.controller.isSelectionMode ?? false;
+
+    final searchButton = AppIconButton(
+      onPressed: !isInitialLoading
+          ? (isSearchExpanded ? onCloseSearch : onOpenSearch)
+          : null,
+      semanticLabel: isSearchExpanded ? 'Tutup pencarian' : searchLabel,
+      icon: AppSvgIcon(
+        isSearchExpanded ? KawaloVectors.cancel01 : KawaloVectors.search01,
+        size: 24,
+        color: !isInitialLoading
+            ? colorScheme.onSurface
+            : colorScheme.onSurface.withValues(
+                alpha: AppStateLayer.disabledOpacity,
+              ),
+      ),
+    );
 
     final idleAppBar = AppHomeAppBar(
       greeting: greeting,
@@ -151,21 +171,15 @@ class ListScreenScaffold extends StatelessWidget {
             )
           : null,
       showBackButton: showBackButton,
-      trailing: AppIconButton(
-        onPressed: !isInitialLoading
-            ? (isSearchExpanded ? onCloseSearch : onOpenSearch)
-            : null,
-        semanticLabel: isSearchExpanded ? 'Tutup pencarian' : searchLabel,
-        icon: AppSvgIcon(
-          isSearchExpanded ? KawaloVectors.cancel01 : KawaloVectors.search01,
-          size: 24,
-          color: !isInitialLoading
-              ? colorScheme.onSurface
-              : colorScheme.onSurface.withValues(
-                  alpha: AppStateLayer.disabledOpacity,
-                ),
-        ),
-      ),
+      trailing: trailingActions.isEmpty
+          ? searchButton
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [...trailingActions, searchButton],
+            ),
+      trailingWidth: trailingActions.isEmpty
+          ? null
+          : AppStateLayer.minTouchTarget * (trailingActions.length + 1),
     );
 
     final canCreate = onCreate != null && !isSelecting;

@@ -22,6 +22,13 @@ abstract class GuestRemoteDataSource {
     AppCancellationToken? cancelToken,
   });
 
+  /// Mengambil satu tamu dari `GET /v1/guests/:id`. Server menerima id numerik
+  /// maupun `qr_uid` pada segmen yang sama; `null` bila grup aktif kosong.
+  Future<GuestModel?> getGuest({
+    required GuestIdParamsModel params,
+    AppCancellationToken? cancelToken,
+  });
+
   /// Mendaftarkan tamu baru ke server backend `POST /v1/guests`.
   Future<GuestModel> createGuest({
     required CreateGuestModel data,
@@ -96,6 +103,22 @@ class GuestRemoteDataSourceImpl implements GuestRemoteDataSource {
           .toList();
     }
     return const [];
+  }
+
+  @override
+  Future<GuestModel?> getGuest({
+    required GuestIdParamsModel params,
+    AppCancellationToken? cancelToken,
+  }) async {
+    final response = await apiClient.get(
+      '/v1/guests/${Uri.encodeComponent(params.id)}',
+      cancelToken: cancelToken?.toDio(),
+    );
+
+    final rawData = response['data'];
+    return rawData is Map<String, dynamic>
+        ? GuestModel.fromJson(rawData)
+        : null;
   }
 
   @override
