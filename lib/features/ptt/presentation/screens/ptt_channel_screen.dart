@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
+import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
+import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/screens/ptt_history_screen.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_channel_header.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/tactical_ptt_button.dart';
+import 'package:kawalo_mobile/features/ptt/ptt_module.dart';
 
 class PttChannelScreen extends StatefulWidget {
   const PttChannelScreen({super.key});
@@ -63,6 +68,26 @@ class _PttChannelScreenState extends State<PttChannelScreen> {
                     children: [
                       // 1. Channel Header (Status & Anggota)
                       const PttChannelHeader(),
+                      const SizedBox(height: AppSpacing.md),
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppButton.icon(
+                          style: AppButtonColor.tonal,
+                          size: AppButtonSize.custom(
+                            height: AppStateLayer.minTouchTarget,
+                            hPadding: AppSpacing.space200,
+                          ),
+                          icon: const Icon(Icons.history_rounded),
+                          label: const Text('Riwayat Rekaman'),
+                          onPressed: () => Navigator.of(context).push(
+                            PttHistoryScreen.route(
+                              PttModule.createRecordingRepository(
+                                apiClient: context.read<ApiClient>(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.lg),
 
                       // 2. Active Speaker Banner / Live Status

@@ -2,7 +2,10 @@ import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/features/ptt/data/datasources/ptt_native_platform_data_source.dart';
+import 'package:kawalo_mobile/features/ptt/data/datasources/ptt_recording_remote_data_source.dart';
+import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_recording_repository_impl.dart';
 import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_repository_impl.dart';
+import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_recording_repository.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_usecase.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/start_transmission/start_transmission_usecase.dart';
@@ -23,6 +26,14 @@ class PttModule {
   }) {
     return PttRepositoryImpl(
       dataSource: dataSource ?? PttNativePlatformDataSourceImpl(),
+    );
+  }
+
+  static PttRecordingRepository createRecordingRepository({
+    required ApiClient apiClient,
+  }) {
+    return PttRecordingRepositoryImpl(
+      remoteDataSource: PttRecordingRemoteDataSourceImpl(apiClient: apiClient),
     );
   }
 

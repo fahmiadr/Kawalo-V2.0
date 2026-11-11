@@ -27,4 +27,5 @@ abstract final class AppRouteNames {
   static const String incidentDetail = '/incidents/detail';
 
   static const String ptt = '/ptt';
+  static const String pttHistory = '/ptt/history';
 }
