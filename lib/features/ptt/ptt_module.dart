@@ -1,10 +1,13 @@
 import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
+import 'package:kawalo_mobile/features/ptt/data/datasources/ptt_member_remote_data_source.dart';
 import 'package:kawalo_mobile/features/ptt/data/datasources/ptt_native_platform_data_source.dart';
 import 'package:kawalo_mobile/features/ptt/data/datasources/ptt_recording_remote_data_source.dart';
+import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_member_repository_impl.dart';
 import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_recording_repository_impl.dart';
 import 'package:kawalo_mobile/features/ptt/data/repositories/ptt_repository_impl.dart';
+import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_member_repository.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_recording_repository.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
 import 'package:kawalo_mobile/features/ptt/domain/usecases/join_channel/join_channel_usecase.dart';
@@ -37,6 +40,14 @@ class PttModule {
     );
   }
 
+  static PttMemberRepository createMemberRepository({
+    required ApiClient apiClient,
+  }) {
+    return PttMemberRepositoryImpl(
+      remoteDataSource: PttMemberRemoteDataSourceImpl(apiClient: apiClient),
+    );
+  }
+
   static PttCubit createCubit({
     ApiClient? apiClient,
     PttRepository? repository,
@@ -55,6 +66,11 @@ class PttModule {
       repository: repo,
       storageService: storageService,
       apiBaseUrl: () => EnvConfig.apiBaseUrl,
+      refreshAccessToken: apiClient == null
+          ? null
+          : () async {
+              await apiClient.refreshAccessToken();
+            },
     );
   }
 }
