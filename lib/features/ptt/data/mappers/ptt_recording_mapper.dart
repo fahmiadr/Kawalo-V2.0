@@ -16,6 +16,10 @@ abstract final class PttRecordingMapper {
           .toLocal(),
       duration: Duration(milliseconds: model.durationMs),
       sizeBytes: model.sizeBytes,
+      transcript: model.transcript,
+      transcriptLocale: model.transcriptLocale,
+      transcriptSource: PttTranscriptSource.tryParse(model.transcriptSource),
+      transcriptStatus: model.transcriptStatus,
     );
   }
 

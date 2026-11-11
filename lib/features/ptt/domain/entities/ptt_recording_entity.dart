@@ -1,5 +1,17 @@
 import 'package:equatable/equatable.dart';
 
+enum PttTranscriptSource {
+  device,
+  server;
+
+  /// Unknown values map to null so a newer server never breaks the list.
+  static PttTranscriptSource? tryParse(String? value) => switch (value) {
+    'device' => device,
+    'server' => server,
+    _ => null,
+  };
+}
+
 /// One recorded PTT turn of the active group.
 class PttRecordingEntity extends Equatable {
   const PttRecordingEntity({
@@ -11,6 +23,10 @@ class PttRecordingEntity extends Equatable {
     required this.duration,
     required this.sizeBytes,
     this.speakerEmail,
+    this.transcript,
+    this.transcriptLocale,
+    this.transcriptSource,
+    this.transcriptStatus,
   });
 
   final String id;
@@ -24,6 +40,19 @@ class PttRecordingEntity extends Equatable {
   final DateTime startedAt;
   final Duration duration;
   final int sizeBytes;
+  final String? transcript;
+  final String? transcriptLocale;
+  final PttTranscriptSource? transcriptSource;
+
+  /// Raw server status (`done`, `no_speech`, ...); kept for logic only, the UI
+  /// never shows it.
+  final String? transcriptStatus;
+
+  /// Trimmed transcript, or null when there is nothing worth showing.
+  String? get displayTranscript {
+    final text = transcript?.trim();
+    return text == null || text.isEmpty ? null : text;
+  }
 
   bool isSpokenBy(String? email) {
     final mine = email?.trim().toLowerCase();
@@ -41,5 +70,9 @@ class PttRecordingEntity extends Equatable {
     startedAt,
     duration,
     sizeBytes,
+    transcript,
+    transcriptLocale,
+    transcriptSource,
+    transcriptStatus,
   ];
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/features/ptt/data/mappers/ptt_recording_mapper.dart';
 import 'package:kawalo_mobile/features/ptt/data/models/ptt_recording_model.dart';
+import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_recording_entity.dart';
 
 void main() {
   test('parses the API page and maps it to entities', () {
@@ -55,5 +56,62 @@ void main() {
     expect(page.nextBefore, isNull);
     expect(page.items.single.isSpokenBy('x@kawalo.id'), isFalse);
     expect(page.items.single.isSpokenBy(''), isFalse);
+  });
+
+  Map<String, dynamic> item([Map<String, dynamic> extra = const {}]) => {
+    'id': 'rec_3',
+    'speaker': {'id': 'usr_3', 'name': 'Sari', 'role': 'GUARD'},
+    'started_at': '2026-11-11T02:30:00Z',
+    'duration_ms': 1000,
+    'size_bytes': 10,
+    ...extra,
+  };
+
+  PttRecordingEntity map(Map<String, dynamic> json) =>
+      PttRecordingMapper.toEntity(PttRecordingModel.fromJson(json));
+
+  test('maps the transcript fields', () {
+    final e = map(
+      item({
+        'transcript': 'Pos satu aman',
+        'transcript_locale': 'id-ID',
+        'transcript_source': 'device',
+        'transcript_status': 'done',
+      }),
+    );
+
+    expect(e.transcript, 'Pos satu aman');
+    expect(e.displayTranscript, 'Pos satu aman');
+    expect(e.transcriptLocale, 'id-ID');
+    expect(e.transcriptSource, PttTranscriptSource.device);
+    expect(e.transcriptStatus, 'done');
+  });
+
+  test('an old server without transcript fields yields nulls', () {
+    final e = map(item());
+
+    expect(e.transcript, isNull);
+    expect(e.displayTranscript, isNull);
+    expect(e.transcriptLocale, isNull);
+    expect(e.transcriptSource, isNull);
+    expect(e.transcriptStatus, isNull);
+  });
+
+  test('unknown source maps to null, unknown status is kept, blank hides', () {
+    final e = map(
+      item({
+        'transcript': '   ',
+        'transcript_source': 'cloud9',
+        'transcript_status': 'brand_new',
+      }),
+    );
+
+    expect(e.transcriptSource, isNull);
+    expect(e.transcriptStatus, 'brand_new');
+    expect(e.displayTranscript, isNull);
+    expect(
+      map(item({'transcript_source': 'server'})).transcriptSource,
+      PttTranscriptSource.server,
+    );
   });
 }

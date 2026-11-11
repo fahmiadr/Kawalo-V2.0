@@ -7,6 +7,9 @@ PttRecordingEntity recording(
   String? email = 'budi@kawalo.id',
   DateTime? startedAt,
   Duration duration = const Duration(seconds: 12),
+  String? transcript,
+  PttTranscriptSource? transcriptSource = PttTranscriptSource.server,
+  String? transcriptStatus,
 }) => PttRecordingEntity(
   id: id,
   speakerId: 'usr_$id',
@@ -16,6 +19,10 @@ PttRecordingEntity recording(
   startedAt: startedAt ?? DateTime(2026, 11, 11, 9, 30),
   duration: duration,
   sizeBytes: 24000,
+  transcript: transcript,
+  transcriptLocale: transcript == null ? null : 'id-ID',
+  transcriptSource: transcript == null ? null : transcriptSource,
+  transcriptStatus: transcriptStatus,
 );
 
 /// [admin] is the ADMIN role (with the flag). [role] and [allowAdmin]

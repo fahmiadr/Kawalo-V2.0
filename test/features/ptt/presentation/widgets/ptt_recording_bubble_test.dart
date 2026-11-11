@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
+import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_recording_entity.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_playback_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_bubble.dart';
 
@@ -16,19 +17,37 @@ void main() {
     VoidCallback? onTogglePlay,
     ValueChanged<Duration>? onSeek,
     VoidCallback? onDelete,
+    String? transcript,
+    PttTranscriptSource? source = PttTranscriptSource.server,
+    ThemeData? theme,
+    double textScale = 1,
   }) {
     return MaterialApp(
-      theme: AppTheme.lightThemeData(),
+      theme: theme ?? AppTheme.lightThemeData(),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(textScale)),
+        child: child!,
+      ),
       home: Scaffold(
-        body: PttRecordingBubble(
-          recording: recording('a', duration: const Duration(seconds: 65)),
-          isMe: isMe,
-          playback: playback,
-          canDelete: canDelete,
-          isDeleting: isDeleting,
-          onTogglePlay: onTogglePlay ?? () {},
-          onSeek: onSeek ?? (_) {},
-          onDelete: onDelete,
+        // The real screen is a scrolling list; an expanded transcript is tall.
+        body: SingleChildScrollView(
+          child: PttRecordingBubble(
+            recording: recording(
+              'a',
+              duration: const Duration(seconds: 65),
+              transcript: transcript,
+              transcriptSource: source,
+            ),
+            isMe: isMe,
+            playback: playback,
+            canDelete: canDelete,
+            isDeleting: isDeleting,
+            onTogglePlay: onTogglePlay ?? () {},
+            onSeek: onSeek ?? (_) {},
+            onDelete: onDelete,
+          ),
         ),
       ),
     );
@@ -139,4 +158,109 @@ void main() {
     expect(deletes, 1);
     expect(find.text('Hapus'), findsNothing);
   });
+
+  const shortText = 'Pos satu aman, tidak ada kejadian.';
+  final longText = List.filled(
+    12,
+    'Ada orang tidak dikenal di gerbang belakang',
+  ).join(' ');
+
+  testWidgets('no transcript shows nothing extra', (tester) async {
+    await tester.pumpWidget(host());
+
+    expect(find.textContaining('Transkrip'), findsNothing);
+    expect(find.text('Selengkapnya'), findsNothing);
+  });
+
+  testWidgets('blank transcript shows nothing extra', (tester) async {
+    await tester.pumpWidget(host(transcript: '  '));
+
+    expect(find.textContaining('Transkrip'), findsNothing);
+  });
+
+  testWidgets('short transcript shows label, source hint and no toggle', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(transcript: shortText));
+
+    expect(find.text('Transkrip otomatis · dari server'), findsOneWidget);
+    expect(find.text(shortText), findsOneWidget);
+    expect(find.text('Selengkapnya'), findsNothing);
+  });
+
+  testWidgets('device source and missing source hints', (tester) async {
+    await tester.pumpWidget(
+      host(transcript: shortText, source: PttTranscriptSource.device),
+    );
+    expect(find.text('Transkrip otomatis · dari perangkat'), findsOneWidget);
+
+    await tester.pumpWidget(host(transcript: shortText, source: null));
+    expect(find.text('Transkrip otomatis'), findsOneWidget);
+  });
+
+  testWidgets('long transcript collapses to 3 lines and expands', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(transcript: longText));
+
+    Text body() => tester.widget<Text>(find.text(longText));
+    expect(body().maxLines, 3);
+    expect(find.text('Selengkapnya'), findsOneWidget);
+    final collapsed = tester.getSize(find.text(longText)).height;
+
+    final toggle = find.ancestor(
+      of: find.text('Selengkapnya'),
+      matching: find.byType(InkWell),
+    );
+    expect(tester.getSize(toggle).height, greaterThanOrEqualTo(44));
+
+    await tester.tap(find.text('Selengkapnya'));
+    await tester.pump();
+    expect(body().maxLines, isNull);
+    expect(find.text('Ringkas'), findsOneWidget);
+    expect(tester.getSize(find.text(longText)).height, greaterThan(collapsed));
+
+    await tester.tap(find.text('Ringkas'));
+    await tester.pump();
+    expect(body().maxLines, 3);
+    expect(find.text('Selengkapnya'), findsOneWidget);
+  });
+
+  testWidgets('transcript follows the bubble side', (tester) async {
+    await tester.pumpWidget(host(transcript: shortText));
+    final screenWidth = tester.getSize(find.byType(Scaffold)).width;
+    expect(tester.getTopLeft(find.text(shortText)).dx, lessThan(40));
+
+    await tester.pumpWidget(host(isMe: true, transcript: shortText));
+    expect(
+      tester.getTopRight(find.text(shortText)).dx,
+      greaterThan(screenWidth - 40),
+    );
+  });
+
+  for (final isMe in [false, true]) {
+    for (final dark in [false, true]) {
+      testWidgets('320px, 1.5x text, ${dark ? 'dark' : 'light'}, '
+          '${isMe ? 'own' : 'others'}: no overflow', (tester) async {
+        tester.view.physicalSize = const Size(320, 640);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          host(
+            isMe: isMe,
+            canDelete: true,
+            transcript: longText,
+            textScale: 1.5,
+            theme: dark ? AppTheme.darkThemeData() : AppTheme.lightThemeData(),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.text('Selengkapnya'));
+        await tester.pump();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 }

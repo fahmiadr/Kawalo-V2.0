@@ -24,6 +24,10 @@ PttRecordingModel _$PttRecordingModelFromJson(Map<String, dynamic> json) =>
       startedAt: json['started_at'] as String,
       durationMs: (json['duration_ms'] as num?)?.toInt() ?? 0,
       sizeBytes: (json['size_bytes'] as num?)?.toInt() ?? 0,
+      transcript: json['transcript'] as String?,
+      transcriptLocale: json['transcript_locale'] as String?,
+      transcriptSource: json['transcript_source'] as String?,
+      transcriptStatus: json['transcript_status'] as String?,
     );
 
 PttRecordingPageModel _$PttRecordingPageModelFromJson(

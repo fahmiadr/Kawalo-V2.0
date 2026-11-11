@@ -37,6 +37,10 @@ class PttRecordingModel {
     required this.startedAt,
     required this.durationMs,
     required this.sizeBytes,
+    this.transcript,
+    this.transcriptLocale,
+    this.transcriptSource,
+    this.transcriptStatus,
   });
 
   factory PttRecordingModel.fromJson(Map<String, dynamic> json) =>
@@ -51,6 +55,12 @@ class PttRecordingModel {
 
   @JsonKey(defaultValue: 0)
   final int sizeBytes;
+
+  // Absent on servers without transcription.
+  final String? transcript;
+  final String? transcriptLocale;
+  final String? transcriptSource;
+  final String? transcriptStatus;
 }
 
 @JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)
