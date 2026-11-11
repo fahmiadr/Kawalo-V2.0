@@ -53,6 +53,8 @@ class PttForegroundService : Service() {
         const val EXTRA_GROUP_UID = "groupUid"
         const val EXTRA_TOKEN = "token"
         const val EXTRA_REQUEST_ID = "requestId"
+
+        private const val STABLE_CONNECTION_MS = 10_000L
     }
 
     private var wakeLock: PowerManager.WakeLock? = null
@@ -75,6 +77,7 @@ class PttForegroundService : Service() {
     private val reconnectHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var isReconnecting = false
     private var reconnectAttempt = 0
+    private val resetAttemptRunnable = Runnable { reconnectAttempt = 0 }
 
     // OkHttp reports a cancel()ed socket through onFailure. Without this guard that stale callback
     // schedules a reconnect which cancels the healthy replacement, and the loop never ends (the
@@ -117,6 +120,8 @@ class PttForegroundService : Service() {
                 val token = intent.getStringExtra(EXTRA_TOKEN) ?: return START_STICKY
 
                 startForegroundWithNotification("Menghubungkan ke Saluran PTT...")
+                // No-op while already playing; re-arms playback if the AudioTrack failed to initialize earlier.
+                audioEngine?.startPlayback()
                 connectWebSocket(channelUrl, groupUid, token)
             }
 
@@ -348,7 +353,9 @@ class PttForegroundService : Service() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 if (generation != socketGeneration) return
                 Log.i(TAG, "PTT WebSocket connected successfully to $activeGroupUid")
-                reconnectAttempt = 0
+                // Reset the backoff only once the connection proved stable: a server that accepts and then
+                // closes at once must not be retried every 2 s forever.
+                reconnectHandler.postDelayed(resetAttemptRunnable, STABLE_CONNECTION_MS)
                 isReconnecting = false
                 startForegroundWithNotification("Saluran PTT Terhubung - Siap Bicara")
                 PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "CONNECTED"))
@@ -374,12 +381,20 @@ class PttForegroundService : Service() {
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 if (generation != socketGeneration) return
                 Log.w(TAG, "PTT WebSocket closing: $code / $reason")
+                // The server ended the session; complete the close handshake so onClosed fires. A user leave
+                // bumps the generation first, so this is never reached for those.
+                try {
+                    webSocket.close(1000, null)
+                } catch (_: Exception) {}
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 if (generation != socketGeneration) return
                 Log.i(TAG, "PTT WebSocket closed: $code / $reason")
-                PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "DISCONNECTED"))
+                // A server-side close (restart, deploy) is not a user leave: keep the channel alive by
+                // reconnecting like after a failure, otherwise incoming audio stays silent until the app reopens.
+                PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "RECONNECTING"))
+                scheduleReconnect()
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -389,6 +404,11 @@ class PttForegroundService : Service() {
                 val bodyStr = try { response?.body?.string() } catch (_: Exception) { null }
                 Log.e(TAG, "PTT WebSocket failure: ${t.message} | HTTP $respCode ($respMsg) | Body: $bodyStr", t)
                 PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "RECONNECTING"))
+                if (respCode == 401) {
+                    // The held access token expired while the socket was down; only Dart can refresh it. The
+                    // new token arrives through ACTION_UPDATE_AUTH_TOKEN and the next reconnect attempt uses it.
+                    PttPlatformChannelBridge.dispatchEvent("authTokenRejected", emptyMap())
+                }
                 scheduleReconnect()
             }
         })
@@ -404,6 +424,7 @@ class PttForegroundService : Service() {
         }
 
         isReconnecting = true
+        reconnectHandler.removeCallbacks(resetAttemptRunnable)
         val delayMs = minOf(2000L * (1L shl minOf(reconnectAttempt, 3)), 15000L)
         reconnectAttempt++
         Log.i(TAG, "Scheduling PTT WebSocket reconnect in ${delayMs}ms (attempt #$reconnectAttempt)")
