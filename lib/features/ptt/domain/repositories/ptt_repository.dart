@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
+import 'package:kawalo_mobile/features/ptt/domain/value_objects/ptt_transcript.dart';
 
 /// Kontrak repositori murni domain untuk operasional Push-to-Talk.
 ///
@@ -48,4 +49,8 @@ abstract class PttRepository {
   /// Emits when the native service's reconnect was refused with HTTP 401, i.e.
   /// the token it holds expired while the socket was down.
   Stream<void> watchAuthRejected();
+
+  /// One event per own turn once the native recognizer finished (Android 13+;
+  /// older devices report `unsupported`).
+  Stream<PttTranscript> watchTranscripts();
 }

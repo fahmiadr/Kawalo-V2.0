@@ -82,5 +82,9 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
+        <!-- SpeechRecognizer cannot see the recognition service without this (PTT transcripts, targetSdk 30+) -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
     </queries>
 </manifest>

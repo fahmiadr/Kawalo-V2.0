@@ -10,6 +10,7 @@ import 'package:kawalo_mobile/features/guest/guest_module.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
 import 'package:kawalo_mobile/features/information/information_module.dart';
 import 'package:kawalo_mobile/features/operational/operational_module.dart';
+import 'package:kawalo_mobile/features/ptt/ptt_module.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockApiClient extends Mock implements ApiClient {}
@@ -59,6 +60,7 @@ void main() {
           networkInfo: networkInfo,
           syncStorageService: syncStorage,
         ),
+        PttTranscriptModule(apiClient: apiClient, isar: isar),
       ];
 
       final wiped = [for (final m in modules) m.cacheWipeable.collectionName];

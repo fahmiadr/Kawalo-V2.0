@@ -7,6 +7,7 @@ import 'package:kawalo_mobile/features/ptt/data/models/ptt_event_dto.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
+import 'package:kawalo_mobile/features/ptt/domain/value_objects/ptt_transcript.dart';
 
 class PttRepositoryImpl implements PttRepository {
   PttRepositoryImpl({required this.dataSource});
@@ -149,5 +150,14 @@ class PttRepositoryImpl implements PttRepository {
     return dataSource.eventStream.where(
       (event) => event.eventType == 'authTokenRejected',
     );
+  }
+
+  @override
+  Stream<PttTranscript> watchTranscripts() {
+    return dataSource.eventStream
+        .where((event) => event.eventType == 'transcriptReady')
+        .map((event) => PttMapper.toTranscript(event.rawMap))
+        .where((transcript) => transcript != null)
+        .cast<PttTranscript>();
   }
 }

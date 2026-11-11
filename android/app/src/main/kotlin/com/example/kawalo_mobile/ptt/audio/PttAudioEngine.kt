@@ -52,6 +52,11 @@ class PttAudioEngine(private val context: Context) {
     // Callback for outbound 7-byte framed binary audio packets
     var onAudioPacketReady: ((ByteArray) -> Unit)? = null
 
+    // Raw PCM of each outbound frame, called on the audio thread before encoding; must return at once.
+    var onPcmFrame: ((ByteArray, Int) -> Unit)? = null
+
+    val isRecordingActive: Boolean get() = isRecording.get()
+
     private var sequenceNumber = 0
     private var burstStartTimeMs = 0L
 
@@ -294,6 +299,7 @@ class PttAudioEngine(private val context: Context) {
                 while (isRecording.get()) {
                     val readBytes = audioRecord?.read(pcmBuffer, 0, BYTES_PER_FRAME) ?: -1
                     if (readBytes == BYTES_PER_FRAME) {
+                        onPcmFrame?.invoke(pcmBuffer, readBytes)
                         // Encode 640-byte PCM to Opus
                         val encodedOpus = encodePcmToOpus(pcmBuffer)
 

@@ -26,6 +26,7 @@ import androidx.core.app.NotificationCompat
 import com.example.kawalo_mobile.MainActivity
 import com.example.kawalo_mobile.R
 import com.example.kawalo_mobile.ptt.audio.PttAudioEngine
+import com.example.kawalo_mobile.ptt.audio.PttTranscriber
 import com.example.kawalo_mobile.ptt.bridge.PttPlatformChannelBridge
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -59,6 +60,11 @@ class PttForegroundService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var audioEngine: PttAudioEngine? = null
+    private var transcriber: PttTranscriber? = null
+
+    // The id sent in the last FLOOR_REQUEST; the server records the turn under it and the transcript upload
+    // addresses the recording by it.
+    @Volatile private var lastRequestId: String? = null
     private var soundPool: SoundPool? = null
     private var vibrator: Vibrator? = null
 
@@ -170,6 +176,13 @@ class PttForegroundService : Service() {
             }
             startPlayback()
         }
+        val engine = audioEngine
+        transcriber = PttTranscriber(
+            context = this,
+            isOwnMicActive = { engine?.isRecordingActive == true },
+            report = { PttPlatformChannelBridge.dispatchEvent("transcriptReady", it) },
+        )
+        audioEngine?.onPcmFrame = { frame, count -> transcriber?.onPcmFrame(frame, count) }
 
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
@@ -471,6 +484,8 @@ class PttForegroundService : Service() {
 
                     // Lazy microphone start with dynamic FGS type update
                     updateForegroundServiceType(true)
+                    val requestId = json.optString("requestId").ifEmpty { lastRequestId.orEmpty() }
+                    if (requestId.isNotEmpty()) transcriber?.beginTurn(requestId)
                     audioEngine?.startRecording()
 
                     PttPlatformChannelBridge.dispatchEvent(
@@ -511,6 +526,7 @@ class PttForegroundService : Service() {
                 "FLOOR_REVOKED" -> {
                     // Preempted by Admin or TOT expired: Mute microphone immediately
                     audioEngine?.stopRecording()
+                    transcriber?.endTurn()
                     updateForegroundServiceType(false)
 
                     // Play Warble alarm & triple 150ms vibration
@@ -579,6 +595,7 @@ class PttForegroundService : Service() {
 
     private fun handlePttTriggerPressed(requestId: String = "req_${System.currentTimeMillis()}") {
         isPttTriggerPressed = true
+        lastRequestId = requestId
         val ws = webSocket
         if (ws == null) {
             isPttTriggerPressed = false
@@ -619,6 +636,7 @@ class PttForegroundService : Service() {
     private fun handlePttTriggerReleased() {
         isPttTriggerPressed = false
         audioEngine?.stopRecording()
+        transcriber?.endTurn()
         updateForegroundServiceType(false)
         val releaseJson = JSONObject().apply {
             put("type", "FLOOR_RELEASED")
@@ -656,6 +674,7 @@ class PttForegroundService : Service() {
         super.onDestroy()
         disconnectWebSocket()
         audioEngine?.stopRecording()
+        transcriber?.release()
         audioEngine?.stopPlayback()
         soundPool?.release()
         mediaSession?.release()

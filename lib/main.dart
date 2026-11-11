@@ -40,7 +40,10 @@ import 'package:kawalo_mobile/features/information/information_module.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/operational/operational_module.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
+import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/services/ptt_transcript_uploader.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_session_bridge.dart';
 import 'package:kawalo_mobile/features/ptt/ptt_module.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
@@ -72,6 +75,9 @@ class _MyAppState extends State<MyApp> {
   late final OperationalModule _operationalModule;
   late final IncidentModule _incidentModule;
   late final ScheduleModule _scheduleModule;
+  late final PttTranscriptModule _pttTranscriptModule;
+  late final PttRepository _pttRepository;
+  late final PttTranscriptUploader _pttTranscriptUploader;
   late final GroupRepository _groupRepository;
   late final AuthBloc _authBloc;
   late final UserSessionCubit _userSessionCubit;
@@ -148,6 +154,12 @@ class _MyAppState extends State<MyApp> {
       syncStorageService: syncStorage,
     );
 
+    _pttTranscriptModule = PttTranscriptModule(
+      apiClient: _apiClient,
+      isar: isar,
+    );
+    _pttRepository = PttModule.createRepository();
+
     _cacheWiper = CacheWiper(
       wipeables: [
         for (final module in <CacheWipeableModule>[
@@ -156,6 +168,7 @@ class _MyAppState extends State<MyApp> {
           _attendanceModule,
           _operationalModule,
           _incidentModule,
+          _pttTranscriptModule,
         ])
           module.cacheWipeable,
       ],
@@ -204,6 +217,13 @@ class _MyAppState extends State<MyApp> {
     _apiClient.onConnectionFailed = () {
       _networkInfo.checkConnectivity();
     };
+
+    _pttTranscriptUploader = _pttTranscriptModule.createUploader(
+      pttRepository: _pttRepository,
+      connectivity: _networkInfo.onConnectivityChanged,
+      session: _userSessionCubit,
+    );
+    if (isPttSupportedPlatform) _pttTranscriptUploader.start();
   }
 
   @override
@@ -211,6 +231,7 @@ class _MyAppState extends State<MyApp> {
     _themeController.dispose();
     if (!_isAppLocked) {
       _authSubscription?.cancel();
+      unawaited(_pttTranscriptUploader.dispose());
       _userSessionCubit.close();
       _authBloc.close();
       _networkInfo.dispose();
@@ -279,6 +300,7 @@ class _MyAppState extends State<MyApp> {
           BlocProvider<PttCubit>(
             create: (context) => PttModule.createCubit(
               apiClient: _apiClient,
+              repository: _pttRepository,
               storageService: _storageService,
             ),
           ),
