@@ -39,3 +39,6 @@
 
 # Package Info Plus (installerStore & signingInfo)
 -keep class dev.fluttercommunity.plus.packageinfo.** { *; }
+
+# Flutter engine references Play Core deferred-component classes that this app does not bundle
+-dontwarn com.google.android.play.core.**
