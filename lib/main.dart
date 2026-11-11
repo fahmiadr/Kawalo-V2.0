@@ -6,6 +6,7 @@ import 'package:isar_community/isar.dart';
 import 'package:kawalo_mobile/bootstrap.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/config/environment.dart';
+import 'package:kawalo_mobile/core/cubit/theme_mode_cubit.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/auth_interceptor.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
@@ -76,6 +77,7 @@ class _MyAppState extends State<MyApp> {
   /// handlers) can navigate via `AppRouter(() => _navigatorKey.currentState!)`.
   final _navigatorKey = GlobalKey<NavigatorState>();
   final _routeObserver = AppRouteObserver();
+  final _themeController = M3EThemeController();
 
   late final bool _isAppLocked;
 
@@ -202,6 +204,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _themeController.dispose();
     if (!_isAppLocked) {
       _authSubscription?.cancel();
       _userSessionCubit.close();
@@ -243,6 +246,9 @@ class _MyAppState extends State<MyApp> {
           BlocProvider<ConnectivityCubit>(
             create: (context) => ConnectivityCubit(networkInfo: _networkInfo),
           ),
+          BlocProvider<ThemeModeCubit>(
+            create: (context) => ThemeModeCubit(_storageService)..load(),
+          ),
           BlocProvider<UserSessionCubit>.value(value: _userSessionCubit),
           BlocProvider<AuthBloc>.value(value: _authBloc),
           BlocProvider<GuestCubit>(
@@ -270,20 +276,54 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
         ],
-        child: _buildMaterialApp(home: const SplashScreen()),
+        child: BlocBuilder<ThemeModeCubit, ThemeMode>(
+          builder: (context, themeMode) => _buildMaterialApp(
+            home: const SplashScreen(),
+            themeMode: themeMode,
+          ),
+        ),
       ),
     );
   }
 
   /// Membangun root shell [M3EMaterialApp] dengan konfigurasi tema dan
   /// pelokalan terpusat (DRY).
-  Widget _buildMaterialApp({required Widget home}) {
+  Widget _buildMaterialApp({
+    required Widget home,
+    ThemeMode themeMode = ThemeMode.light,
+  }) {
     return M3EMaterialApp(
       title: EnvConfig.appName,
       data: AppTheme.m3eLight(),
       fontFamily: AppTheme.defaultFontFamily,
-      autoTheming: true,
+      // M3E only follows the OS brightness with autoTheming on; otherwise it
+      // uses initialTheme. The controller keeps its platform observer alive
+      // when the user switches back to "Otomatis" at runtime.
+      controller: _themeController,
+      autoTheming: themeMode == ThemeMode.system,
+      initialTheme: themeMode == ThemeMode.dark
+          ? Brightness.dark
+          : Brightness.light,
       dynamicColoring: false,
+      // M3EMaterialApp installs a material_ui theme, which flutter/material
+      // widgets (Scaffold, DefaultTextStyle, SegmentedButton) do not read; they
+      // fall back to the default light ThemeData. Bridge it so unstyled text
+      // and surfaces follow the resolved brightness.
+      appBuilder: (context, child) {
+        final brightness = _themeController.resolveBrightness(
+          MediaQuery.platformBrightnessOf(context),
+          autoTheming: themeMode == ThemeMode.system,
+          initialTheme: themeMode == ThemeMode.dark
+              ? Brightness.dark
+              : Brightness.light,
+        );
+        return Theme(
+          data: brightness == Brightness.dark
+              ? AppTheme.darkThemeData()
+              : AppTheme.lightThemeData(),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       localizationsDelegates: AppTheme.localizationsDelegates,
       supportedLocales: AppTheme.supportedLocales,
       localeResolutionCallback: (locale, supportedLocales) {

@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kawalo_mobile/core/cubit/theme_mode_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
@@ -60,12 +61,20 @@ void main() {
     authBloc = MockAuthBloc();
   });
 
-  Future<void> pump(WidgetTester tester, AuthState state) async {
+  Future<void> pump(
+    WidgetTester tester,
+    AuthState state, {
+    ThemeModeCubit? themeCubit,
+  }) async {
     when(() => authBloc.state).thenReturn(state);
     // AuthBloc lives above the Navigator, as in MyApp, so pushed routes see it.
     await tester.pumpWidget(
-      BlocProvider<AuthBloc>.value(
-        value: authBloc,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>.value(value: authBloc),
+          if (themeCubit != null)
+            BlocProvider<ThemeModeCubit>.value(value: themeCubit),
+        ],
         child: MaterialApp(
           theme: AppTheme.lightThemeData(),
           home: const Scaffold(body: MoreScreen()),
@@ -74,6 +83,38 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('theme selector defaults to Terang and switches the mode', (
+    tester,
+  ) async {
+    final cubit = ThemeModeCubit(null);
+    addTearDown(cubit.close);
+    await pump(
+      tester,
+      Authenticated(user: _user(groups: [_admin])),
+      themeCubit: cubit,
+    );
+
+    expect(find.text('Otomatis'), findsOneWidget);
+    expect(find.text('Terang'), findsOneWidget);
+    expect(cubit.state, ThemeMode.light);
+
+    await tester.tap(find.text('Gelap'));
+    await tester.pumpAndSettle();
+    expect(cubit.state, ThemeMode.dark);
+
+    await tester.tap(find.text('Otomatis'));
+    await tester.pumpAndSettle();
+    expect(cubit.state, ThemeMode.system);
+  });
+
+  testWidgets('hides the theme selector without a ThemeModeCubit', (
+    tester,
+  ) async {
+    await pump(tester, Authenticated(user: _user(groups: [_admin])));
+
+    expect(find.text('Gelap'), findsNothing);
+  });
 
   testWidgets('renders profile, role, active group and app version', (
     tester,
@@ -86,6 +127,38 @@ void main() {
     expect(find.text('PT Kawalo Security'), findsOneWidget);
     expect(find.text('AZ'), findsOneWidget);
     expect(find.text('Versi 1.2.3 (45)'), findsOneWidget);
+  });
+
+  testWidgets('Grup aktif text follows the dark color scheme', (tester) async {
+    when(
+      () => authBloc.state,
+    ).thenReturn(Authenticated(user: _user(groups: [_admin])));
+    // The Flutter Theme is not dark under M3EMaterialApp, so the text must
+    // carry its own color instead of inheriting DefaultTextStyle.
+    await tester.pumpWidget(
+      BlocProvider<AuthBloc>.value(
+        value: authBloc,
+        child: M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          initialTheme: Brightness.dark,
+          dynamicColoring: false,
+          home: const Scaffold(body: MoreScreen()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scheme = AppTheme.of(
+      tester.element(find.byType(MoreScreen)),
+    ).colorScheme;
+    expect(scheme.brightness, Brightness.dark);
+
+    Color? colorOf(String text) {
+      return tester.widget<Text>(find.text(text)).style?.color;
+    }
+
+    expect(colorOf('Grup aktif'), scheme.onSurfaceVariant);
+    expect(colorOf('PT Kawalo Security'), scheme.onSurface);
   });
 
   testWidgets('hides Ganti Grup when the user has a single group', (

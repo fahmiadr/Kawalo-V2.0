@@ -19,6 +19,7 @@ class SecureStorageService {
   static const String _onboardingCompletedKey = 'ONBOARDING_COMPLETED';
   static const String _jwksCacheKey = 'JWKS_CACHE';
   static const String _lastEmailKey = 'LAST_LOGGED_IN_EMAIL';
+  static const String _themeModeKey = 'THEME_MODE';
 
   Future<void> saveJwksCache(String jwksJson) async {
     await _storage.write(key: _jwksCacheKey, value: jwksJson);
@@ -27,6 +28,12 @@ class SecureStorageService {
   Future<String?> getJwksCache() => _storage.read(key: _jwksCacheKey);
 
   Future<void> clearJwksCache() => _storage.delete(key: _jwksCacheKey);
+
+  /// Device preference, not session data: [clearAuthSession] must not touch it.
+  Future<void> saveThemeMode(String mode) =>
+      _storage.write(key: _themeModeKey, value: mode);
+
+  Future<String?> getThemeMode() => _storage.read(key: _themeModeKey);
 
   Future<void> saveLastEmail(String email) async {
     await _storage.write(key: _lastEmailKey, value: email.trim());

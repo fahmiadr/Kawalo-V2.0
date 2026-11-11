@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
+import 'package:kawalo_mobile/core/cubit/theme_mode_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -151,8 +152,27 @@ class _MoreBody extends StatelessWidget {
                   ),
                 ),
                 AppSpacing.vGap25,
-                Text(groupName, style: typeScale.bodyLarge),
+                Text(
+                  groupName,
+                  style: typeScale.bodyLarge.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
               ],
+              AppSpacing.vGap200,
+              const AppDivider(),
+              AppSpacing.vGapSm,
+            ],
+            if (context.read<ThemeModeCubit?>() != null) ...[
+              AppSpacing.vGapSm,
+              Text(
+                'Tampilan',
+                style: typeScale.labelMedium.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              AppSpacing.vGapSm,
+              const _ThemeModeSelector(),
               AppSpacing.vGap200,
               const AppDivider(),
               AppSpacing.vGapSm,
@@ -193,6 +213,30 @@ class _MoreBody extends StatelessWidget {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeModeSelector extends StatelessWidget {
+  const _ThemeModeSelector();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ThemeModeCubit, ThemeMode>(
+      builder: (context, mode) => SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<ThemeMode>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: ThemeMode.system, label: Text('Otomatis')),
+            ButtonSegment(value: ThemeMode.light, label: Text('Terang')),
+            ButtonSegment(value: ThemeMode.dark, label: Text('Gelap')),
+          ],
+          selected: {mode},
+          onSelectionChanged: (selection) =>
+              unawaited(context.read<ThemeModeCubit>().select(selection.first)),
         ),
       ),
     );
