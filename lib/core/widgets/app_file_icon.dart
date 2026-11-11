@@ -48,7 +48,7 @@ class AppFileIcon extends StatelessWidget {
       case 'rar':
       case '7z':
       case 'tar':
-        return const Color(0xFF7B1FA2); // Archive Violet
+        return const Color(0xFF6D4C41); // Archive Brown
       case 'jpg':
       case 'jpeg':
       case 'png':
