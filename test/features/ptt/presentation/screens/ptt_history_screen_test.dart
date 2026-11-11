@@ -105,6 +105,14 @@ void main() {
     expect(find.text('Kemarin'), findsOneWidget);
   });
 
+  testWidgets('a GUARD with allowAdmin still sees no delete button', (
+    tester,
+  ) async {
+    await pump(tester, loaded(), user: session(allowAdmin: true));
+
+    expect(find.text('Hapus'), findsNothing);
+  });
+
   testWidgets('admins see a delete button per recording', (tester) async {
     await pump(tester, loaded(), user: session(admin: true));
 

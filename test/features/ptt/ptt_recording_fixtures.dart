@@ -18,15 +18,19 @@ PttRecordingEntity recording(
   sizeBytes: 24000,
 );
 
+/// [admin] is the ADMIN role (with the flag). [role] and [allowAdmin]
+/// override them, e.g. a GUARD that still carries `allowAdmin`.
 AuthSessionEntity session({
   bool admin = false,
   String email = 'admin@kawalo.id',
+  String? role,
+  bool? allowAdmin,
 }) => AuthSessionEntity(
   userId: 'usr_me',
   email: email,
   name: 'Saya',
-  allowAdmin: admin,
+  allowAdmin: allowAdmin ?? admin,
   allowPatrol: false,
   allowMonPatrol: false,
-  role: admin ? 'ADMIN' : 'GUARD',
+  role: role ?? (admin ? 'ADMIN' : 'GUARD'),
 );

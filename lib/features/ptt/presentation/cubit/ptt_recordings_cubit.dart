@@ -95,11 +95,12 @@ class PttRecordingsCubit extends Cubit<PttRecordingsState> {
     );
   }
 
-  /// Deletes [id] for the whole group. The server only allows administrators
-  /// (`allow_admin`); the check here keeps a non-admin from even trying.
+  /// Deletes [id] for the whole group. The server only allows the ADMIN and
+  /// SUPER_ADMIN roles (not the `allow_admin` flag, which some guards carry);
+  /// the check here keeps anyone else from even trying.
   /// Returns whether the recording was deleted.
   Future<bool> delete(String id, {required AuthSessionEntity? session}) async {
-    if (session == null || !session.allowAdmin) {
+    if (session == null || !session.isAdminRole) {
       emit(
         state.copyWith(
           notice: 'Hanya administrator yang dapat menghapus rekaman.',

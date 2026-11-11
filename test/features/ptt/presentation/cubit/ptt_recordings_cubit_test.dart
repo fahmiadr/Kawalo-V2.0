@@ -182,6 +182,33 @@ void main() {
       verifyNever(() => repository.deleteRecording(any()));
     });
 
+    test(
+      'a GUARD carrying allowAdmin is refused; SUPER_ADMIN may delete',
+      () async {
+        stubPage(PttRecordingPage(items: [recording('a')]));
+        when(
+          () => repository.deleteRecording('a'),
+        ).thenAnswer((_) async => const Right(null));
+        final cubit = build();
+        await cubit.load();
+
+        final guard = await cubit.delete(
+          'a',
+          session: session(allowAdmin: true),
+        );
+        expect(guard, isFalse);
+        expect(cubit.state.items, hasLength(1));
+        verifyNever(() => repository.deleteRecording(any()));
+
+        final superAdmin = await cubit.delete(
+          'a',
+          session: session(role: 'super_admin'),
+        );
+        expect(superAdmin, isTrue);
+        expect(cubit.state.items, isEmpty);
+      },
+    );
+
     test('a server failure keeps the recording and says why', () async {
       stubPage(PttRecordingPage(items: [recording('a')]));
       when(

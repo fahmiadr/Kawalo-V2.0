@@ -40,6 +40,13 @@ class AuthSessionEntity extends Equatable {
   /// Izin monitoring pelaksanaan patroli.
   final bool allowMonPatrol;
 
+  /// Role-based admin check. `allowAdmin` is a permission flag that some GUARD
+  /// accounts also carry, so it must not gate role-only features.
+  bool get isAdminRole {
+    final value = role?.toUpperCase();
+    return value == 'ADMIN' || value == 'SUPER_ADMIN';
+  }
+
   @override
   List<Object?> get props => [
     userId,

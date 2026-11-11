@@ -162,7 +162,7 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
 
   Widget _buildList(PttRecordingsState state, AuthSessionEntity? session) {
     final rows = _rowsFor(state.items);
-    final canDelete = session?.allowAdmin ?? false;
+    final canDelete = session?.isAdminRole ?? false;
 
     // Reversed so the newest turn sits at the bottom and "older" is reached by
     // scrolling up; index 0 is the newest.
