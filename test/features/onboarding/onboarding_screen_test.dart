@@ -17,7 +17,38 @@ void main() {
           find.text('Selamat Datang di Aplikasi Kawalo 2.0 Terbaru'),
           findsOneWidget,
         );
-        expect(find.text('Mulai sekarang'), findsOneWidget);
+        expect(find.text('Selanjutnya'), findsOneWidget);
+        expect(find.text('Mulai Sekarang'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Selanjutnya pindah slide dan Mulai Sekarang hanya di slide terakhir',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
+        await tester.pump();
+
+        const titles = [
+          'Selamat Datang di Aplikasi Kawalo 2.0 Terbaru',
+          'Pantau Lapangan Secara Langsung',
+          'Absensi & Kehadiran Personil',
+          'Kendali Operasional di Tangan Anda',
+          'Laporan Selesai dalam Satu Klik',
+        ];
+
+        for (var i = 0; i < titles.length - 1; i++) {
+          expect(find.text(titles[i]), findsOneWidget);
+          expect(find.text('Selanjutnya'), findsOneWidget);
+          expect(find.text('Mulai Sekarang'), findsNothing);
+          await tester.tap(find.text('Selanjutnya'));
+          // Progress bar beranimasi terus, jadi pumpAndSettle tidak akan selesai.
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 600));
+        }
+
+        expect(find.text(titles.last), findsOneWidget);
+        expect(find.text('Mulai Sekarang'), findsOneWidget);
+        expect(find.text('Selanjutnya'), findsNothing);
       },
     );
 

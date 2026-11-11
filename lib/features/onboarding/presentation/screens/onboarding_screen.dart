@@ -280,6 +280,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     }
   }
 
+  void _goToNextPage() {
+    _pageController.nextPage(
+      duration: AppMotion.isReducedMotion(context)
+          ? Duration.zero
+          : _pageTransitionDuration,
+      curve: AppMotion.emphasized,
+    );
+  }
+
   void _navigateToNextScreen(BuildContext context) {
     _animController.stop();
     unawaited(AppRouter.of(context).toLogin());
@@ -452,17 +461,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   /// Tombol utama untuk melanjutkan navigasi
   Widget _buildActionButton(BuildContext context) {
+    final isLast = _currentStep == _items.length - 1;
+    final label = isLast ? 'Mulai Sekarang' : 'Selanjutnya';
     return SizedBox(
       width: double.infinity,
       child: AppButton(
         shape: AppButtonShape.square,
         size: AppButtonSize.md,
-        semanticLabel: 'Mulai sekarang',
-        onPressed: () => _navigateToNextScreen(context),
-        child: Text(
-          'Mulai sekarang',
-          style: AppTheme.of(context).typeScale.titleMedium,
-        ),
+        semanticLabel: label,
+        onPressed: isLast
+            ? () => _navigateToNextScreen(context)
+            : _goToNextPage,
+        child: Text(label, style: AppTheme.of(context).typeScale.titleMedium),
       ),
     );
   }
