@@ -35,6 +35,7 @@ dependencies:
   isar_community_flutter_libs: ^3.3.2
   jailbreak_root_detection: ^1.2.3
   json_annotation: ^4.12.0
+  just_audio: ^0.10.6
   latlong2: ^0.10.1
   material_3_expressive: ^1.1.2
   material_ui: ^1.2.0
