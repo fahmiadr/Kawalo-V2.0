@@ -15,7 +15,7 @@ void main() {
     );
   }
 
-  group('AppShortcutCard & AppAddShortcutCard Tests', () {
+  group('AppShortcutCard Tests', () {
     testWidgets('renders shortcut card with title, subtitle, and badge', (
       tester,
     ) async {
@@ -55,23 +55,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Data Tamu'), findsOneWidget);
-    });
-
-    testWidgets('renders AppAddShortcutCard and handles tap', (tester) async {
-      var addTapped = false;
-
-      await tester.pumpWidget(
-        buildTestWidget(AppAddShortcutCard(onPressed: () => addTapped = true)),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AppCard), findsOneWidget);
-      expect(find.text('Tambah Pintasan'), findsOneWidget);
-
-      await tester.tap(find.text('Tambah Pintasan'));
-      await tester.pumpAndSettle();
-
-      expect(addTapped, isTrue);
     });
 
     testWidgets('renders compact AppShortcutCard correctly', (tester) async {

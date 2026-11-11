@@ -10,22 +10,14 @@ import 'package:kawalo_mobile/features/home/presentation/widgets/home_shortcuts_
 import '../../../../helpers/mock_screen_cubits.dart';
 
 void main() {
-  Widget buildTestWidget({
-    VoidCallback? onEditPressed,
-    VoidCallback? onAddPressed,
-    VoidCallback? onLogoutPressed,
-  }) {
+  Widget buildTestWidget({VoidCallback? onLogoutPressed}) {
     return BlocProvider<GuestCubit>.value(
       value: createStubbedGuestCubit(),
       child: MaterialApp(
         theme: AppTheme.lightThemeData(),
         home: Scaffold(
           body: SingleChildScrollView(
-            child: HomeShortcutsSection(
-              onEditPressed: onEditPressed,
-              onAddPressed: onAddPressed,
-              onLogoutPressed: onLogoutPressed,
-            ),
+            child: HomeShortcutsSection(onLogoutPressed: onLogoutPressed),
           ),
         ),
       ),
@@ -40,6 +32,18 @@ void main() {
       expect(find.text('Pintasan'), findsOneWidget);
       expect(find.text('Logout'), findsOneWidget);
       expect(find.text('Keluar Akun'), findsOneWidget);
+    });
+
+    testWidgets('hides Data Patroli and the edit/add controls', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Data Patroli'), findsNothing);
+      expect(find.text('Edit'), findsNothing);
+      expect(find.textContaining('Tambah'), findsNothing);
+      // The remaining shortcuts are untouched.
+      expect(find.text('Data Tamu'), findsOneWidget);
+      expect(find.text('Aktifitas Operasional'), findsOneWidget);
     });
 
     testWidgets('tapping Logout opens confirmation dialog', (tester) async {

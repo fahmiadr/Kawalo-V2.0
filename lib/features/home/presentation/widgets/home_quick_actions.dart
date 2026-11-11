@@ -6,75 +6,28 @@ import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 
-/// Komponen aksi cepat utama ("Absensi" & "Post to Post Checkpoint").
+/// Komponen aksi cepat utama ("Absensi").
 ///
 /// Menggunakan [AppButton] bertipe [AppButtonColor.elevated] dengan
 /// bentuk stadium/pill dan ukuran proporsional sesuai desain Figma.
 class HomeQuickActions extends StatelessWidget {
   /// Membuat instance [HomeQuickActions].
-  const HomeQuickActions({
-    super.key,
-    this.onAbsensiPressed,
-    this.onCheckpointPressed,
-  });
+  const HomeQuickActions({super.key, this.onAbsensiPressed});
 
   /// Callback saat tombol "Absensi" ditekan.
   final VoidCallback? onAbsensiPressed;
-
-  /// Callback saat tombol "Post to Post Checkpoint" ditekan.
-  final VoidCallback? onCheckpointPressed;
 
   void _defaultOnAbsensi(BuildContext context) {
     AppSnackbar.show(context, message: 'Membuka pemindai Absensi...');
   }
 
-  void _defaultOnCheckpoint(BuildContext context) {
-    AppSnackbar.show(
-      context,
-      message: 'Membuka rute Post to Post Checkpoint...',
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 320;
-
-          final absensiBtn = _QuickActionButton(
-            iconPath: KawaloColorVectors.phoneLocation1,
-            label: 'Absensi',
-            semanticLabel: 'Absensi',
-            onPressed: onAbsensiPressed ?? () => _defaultOnAbsensi(context),
-          );
-
-          final checkpointBtn = _QuickActionButton(
-            iconPath: KawaloColorVectors.patrol1,
-            label: 'Post to Post Checkpoint',
-            semanticLabel: 'Post to Post Checkpoint',
-            onPressed:
-                onCheckpointPressed ?? () => _defaultOnCheckpoint(context),
-          );
-
-          if (isNarrow) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [absensiBtn, AppSpacing.vGapSm, checkpointBtn],
-            );
-          }
-
-          return Row(
-            children: [
-              Expanded(child: absensiBtn),
-              AppSpacing.hGap150,
-              Expanded(child: checkpointBtn),
-            ],
-          );
-        },
-      ),
+    return _QuickActionButton(
+      iconPath: KawaloColorVectors.phoneLocation1,
+      label: 'Absensi',
+      semanticLabel: 'Absensi',
+      onPressed: onAbsensiPressed ?? () => _defaultOnAbsensi(context),
     );
   }
 }

@@ -12,7 +12,6 @@ import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
-import 'package:kawalo_mobile/features/home/presentation/widgets/home_management_section.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_ptt_floating_card.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_quick_actions.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_recent_guests_section.dart';
@@ -31,35 +30,19 @@ class HomeDashboardView extends StatefulWidget {
   const HomeDashboardView({
     super.key,
     this.shortcuts,
-    this.managementItems,
     this.onRefresh,
     this.onAbsensiPressed,
-    this.onCheckpointPressed,
-    this.onEditShortcutsPressed,
-    this.onEditManagementPressed,
     this.onLogoutPressed,
   });
 
   /// Data kustom daftar pintasan (opsional).
   final List<AppShortcutItem>? shortcuts;
 
-  /// Data kustom daftar modul manajemen (opsional).
-  final List<AppShortcutItem>? managementItems;
-
   /// Menggantikan refresh bawaan (guest + insiden) bila diberikan.
   final Future<void> Function()? onRefresh;
 
   /// Callback saat tombol "Absensi" ditekan.
   final VoidCallback? onAbsensiPressed;
-
-  /// Callback saat tombol "Post to Post Checkpoint" ditekan.
-  final VoidCallback? onCheckpointPressed;
-
-  /// Callback saat tombol "Edit" pintasan ditekan.
-  final VoidCallback? onEditShortcutsPressed;
-
-  /// Callback saat tombol "Edit" manajemen ditekan.
-  final VoidCallback? onEditManagementPressed;
 
   /// Callback saat aksi "Logout" ditekan (opsional).
   final VoidCallback? onLogoutPressed;
@@ -168,10 +151,7 @@ class _HomeDashboardViewState extends State<HomeDashboardView> {
                 AppSpacing.vGap200,
 
                 // ── Bagian 2: Tombol Aksi Utama ─────────────────
-                HomeQuickActions(
-                  onAbsensiPressed: widget.onAbsensiPressed,
-                  onCheckpointPressed: widget.onCheckpointPressed,
-                ),
+                HomeQuickActions(onAbsensiPressed: widget.onAbsensiPressed),
 
                 AppSpacing.vGap300,
 
@@ -183,16 +163,7 @@ class _HomeDashboardViewState extends State<HomeDashboardView> {
                 // ── Bagian 3: Bagian Pintasan (Shortcuts) ────────
                 HomeShortcutsSection(
                   shortcuts: widget.shortcuts,
-                  onEditPressed: widget.onEditShortcutsPressed,
                   onLogoutPressed: widget.onLogoutPressed,
-                ),
-
-                AppSpacing.vGap300,
-
-                // ── Bagian 4: Bagian Manajemen ───────────────────
-                HomeManagementSection(
-                  items: widget.managementItems,
-                  onEditPressed: widget.onEditManagementPressed,
                 ),
 
                 // Spacing bawah ekstra agar konten tidak tertutup

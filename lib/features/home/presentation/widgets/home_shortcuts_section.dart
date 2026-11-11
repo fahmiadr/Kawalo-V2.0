@@ -6,7 +6,6 @@ import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
@@ -28,29 +27,13 @@ export 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_ca
 /// dan daftar kartu pintasan.
 class HomeShortcutsSection extends StatelessWidget {
   /// Membuat instance [HomeShortcutsSection].
-  const HomeShortcutsSection({
-    super.key,
-    this.shortcuts,
-    this.onEditPressed,
-    this.onAddPressed,
-    this.onLogoutPressed,
-    this.showAddCard = true,
-  });
+  const HomeShortcutsSection({super.key, this.shortcuts, this.onLogoutPressed});
 
   /// Daftar item pintasan kustom (opsional).
   final List<AppShortcutItem>? shortcuts;
 
-  /// Callback saat tombol "Edit" ditekan.
-  final VoidCallback? onEditPressed;
-
-  /// Callback saat kartu "Tambah Pintasan" ditekan.
-  final VoidCallback? onAddPressed;
-
   /// Callback saat aksi "Logout" ditekan (opsional).
   final VoidCallback? onLogoutPressed;
-
-  /// Menentukan apakah kartu "Tambah Pintasan" ditampilkan di akhir grid.
-  final bool showAddCard;
 
   static List<AppShortcutItem> _getDefaultShortcuts(
     BuildContext context, {
@@ -80,14 +63,6 @@ class HomeShortcutsSection extends StatelessWidget {
         iconPath: KawaloColorVectors.checklist2,
         onTap: () {
           Navigator.of(context).push(AttendanceScreen.route());
-        },
-      ),
-      AppShortcutItem(
-        title: 'Data Patroli',
-        subtitle: 'Post Checkpoint',
-        iconPath: KawaloColorVectors.location2,
-        onTap: () {
-          AppSnackbar.show(context, message: 'Membuka Data Patroli...');
         },
       ),
       AppShortcutItem(
@@ -154,26 +129,13 @@ class HomeShortcutsSection extends StatelessWidget {
             _ => null,
           },
         );
-    final totalCount = showAddCard ? items.length + 1 : items.length;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // ── Header Bagian Pintasan ─────────────────────────────────────────
-        AppTextLink(
-          title: 'Pintasan',
-          linkText: 'Edit',
-          semanticLabel: 'Edit susunan pintasan',
-          onPressed:
-              onEditPressed ??
-              () {
-                AppSnackbar.show(
-                  context,
-                  message: 'Fitur pengaturan pintasan segera hadir.',
-                );
-              },
-        ),
+        const AppTextLink(title: 'Pintasan'),
 
         AppSpacing.vGapSm,
 
@@ -190,28 +152,15 @@ class HomeShortcutsSection extends StatelessWidget {
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: totalCount,
+              itemCount: items.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: AppSpacing.space150,
                 mainAxisSpacing: AppSpacing.space200,
                 mainAxisExtent: mainAxisExtent,
               ),
-              itemBuilder: (context, index) {
-                if (index < items.length) {
-                  return AppShortcutCard(item: items[index]);
-                }
-                return AppAddShortcutCard(
-                  onPressed:
-                      onAddPressed ??
-                      () {
-                        AppSnackbar.show(
-                          context,
-                          message: 'Fitur Tambah Pintasan segera hadir.',
-                        );
-                      },
-                );
-              },
+              itemBuilder: (context, index) =>
+                  AppShortcutCard(item: items[index]),
             );
           },
         ),

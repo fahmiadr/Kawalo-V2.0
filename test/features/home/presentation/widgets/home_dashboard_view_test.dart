@@ -9,7 +9,6 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_dashboard_view.dart';
-import 'package:kawalo_mobile/features/home/presentation/widgets/home_management_section.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_quick_actions.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_recent_guests_card.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_shortcuts_section.dart';
@@ -49,21 +48,11 @@ IncidentEntity _incident(String id, IncidentStatus status) => IncidentEntity(
 );
 
 void main() {
-  Widget buildTestWidget({
-    VoidCallback? onAbsensiPressed,
-    VoidCallback? onCheckpointPressed,
-    VoidCallback? onEditShortcutsPressed,
-    VoidCallback? onEditManagementPressed,
-  }) {
+  Widget buildTestWidget({VoidCallback? onAbsensiPressed}) {
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
       home: Scaffold(
-        body: HomeDashboardView(
-          onAbsensiPressed: onAbsensiPressed,
-          onCheckpointPressed: onCheckpointPressed,
-          onEditShortcutsPressed: onEditShortcutsPressed,
-          onEditManagementPressed: onEditManagementPressed,
-        ),
+        body: HomeDashboardView(onAbsensiPressed: onAbsensiPressed),
       ),
     );
   }
@@ -81,71 +70,39 @@ void main() {
       // Memastikan HomeQuickActions tampil
       expect(find.byType(HomeQuickActions), findsOneWidget);
       expect(find.text('Absensi'), findsOneWidget);
-      expect(find.text('Post to Post Checkpoint'), findsOneWidget);
 
       // Memastikan HomeShortcutsSection tampil
       expect(find.byType(HomeShortcutsSection), findsOneWidget);
       expect(find.text('Pintasan'), findsOneWidget);
 
-      // Memastikan HomeManagementSection tampil
-      expect(find.byType(HomeManagementSection), findsOneWidget);
-      expect(find.text('Manajemen'), findsOneWidget);
-
-      expect(find.text('Edit'), findsNWidgets(2));
       expect(find.byType(AppShortcutCard), findsWidgets);
     });
 
-    testWidgets('triggers callbacks for quick actions', (tester) async {
+    testWidgets('hides features whose API does not exist yet', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manajemen'), findsNothing);
+      expect(find.text('Laporan Bulanan'), findsNothing);
+      expect(find.text('Data Patroli'), findsNothing);
+      expect(find.text('Post to Post Checkpoint'), findsNothing);
+      expect(find.text('Edit'), findsNothing);
+      expect(find.textContaining('Tambah'), findsNothing);
+    });
+
+    testWidgets('triggers callback for the Absensi quick action', (
+      tester,
+    ) async {
       var absensiTapped = false;
-      var checkpointTapped = false;
 
       await tester.pumpWidget(
-        buildTestWidget(
-          onAbsensiPressed: () => absensiTapped = true,
-          onCheckpointPressed: () => checkpointTapped = true,
-        ),
+        buildTestWidget(onAbsensiPressed: () => absensiTapped = true),
       );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Absensi'));
       await tester.pumpAndSettle();
       expect(absensiTapped, isTrue);
-
-      await tester.tap(find.text('Post to Post Checkpoint'));
-      await tester.pumpAndSettle();
-      expect(checkpointTapped, isTrue);
-    });
-
-    testWidgets('triggers edit callback on shortcuts and management sections', (
-      tester,
-    ) async {
-      var editShortcutsTapped = false;
-      var editManagementTapped = false;
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          onEditShortcutsPressed: () => editShortcutsTapped = true,
-          onEditManagementPressed: () => editManagementTapped = true,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final shortcutEdit = find.descendant(
-        of: find.byType(HomeShortcutsSection),
-        matching: find.text('Edit'),
-      );
-      await tester.tap(shortcutEdit);
-      await tester.pumpAndSettle();
-      expect(editShortcutsTapped, isTrue);
-
-      final managementEdit = find.descendant(
-        of: find.byType(HomeManagementSection),
-        matching: find.text('Edit'),
-      );
-      await tester.ensureVisible(managementEdit);
-      await tester.tap(managementEdit);
-      await tester.pumpAndSettle();
-      expect(editManagementTapped, isTrue);
     });
   });
 

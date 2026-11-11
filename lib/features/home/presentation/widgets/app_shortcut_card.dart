@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 
@@ -166,68 +165,6 @@ class AppShortcutCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Kartu khusus aksi tambah item sesuai rancangan Figma Card2.
-class AppAddShortcutCard extends StatelessWidget {
-  /// Membuat instance [AppAddShortcutCard].
-  const AppAddShortcutCard({
-    super.key,
-    this.label = 'Tambah Pintasan',
-    this.onPressed,
-    this.semanticLabel,
-  });
-
-  /// Teks label kartu aksi tambah (misal: "Tambah Pintasan" / "Tambah Manajemen").
-  final String label;
-
-  /// Callback saat kartu ditekan.
-  final VoidCallback? onPressed;
-
-  /// Label semantik untuk aksesibilitas.
-  final String? semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final emphasizedTypeScale = theme.typography.emphasized;
-    final effectiveSemanticLabel = semanticLabel ?? label;
-
-    return AppCard(
-      variant: AppCardVariant.filled,
-      color: colorScheme.secondaryContainer,
-      onPressed: onPressed,
-      semanticLabel: effectiveSemanticLabel,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space150,
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppSvgIcon(
-              KawaloVectors.addCircleFilled,
-              size: 40,
-              color: colorScheme.onSecondaryContainer,
-            ),
-            AppSpacing.vGapSm,
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: emphasizedTypeScale.titleMedium.copyWith(
-                color: colorScheme.onSecondaryContainer,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
       ),
     );
   }
