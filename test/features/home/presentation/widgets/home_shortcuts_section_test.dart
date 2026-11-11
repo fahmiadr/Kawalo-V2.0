@@ -1,13 +1,21 @@
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
+import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_cubit.dart';
+import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_state.dart';
+import 'package:kawalo_mobile/features/group/presentation/screens/personnel_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_shortcuts_section.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../../helpers/mock_screen_cubits.dart';
+
+class _MockPersonnelCubit extends MockCubit<PersonnelState>
+    implements PersonnelCubit {}
 
 void main() {
   Widget buildTestWidget({VoidCallback? onLogoutPressed}) {
@@ -122,6 +130,32 @@ void main() {
       expect(logoutTapped, isTrue);
       // Dialog tidak muncul karena callback kustom yang menangani
       expect(find.byType(AppConfirmationDialog), findsNothing);
+    });
+
+    testWidgets('shows the Personil shortcut for every role and opens it', (
+      tester,
+    ) async {
+      final personnelCubit = _MockPersonnelCubit();
+      when(() => personnelCubit.state).thenReturn(const PersonnelInitial());
+      when(
+        () => personnelCubit.fetch(silent: any(named: 'silent')),
+      ).thenAnswer((_) async => true);
+
+      await tester.pumpWidget(
+        BlocProvider<PersonnelCubit>.value(
+          value: personnelCubit,
+          child: buildTestWidget(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Anggota Grup'), findsOneWidget);
+      final card = find.text('Personil');
+      await tester.ensureVisible(card);
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PersonnelScreen), findsOneWidget);
     });
 
     testWidgets('tapping Data Tamu navigates to GuestScreen', (tester) async {

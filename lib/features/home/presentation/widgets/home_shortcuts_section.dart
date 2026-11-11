@@ -10,6 +10,7 @@ import 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
+import 'package:kawalo_mobile/features/group/presentation/screens/personnel_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
@@ -79,6 +80,14 @@ class HomeShortcutsSection extends StatelessWidget {
         iconPath: KawaloColorVectors.incident1,
         onTap: () {
           Navigator.of(context).push(IncidentScreen.route());
+        },
+      ),
+      AppShortcutItem(
+        title: 'Personil',
+        subtitle: 'Anggota Grup',
+        iconPath: KawaloColorVectors.group1,
+        onTap: () {
+          Navigator.of(context).push(PersonnelScreen.route());
         },
       ),
       AppShortcutItem(
