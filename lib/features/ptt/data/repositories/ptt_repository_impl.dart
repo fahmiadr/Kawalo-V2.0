@@ -143,4 +143,11 @@ class PttRepositoryImpl implements PttRepository {
         .where((event) => event.eventType == 'transmissionStateChanged')
         .map((event) => Map<String, dynamic>.from(event.rawMap));
   }
+
+  @override
+  Stream<void> watchAuthRejected() {
+    return dataSource.eventStream.where(
+      (event) => event.eventType == 'authTokenRejected',
+    );
+  }
 }

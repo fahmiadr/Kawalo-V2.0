@@ -44,4 +44,8 @@ abstract class PttRepository {
 
   /// Aliran event transmisi mentah (Granted, Denied, Revoked).
   Stream<Map<String, dynamic>> watchTransmissionEvents();
+
+  /// Emits when the native service's reconnect was refused with HTTP 401, i.e.
+  /// the token it holds expired while the socket was down.
+  Stream<void> watchAuthRejected();
 }

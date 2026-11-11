@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/foundation.dart';
@@ -35,6 +36,7 @@ void main() {
   late StreamController<PttConnectionStatus> connectionController;
   late StreamController<int> memberCountController;
   late StreamController<Map<String, dynamic>> transmissionController;
+  late StreamController<void> authRejectedController;
 
   setUpAll(() {
     registerFallbackValue(
@@ -56,6 +58,7 @@ void main() {
     connectionController = StreamController<PttConnectionStatus>.broadcast();
     memberCountController = StreamController<int>.broadcast();
     transmissionController = StreamController<Map<String, dynamic>>.broadcast();
+    authRejectedController = StreamController<void>.broadcast();
 
     when(
       () => mockRepository.watchFloorState(),
@@ -70,6 +73,9 @@ void main() {
       () => mockRepository.watchTransmissionEvents(),
     ).thenAnswer((_) => transmissionController.stream);
     when(
+      () => mockRepository.watchAuthRejected(),
+    ).thenAnswer((_) => authRejectedController.stream);
+    when(
       () => mockRepository.hasRecordAudioPermission(),
     ).thenAnswer((_) async => true);
     when(
@@ -82,11 +88,13 @@ void main() {
     connectionController.close();
     memberCountController.close();
     transmissionController.close();
+    authRejectedController.close();
   });
 
   PttCubit createCubit({
     SecureStorageService? storage,
     String baseUrl = 'https://api.kawalo.id',
+    Future<void> Function()? refresh,
   }) {
     return PttCubit(
       joinChannelUseCase: mockJoinChannel,
@@ -94,6 +102,7 @@ void main() {
       repository: mockRepository,
       storageService: storage,
       apiBaseUrl: () => baseUrl,
+      refreshAccessToken: refresh,
     );
   }
 
@@ -548,6 +557,103 @@ void main() {
       await expectLater(cubit.joinForGroup('grp_01'), completes);
 
       verifyNever(() => mockJoinChannel(any()));
+      await cubit.close();
+    });
+  });
+
+  group('PttCubit token freshness', () {
+    late MockSecureStorageService storage;
+
+    setUp(() {
+      storage = MockSecureStorageService();
+      when(
+        () => mockJoinChannel(any()),
+      ).thenAnswer((_) async => const Right(null));
+    });
+
+    String jwt({required Duration validFor}) {
+      String part(Map<String, Object> m) =>
+          base64Url.encode(utf8.encode(jsonEncode(m))).replaceAll('=', '');
+      final exp = DateTime.now().add(validFor).millisecondsSinceEpoch ~/ 1000;
+      return '${part({'alg': 'none'})}.${part({'exp': exp})}.sig';
+    }
+
+    test('an expired stored token is refreshed before joining', () async {
+      final fresh = jwt(validFor: const Duration(minutes: 15));
+      final tokens = [jwt(validFor: const Duration(minutes: -5)), fresh];
+      when(storage.getAccessToken).thenAnswer((_) async => tokens.removeAt(0));
+      var refreshed = 0;
+      final cubit = createCubit(
+        storage: storage,
+        refresh: () async => refreshed++,
+      );
+
+      await cubit.joinForGroup('grp_01');
+
+      expect(refreshed, 1);
+      final params =
+          verify(() => mockJoinChannel(captureAny())).captured.single
+              as JoinChannelParams;
+      expect(params.token, fresh);
+      await cubit.close();
+    });
+
+    test('a still valid token is not refreshed', () async {
+      when(
+        storage.getAccessToken,
+      ).thenAnswer((_) async => jwt(validFor: const Duration(minutes: 10)));
+      var refreshed = 0;
+      final cubit = createCubit(
+        storage: storage,
+        refresh: () async => refreshed++,
+      );
+
+      await cubit.joinForGroup('grp_01');
+
+      expect(refreshed, 0);
+      verify(() => mockJoinChannel(any())).called(1);
+      await cubit.close();
+    });
+
+    test('a failing refresh does not stop the join', () async {
+      when(
+        storage.getAccessToken,
+      ).thenAnswer((_) async => jwt(validFor: const Duration(minutes: -5)));
+      final cubit = createCubit(
+        storage: storage,
+        refresh: () async => throw StateError('offline'),
+      );
+
+      await cubit.joinForGroup('grp_01');
+
+      verify(() => mockJoinChannel(any())).called(1);
+      await cubit.close();
+    });
+
+    test(
+      'a native 401 refreshes the token, at most once per cooldown',
+      () async {
+        var refreshed = 0;
+        final cubit = createCubit(refresh: () async => refreshed++);
+
+        authRejectedController
+          ..add(null)
+          ..add(null)
+          ..add(null);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(refreshed, 1);
+        await cubit.close();
+      },
+    );
+
+    test('a native 401 without a refresh hook is ignored', () async {
+      final cubit = createCubit();
+
+      authRejectedController.add(null);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state, const PttInitial());
       await cubit.close();
     });
   });

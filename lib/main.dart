@@ -41,6 +41,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/operational/operational_module.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_session_bridge.dart';
 import 'package:kawalo_mobile/features/ptt/ptt_module.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:kawalo_mobile/features/schedule/schedule_module.dart';
@@ -282,10 +283,12 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
         ],
-        child: BlocBuilder<ThemeModeCubit, ThemeMode>(
-          builder: (context, themeMode) => _buildMaterialApp(
-            home: const SplashScreen(),
-            themeMode: themeMode,
+        child: PttSessionBridge(
+          child: BlocBuilder<ThemeModeCubit, ThemeMode>(
+            builder: (context, themeMode) => _buildMaterialApp(
+              home: const SplashScreen(),
+              themeMode: themeMode,
+            ),
           ),
         ),
       ),

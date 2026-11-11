@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
-import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
-import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -21,8 +19,6 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/screens/information_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/more_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart';
 
 /// Halaman shell navigasi utama aplikasi Kawalo.
 ///
@@ -46,18 +42,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _joinPttChannelIfAvailable();
-    });
-  }
-
-  void _joinPttChannelIfAvailable() {
-    if (!isPttSupportedPlatform) return;
-    try {
-      final groupUid = context.read<UserSessionCubit?>()?.state?.groupUid;
-      final pttCubit = context.read<PttCubit?>();
-      if (pttCubit != null) unawaited(pttCubit.joinForGroup(groupUid));
-    } on Object catch (_) {}
   }
 
   void _onDestinationSelected(int index) {
@@ -65,7 +49,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       setState(() {
         _currentIndex = index;
       });
-      _joinPttChannelIfAvailable();
     } else if (index == 1) {
       // Refresh data jika tab informasi ditekan kembali saat sudah berada
       // di tab informasi.
@@ -153,37 +136,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
     );
 
-    // `switch-group` changes the session's group; PttCubit leaves the channel
-    // of the old group before joining the new one.
-    final withGroupSync = context.read<UserSessionCubit?>() == null
-        ? scaffold
-        : BlocListener<UserSessionCubit, AuthSessionEntity?>(
-            listenWhen: (previous, current) =>
-                previous?.groupUid != current?.groupUid,
-            listener: (_, _) => _joinPttChannelIfAvailable(),
-            child: scaffold,
-          );
-
     if (!hasAuthBloc) {
-      return withGroupSync;
+      return scaffold;
     }
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is Authenticated) {
-          _joinPttChannelIfAvailable();
-        } else if (state is Unauthenticated) {
-          if (isPttSupportedPlatform) {
-            try {
-              unawaited(context.read<PttCubit?>()?.leaveChannel());
-            } on Object catch (_) {}
-          }
+        if (state is Unauthenticated) {
           unawaited(
             AppRouter.of(context).toLogin(sessionExpiredMessage: state.message),
           );
         }
       },
-      child: withGroupSync,
+      child: scaffold,
     );
   }
 }

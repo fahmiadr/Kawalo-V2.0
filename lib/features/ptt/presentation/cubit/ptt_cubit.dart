@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
+import 'package:kawalo_mobile/core/utils/jwt_utils.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_floor_state_entity.dart';
 import 'package:kawalo_mobile/features/ptt/domain/repositories/ptt_repository.dart';
@@ -19,6 +20,7 @@ class PttCubit extends Cubit<PttState> {
     required this.repository,
     this.storageService,
     this.apiBaseUrl,
+    this.refreshAccessToken,
   }) : super(const PttInitial()) {
     _initStreamSubscriptions();
   }
@@ -32,10 +34,20 @@ class PttCubit extends Cubit<PttState> {
   /// is created.
   final String Function()? apiBaseUrl;
 
+  /// Refreshes the stored access token (the `ApiClient` rotation hook then
+  /// pushes the new one to the native service).
+  final Future<void> Function()? refreshAccessToken;
+
+  /// Do not hammer the refresh endpoint when the server keeps rejecting a
+  /// freshly issued token (the native service retries every 2-15 s).
+  static const _refreshCooldown = Duration(seconds: 20);
+  DateTime? _lastRefreshAt;
+
   StreamSubscription<PttFloorStateEntity>? _floorSubscription;
   StreamSubscription<PttConnectionStatus>? _connectionSubscription;
   StreamSubscription<int>? _memberCountSubscription;
   StreamSubscription<Map<String, dynamic>>? _transmissionSubscription;
+  StreamSubscription<void>? _authRejectedSubscription;
 
   void _initStreamSubscriptions() {
     _floorSubscription = repository.watchFloorState().listen((floorState) {
@@ -160,6 +172,26 @@ class PttCubit extends Cubit<PttState> {
         );
       }
     });
+
+    _authRejectedSubscription = repository.watchAuthRejected().listen(
+      (_) => unawaited(_onAuthRejected()),
+    );
+  }
+
+  /// The native service reconnects on its own, but only knows the token it was
+  /// given. The access token is short-lived and is rotated only by API calls,
+  /// so after a long idle spell the reconnect is refused with 401 until Dart
+  /// refreshes it.
+  Future<void> _onAuthRejected() async {
+    final refresh = refreshAccessToken;
+    if (refresh == null) return;
+    final now = DateTime.now();
+    final last = _lastRefreshAt;
+    if (last != null && now.difference(last) < _refreshCooldown) return;
+    _lastRefreshAt = now;
+    try {
+      await refresh();
+    } on Object catch (_) {}
   }
 
   /// Bergabung ke saluran PTT grup dengan kredensial aktif.
@@ -217,7 +249,19 @@ class PttCubit extends Cubit<PttState> {
       }
       if (state is! PttInitial && state is! PttDisconnected) return;
 
-      final token = await storageService?.getAccessToken();
+      var token = await storageService?.getAccessToken();
+      final refresh = refreshAccessToken;
+      if (refresh != null &&
+          token != null &&
+          token.isNotEmpty &&
+          JwtUtils.isExpired(token)) {
+        // Offline: the join below still goes ahead and the service keeps
+        // retrying; the 401 path refreshes once the network is back.
+        try {
+          await refresh();
+        } on Object catch (_) {}
+        token = await storageService?.getAccessToken();
+      }
       final baseUrl = apiBaseUrl;
       if (token == null || token.isEmpty || baseUrl == null) return;
 
@@ -313,6 +357,7 @@ class PttCubit extends Cubit<PttState> {
     _connectionSubscription?.cancel();
     _memberCountSubscription?.cancel();
     _transmissionSubscription?.cancel();
+    _authRejectedSubscription?.cancel();
     return super.close();
   }
 }

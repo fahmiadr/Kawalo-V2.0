@@ -5,8 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
-import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
-import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
@@ -26,8 +24,6 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockConnectivityCubit extends MockCubit<ConnectivityStatus>
@@ -35,8 +31,6 @@ class MockConnectivityCubit extends MockCubit<ConnectivityStatus>
 
 class MockInformationCubit extends MockCubit<InformationState>
     implements InformationCubit {}
-
-class MockPttCubit extends MockCubit<PttState> implements PttCubit {}
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
@@ -288,41 +282,6 @@ void main() {
       },
     );
 
-    testWidgets('asks PttCubit to join the active group when opened', (
-      tester,
-    ) async {
-      final pttCubit = MockPttCubit();
-      when(() => pttCubit.state).thenReturn(const PttInitial());
-      when(() => pttCubit.joinForGroup(any())).thenAnswer((_) async {});
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          extraProviders: [
-            BlocProvider<PttCubit>.value(value: pttCubit),
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(
-                const AuthSessionEntity(
-                  userId: 'usr_1',
-                  email: 'admin@kawalo.co.id',
-                  name: 'Admin',
-                  allowAdmin: true,
-                  allowPatrol: false,
-                  allowMonPatrol: false,
-                  groupUid: 'grp_1',
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // The auth listener triggers it too; the real cubit dedupes by state.
-      verify(
-        () => pttCubit.joinForGroup('grp_1'),
-      ).called(greaterThanOrEqualTo(1));
-    });
-
     testWidgets(
       'notification bell has no fake badge and says it is unavailable',
       (tester) async {
@@ -344,81 +303,6 @@ void main() {
         await tester.pumpAndSettle(const Duration(seconds: 6));
       },
     );
-
-    testWidgets('rejoins PTT with the new group after switch-group', (
-      tester,
-    ) async {
-      final pttCubit = MockPttCubit();
-      when(() => pttCubit.state).thenReturn(const PttInitial());
-      when(() => pttCubit.joinForGroup(any())).thenAnswer((_) async {});
-      final session = UserSessionCubit(
-        const AuthSessionEntity(
-          userId: 'usr_1',
-          email: 'admin@kawalo.co.id',
-          name: 'Admin',
-          allowAdmin: true,
-          allowPatrol: false,
-          allowMonPatrol: false,
-          groupUid: 'grp_1',
-        ),
-      );
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          extraProviders: [
-            BlocProvider<PttCubit>.value(value: pttCubit),
-            BlocProvider<UserSessionCubit>.value(value: session),
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
-      verifyNever(() => pttCubit.joinForGroup('grp_2'));
-
-      session.updateSession(
-        const AuthSessionEntity(
-          userId: 'usr_1',
-          email: 'admin@kawalo.co.id',
-          name: 'Admin',
-          allowAdmin: true,
-          allowPatrol: false,
-          allowMonPatrol: false,
-          groupUid: 'grp_2',
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      verify(() => pttCubit.joinForGroup('grp_2')).called(1);
-    });
-
-    testWidgets('never touches the PTT channel on iOS', (tester) async {
-      final pttCubit = MockPttCubit();
-      when(() => pttCubit.state).thenReturn(const PttInitial());
-      when(() => pttCubit.joinForGroup(any())).thenAnswer((_) async {});
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          extraProviders: [
-            BlocProvider<PttCubit>.value(value: pttCubit),
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(
-                const AuthSessionEntity(
-                  userId: 'usr_1',
-                  email: 'admin@kawalo.co.id',
-                  name: 'Admin',
-                  allowAdmin: true,
-                  allowPatrol: false,
-                  allowMonPatrol: false,
-                  groupUid: 'grp_1',
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      verifyNever(() => pttCubit.joinForGroup(any()));
-    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
     testWidgets(
       'hides offline banner content and keeps safe area spacer when online',

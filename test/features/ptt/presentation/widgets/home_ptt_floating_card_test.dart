@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/home_ptt_floating_card.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
@@ -13,6 +14,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockPttCubit extends MockCubit<PttState> implements PttCubit {}
 
+class MockApiClient extends Mock implements ApiClient {}
+
 void main() {
   late MockPttCubit mockPttCubit;
 
@@ -22,13 +25,17 @@ void main() {
 
   Widget buildTestWidget({bool provideCubit = true}) {
     const card = HomePttFloatingCard();
-    return MaterialApp(
-      theme: AppTheme.lightThemeData(),
-      home: Scaffold(
-        body: Center(
-          child: provideCubit
-              ? BlocProvider<PttCubit>.value(value: mockPttCubit, child: card)
-              : card,
+    // The channel screen route reads the ApiClient from above the navigator.
+    return RepositoryProvider<ApiClient>.value(
+      value: MockApiClient(),
+      child: MaterialApp(
+        theme: AppTheme.lightThemeData(),
+        home: Scaffold(
+          body: Center(
+            child: provideCubit
+                ? BlocProvider<PttCubit>.value(value: mockPttCubit, child: card)
+                : card,
+          ),
         ),
       ),
     );
