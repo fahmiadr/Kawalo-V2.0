@@ -49,7 +49,10 @@ void main() {
     createdAt: DateTime.parse('2026-11-04T10:05:00.000Z'),
   );
 
-  Widget createWidgetUnderTest({required IncidentDetailState state}) {
+  Widget createWidgetUnderTest({
+    required IncidentDetailState state,
+    EdgeInsets viewPadding = EdgeInsets.zero,
+  }) {
     when(() => mockCubit.state).thenReturn(state);
     when(() => mockCubit.stream).thenAnswer((_) => Stream.value(state));
     when(
@@ -61,6 +64,12 @@ void main() {
 
     return MaterialApp(
       theme: AppTheme.lightThemeData(),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(viewPadding: viewPadding, padding: viewPadding),
+        child: child!,
+      ),
       home: MultiBlocProvider(
         providers: [
           BlocProvider<UserSessionCubit>.value(value: userSessionCubit),
@@ -117,6 +126,59 @@ void main() {
         expect(find.textContaining('Dewi Sartika'), findsWidgets);
       },
     );
+
+    testWidgets('keeps the composer above the system navigation bar inset', (
+      tester,
+    ) async {
+      const navInset = 48.0;
+      final state = IncidentDetailState(
+        status: IncidentDetailStatus.success,
+        incident: tIncident,
+        replies: [tReply],
+      );
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: state,
+          viewPadding: const EdgeInsets.only(bottom: navInset),
+        ),
+      );
+      await tester.pump();
+
+      final screenBottom =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final composerBottom = tester
+          .getBottomLeft(find.byType(IncidentComposerBar))
+          .dy;
+      expect(composerBottom, lessThanOrEqualTo(screenBottom - navInset));
+    });
+
+    testWidgets('keeps the resolved banner above the system navigation bar', (
+      tester,
+    ) async {
+      const navInset = 48.0;
+      final state = IncidentDetailState(
+        status: IncidentDetailStatus.success,
+        incident: tIncident.copyWith(status: IncidentStatus.resolved),
+        replies: [tReply],
+        isReadOnly: true,
+      );
+
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: state,
+          viewPadding: const EdgeInsets.only(bottom: navInset),
+        ),
+      );
+      await tester.pump();
+
+      final screenBottom =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final bannerBottom = tester
+          .getBottomLeft(find.byType(IncidentResolvedBanner))
+          .dy;
+      expect(bannerBottom, lessThanOrEqualTo(screenBottom - navInset));
+    });
 
     testWidgets('renders without overflow under 200% dynamic text scaling', (
       tester,

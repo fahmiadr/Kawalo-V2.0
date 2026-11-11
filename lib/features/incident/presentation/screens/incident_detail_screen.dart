@@ -258,7 +258,17 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
               onBackPressed: () => Navigator.of(context).pop(incident),
               trailing: trailingWidget,
             ),
-            bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
+            // Scaffold strips the bottom padding from the body whenever a
+            // bottomNavigationBar exists, so the composer's own SafeArea sees 0.
+            // The banner must therefore keep reserving the system nav inset,
+            // tinted like the bar above it.
+            bottomNavigationBar: AppBottomOfflineBanner(
+              isOffline: isOffline,
+              keepSafeAreaWhenHidden: true,
+              safeAreaColor: state.isReadOnly
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceContainer,
+            ),
             body: SafeArea(
               top: false,
               bottom: false,
