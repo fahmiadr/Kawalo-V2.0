@@ -78,7 +78,6 @@ final class GuestModule implements CacheWipeableModule {
       createGuestUseCase: CreateGuestUseCase(repository),
       updateGuestUseCase: UpdateGuestUseCase(repository),
       guestRepository: repository,
-      groupRepository: _groupRepository,
       uploadRepository: uploadRepository,
       initialItem: initialItem,
     );

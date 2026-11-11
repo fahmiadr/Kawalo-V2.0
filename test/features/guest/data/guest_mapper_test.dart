@@ -23,6 +23,7 @@ void main() {
       groupName: 'Cluster A',
       guestToUserName: 'Pak Joko',
       guestToUserEmail: 'joko@kawalo.id',
+      guestToName: 'Pak Slamet',
       guestCreatorName: 'Satpam Agus',
       guestCreatorEmail: 'agus@kawalo.id',
       qrUid: 'QR-12345',
@@ -50,6 +51,7 @@ void main() {
       expect(entity.guestDestination, tGuestModel.guestDestination);
       expect(entity.guestToUserEmail, tGuestModel.guestToUserEmail);
       expect(entity.guestToUserName, tGuestModel.guestToUserName);
+      expect(entity.guestToName, 'Pak Slamet');
       expect(entity.guestCreatorEmail, tGuestModel.guestCreatorEmail);
       expect(entity.guestCreatorName, tGuestModel.guestCreatorName);
       expect(entity.guestCategory, tGuestModel.guestCategory);
@@ -81,6 +83,7 @@ void main() {
         groupName: '  Cluster Melati  ',
         guestToUserName: '  John Resident  ',
         guestToUserEmail: '  JOHN.DOE@KAWALO.ID  ',
+        guestToName: '  Bu Ani  ',
         guestCreatorName: ' - ',
         guestCreatorEmail: '  CREATOR@KAWALO.ID  ',
         guestIdentity: 'N/A',
@@ -107,6 +110,7 @@ void main() {
       expect(entity.groupName, 'Cluster Melati');
       expect(entity.guestToUserName, 'John Resident');
       expect(entity.guestToUserEmail, 'john.doe@kawalo.id');
+      expect(entity.guestToName, 'Bu Ani');
       expect(entity.guestCreatorName, isNull);
       expect(entity.guestCreatorEmail, 'creator@kawalo.id');
       expect(entity.guestIdentity, isNull);

@@ -22,6 +22,7 @@ class CreateGuestParams extends Equatable {
     this.guestIdentityType,
     this.guestAddress,
     this.guestToUserEmail,
+    this.guestToName,
     this.guestPhoto,
     this.guestDt,
     this.session,
@@ -60,6 +61,9 @@ class CreateGuestParams extends Equatable {
   /// Email penghuni/warga yang dikunjungi (opsional, max 128 karakter).
   final String? guestToUserEmail;
 
+  /// Nama tuan rumah yang diketik bebas (opsional, max 128 karakter).
+  final String? guestToName;
+
   /// Foto tamu dalam format URL (opsional, max 2048 karakter).
   final String? guestPhoto;
 
@@ -87,6 +91,7 @@ class CreateGuestParams extends Equatable {
       guestIdentityType: guestIdentityType,
       guestAddress: guestAddress,
       guestToUserEmail: guestToUserEmail,
+      guestToName: guestToName,
       guestPhoto: guestPhoto,
       guestDt: guestDt,
       cancelToken: cancelToken,
@@ -104,6 +109,7 @@ class CreateGuestParams extends Equatable {
     guestIdentityType,
     guestAddress,
     guestToUserEmail,
+    guestToName,
     guestPhoto,
     guestDt,
     session,

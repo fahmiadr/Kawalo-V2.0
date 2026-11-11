@@ -116,6 +116,7 @@ class GuestRepositoryImpl implements GuestRepository {
         guestIdentityType: data.guestIdentityType,
         guestAddress: data.guestAddress,
         guestToUserEmail: data.guestToUserEmail,
+        guestToName: data.guestToName,
         guestPhoto: data.guestPhoto,
         guestDt: data.guestDt,
       );
@@ -166,6 +167,7 @@ class GuestRepositoryImpl implements GuestRepository {
         guestIdentityType: data.guestIdentityType,
         guestAddress: data.guestAddress,
         guestToUserEmail: data.guestToUserEmail,
+        guestToName: data.guestToName,
         guestPhoto: data.guestPhoto,
         includeNulls: data.includeNulls,
       );

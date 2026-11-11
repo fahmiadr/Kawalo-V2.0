@@ -17,6 +17,7 @@ void main() {
       'guest_identity_type': null,
       'guest_to_user_name': null,
       'guest_to_user_email': null,
+      'guest_to_name': 'Pak Slamet',
       'guest_creator_name': null,
       'guest_creator_email': null,
       'guest_ack_dt': null,
@@ -39,6 +40,7 @@ void main() {
       expect(model.guestPurpose, 'Jemput');
       expect(model.guestDt, '2026-09-10T10:00:00.000Z');
       expect(model.guestDestination, 'Pos 1');
+      expect(model.guestToName, 'Pak Slamet');
     });
 
     test('fromJson preserves null values for nullable fields without '

@@ -50,6 +50,9 @@ class GuestLocalModel {
   @Index(caseSensitive: false)
   String? guestToUserName;
 
+  /// Nama tuan rumah yang diketik bebas (guest_to_name).
+  String? guestToName;
+
   /// Email petugas pembuat tiket tamu (guest_creator_email).
   @Index(caseSensitive: false)
   String? guestCreatorEmail;

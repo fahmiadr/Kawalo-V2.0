@@ -178,11 +178,13 @@ class _GuestFormDialogState extends State<GuestFormDialog>
   late final TextEditingController _destinationController;
   late final TextEditingController _identityNumberController;
   late final TextEditingController _guestNumberController;
+  late final TextEditingController _hostNameController;
   late final TextEditingController _purposeController;
   late final TextEditingController _addressController;
 
   late final FocusNode _nameFocusNode;
   late final FocusNode _destinationFocusNode;
+  late final FocusNode _hostNameFocusNode;
   late final FocusNode _identityNumberFocusNode;
   late final FocusNode _guestNumberFocusNode;
   late final FocusNode _purposeFocusNode;
@@ -206,11 +208,13 @@ class _GuestFormDialogState extends State<GuestFormDialog>
     _destinationController = TextEditingController();
     _identityNumberController = TextEditingController();
     _guestNumberController = TextEditingController();
+    _hostNameController = TextEditingController();
     _purposeController = TextEditingController();
     _addressController = TextEditingController();
 
     _nameFocusNode = FocusNode();
     _destinationFocusNode = FocusNode();
+    _hostNameFocusNode = FocusNode();
     _identityNumberFocusNode = FocusNode();
     _guestNumberFocusNode = FocusNode();
     _purposeFocusNode = FocusNode();
@@ -240,6 +244,9 @@ class _GuestFormDialogState extends State<GuestFormDialog>
     if (_guestNumberController.text != state.guestNumber) {
       _guestNumberController.text = state.guestNumber;
     }
+    if (_hostNameController.text != state.hostName) {
+      _hostNameController.text = state.hostName;
+    }
     if (_purposeController.text != state.purpose) {
       _purposeController.text = state.purpose;
     }
@@ -256,11 +263,13 @@ class _GuestFormDialogState extends State<GuestFormDialog>
     _destinationController.dispose();
     _identityNumberController.dispose();
     _guestNumberController.dispose();
+    _hostNameController.dispose();
     _purposeController.dispose();
     _addressController.dispose();
 
     _nameFocusNode.dispose();
     _destinationFocusNode.dispose();
+    _hostNameFocusNode.dispose();
     _identityNumberFocusNode.dispose();
     _guestNumberFocusNode.dispose();
     _purposeFocusNode.dispose();
@@ -274,7 +283,7 @@ class _GuestFormDialogState extends State<GuestFormDialog>
 
   void _updateShimmerAnimation([GuestFormState? state]) {
     final s = state ?? _resolveCubit(context).state;
-    final isLoading = s.isLoadingMasterTypes || s.isLoadingMasterHosts;
+    final isLoading = s.isLoadingMasterTypes;
     final isReducedMotion = AppMotion.isReducedMotion(context);
 
     if (isLoading && !isReducedMotion) {
@@ -334,6 +343,8 @@ class _GuestFormDialogState extends State<GuestFormDialog>
         _destinationFocusNode.requestFocus();
       } else if (firstInvalid == 'guestNumber') {
         _guestNumberFocusNode.requestFocus();
+      } else if (firstInvalid == 'hostName') {
+        _hostNameFocusNode.requestFocus();
       } else if (firstInvalid == 'purpose') {
         _purposeFocusNode.requestFocus();
       } else if (firstInvalid == 'address') {
@@ -528,10 +539,12 @@ class _GuestFormDialogState extends State<GuestFormDialog>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Tuan Rumah (Warga)
+          // Tuan Rumah (teks bebas)
           GuestFormHostField(
             cubit: cubit,
-            shimmerController: _shimmerController,
+            controller: _hostNameController,
+            focusNode: _hostNameFocusNode,
+            nextFocusNode: _purposeFocusNode,
           ),
           AppSpacing.vGap200,
 

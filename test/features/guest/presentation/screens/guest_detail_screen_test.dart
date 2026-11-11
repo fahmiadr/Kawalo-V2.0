@@ -54,6 +54,19 @@ void main() {
   }
 
   group('GuestDetailScreen Widget Tests', () {
+    testWidgets('shows the typed host name', (tester) async {
+      const typedHost = GuestItemEntity(
+        id: '7',
+        guestName: 'Tamu Teks',
+        guestToName: 'Pak Slamet',
+      );
+      await tester.pumpWidget(buildDetailWidget(typedHost));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bertemu dengan'), findsOneWidget);
+      expect(find.text('Pak Slamet'), findsOneWidget);
+    });
+
     testWidgets(
       'renders exactly 3 cards, meta info, and details for exited guest',
       (WidgetTester tester) async {
@@ -73,11 +86,7 @@ void main() {
         // Card 1: Timeline
         expect(find.text('Masuk'), findsOneWidget);
         expect(find.text(sampleExitedGuest.displayEntryTime), findsOneWidget);
-        expect(find.text('Konfirmasi'), findsOneWidget);
-        expect(
-          find.text(sampleExitedGuest.displayConfirmationTime),
-          findsOneWidget,
-        );
+        expect(find.text('Konfirmasi'), findsNothing);
         expect(find.text('Keluar'), findsOneWidget);
         expect(find.text(sampleExitedGuest.displayExitTime), findsOneWidget);
 

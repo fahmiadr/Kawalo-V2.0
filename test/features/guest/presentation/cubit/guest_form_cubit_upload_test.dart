@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
@@ -18,8 +17,6 @@ class _MockCreate extends Mock implements CreateGuestUseCase {}
 class _MockUpdate extends Mock implements UpdateGuestUseCase {}
 
 class _MockGuestRepo extends Mock implements GuestRepository {}
-
-class _MockGroupRepo extends Mock implements GroupRepository {}
 
 void main() {
   const saved = GuestItemEntity(id: '1', guestName: 'Budi');
@@ -50,18 +47,13 @@ void main() {
 
   GuestFormCubit build() {
     final guests = _MockGuestRepo();
-    final groups = _MockGroupRepo();
     when(
       () => guests.getMasterGuestTypes(cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) async => const Right([]));
-    when(
-      () => groups.getMembers(cancelToken: any(named: 'cancelToken')),
     ).thenAnswer((_) async => const Right([]));
     return GuestFormCubit(
         createGuestUseCase: create,
         updateGuestUseCase: _MockUpdate(),
         guestRepository: guests,
-        groupRepository: groups,
         uploadRepository: uploads,
       )
       ..onNameChanged('Budi')

@@ -63,7 +63,7 @@ Future<void> navigateToGuestDetailScreen(
 /// Tampilan layar penuh untuk informasi detail data tamu.
 ///
 /// Mengonsolidasikan informasi menjadi 3 kartu terstruktur:
-/// 1. Log aktivitas linimasa (Masuk, Konfirmasi, Keluar).
+/// 1. Log aktivitas linimasa (Masuk, Keluar).
 /// 2. Profil dan identitas tamu (Foto, nama, no. tamu, tags, alamat, QR code).
 /// 3. Informasi kunjungan dan penanggung jawab (Detail kunjungan, host,
 ///    dan petugas).

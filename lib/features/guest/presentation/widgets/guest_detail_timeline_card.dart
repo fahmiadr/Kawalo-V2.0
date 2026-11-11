@@ -8,7 +8,7 @@ import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_extension.dart';
 
-/// Kartu linimasa aktivitas kunjungan tamu (Masuk, Konfirmasi, Keluar)
+/// Kartu linimasa aktivitas kunjungan tamu (Masuk, Keluar)
 /// dengan standar Material 3 Expressive.
 class GuestDetailTimelineCard extends StatelessWidget {
   /// Membuat instance [GuestDetailTimelineCard].
@@ -23,7 +23,6 @@ class GuestDetailTimelineCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final emphasizedScale = theme.typography.emphasized;
 
-    final isConfirmed = item.isConfirmed;
     final isExited = item.isExited;
 
     return AppCard(
@@ -63,14 +62,6 @@ class GuestDetailTimelineCard extends StatelessWidget {
             title: 'Masuk',
             timestamp: item.displayEntryTime,
             isActive: true,
-            isLineActive: isConfirmed,
-            isLast: false,
-          ),
-          _buildTimelineItem(
-            context: context,
-            title: 'Konfirmasi',
-            timestamp: item.displayConfirmationTime,
-            isActive: isConfirmed,
             isLineActive: isExited,
             isLast: false,
           ),

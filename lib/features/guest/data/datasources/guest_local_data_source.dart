@@ -97,6 +97,8 @@ class GuestLocalDataSourceImpl implements GuestLocalDataSource {
             .or()
             .guestToUserNameContains(q, caseSensitive: false)
             .or()
+            .guestToNameContains(q, caseSensitive: false)
+            .or()
             .guestCreatorEmailContains(q, caseSensitive: false)
             .or()
             .guestCreatorNameContains(q, caseSensitive: false)

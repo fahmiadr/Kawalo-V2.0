@@ -28,6 +28,7 @@ abstract final class GuestMapper {
       guestDestination: AppSanitizer.cleanString(model.guestDestination),
       guestToUserEmail: AppSanitizer.cleanEmail(model.guestToUserEmail),
       guestToUserName: AppSanitizer.cleanString(model.guestToUserName),
+      guestToName: AppSanitizer.cleanString(model.guestToName),
       guestCreatorEmail: AppSanitizer.cleanEmail(model.guestCreatorEmail),
       guestCreatorName: AppSanitizer.cleanString(model.guestCreatorName),
       guestCategory: AppSanitizer.cleanString(model.guestCategory),

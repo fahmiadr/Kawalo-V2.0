@@ -20,6 +20,7 @@ void main() {
       guestDestination: 'Blok A1 No 5',
       guestToUserEmail: 'joko@kawalo.id',
       guestToUserName: 'Joko Widodo',
+      guestToName: 'Pak Slamet',
       guestCreatorEmail: 'satpam1@kawalo.id',
       guestCreatorName: 'Satpam Agus',
       guestCategory: 'Tamu Reguler',
@@ -48,6 +49,7 @@ void main() {
       expect(collection.guestDestination, testModel.guestDestination);
       expect(collection.guestToUserEmail, testModel.guestToUserEmail);
       expect(collection.guestToUserName, testModel.guestToUserName);
+      expect(collection.guestToName, 'Pak Slamet');
       expect(collection.guestCreatorEmail, testModel.guestCreatorEmail);
       expect(collection.guestCreatorName, testModel.guestCreatorName);
       expect(collection.guestCategory, testModel.guestCategory);
@@ -71,6 +73,7 @@ void main() {
       expect(model.guestDestination, testModel.guestDestination);
       expect(model.guestToUserEmail, testModel.guestToUserEmail);
       expect(model.guestToUserName, testModel.guestToUserName);
+      expect(model.guestToName, 'Pak Slamet');
       expect(model.guestCreatorEmail, testModel.guestCreatorEmail);
       expect(model.guestCategory, testModel.guestCategory);
       expect(model.qrUid, testModel.qrUid);
@@ -103,6 +106,7 @@ void main() {
         guestDestination: 'null',
         guestToUserEmail: '  JOHN.DOE@KAWALO.ID  ',
         guestToUserName: '  John Resident  ',
+        guestToName: '  Bu Ani  ',
         guestCreatorEmail: '  CREATOR@KAWALO.ID  ',
         guestCreatorName: ' - ',
         guestCategory: '  Kurir  ',
@@ -128,6 +132,7 @@ void main() {
       expect(local.guestDestination, isNull);
       expect(local.guestToUserEmail, 'john.doe@kawalo.id');
       expect(local.guestToUserName, 'John Resident');
+      expect(local.guestToName, 'Bu Ani');
       expect(local.guestCreatorEmail, 'creator@kawalo.id');
       expect(local.guestCreatorName, isNull);
       expect(local.guestCategory, 'Kurir');
@@ -142,6 +147,7 @@ void main() {
       expect(roundTrip.guestName, 'John Doe');
       expect(roundTrip.guestNumber, 'B 9999 ZZ');
       expect(roundTrip.guestToUserEmail, 'john.doe@kawalo.id');
+      expect(roundTrip.guestToName, 'Bu Ani');
       expect(roundTrip.guestPurpose, 'Keperluan Rahasia');
     });
   });

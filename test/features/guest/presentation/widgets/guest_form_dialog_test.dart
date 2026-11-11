@@ -7,8 +7,6 @@ import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
@@ -27,24 +25,17 @@ class MockUpdateGuestUseCase extends Mock implements UpdateGuestUseCase {}
 
 class MockGuestRepository extends Mock implements GuestRepository {}
 
-class MockGroupRepository extends Mock implements GroupRepository {}
-
 class MockMediaPickerService extends Mock implements MediaPickerService {}
 
 void main() {
   late MockCreateGuestUseCase mockCreateGuestUseCase;
   late MockUpdateGuestUseCase mockUpdateGuestUseCase;
   late MockGuestRepository mockGuestRepository;
-  late MockGroupRepository mockGroupRepository;
   late MockMediaPickerService mockMediaPicker;
 
   const sampleMasterTypes = [
     MasterGuestTypeEntity(id: '1', uid: 'uid-1', name: 'TAMU'),
     MasterGuestTypeEntity(id: '2', uid: 'uid-2', name: 'KURIR'),
-  ];
-
-  const sampleGroupMembers = [
-    GroupMemberEntity(name: 'Wisnu Wijayadi', email: 'wisnu@kawalo.id'),
   ];
 
   const sampleGuest = GuestItemEntity(
@@ -75,7 +66,6 @@ void main() {
     mockCreateGuestUseCase = MockCreateGuestUseCase();
     mockUpdateGuestUseCase = MockUpdateGuestUseCase();
     mockGuestRepository = MockGuestRepository();
-    mockGroupRepository = MockGroupRepository();
     mockMediaPicker = MockMediaPickerService();
 
     when(
@@ -83,11 +73,6 @@ void main() {
         cancelToken: any(named: 'cancelToken'),
       ),
     ).thenAnswer((_) async => const Right(sampleMasterTypes));
-    when(
-      () => mockGroupRepository.getMembers(
-        cancelToken: any(named: 'cancelToken'),
-      ),
-    ).thenAnswer((_) async => const Right(sampleGroupMembers));
   });
 
   GuestFormCubit buildCubit({GuestItemEntity? initialItem}) {
@@ -96,7 +81,6 @@ void main() {
       createGuestUseCase: mockCreateGuestUseCase,
       updateGuestUseCase: mockUpdateGuestUseCase,
       guestRepository: mockGuestRepository,
-      groupRepository: mockGroupRepository,
       initialItem: initialItem,
     );
   }
@@ -178,6 +162,32 @@ void main() {
       expect(find.text('Edit data tamu'), findsOneWidget);
       expect(find.text('Hendra Budiman'), findsOneWidget);
       expect(find.text('Blok B1 No. 3'), findsOneWidget);
+
+      await cubit.close();
+    });
+
+    testWidgets('host field is a free-text input wired to the cubit', (
+      tester,
+    ) async {
+      final cubit = buildCubit();
+
+      await tester.pumpWidget(buildTestWidget(cubit: cubit));
+      await tester.tap(find.text('Buka Formulir'));
+      await tester.pumpAndSettle();
+
+      final hostField = find.widgetWithText(
+        AppTextField,
+        'Bertemu dengan (Tuan rumah)',
+      );
+      expect(hostField, findsOneWidget);
+      expect(
+        tester.widget<AppTextField>(hostField).placeholder,
+        'Nama tuan rumah',
+      );
+
+      await tester.enterText(hostField, 'Pak Slamet');
+      await tester.pumpAndSettle();
+      expect(cubit.state.hostName, 'Pak Slamet');
 
       await cubit.close();
     });
@@ -373,14 +383,14 @@ void main() {
         await tester.pumpAndSettle();
         expect(cubit.state.guestType, isEmpty);
 
-        // Verify selecting host and clearing
-        cubit.onHostEmailChanged('wisnu@veranda.com');
+        // Verify typing the host name and clearing
+        cubit.onHostNameChanged('Pak Slamet');
         await tester.pumpAndSettle();
-        expect(cubit.state.hostEmail, 'wisnu@veranda.com');
+        expect(cubit.state.hostName, 'Pak Slamet');
 
-        cubit.onHostEmailChanged(null);
+        cubit.onHostNameChanged('');
         await tester.pumpAndSettle();
-        expect(cubit.state.hostEmail, isNull);
+        expect(cubit.state.hostName, isEmpty);
 
         await cubit.close();
       },

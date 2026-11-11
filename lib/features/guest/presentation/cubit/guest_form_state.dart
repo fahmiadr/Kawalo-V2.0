@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
@@ -56,17 +55,14 @@ class GuestFormState extends Equatable {
     this.purposeError,
     this.address = '',
     this.addressError,
-    this.hostEmail,
-    this.hostEmailError,
+    this.hostName = '',
+    this.hostNameError,
     this.photoUrl,
     this.photoMedia,
     this.photoError,
     this.masterTypes = const <MasterGuestTypeEntity>[],
     this.isLoadingMasterTypes = false,
     this.masterTypesError,
-    this.masterHosts = const <GroupMemberEntity>[],
-    this.isLoadingMasterHosts = false,
-    this.masterHostsError,
     this.errorMessage,
     this.createdOrUpdatedItem,
     this.validationAttempt = 0,
@@ -97,11 +93,16 @@ class GuestFormState extends Equatable {
       guestNumber: initialItem.guestNumber ?? '',
       purpose: initialItem.guestPurpose ?? '',
       address: initialItem.guestAddress ?? '',
-      hostEmail: initialItem.guestToUserEmail,
+      hostName: originalHostName(initialItem),
       photoUrl: initialItem.guestPhoto,
       photoMedia: initialPhotoMedia,
     );
   }
+
+  /// Teks tuan rumah yang tampil di form untuk [item]: nama bebas, atau nama
+  /// akun tuan rumah untuk data lama yang hanya punya email.
+  static String originalHostName(GuestItemEntity item) =>
+      (item.guestToName ?? item.guestToUserName ?? '').trim();
 
   /// Mode operasi formulir (create / update).
   final GuestFormMode mode;
@@ -158,11 +159,11 @@ class GuestFormState extends Equatable {
   /// Pesan error validasi untuk [address].
   final String? addressError;
 
-  /// Email penghuni/warga yang dikunjungi (opsional, max 128 karakter).
-  final String? hostEmail;
+  /// Nama tuan rumah yang diketik bebas (opsional, max 128 karakter).
+  final String hostName;
 
-  /// Pesan error validasi untuk [hostEmail].
-  final String? hostEmailError;
+  /// Pesan error validasi untuk [hostName].
+  final String? hostNameError;
 
   /// URL foto tamu yang tersimpan di server backend.
   final String? photoUrl;
@@ -181,15 +182,6 @@ class GuestFormState extends Equatable {
 
   /// Pesan error saat gagal memuat master tipe tamu.
   final String? masterTypesError;
-
-  /// Daftar warga/penghuni yang dapat dipilih sebagai tuan rumah.
-  final List<GroupMemberEntity> masterHosts;
-
-  /// Status pemuatan daftar warga/tuan rumah.
-  final bool isLoadingMasterHosts;
-
-  /// Pesan error saat gagal memuat daftar warga/tuan rumah.
-  final String? masterHostsError;
 
   /// Pesan kegagalan dari server backend atau use case.
   final String? errorMessage;
@@ -232,7 +224,7 @@ class GuestFormState extends Equatable {
           guestNumber.trim().isNotEmpty ||
           purpose.trim().isNotEmpty ||
           address.trim().isNotEmpty ||
-          (hostEmail != null && hostEmail!.trim().isNotEmpty) ||
+          hostName.trim().isNotEmpty ||
           photoMedia != null ||
           (photoUrl != null && photoUrl!.trim().isNotEmpty);
     }
@@ -248,7 +240,7 @@ class GuestFormState extends Equatable {
     final origGuestNumber = original.guestNumber ?? '';
     final origPurpose = original.guestPurpose ?? '';
     final origAddress = original.guestAddress ?? '';
-    final origHostEmail = original.guestToUserEmail;
+    final origHostName = originalHostName(original);
     final origPhoto = original.guestPhoto ?? '';
 
     final currentPhoto = photoMedia?.remoteUrl ?? photoUrl ?? '';
@@ -261,7 +253,7 @@ class GuestFormState extends Equatable {
         guestNumber.trim() != origGuestNumber.trim() ||
         purpose.trim() != origPurpose.trim() ||
         address.trim() != origAddress.trim() ||
-        hostEmail != origHostEmail ||
+        hostName.trim() != origHostName.trim() ||
         currentPhoto.trim() != origPhoto.trim();
   }
 
@@ -288,6 +280,7 @@ class GuestFormState extends Equatable {
     if (guestNumber.length > 32 || guestNumberError != null) return false;
     if (purpose.length > 128 || purposeError != null) return false;
     if (address.length > 512 || addressError != null) return false;
+    if (hostName.length > 128 || hostNameError != null) return false;
     if (photoError != null) return false;
 
     return true;
@@ -340,6 +333,9 @@ class GuestFormState extends Equatable {
     if (address.length > 512 || addressError != null) {
       return 'address';
     }
+    if (hostName.length > 128 || hostNameError != null) {
+      return 'hostName';
+    }
     return null;
   }
 
@@ -363,17 +359,14 @@ class GuestFormState extends Equatable {
     String? Function()? purposeError,
     String? address,
     String? Function()? addressError,
-    String? Function()? hostEmail,
-    String? Function()? hostEmailError,
+    String? hostName,
+    String? Function()? hostNameError,
     String? Function()? photoUrl,
     InformationFormMediaItem? Function()? photoMedia,
     String? Function()? photoError,
     List<MasterGuestTypeEntity>? masterTypes,
     bool? isLoadingMasterTypes,
     String? Function()? masterTypesError,
-    List<GroupMemberEntity>? masterHosts,
-    bool? isLoadingMasterHosts,
-    String? Function()? masterHostsError,
     String? Function()? errorMessage,
     GuestItemEntity? createdOrUpdatedItem,
     int? validationAttempt,
@@ -403,10 +396,10 @@ class GuestFormState extends Equatable {
       purposeError: purposeError != null ? purposeError() : this.purposeError,
       address: address ?? this.address,
       addressError: addressError != null ? addressError() : this.addressError,
-      hostEmail: hostEmail != null ? hostEmail() : this.hostEmail,
-      hostEmailError: hostEmailError != null
-          ? hostEmailError()
-          : this.hostEmailError,
+      hostName: hostName ?? this.hostName,
+      hostNameError: hostNameError != null
+          ? hostNameError()
+          : this.hostNameError,
       photoUrl: photoUrl != null ? photoUrl() : this.photoUrl,
       photoMedia: photoMedia != null ? photoMedia() : this.photoMedia,
       photoError: photoError != null ? photoError() : this.photoError,
@@ -415,11 +408,6 @@ class GuestFormState extends Equatable {
       masterTypesError: masterTypesError != null
           ? masterTypesError()
           : this.masterTypesError,
-      masterHosts: masterHosts ?? this.masterHosts,
-      isLoadingMasterHosts: isLoadingMasterHosts ?? this.isLoadingMasterHosts,
-      masterHostsError: masterHostsError != null
-          ? masterHostsError()
-          : this.masterHostsError,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       createdOrUpdatedItem: createdOrUpdatedItem ?? this.createdOrUpdatedItem,
       validationAttempt: validationAttempt ?? this.validationAttempt,
@@ -446,17 +434,14 @@ class GuestFormState extends Equatable {
     purposeError,
     address,
     addressError,
-    hostEmail,
-    hostEmailError,
+    hostName,
+    hostNameError,
     photoUrl,
     photoMedia,
     photoError,
     masterTypes,
     isLoadingMasterTypes,
     masterTypesError,
-    masterHosts,
-    isLoadingMasterHosts,
-    masterHostsError,
     errorMessage,
     createdOrUpdatedItem,
     validationAttempt,

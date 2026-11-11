@@ -16,6 +16,7 @@ class UpdateGuestModel extends Equatable {
     this.guestIdentityType,
     this.guestAddress,
     this.guestToUserEmail,
+    this.guestToName,
     this.guestPhoto,
     this.includeNulls = false,
   });
@@ -47,6 +48,9 @@ class UpdateGuestModel extends Equatable {
   /// Email penghuni yang dikunjungi baru (opsional).
   final String? guestToUserEmail;
 
+  /// Nama tuan rumah yang diketik bebas (opsional, max 128 karakter).
+  final String? guestToName;
+
   /// Foto tamu dalam format URL baru (opsional).
   final String? guestPhoto;
 
@@ -67,6 +71,7 @@ class UpdateGuestModel extends Equatable {
         'guest_identity_type': guestIdentityType,
         'guest_address': guestAddress,
         'guest_to_user_email': guestToUserEmail,
+        'guest_to_name': guestToName,
         'guest_photo': guestPhoto,
       };
     }
@@ -80,6 +85,7 @@ class UpdateGuestModel extends Equatable {
       if (guestIdentityType != null) 'guest_identity_type': guestIdentityType,
       if (guestAddress != null) 'guest_address': guestAddress,
       if (guestToUserEmail != null) 'guest_to_user_email': guestToUserEmail,
+      if (guestToName != null) 'guest_to_name': guestToName,
       if (guestPhoto != null) 'guest_photo': guestPhoto,
     };
   }
@@ -95,6 +101,7 @@ class UpdateGuestModel extends Equatable {
     guestIdentityType,
     guestAddress,
     guestToUserEmail,
+    guestToName,
     guestPhoto,
     includeNulls,
   ];

@@ -98,24 +98,30 @@ const GuestLocalModelSchema = CollectionSchema(
       name: r'guestPurpose',
       type: IsarType.string,
     ),
-    r'guestToUserEmail': PropertySchema(
+    r'guestToName': PropertySchema(
       id: 17,
+      name: r'guestToName',
+      type: IsarType.string,
+    ),
+    r'guestToUserEmail': PropertySchema(
+      id: 18,
       name: r'guestToUserEmail',
       type: IsarType.string,
     ),
     r'guestToUserName': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'guestToUserName',
       type: IsarType.string,
     ),
     r'guestType': PropertySchema(
-      id: 19,
+      id: 20,
       name: r'guestType',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(id: 20, name: r'id', type: IsarType.string),
-    r'qrUid': PropertySchema(id: 21, name: r'qrUid', type: IsarType.string),
+    r'id': PropertySchema(id: 21, name: r'id', type: IsarType.string),
+    r'qrUid': PropertySchema(id: 22, name: r'qrUid', type: IsarType.string),
   },
+
   estimateSize: _guestLocalModelEstimateSize,
   serialize: _guestLocalModelSerialize,
   deserialize: _guestLocalModelDeserialize,
@@ -359,6 +365,7 @@ const GuestLocalModelSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _guestLocalModelGetId,
   getLinks: _guestLocalModelGetLinks,
   attach: _guestLocalModelAttach,
@@ -474,6 +481,12 @@ int _guestLocalModelEstimateSize(
     }
   }
   {
+    final value = object.guestToName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.guestToUserEmail;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -524,11 +537,12 @@ void _guestLocalModelSerialize(
   writer.writeString(offsets[14], object.guestOutDt);
   writer.writeString(offsets[15], object.guestPhoto);
   writer.writeString(offsets[16], object.guestPurpose);
-  writer.writeString(offsets[17], object.guestToUserEmail);
-  writer.writeString(offsets[18], object.guestToUserName);
-  writer.writeString(offsets[19], object.guestType);
-  writer.writeString(offsets[20], object.id);
-  writer.writeString(offsets[21], object.qrUid);
+  writer.writeString(offsets[17], object.guestToName);
+  writer.writeString(offsets[18], object.guestToUserEmail);
+  writer.writeString(offsets[19], object.guestToUserName);
+  writer.writeString(offsets[20], object.guestType);
+  writer.writeString(offsets[21], object.id);
+  writer.writeString(offsets[22], object.qrUid);
 }
 
 GuestLocalModel _guestLocalModelDeserialize(
@@ -555,12 +569,13 @@ GuestLocalModel _guestLocalModelDeserialize(
   object.guestOutDt = reader.readStringOrNull(offsets[14]);
   object.guestPhoto = reader.readStringOrNull(offsets[15]);
   object.guestPurpose = reader.readStringOrNull(offsets[16]);
-  object.guestToUserEmail = reader.readStringOrNull(offsets[17]);
-  object.guestToUserName = reader.readStringOrNull(offsets[18]);
-  object.guestType = reader.readStringOrNull(offsets[19]);
-  object.id = reader.readString(offsets[20]);
+  object.guestToName = reader.readStringOrNull(offsets[17]);
+  object.guestToUserEmail = reader.readStringOrNull(offsets[18]);
+  object.guestToUserName = reader.readStringOrNull(offsets[19]);
+  object.guestType = reader.readStringOrNull(offsets[20]);
+  object.id = reader.readString(offsets[21]);
   object.isarId = id;
-  object.qrUid = reader.readStringOrNull(offsets[21]);
+  object.qrUid = reader.readStringOrNull(offsets[22]);
   return object;
 }
 
@@ -612,8 +627,10 @@ P _guestLocalModelDeserializeProp<P>(
     case 19:
       return (reader.readStringOrNull(offset)) as P;
     case 20:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 21:
+      return (reader.readString(offset)) as P;
+    case 22:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -4865,6 +4882,165 @@ extension GuestLocalModelQueryFilter
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'guestToName'),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'guestToName'),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'guestToName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'guestToName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'guestToName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'guestToName',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'guestToName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'guestToName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'guestToName',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'guestToName',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'guestToName', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
+  guestToNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'guestToName', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterFilterCondition>
   guestToUserEmailIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -5939,6 +6115,20 @@ extension GuestLocalModelQuerySortBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
+  sortByGuestToName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'guestToName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
+  sortByGuestToNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'guestToName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
   sortByGuestToUserEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserEmail', Sort.asc);
@@ -6246,6 +6436,20 @@ extension GuestLocalModelQuerySortThenBy
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
+  thenByGuestToName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'guestToName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
+  thenByGuestToNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'guestToName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QAfterSortBy>
   thenByGuestToUserEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'guestToUserEmail', Sort.asc);
@@ -6473,6 +6677,13 @@ extension GuestLocalModelQueryWhereDistinct
   }
 
   QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
+  distinctByGuestToName({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'guestToName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, GuestLocalModel, QDistinct>
   distinctByGuestToUserEmail({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(
@@ -6637,6 +6848,13 @@ extension GuestLocalModelQueryProperty
   guestPurposeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'guestPurpose');
+    });
+  }
+
+  QueryBuilder<GuestLocalModel, String?, QQueryOperations>
+  guestToNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'guestToName');
     });
   }
 

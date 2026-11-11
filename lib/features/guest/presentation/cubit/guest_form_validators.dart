@@ -84,6 +84,14 @@ class GuestFormValidators {
     return null;
   }
 
+  /// Validasi aturan nama tuan rumah (opsional, max 128 karakter).
+  static String? validateHostName(String value) {
+    if (value.length > 128) {
+      return 'Nama tuan rumah maksimal 128 karakter.';
+    }
+    return null;
+  }
+
   /// Validasi aturan alamat asal (opsional, max 512 karakter).
   static String? validateAddress(String value) {
     if (value.length > 512) {

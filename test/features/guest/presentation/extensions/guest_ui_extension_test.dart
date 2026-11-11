@@ -56,6 +56,17 @@ void main() {
       expect(tGuest.latestStatusTime, tGuest.displayExitTime);
     });
 
+    test('typed host name wins over the linked account name', () {
+      const typed = GuestItemEntity(
+        id: 'T',
+        guestToName: '  Pak Slamet  ',
+        guestToUserName: 'Joko Widodo',
+      );
+      expect(typed.displayGuestToUserName, 'Pak Slamet');
+      expect(typed.hasGuestToUserEmail, isFalse);
+      expect(tGuest.hasGuestToUserEmail, isTrue);
+    });
+
     test('display getters return "-" on empty/null values', () {
       const emptyGuest = GuestItemEntity(id: 'EMPTY');
 

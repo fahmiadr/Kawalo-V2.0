@@ -24,6 +24,7 @@ class GuestModel extends Equatable {
     this.guestDestination,
     this.guestToUserEmail,
     this.guestToUserName,
+    this.guestToName,
     this.guestCreatorEmail,
     this.guestCreatorName,
     this.guestCategory,
@@ -79,6 +80,9 @@ class GuestModel extends Equatable {
   /// Nama penghuni atau user yang dituju oleh tamu.
   final String? guestToUserName;
 
+  /// Nama tuan rumah yang diketik bebas oleh petugas.
+  final String? guestToName;
+
   /// Email petugas yang mendaftarkan tamu.
   final String? guestCreatorEmail;
 
@@ -119,6 +123,7 @@ class GuestModel extends Equatable {
     guestDestination,
     guestToUserEmail,
     guestToUserName,
+    guestToName,
     guestCreatorEmail,
     guestCreatorName,
     guestCategory,

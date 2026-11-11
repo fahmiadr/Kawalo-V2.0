@@ -13,9 +13,21 @@ void main() {
       guestPurpose: 'Kunjungan Keluarga',
       guestAddress: 'Jl. Sudirman No. 1',
       guestToUserEmail: 'resident@example.com',
+      guestToName: 'Pak Slamet',
       guestPhoto: 'https://example.com/photo.jpg',
       guestDt: '2026-09-21T10:00:00.000Z',
     );
+
+    test('toJson omits the host name and email when not given', () {
+      const model = CreateGuestModel(
+        guestName: 'A',
+        guestDestination: 'B',
+        guestType: 'TAMU',
+      );
+      final json = model.toJson();
+      expect(json.containsKey('guest_to_name'), isFalse);
+      expect(json.containsKey('guest_to_user_email'), isFalse);
+    });
 
     test('toJson serializes all fields properly', () {
       final json = tModel.toJson();
@@ -29,6 +41,7 @@ void main() {
       expect(json['guest_purpose'], 'Kunjungan Keluarga');
       expect(json['guest_address'], 'Jl. Sudirman No. 1');
       expect(json['guest_to_user_email'], 'resident@example.com');
+      expect(json['guest_to_name'], 'Pak Slamet');
       expect(json['guest_photo'], 'https://example.com/photo.jpg');
       expect(json['guest_dt'], '2026-09-21T10:00:00.000Z');
     });

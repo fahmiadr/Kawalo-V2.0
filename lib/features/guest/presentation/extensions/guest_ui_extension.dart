@@ -85,6 +85,8 @@ extension GuestUiExtension on GuestItemEntity {
 
   /// Mendapatkan nama penerima tamu tanpa embel-embel lokasi jika ada.
   String get displayGuestToUserName {
+    final typed = guestToName?.trim();
+    if (typed != null && typed.isNotEmpty) return typed;
     final name = guestToUserName;
     if (name == null || name.isEmpty) return '-';
     if (name.contains(' - ')) {
@@ -98,6 +100,10 @@ extension GuestUiExtension on GuestItemEntity {
       (guestToUserEmail != null && guestToUserEmail!.isNotEmpty)
       ? guestToUserEmail!
       : '-';
+
+  /// Menandakan apakah tuan rumah tertaut ke akun anggota (punya email).
+  bool get hasGuestToUserEmail =>
+      guestToUserEmail != null && guestToUserEmail!.isNotEmpty;
 
   /// Mendapatkan nama petugas pencatat untuk ditampilkan.
   String get displayRecordedBy =>

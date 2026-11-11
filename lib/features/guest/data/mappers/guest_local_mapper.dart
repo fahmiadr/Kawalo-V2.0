@@ -24,6 +24,7 @@ abstract final class GuestLocalMapper {
       ..guestDestination = AppSanitizer.cleanString(model.guestDestination)
       ..guestToUserEmail = AppSanitizer.cleanEmail(model.guestToUserEmail)
       ..guestToUserName = AppSanitizer.cleanString(model.guestToUserName)
+      ..guestToName = AppSanitizer.cleanString(model.guestToName)
       ..guestCreatorEmail = AppSanitizer.cleanEmail(model.guestCreatorEmail)
       ..guestCreatorName = AppSanitizer.cleanString(model.guestCreatorName)
       ..guestCategory = AppSanitizer.cleanString(model.guestCategory)
@@ -56,6 +57,7 @@ abstract final class GuestLocalMapper {
       guestDestination: AppSanitizer.cleanString(local.guestDestination),
       guestToUserEmail: AppSanitizer.cleanEmail(local.guestToUserEmail),
       guestToUserName: AppSanitizer.cleanString(local.guestToUserName),
+      guestToName: AppSanitizer.cleanString(local.guestToName),
       guestCreatorEmail: AppSanitizer.cleanEmail(local.guestCreatorEmail),
       guestCreatorName: AppSanitizer.cleanString(local.guestCreatorName),
       guestCategory: AppSanitizer.cleanString(local.guestCategory),

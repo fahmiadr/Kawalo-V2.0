@@ -13,6 +13,7 @@ void main() {
       guestPurpose: 'Kunjungan Kerja',
       guestAddress: 'Jl. Sudirman No. 1',
       guestToUserEmail: 'resident@example.com',
+      guestToName: 'Pak Slamet',
       guestPhoto: 'https://example.com/photo.jpg',
     );
 
@@ -28,6 +29,7 @@ void main() {
       expect(json['guest_purpose'], 'Kunjungan Kerja');
       expect(json['guest_address'], 'Jl. Sudirman No. 1');
       expect(json['guest_to_user_email'], 'resident@example.com');
+      expect(json['guest_to_name'], 'Pak Slamet');
       expect(json['guest_photo'], 'https://example.com/photo.jpg');
     });
 
@@ -61,6 +63,8 @@ void main() {
       expect(json['guest_address'], isNull);
       expect(json.containsKey('guest_to_user_email'), isTrue);
       expect(json['guest_to_user_email'], isNull);
+      expect(json.containsKey('guest_to_name'), isTrue);
+      expect(json['guest_to_name'], isNull);
       expect(json.containsKey('guest_photo'), isTrue);
       expect(json['guest_photo'], isNull);
     });
@@ -76,6 +80,7 @@ void main() {
         guestPurpose: 'Kunjungan Kerja',
         guestAddress: 'Jl. Sudirman No. 1',
         guestToUserEmail: 'resident@example.com',
+        guestToName: 'Pak Slamet',
         guestPhoto: 'https://example.com/photo.jpg',
       );
       expect(tModel, equals(otherModel));

@@ -119,13 +119,15 @@ class GuestDetailVisitInfoCard extends StatelessWidget {
               color: colorScheme.onSurface,
             ),
           ),
-          AppSpacing.vGap25,
-          Text(
-            item.displayGuestToUserEmail,
-            style: typeScale.labelMedium.copyWith(
-              color: colorScheme.onSurfaceVariant,
+          if (item.hasGuestToUserEmail) ...[
+            AppSpacing.vGap25,
+            Text(
+              item.displayGuestToUserEmail,
+              style: typeScale.labelMedium.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
+          ],
 
           // ── Pemisah ─────────────────────────────────────────────────────
           const Padding(

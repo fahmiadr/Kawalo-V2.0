@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
@@ -22,13 +20,10 @@ class MockUpdateGuestUseCase extends Mock implements UpdateGuestUseCase {}
 
 class MockGuestRepository extends Mock implements GuestRepository {}
 
-class MockGroupRepository extends Mock implements GroupRepository {}
-
 void main() {
   late MockCreateGuestUseCase mockCreateGuestUseCase;
   late MockUpdateGuestUseCase mockUpdateGuestUseCase;
   late MockGuestRepository mockGuestRepository;
-  late MockGroupRepository mockGroupRepository;
 
   const dummySession = AuthSessionEntity(
     userId: '1',
@@ -45,10 +40,6 @@ void main() {
     MasterGuestTypeEntity(id: '2', uid: 'uid-2', name: 'KURIR'),
   ];
 
-  const sampleGroupMembers = [
-    GroupMemberEntity(name: 'Wisnu Wijayadi', email: 'wisnu@kawalo.id'),
-  ];
-
   const sampleGuest = GuestItemEntity(
     id: '123',
     guestName: 'Budi Santoso',
@@ -60,6 +51,7 @@ void main() {
     guestPurpose: 'Kunjungan keluarga',
     guestAddress: 'Jl. Mawar No. 10',
     guestToUserEmail: 'wisnu@kawalo.id',
+    guestToUserName: 'Wisnu Wijayadi',
     guestPhoto: 'https://cdn.kawalo.internal/guests/photos/budi.jpg',
   );
 
@@ -78,18 +70,12 @@ void main() {
     mockCreateGuestUseCase = MockCreateGuestUseCase();
     mockUpdateGuestUseCase = MockUpdateGuestUseCase();
     mockGuestRepository = MockGuestRepository();
-    mockGroupRepository = MockGroupRepository();
 
     when(
       () => mockGuestRepository.getMasterGuestTypes(
         cancelToken: any(named: 'cancelToken'),
       ),
     ).thenAnswer((_) async => const Right(sampleMasterTypes));
-    when(
-      () => mockGroupRepository.getMembers(
-        cancelToken: any(named: 'cancelToken'),
-      ),
-    ).thenAnswer((_) async => const Right(sampleGroupMembers));
   });
 
   GuestFormCubit createCubit({GuestItemEntity? initialItem}) {
@@ -98,7 +84,6 @@ void main() {
       createGuestUseCase: mockCreateGuestUseCase,
       updateGuestUseCase: mockUpdateGuestUseCase,
       guestRepository: mockGuestRepository,
-      groupRepository: mockGroupRepository,
       initialItem: initialItem,
     );
   }
@@ -119,7 +104,6 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
         expect(cubit.state.masterTypes, sampleMasterTypes);
-        expect(cubit.state.masterHosts, sampleGroupMembers);
 
         await cubit.close();
       },
@@ -137,7 +121,7 @@ void main() {
       expect(cubit.state.guestNumber, 'B 1234 CD');
       expect(cubit.state.purpose, 'Kunjungan keluarga');
       expect(cubit.state.address, 'Jl. Mawar No. 10');
-      expect(cubit.state.hostEmail, 'wisnu@kawalo.id');
+      expect(cubit.state.hostName, 'Wisnu Wijayadi');
       expect(cubit.state.isDirty, isFalse);
 
       await cubit.close();
@@ -274,6 +258,132 @@ void main() {
         expect(cubit.state.status, GuestFormStatus.success);
         expect(cubit.state.createdOrUpdatedItem, updatedGuest);
         verify(() => mockUpdateGuestUseCase(any())).called(1);
+
+        await cubit.close();
+      },
+    );
+
+    test('create sends the typed host name and no host email', () async {
+      when(
+        () => mockCreateGuestUseCase(any()),
+      ).thenAnswer((_) async => const Right(sampleGuest));
+
+      final cubit = createCubit()
+        ..onNameChanged('Budi')
+        ..onDestinationChanged('Blok A')
+        ..onGuestTypeChanged('TAMU')
+        ..onHostNameChanged('  Pak Slamet ');
+      expect(cubit.state.isDirty, isTrue);
+
+      await cubit.submit(session: dummySession);
+
+      final params =
+          verify(() => mockCreateGuestUseCase(captureAny())).captured.single
+              as CreateGuestParams;
+      expect(params.guestToName, 'Pak Slamet');
+      expect(params.guestToUserEmail, isNull);
+
+      await cubit.close();
+    });
+
+    test('create leaves the host name null when blank', () async {
+      when(
+        () => mockCreateGuestUseCase(any()),
+      ).thenAnswer((_) async => const Right(sampleGuest));
+
+      final cubit = createCubit()
+        ..onNameChanged('Budi')
+        ..onDestinationChanged('Blok A')
+        ..onGuestTypeChanged('TAMU')
+        ..onHostNameChanged('   ');
+
+      await cubit.submit(session: dummySession);
+
+      final params =
+          verify(() => mockCreateGuestUseCase(captureAny())).captured.single
+              as CreateGuestParams;
+      expect(params.guestToName, isNull);
+
+      await cubit.close();
+    });
+
+    test('onHostNameChanged rejects names over 128 characters', () async {
+      final cubit = createCubit()
+        ..onNameChanged('Budi')
+        ..onDestinationChanged('Blok A')
+        ..onGuestTypeChanged('TAMU')
+        ..onHostNameChanged('x' * 129);
+      expect(cubit.state.hostNameError, isNotNull);
+      expect(cubit.state.isValid, isFalse);
+      expect(cubit.state.firstInvalidField, 'hostName');
+
+      cubit.onHostNameChanged('x' * 128);
+      expect(cubit.state.hostNameError, isNull);
+      expect(cubit.state.isValid, isTrue);
+
+      await cubit.close();
+    });
+
+    test(
+      'update keeps the linked host email when the host is untouched',
+      () async {
+        when(
+          () => mockUpdateGuestUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleGuest));
+
+        final cubit = createCubit(initialItem: sampleGuest)
+          ..onNameChanged('Budi Revisi');
+        await cubit.submit(session: dummySession);
+
+        final params =
+            verify(() => mockUpdateGuestUseCase(captureAny())).captured.single
+                as UpdateGuestParams;
+        expect(params.guestToUserEmail, 'wisnu@kawalo.id');
+        expect(params.guestToName, isNull);
+
+        await cubit.close();
+      },
+    );
+
+    test(
+      'update with a retyped host sets the name and clears the email',
+      () async {
+        when(
+          () => mockUpdateGuestUseCase(any()),
+        ).thenAnswer((_) async => const Right(sampleGuest));
+
+        final cubit = createCubit(initialItem: sampleGuest)
+          ..onHostNameChanged('Pak Slamet');
+        expect(cubit.state.isDirty, isTrue);
+        await cubit.submit(session: dummySession);
+
+        final params =
+            verify(() => mockUpdateGuestUseCase(captureAny())).captured.single
+                as UpdateGuestParams;
+        expect(params.guestToName, 'Pak Slamet');
+        expect(params.guestToUserEmail, isNull);
+        expect(params.includeNulls, isTrue);
+
+        await cubit.close();
+      },
+    );
+
+    test(
+      'update prefers the stored typed name over the account name',
+      () async {
+        const typed = GuestItemEntity(
+          id: '9',
+          guestName: 'Ani',
+          guestDestination: 'A',
+          guestType: 'TAMU',
+          guestToName: 'Pak Slamet',
+        );
+        final cubit = createCubit(initialItem: typed);
+        expect(cubit.state.hostName, 'Pak Slamet');
+        expect(cubit.state.isDirty, isFalse);
+
+        cubit.onHostNameChanged('');
+        expect(cubit.state.isDirty, isTrue);
 
         await cubit.close();
       },

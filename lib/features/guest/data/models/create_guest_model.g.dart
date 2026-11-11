@@ -17,6 +17,7 @@ Map<String, dynamic> _$CreateGuestModelToJson(CreateGuestModel instance) =>
       'guest_identity_type': ?instance.guestIdentityType,
       'guest_address': ?instance.guestAddress,
       'guest_to_user_email': ?instance.guestToUserEmail,
+      'guest_to_name': ?instance.guestToName,
       'guest_photo': ?instance.guestPhoto,
       'guest_dt': ?instance.guestDt,
     };

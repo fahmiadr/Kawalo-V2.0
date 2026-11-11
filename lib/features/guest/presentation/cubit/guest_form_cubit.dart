@@ -6,10 +6,7 @@ import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/utils/trimmed_or_null.dart';
-import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
-import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
-import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_params.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/create_guest/create_guest_usecase.dart';
@@ -28,7 +25,6 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     required this.createGuestUseCase,
     required this.updateGuestUseCase,
     required this.guestRepository,
-    required this.groupRepository,
     required UploadRepository uploadRepository,
     GuestItemEntity? initialItem,
   }) : _uploadRepository = uploadRepository,
@@ -44,9 +40,6 @@ class GuestFormCubit extends Cubit<GuestFormState> {
 
   /// Repositori data tamu untuk memuat master tipe tamu.
   final GuestRepository guestRepository;
-
-  /// Repositori grup untuk memuat daftar anggota (host warga).
-  final GroupRepository groupRepository;
 
   final UploadRepository _uploadRepository;
 
@@ -81,7 +74,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     return _masterCancelToken = DioCancellationToken();
   }
 
-  /// Memuat master data (tipe tamu & warga) dari API backend secara simultan.
+  /// Memuat master tipe tamu dari API backend.
   Future<void> loadMasterData() async {
     final cancelToken = _beginMasterLoad();
 
@@ -89,49 +82,31 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       state.copyWith(
         status: _statusUnlessSubmitting(GuestFormStatus.loadingMasterTypes),
         isLoadingMasterTypes: true,
-        isLoadingMasterHosts: true,
         masterTypesError: () => null,
-        masterHostsError: () => null,
         errorMessage: () => null,
       ),
     );
 
-    final results = await Future.wait([
-      guestRepository.getMasterGuestTypes(cancelToken: cancelToken),
-      groupRepository.getMembers(cancelToken: cancelToken),
-    ]);
+    final typesResult = await guestRepository.getMasterGuestTypes(
+      cancelToken: cancelToken,
+    );
 
     if (isClosed) return;
 
-    final typesResult =
-        results[0] as Either<Failure, List<MasterGuestTypeEntity>>;
-    final hostsResult = results[1] as Either<Failure, List<GroupMemberEntity>>;
-
     var types = state.masterTypes;
-    var hosts = state.masterHosts;
     String? typesError;
-    String? hostsError;
-
     typesResult.fold(
       (failure) => typesError = failure.message,
       (data) => types = data,
-    );
-
-    hostsResult.fold(
-      (failure) => hostsError = failure.message,
-      (data) => hosts = data,
     );
 
     emit(
       state.copyWith(
         status: _statusUnlessSubmitting(GuestFormStatus.ready),
         isLoadingMasterTypes: false,
-        isLoadingMasterHosts: false,
         masterTypes: types,
-        masterHosts: hosts,
         masterTypesError: () => typesError,
-        masterHostsError: () => hostsError,
-        errorMessage: () => typesError ?? hostsError,
+        errorMessage: () => typesError,
       ),
     );
   }
@@ -168,35 +143,6 @@ class GuestFormCubit extends Cubit<GuestFormState> {
           isLoadingMasterTypes: false,
           masterTypes: data,
           masterTypesError: () => null,
-        ),
-      ),
-    );
-  }
-
-  /// Memuat ulang daftar warga/host dari API backend.
-  Future<void> loadMasterHosts() async {
-    final cancelToken = _beginMasterLoad();
-
-    emit(
-      state.copyWith(isLoadingMasterHosts: true, masterHostsError: () => null),
-    );
-
-    final result = await groupRepository.getMembers(cancelToken: cancelToken);
-
-    if (isClosed) return;
-
-    result.fold(
-      (failure) => emit(
-        state.copyWith(
-          isLoadingMasterHosts: false,
-          masterHostsError: () => failure.message,
-        ),
-      ),
-      (data) => emit(
-        state.copyWith(
-          isLoadingMasterHosts: false,
-          masterHosts: data,
-          masterHostsError: () => null,
         ),
       ),
     );
@@ -282,14 +228,10 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     _emitInput(state.copyWith(address: value, addressError: () => error));
   }
 
-  /// Memperbarui email warga yang dikunjungi.
-  void onHostEmailChanged(String? value) {
-    _emitInput(
-      state.copyWith(
-        hostEmail: () => value.trimmedOrNull,
-        hostEmailError: () => null,
-      ),
-    );
+  /// Memperbarui nama tuan rumah yang diketik bebas.
+  void onHostNameChanged(String value) {
+    final error = GuestFormValidators.validateHostName(value);
+    _emitInput(state.copyWith(hostName: value, hostNameError: () => error));
   }
 
   /// Memperbarui lampiran media foto tamu.
@@ -349,6 +291,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     final numErr = GuestFormValidators.validateGuestNumber(state.guestNumber);
     final purposeErr = GuestFormValidators.validatePurpose(state.purpose);
     final addressErr = GuestFormValidators.validateAddress(state.address);
+    final hostErr = GuestFormValidators.validateHostName(state.hostName);
 
     final hasErrors =
         nameErr != null ||
@@ -357,7 +300,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
         idErr != null ||
         numErr != null ||
         purposeErr != null ||
-        addressErr != null;
+        addressErr != null ||
+        hostErr != null;
 
     if (hasErrors) {
       emit(
@@ -369,6 +313,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
           guestNumberError: () => numErr,
           purposeError: () => purposeErr,
           addressError: () => addressErr,
+          hostNameError: () => hostErr,
           validationAttempt: state.validationAttempt + 1,
         ),
       );
@@ -409,7 +354,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
     final guestNumberPayload = state.guestNumber.trimmedOrNull;
     final purposePayload = state.purpose.trimmedOrNull;
     final addressPayload = state.address.trimmedOrNull;
-    final hostEmailPayload = state.hostEmail.trimmedOrNull;
+    final hostNamePayload = state.hostName.trimmedOrNull;
 
     final Either<Failure, GuestItemEntity> result;
     if (state.isCreateMode) {
@@ -423,7 +368,7 @@ class GuestFormCubit extends Cubit<GuestFormState> {
           guestNumber: guestNumberPayload,
           guestPurpose: purposePayload,
           guestAddress: addressPayload,
-          guestToUserEmail: hostEmailPayload,
+          guestToName: hostNamePayload,
           guestPhoto: resolvedPhotoUrl,
           session: session,
           cancelToken: cancelToken,
@@ -431,6 +376,10 @@ class GuestFormCubit extends Cubit<GuestFormState> {
       );
     } else {
       final initial = state.initialItem!;
+      // A retyped host no longer matches the linked member account, so the
+      // email is cleared; an untouched host keeps both fields as stored.
+      final hostChanged =
+          state.hostName.trim() != GuestFormState.originalHostName(initial);
       result = await updateGuestUseCase(
         UpdateGuestParams(
           id: initial.id,
@@ -443,7 +392,8 @@ class GuestFormCubit extends Cubit<GuestFormState> {
           guestNumber: guestNumberPayload,
           guestPurpose: purposePayload,
           guestAddress: addressPayload,
-          guestToUserEmail: hostEmailPayload,
+          guestToUserEmail: hostChanged ? null : initial.guestToUserEmail,
+          guestToName: hostChanged ? hostNamePayload : initial.guestToName,
           guestPhoto: resolvedPhotoUrl,
           includeNulls: true,
           session: session,

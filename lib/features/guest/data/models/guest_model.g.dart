@@ -21,6 +21,7 @@ GuestModel _$GuestModelFromJson(Map<String, dynamic> json) => GuestModel(
   guestDestination: json['guest_destination'] as String?,
   guestToUserEmail: json['guest_to_user_email'] as String?,
   guestToUserName: json['guest_to_user_name'] as String?,
+  guestToName: json['guest_to_name'] as String?,
   guestCreatorEmail: json['guest_creator_email'] as String?,
   guestCreatorName: json['guest_creator_name'] as String?,
   guestCategory: json['guest_category'] as String?,

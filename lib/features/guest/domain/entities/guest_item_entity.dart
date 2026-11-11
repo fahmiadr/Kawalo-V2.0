@@ -22,6 +22,7 @@ class GuestItemEntity extends Equatable {
     this.guestDestination,
     this.guestToUserEmail,
     this.guestToUserName,
+    this.guestToName,
     this.guestCreatorEmail,
     this.guestCreatorName,
     this.guestCategory,
@@ -74,6 +75,9 @@ class GuestItemEntity extends Equatable {
   /// Nama penghuni atau user yang dituju oleh tamu.
   final String? guestToUserName;
 
+  /// Nama tuan rumah yang diketik bebas oleh petugas saat mendaftarkan tamu.
+  final String? guestToName;
+
   /// Email petugas yang mendaftarkan tamu.
   final String? guestCreatorEmail;
 
@@ -114,6 +118,7 @@ class GuestItemEntity extends Equatable {
     guestDestination,
     guestToUserEmail,
     guestToUserName,
+    guestToName,
     guestCreatorEmail,
     guestCreatorName,
     guestCategory,
