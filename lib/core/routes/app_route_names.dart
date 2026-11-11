@@ -16,6 +16,7 @@ abstract final class AppRouteNames {
   static const String guestQrScan = '/guests/scan';
   static const String attendance = '/attendance';
   static const String schedule = '/schedule';
+  static const String personnel = '/personnel';
   static const String information = '/information';
   static const String informationDetail = '/information/detail';
   static const String operational = '/operational';

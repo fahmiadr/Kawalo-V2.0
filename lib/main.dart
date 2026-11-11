@@ -29,7 +29,9 @@ import 'package:kawalo_mobile/features/auth/auth_module.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
+import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_cubit.dart';
 import 'package:kawalo_mobile/features/guest/guest_module.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
@@ -69,6 +71,7 @@ class _MyAppState extends State<MyApp> {
   late final OperationalModule _operationalModule;
   late final IncidentModule _incidentModule;
   late final ScheduleModule _scheduleModule;
+  late final GroupRepository _groupRepository;
   late final AuthBloc _authBloc;
   late final UserSessionCubit _userSessionCubit;
   StreamSubscription<AuthState>? _authSubscription;
@@ -103,7 +106,7 @@ class _MyAppState extends State<MyApp> {
 
     // Shared dependencies are assembled once here; each module builds its own
     // repository a single time and every cubit reuses it.
-    final groupRepository = GroupModule.createRepository(
+    final groupRepository = _groupRepository = GroupModule.createRepository(
       apiClient: _apiClient,
       networkInfo: _networkInfo,
     );
@@ -262,6 +265,9 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider<ScheduleCubit>(
             create: (context) => _scheduleModule.createCubit(),
+          ),
+          BlocProvider<PersonnelCubit>(
+            create: (context) => PersonnelCubit(repository: _groupRepository),
           ),
           BlocProvider<InformationCubit>(
             create: (context) => _informationModule.createCubit(),

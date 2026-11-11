@@ -1,0 +1,114 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
+import 'package:kawalo_mobile/core/theme/app_layout.dart';
+import 'package:kawalo_mobile/core/theme/app_spacing.dart';
+import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
+import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
+import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
+import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
+import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_cubit.dart';
+import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_state.dart';
+import 'package:kawalo_mobile/features/group/presentation/widgets/personnel_card.dart';
+import 'package:kawalo_mobile/features/group/presentation/widgets/personnel_card_skeleton.dart';
+
+/// Read-only list of the members of the active group.
+class PersonnelScreen extends StatefulWidget {
+  const PersonnelScreen({super.key, this.cubit});
+
+  /// Test injection; defaults to the [PersonnelCubit] of the widget tree.
+  final PersonnelCubit? cubit;
+
+  static Route<void> route() => AppPageRoute.slideFade<void>(
+    settings: const RouteSettings(name: AppRouteNames.personnel),
+    builder: (_) => const PersonnelScreen(),
+  );
+
+  @override
+  State<PersonnelScreen> createState() => _PersonnelScreenState();
+}
+
+class _PersonnelScreenState extends State<PersonnelScreen> {
+  PersonnelCubit get _cubit => widget.cubit ?? context.read<PersonnelCubit>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_cubit.fetch());
+    });
+  }
+
+  Future<void> _refresh() async {
+    final ok = await _cubit.fetch(silent: true);
+    if (!ok && mounted && _cubit.state is PersonnelLoaded) {
+      AppSnackbar.show(context, message: 'Gagal memperbarui daftar personil.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = _cubit;
+    return Scaffold(
+      backgroundColor: AppTheme.of(context).colorScheme.surface,
+      appBar: const AppHomeAppBar(
+        title: 'Personil',
+        showBackButton: true,
+        showTrailing: false,
+      ),
+      body: SafeArea(
+        top: false,
+        child: AppRefreshIndicator.contained(
+          semanticsLabel: 'Memuat ulang daftar personil',
+          onRefresh: _refresh,
+          child: BlocBuilder<PersonnelCubit, PersonnelState>(
+            bloc: cubit,
+            builder: (context, state) => switch (state) {
+              PersonnelInitial() || PersonnelLoading() => ListScreenSkeleton(
+                bottomPadding: AppSpacing.space300,
+                itemBuilder: (_, _) => const PersonnelCardSkeleton(),
+              ),
+              PersonnelError(:final message) => ListErrorState(
+                noun: 'daftar personil',
+                message: message,
+                onRetry: () => unawaited(cubit.fetch()),
+              ),
+              PersonnelLoaded(:final members) when members.isEmpty =>
+                const AppEmptyState(
+                  icon: AppSvgIcon.color(KawaloColorVectors.group1, size: 64),
+                  title: 'Belum ada personil',
+                  description: 'Grup ini belum memiliki anggota yang aktif.',
+                ),
+              PersonnelLoaded(:final members) => ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.space200,
+                  AppSpacing.space150,
+                  AppSpacing.space200,
+                  AppSpacing.space300,
+                ),
+                itemCount: members.length,
+                separatorBuilder: (_, _) => AppSpacing.vGapSm,
+                itemBuilder: (_, index) => Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppLayout.contentMaxWidth,
+                    ),
+                    child: PersonnelCard(member: members[index]),
+                  ),
+                ),
+              ),
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
