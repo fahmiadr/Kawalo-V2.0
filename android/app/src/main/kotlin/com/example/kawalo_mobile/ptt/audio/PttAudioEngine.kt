@@ -2,11 +2,13 @@ package com.example.kawalo_mobile.ptt.audio
 
 import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
+import android.os.Build
 import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -22,6 +24,9 @@ class PttAudioEngine(private val context: Context) {
         const val FRAME_DURATION_MS = 20
         const val SAMPLES_PER_FRAME = SAMPLE_RATE * FRAME_DURATION_MS / 1000 // 320 samples
         const val BYTES_PER_FRAME = SAMPLES_PER_FRAME * 2 // 640 bytes PCM
+
+        // Inbound speech counts as finished after this much silence; the focus is released then.
+        private const val FOCUS_RELEASE_IDLE_MS = 800L
 
         private val isOpusAvailable: Boolean by lazy {
             try {
@@ -50,20 +55,95 @@ class PttAudioEngine(private val context: Context) {
     private var sequenceNumber = 0
     private var burstStartTimeMs = 0L
 
-    init {
-        setupAudioRouting()
+    // Media usage keeps playback on the default route (speaker, or wired/BT headset if connected)
+    // and on the media volume. PTT is half-duplex, so call mode and echo handling are not needed.
+    private val playbackAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build()
+
+    @Volatile private var focusHeld = false
+    @Volatile private var focusSuspended = false
+    private var focusRequest: AudioFocusRequest? = null
+
+    private val focusListener = AudioManager.OnAudioFocusChangeListener { change ->
+        when (change) {
+            AudioManager.AUDIOFOCUS_GAIN -> focusSuspended = false
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> focusSuspended = true
+            // Permanent loss: drop it so the next inbound burst asks again.
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                focusSuspended = true
+                abandonFocus()
+            }
+        }
     }
 
-    fun setupAudioRouting() {
+    init {
+        clearCallRouting()
+    }
+
+    // Older app versions forced MODE_IN_COMMUNICATION and the speakerphone and never restored them.
+    // These setters only drop this app's own request; other apps' audio state is untouched.
+    private fun clearCallRouting() {
         try {
-            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-            if (!audioManager.isWiredHeadsetOn && !audioManager.isBluetoothScoOn) {
-                audioManager.isSpeakerphoneOn = true
+            if (audioManager.mode == AudioManager.MODE_IN_COMMUNICATION) {
+                audioManager.mode = AudioManager.MODE_NORMAL
             }
-            Log.d(TAG, "setupAudioRouting: mode=${audioManager.mode}, speakerphone=${audioManager.isSpeakerphoneOn}")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                audioManager.clearCommunicationDevice()
+            } else if (audioManager.isSpeakerphoneOn) {
+                @Suppress("DEPRECATION")
+                audioManager.isSpeakerphoneOn = false
+            }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to configure audio routing: ${e.message}")
+            Log.w(TAG, "Failed to clear call routing: ${e.message}")
         }
+    }
+
+    // Synchronized with stopPlayback so a late frame cannot re-take focus after it was abandoned.
+    @Synchronized
+    private fun requestFocus() {
+        if (focusHeld || !isPlaying.get()) return
+        val granted = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                    .setAudioAttributes(playbackAttributes)
+                    .setOnAudioFocusChangeListener(focusListener)
+                    .build()
+                focusRequest = request
+                audioManager.requestAudioFocus(request)
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.requestAudioFocus(
+                    focusListener,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                )
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Audio focus request failed: ${e.message}")
+            AudioManager.AUDIOFOCUS_REQUEST_FAILED
+        }
+        // On refusal (e.g. an active phone call) keep playing: the system silences us if it must.
+        focusHeld = granted == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        focusSuspended = false
+    }
+
+    @Synchronized
+    private fun abandonFocus() {
+        if (!focusHeld) return
+        focusHeld = false
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.abandonAudioFocus(focusListener)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Audio focus abandon failed: ${e.message}")
+        }
+        focusRequest = null
     }
 
     /**
@@ -74,14 +154,8 @@ class PttAudioEngine(private val context: Context) {
     fun startPlayback() {
         if (isPlaying.get()) return
 
-        setupAudioRouting()
         val minBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, CHANNEL_OUT, ENCODING)
         val bufferSize = maxOf(minBufferSize, BYTES_PER_FRAME * 4)
-
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-            .build()
 
         val audioFormat = AudioFormat.Builder()
             .setSampleRate(SAMPLE_RATE)
@@ -90,7 +164,7 @@ class PttAudioEngine(private val context: Context) {
             .build()
 
         val track = AudioTrack(
-            audioAttributes,
+            playbackAttributes,
             audioFormat,
             bufferSize,
             AudioTrack.MODE_STREAM,
@@ -111,9 +185,14 @@ class PttAudioEngine(private val context: Context) {
         playbackThread = Thread({
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO)
             var playedFrames = 0
+            var lastFrameAtMs = 0L
             while (isPlaying.get()) {
                 val opusPayload = jitterBuffer.pollFrame()
                 if (opusPayload != null) {
+                    lastFrameAtMs = System.currentTimeMillis()
+                    requestFocus()
+                    // While focus is lost to e.g. a phone call, discard instead of queueing stale speech.
+                    if (focusSuspended) continue
                     // Decode Opus frame to 16kHz PCM (or passthrough)
                     val pcmData = decodeOpusToPcm(opusPayload)
                     audioTrack?.write(pcmData, 0, pcmData.size)
@@ -122,6 +201,9 @@ class PttAudioEngine(private val context: Context) {
                         Log.d(TAG, "AudioTrack playing frames (count=$playedFrames, bytes=${pcmData.size})")
                     }
                 } else {
+                    if (focusHeld && System.currentTimeMillis() - lastFrameAtMs > FOCUS_RELEASE_IDLE_MS) {
+                        abandonFocus()
+                    }
                     try {
                         Thread.sleep(5)
                     } catch (_: InterruptedException) {
@@ -146,6 +228,8 @@ class PttAudioEngine(private val context: Context) {
         }
         audioTrack = null
         jitterBuffer.flush()
+        abandonFocus()
+        clearCallRouting()
     }
 
     /**
@@ -156,7 +240,6 @@ class PttAudioEngine(private val context: Context) {
     fun startRecording() {
         if (isRecording.get()) return
 
-        setupAudioRouting()
         sequenceNumber = 0
         burstStartTimeMs = System.currentTimeMillis()
 
