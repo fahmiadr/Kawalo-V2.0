@@ -7,7 +7,6 @@ import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
@@ -27,7 +26,7 @@ import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_platform.dart'
 
 /// Halaman shell navigasi utama aplikasi Kawalo.
 ///
-/// Mengelola kerangka Scaffold utama, perpindahan 4 destinasi navigasi
+/// Mengelola kerangka Scaffold utama, perpindahan 3 destinasi navigasi
 /// via [AppNavigationBar], serta koordinasi bilah aplikasi terpusat.
 class MainNavigationScreen extends StatefulWidget {
   /// Membuat instance [MainNavigationScreen].
@@ -109,12 +108,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             children: [
               _buildHomeTab(),
               InformationScreen(isActive: _currentIndex == 1),
-              const _PlaceholderView(
-                title: 'Laporan',
-                description:
-                    'Daftar laporan dan validasi akan ditampilkan di sini.',
-                iconPath: KawaloVectors.documentValidationFilled,
-              ),
               const MoreScreen(),
             ],
           ),
@@ -140,14 +133,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 selectedIcon: AppSvgIcon(KawaloVectors.kanbanFilled),
                 label: 'Informasi',
                 semanticLabel: 'Pusat informasi',
-              ),
-              AppNavigationBarDestination(
-                icon: AppSvgIcon(KawaloVectors.documentValidation),
-                selectedIcon: AppSvgIcon(
-                  KawaloVectors.documentValidationFilled,
-                ),
-                label: 'Laporan',
-                semanticLabel: 'Buat laporan',
               ),
               AppNavigationBarDestination(
                 icon: AppSvgIcon(KawaloVectors.moreHorizontalCircle01),
@@ -199,59 +184,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         }
       },
       child: withGroupSync,
-    );
-  }
-}
-
-/// Widget placeholder untuk konten kosongan tiap tab destinasi navigasi.
-class _PlaceholderView extends StatelessWidget {
-  const _PlaceholderView({
-    required this.title,
-    required this.description,
-    required this.iconPath,
-  });
-
-  final String title;
-  final String description;
-  final String iconPath;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final typeScale = theme.typeScale;
-
-    return SafeArea(
-      bottom: false,
-      maintainBottomViewPadding: true,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: AppSpacing.paddingAll300,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AppSvgIcon(iconPath, size: 64, color: colorScheme.primary),
-              AppSpacing.vGap300,
-              Text(
-                title,
-                style: typeScale.titleLarge.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              AppSpacing.vGapSm,
-              Text(
-                description,
-                style: typeScale.bodyMedium.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

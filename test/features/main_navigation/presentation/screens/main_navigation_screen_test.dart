@@ -154,7 +154,7 @@ void main() {
       },
     );
 
-    testWidgets('renders all 4 navigation destinations correctly', (
+    testWidgets('renders the 3 navigation destinations correctly', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
@@ -163,16 +163,21 @@ void main() {
       // Memastikan AppNavigationBar (M3ENavigationBar) terpasang
       expect(find.byType(AppNavigationBar), findsOneWidget);
 
-      // Memastikan 4 label destinasi ada
+      // Memastikan 3 label destinasi ada
       expect(find.text('Beranda'), findsAtLeastNWidgets(1));
       expect(find.text('Informasi'), findsAtLeastNWidgets(1));
-      expect(find.text('Laporan'), findsOneWidget);
+      expect(find.text('Laporan'), findsNothing);
       expect(find.text('Lainnya'), findsOneWidget);
+      expect(
+        tester
+            .widget<AppNavigationBar>(find.byType(AppNavigationBar))
+            .destinations,
+        hasLength(3),
+      );
 
       // Memastikan konten awal default adalah Beranda (HomeDashboardView)
       expect(find.text('Tamu Terakhir'), findsOneWidget);
       expect(find.text('Absensi'), findsOneWidget);
-      expect(find.text('Post to Post Checkpoint'), findsOneWidget);
       expect(find.text('Pintasan'), findsOneWidget);
     });
 
@@ -189,15 +194,6 @@ void main() {
       expect(find.text('Pusat informasi'), findsOneWidget);
       expect(find.bySemanticsLabel('Cari informasi'), findsOneWidget);
       expect(find.text('Belum ada informasi'), findsOneWidget);
-
-      // Tap tab "Laporan"
-      await tester.tap(find.text('Laporan'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Daftar laporan dan validasi akan ditampilkan di sini.'),
-        findsOneWidget,
-      );
 
       // Tap tab "Lainnya"
       await tester.tap(find.text('Lainnya'));
@@ -218,11 +214,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget(initialIndex: 2));
       await tester.pumpAndSettle();
 
-      // Index 2 harusnya Laporan
-      expect(
-        find.text('Daftar laporan dan validasi akan ditampilkan di sini.'),
-        findsOneWidget,
-      );
+      // Index 2 is the last tab, Lainnya.
+      expect(find.text('AHMAD ZAKI FAUZAN'), findsOneWidget);
+      expect(find.text('Keluar'), findsOneWidget);
     });
 
     testWidgets('contains designated Kawalo vectors for all destinations', (
@@ -253,7 +247,7 @@ void main() {
               widget is AppSvgIcon &&
               widget.assetPath == KawaloVectors.documentValidation,
         ),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byWidgetPredicate(
@@ -350,24 +344,6 @@ void main() {
         await tester.pumpAndSettle(const Duration(seconds: 6));
       },
     );
-
-    testWidgets('placeholder tabs have no fake pull-to-refresh', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget(initialIndex: 2));
-      await tester.pumpAndSettle();
-
-      // Beranda is offstage; the visible placeholder has no refresh indicator.
-      expect(find.byType(AppRefreshIndicator), findsNothing);
-      await tester.fling(
-        find.text('Daftar laporan dan validasi akan ditampilkan di sini.'),
-        const Offset(0, 400),
-        1000,
-      );
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-
-      expect(find.textContaining('berhasil diperbarui'), findsNothing);
-    });
 
     testWidgets('rejoins PTT with the new group after switch-group', (
       tester,
