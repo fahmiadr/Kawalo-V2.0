@@ -189,6 +189,19 @@ void main() {
     verify(() => repo.getGuestByIdentifier(uid)).called(2);
   });
 
+  testWidgets('the outlined action stays readable on the dark panel', (
+    tester,
+  ) async {
+    stubLookup(const Left(NoInternetFailure()));
+    await pumpScreen(tester);
+
+    scanner.emit(uid);
+    await tester.pumpAndSettle();
+
+    final label = tester.element(find.text('Pindai lagi'));
+    expect(DefaultTextStyle.of(label).style.color, Colors.white);
+  });
+
   testWidgets('an unrelated QR is reported without calling the API', (
     tester,
   ) async {

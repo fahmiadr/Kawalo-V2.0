@@ -328,6 +328,15 @@ class _ResultPanel extends StatelessWidget {
     );
   }
 
+  // The themed outlined button is primary green, which disappears against the
+  // near-black scrim panel, so the secondary action is drawn in white.
+  static final _outlinedOnDark = AppButtonDecoration(
+    foregroundColor: const WidgetStatePropertyAll(Colors.white),
+    side: WidgetStatePropertyAll(
+      BorderSide(color: Colors.white.withValues(alpha: 0.72)),
+    ),
+  );
+
   Widget _action(
     String label,
     VoidCallback onPressed, {
@@ -335,6 +344,7 @@ class _ResultPanel extends StatelessWidget {
   }) {
     return AppButton(
       style: outlined ? AppButtonColor.outlined : AppButtonColor.filled,
+      decoration: outlined ? _outlinedOnDark : null,
       onPressed: onPressed,
       child: Text(label),
     );
