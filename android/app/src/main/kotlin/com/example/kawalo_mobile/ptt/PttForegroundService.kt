@@ -76,6 +76,11 @@ class PttForegroundService : Service() {
     private var isReconnecting = false
     private var reconnectAttempt = 0
 
+    // OkHttp reports a cancel()ed socket through onFailure. Without this guard that stale callback
+    // schedules a reconnect which cancels the healthy replacement, and the loop never ends (the
+    // channel flaps every ~2 s). Callbacks from any socket but the current generation are ignored.
+    @Volatile private var socketGeneration = 0
+
     // MediaSession for screen-off headset button capture (BLK-03)
     private var mediaSession: MediaSessionCompat? = null
     private var isPttTriggerPressed = false
@@ -311,6 +316,9 @@ class PttForegroundService : Service() {
         activeGroupUid = groupUid
         activeToken = token
 
+        val generation = ++socketGeneration
+        reconnectHandler.removeCallbacksAndMessages(null)
+        isReconnecting = false
         try {
             webSocket?.cancel()
         } catch (_: Exception) {}
@@ -338,6 +346,7 @@ class PttForegroundService : Service() {
 
         webSocket = okHttpClient?.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                if (generation != socketGeneration) return
                 Log.i(TAG, "PTT WebSocket connected successfully to $activeGroupUid")
                 reconnectAttempt = 0
                 isReconnecting = false
@@ -348,10 +357,12 @@ class PttForegroundService : Service() {
             private var inboundAudioFrameCount = 0
 
             override fun onMessage(webSocket: WebSocket, text: String) {
+                if (generation != socketGeneration) return
                 handleInboundJsonFrame(text)
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                if (generation != socketGeneration) return
                 // Incoming binary Opus audio packet with 7-byte header
                 inboundAudioFrameCount++
                 if (inboundAudioFrameCount % 50 == 1) {
@@ -361,15 +372,18 @@ class PttForegroundService : Service() {
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                if (generation != socketGeneration) return
                 Log.w(TAG, "PTT WebSocket closing: $code / $reason")
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                if (generation != socketGeneration) return
                 Log.i(TAG, "PTT WebSocket closed: $code / $reason")
                 PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "DISCONNECTED"))
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                if (generation != socketGeneration) return
                 val respCode = response?.code ?: -1
                 val respMsg = response?.message ?: "None"
                 val bodyStr = try { response?.body?.string() } catch (_: Exception) { null }
@@ -403,6 +417,7 @@ class PttForegroundService : Service() {
     }
 
     private fun disconnectWebSocket() {
+        socketGeneration++
         reconnectHandler.removeCallbacksAndMessages(null)
         isReconnecting = false
         reconnectAttempt = 0
