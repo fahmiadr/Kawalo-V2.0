@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_recording_entity.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_playback_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_bubble.dart';
 
@@ -18,7 +17,6 @@ void main() {
     ValueChanged<Duration>? onSeek,
     VoidCallback? onDelete,
     String? transcript,
-    PttTranscriptSource? source = PttTranscriptSource.server,
     ThemeData? theme,
     double textScale = 1,
   }) {
@@ -38,7 +36,6 @@ void main() {
               'a',
               duration: const Duration(seconds: 65),
               transcript: transcript,
-              transcriptSource: source,
             ),
             isMe: isMe,
             playback: playback,
@@ -178,24 +175,14 @@ void main() {
     expect(find.textContaining('Transkrip'), findsNothing);
   });
 
-  testWidgets('short transcript shows label, source hint and no toggle', (
+  testWidgets('short transcript shows only its text and no toggle', (
     tester,
   ) async {
     await tester.pumpWidget(host(transcript: shortText));
 
-    expect(find.text('Transkrip otomatis · dari server'), findsOneWidget);
+    expect(find.textContaining('Transkrip'), findsNothing);
     expect(find.text(shortText), findsOneWidget);
     expect(find.text('Selengkapnya'), findsNothing);
-  });
-
-  testWidgets('device source and missing source hints', (tester) async {
-    await tester.pumpWidget(
-      host(transcript: shortText, source: PttTranscriptSource.device),
-    );
-    expect(find.text('Transkrip otomatis · dari perangkat'), findsOneWidget);
-
-    await tester.pumpWidget(host(transcript: shortText, source: null));
-    expect(find.text('Transkrip otomatis'), findsOneWidget);
   });
 
   testWidgets('long transcript collapses to 3 lines and expands', (
@@ -226,17 +213,59 @@ void main() {
     expect(find.text('Selengkapnya'), findsOneWidget);
   });
 
-  testWidgets('transcript follows the bubble side', (tester) async {
-    await tester.pumpWidget(host(transcript: shortText));
-    final screenWidth = tester.getSize(find.byType(Scaffold)).width;
-    expect(tester.getTopLeft(find.text(shortText)).dx, lessThan(40));
+  for (final isMe in [false, true]) {
+    testWidgets('${isMe ? 'own' : 'others'} transcript sits inside the card, '
+        'below the time row', (tester) async {
+      await tester.pumpWidget(host(isMe: isMe, transcript: shortText));
 
-    await tester.pumpWidget(host(isMe: true, transcript: shortText));
-    expect(
-      tester.getTopRight(find.text(shortText)).dx,
-      greaterThan(screenWidth - 40),
-    );
-  });
+      final card = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(PttRecordingBubble),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final text = tester.getRect(find.text(shortText));
+      expect(card.contains(text.topLeft), isTrue);
+      expect(card.contains(text.bottomRight), isTrue);
+      expect(text.top, greaterThan(tester.getRect(find.text('09:30')).bottom));
+    });
+  }
+
+  for (final isMe in [false, true]) {
+    testWidgets('${isMe ? 'own' : 'others'} transcript is quoted: audio sits '
+        'in an inset card, the text below it, one bubble', (tester) async {
+      Iterable<Container> containers() => tester.widgetList<Container>(
+        find.descendant(
+          of: find.byType(PttRecordingBubble),
+          matching: find.byType(Container),
+        ),
+      );
+
+      await tester.pumpWidget(host(isMe: isMe));
+      final withoutText = containers().length;
+
+      await tester.pumpWidget(host(isMe: isMe, transcript: shortText));
+      expect(containers().length, withoutText + 1);
+
+      final all = find.descendant(
+        of: find.byType(PttRecordingBubble),
+        matching: find.byType(Container),
+      );
+      final bubble = tester.getRect(all.first);
+      final card = tester.getRect(all.at(1));
+      final text = tester.getRect(find.text(shortText));
+      final slider = tester.getRect(find.byType(Slider));
+
+      expect(bubble.contains(card.topLeft), isTrue);
+      expect(bubble.contains(card.bottomRight), isTrue);
+      expect(card.contains(slider.center), isTrue);
+      expect(card.overlaps(text), isFalse);
+      expect(text.top, greaterThanOrEqualTo(card.bottom));
+      expect(bubble.contains(text.bottomRight), isTrue);
+    });
+  }
 
   for (final isMe in [false, true]) {
     for (final dark in [false, true]) {

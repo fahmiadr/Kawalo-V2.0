@@ -137,7 +137,9 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
             ),
     );
 
-    final body = Column(
+    final transcript = widget.recording.displayTranscript;
+
+    final audioBody = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -200,24 +202,36 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
             ],
           ),
         ),
-        if (widget.canDelete) ...[
-          AppSpacing.vGapSm,
-          Align(
-            alignment: Alignment.centerRight,
-            child: _DeleteButton(
-              isDeleting: widget.isDeleting,
-              onPressed: widget.onDelete,
-            ),
-          ),
-        ],
       ],
     );
 
-    final transcript = widget.recording.displayTranscript;
+    final audio = Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!isMe) ...[avatar, AppSpacing.hGapXs],
+        Flexible(child: audioBody),
+        if (isMe) ...[AppSpacing.hGapXs, avatar],
+      ],
+    );
+
+    // With a transcript the voice part becomes an inset card, so the text
+    // below reads like a quote of the audio while both stay in one bubble.
+    final audioPart = transcript == null
+        ? audio
+        : Container(
+            padding: const EdgeInsets.all(AppSpacing.space100),
+            decoration: BoxDecoration(
+              color: textColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: audio,
+          );
+
     final maxWidth = MediaQuery.sizeOf(context).width * 0.88;
 
     final bubble = Container(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.space50),
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.space100),
       constraints: BoxConstraints(maxWidth: maxWidth),
       padding: const EdgeInsets.all(AppSpacing.space100),
       decoration: BoxDecoration(
@@ -229,55 +243,42 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
           bottomRight: Radius.circular(isMe ? AppRadius.xs : AppRadius.lg),
         ),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isMe) ...[avatar, AppSpacing.hGapXs],
-          Flexible(child: body),
-          if (isMe) ...[AppSpacing.hGapXs, avatar],
+          audioPart,
+          if (transcript != null)
+            _TranscriptBlock(text: transcript, color: textColor),
+          if (widget.canDelete) ...[
+            AppSpacing.vGapSm,
+            Align(
+              alignment: Alignment.centerRight,
+              child: _DeleteButton(
+                isDeleting: widget.isDeleting,
+                onPressed: widget.onDelete,
+              ),
+            ),
+          ],
         ],
       ),
     );
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: transcript == null
-          ? bubble
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: isMe
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                bubble,
-                _TranscriptBlock(
-                  text: transcript,
-                  source: widget.recording.transcriptSource,
-                  isMe: isMe,
-                  maxWidth: maxWidth,
-                ),
-              ],
-            ),
+      child: bubble,
     );
   }
 }
 
 /// Collapsed to [collapsedLines] with a toggle only when the text is longer.
 class _TranscriptBlock extends StatefulWidget {
-  const _TranscriptBlock({
-    required this.text,
-    required this.source,
-    required this.isMe,
-    required this.maxWidth,
-  });
+  const _TranscriptBlock({required this.text, required this.color});
 
   static const collapsedLines = 3;
 
   final String text;
-  final PttTranscriptSource? source;
-  final bool isMe;
-  final double maxWidth;
+  final Color color;
 
   @override
   State<_TranscriptBlock> createState() => _TranscriptBlockState();
@@ -286,104 +287,76 @@ class _TranscriptBlock extends StatefulWidget {
 class _TranscriptBlockState extends State<_TranscriptBlock> {
   bool _expanded = false;
 
-  String? get _sourceHint => switch (widget.source) {
-    PttTranscriptSource.device => 'dari perangkat',
-    PttTranscriptSource.server => 'dari server',
-    null => null,
-  };
-
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
-    final bodyStyle = typeScale.bodyMedium.copyWith(
-      color: colorScheme.onSurface,
-    );
-    final metaStyle = typeScale.labelSmall.copyWith(
-      color: colorScheme.onSurfaceVariant,
-    );
-    final hint = _sourceHint;
-    final textAlign = widget.isMe ? TextAlign.right : TextAlign.left;
+    final bodyStyle = typeScale.bodyMedium.copyWith(color: widget.color);
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: widget.maxWidth),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.space100,
-          AppSpacing.space25,
-          AppSpacing.space100,
-          AppSpacing.space50,
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final painter = TextPainter(
-              text: TextSpan(text: widget.text, style: bodyStyle),
-              textDirection: Directionality.of(context),
-              textScaler: MediaQuery.textScalerOf(context),
-              maxLines: _TranscriptBlock.collapsedLines,
-            )..layout(maxWidth: constraints.maxWidth);
-            final isLong = painter.didExceedMaxLines;
-            painter.dispose();
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.space100,
+        right: AppSpacing.space100,
+        top: AppSpacing.space100,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final painter = TextPainter(
+            text: TextSpan(text: widget.text, style: bodyStyle),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: _TranscriptBlock.collapsedLines,
+          )..layout(maxWidth: constraints.maxWidth);
+          final isLong = painter.didExceedMaxLines;
+          painter.dispose();
 
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: widget.isMe
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hint == null
-                      ? 'Transkrip otomatis'
-                      : 'Transkrip otomatis · $hint',
-                  style: metaStyle,
-                ),
-                AppSpacing.vGapXs,
-                Text(
-                  widget.text,
-                  textAlign: textAlign,
-                  maxLines: _expanded || !isLong
-                      ? null
-                      : _TranscriptBlock.collapsedLines,
-                  overflow: _expanded || !isLong
-                      ? TextOverflow.clip
-                      : TextOverflow.ellipsis,
-                  style: bodyStyle,
-                ),
-                if (isLong)
-                  Semantics(
-                    button: true,
-                    expanded: _expanded,
-                    excludeSemantics: true,
-                    label: _expanded
-                        ? 'Ringkas transkrip'
-                        : 'Tampilkan transkrip lengkap',
-                    child: InkWell(
-                      onTap: () => setState(() => _expanded = !_expanded),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minHeight: AppStateLayer.minTouchTarget,
-                          minWidth: AppStateLayer.minTouchTarget,
-                        ),
-                        child: Align(
-                          alignment: widget.isMe
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          widthFactor: 1,
-                          child: Text(
-                            _expanded ? 'Ringkas' : 'Selengkapnya',
-                            style: typeScale.labelLarge.copyWith(
-                              color: colorScheme.primary,
-                            ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.text,
+                maxLines: _expanded || !isLong
+                    ? null
+                    : _TranscriptBlock.collapsedLines,
+                overflow: _expanded || !isLong
+                    ? TextOverflow.clip
+                    : TextOverflow.ellipsis,
+                style: bodyStyle,
+              ),
+              if (isLong)
+                Semantics(
+                  button: true,
+                  expanded: _expanded,
+                  excludeSemantics: true,
+                  label: _expanded
+                      ? 'Ringkas transkrip'
+                      : 'Tampilkan transkrip lengkap',
+                  child: InkWell(
+                    onTap: () => setState(() => _expanded = !_expanded),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: AppStateLayer.minTouchTarget,
+                        minWidth: AppStateLayer.minTouchTarget,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: 1,
+                        child: Text(
+                          _expanded ? 'Ringkas' : 'Selengkapnya',
+                          style: typeScale.labelLarge.copyWith(
+                            color: widget.color,
+                            decoration: TextDecoration.underline,
+                            decorationColor: widget.color,
                           ),
                         ),
                       ),
                     ),
                   ),
-              ],
-            );
-          },
-        ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
