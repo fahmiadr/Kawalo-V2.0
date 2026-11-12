@@ -53,6 +53,72 @@ void main() {
       expect(find.text('Body Detail'), findsOneWidget);
     });
 
+    testWidgets('AppDialog.showFullScreen body may use ink widgets', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  AppDialog.showFullScreen<void>(
+                    context,
+                    title: 'Ubah Shift',
+                    body: InkResponse(onTap: () {}, child: const Text('Tap')),
+                  );
+                },
+                child: const Text('Buka'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Buka'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Tap'), findsOneWidget);
+    });
+
+    testWidgets('AppDialog.showFullScreen keeps bottom actions still when the '
+        'keyboard opens', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  AppDialog.showFullScreen<void>(
+                    context,
+                    title: 'Ubah Shift',
+                    body: const TextField(),
+                    bottomActions: const [Text('Simpan')],
+                  );
+                },
+                child: const Text('Buka'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka'));
+      await tester.pumpAndSettle();
+
+      final before = tester.getBottomLeft(find.text('Simpan'));
+      final bodyBefore = tester.getSize(find.byType(TextField));
+
+      tester.view.viewInsets = const FakeViewPadding(bottom: 600);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpAndSettle();
+
+      expect(tester.getBottomLeft(find.text('Simpan')), before);
+      expect(tester.getSize(find.byType(TextField)).width, bodyBefore.width);
+    });
+
     testWidgets(
       'AppDialog.showFullScreen uses FadeTransition when reduced motion is '
       'enabled',

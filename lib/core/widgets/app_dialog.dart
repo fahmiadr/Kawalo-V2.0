@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 
 export 'package:material_3_expressive/material_3_expressive.dart'
@@ -45,6 +46,9 @@ class AppDialog extends M3EDialog {
 
   /// Menampilkan fullscreen dialog Material 3 Expressive.
   ///
+  /// Aksi utama (Simpan, Kirim, Hapus) lewat [bottomActions], ditumpuk vertikal
+  /// di bagian bawah; header tidak punya slot aksi.
+  ///
   /// Menggunakan [onClose] jika disediakan untuk penanganan khusus
   /// saat tombol tutup (X) ditekan, atau default ke [Navigator.maybePop]
   /// agar menghormati penjagaan [PopScope] ketika formulir memiliki perubahan
@@ -53,7 +57,7 @@ class AppDialog extends M3EDialog {
     BuildContext context, {
     required String title,
     required Widget body,
-    Widget? action,
+    List<Widget> bottomActions = const <Widget>[],
     VoidCallback? onClose,
   }) {
     return Navigator.of(context).push<T>(
@@ -66,7 +70,7 @@ class AppDialog extends M3EDialog {
             builder: (context) => _AppFullScreenDialog(
               title: title,
               body: body,
-              action: action,
+              bottomActions: bottomActions,
               onClose: onClose,
             ),
           );
@@ -97,13 +101,13 @@ class _AppFullScreenDialog extends StatelessWidget {
   const _AppFullScreenDialog({
     required this.title,
     required this.body,
-    this.action,
+    this.bottomActions = const <Widget>[],
     this.onClose,
   });
 
   final String title;
   final Widget body;
-  final Widget? action;
+  final List<Widget> bottomActions;
   final VoidCallback? onClose;
 
   @override
@@ -115,14 +119,32 @@ class _AppFullScreenDialog extends StatelessWidget {
     final theme = M3ETheme.of(context);
     final dialogTheme = theme.dialogTheme;
     final scheme = theme.colorScheme;
-    return ColoredBox(
+    // Material (not ColoredBox): bodies use InkWell/InkResponse, which need a
+    // Material ancestor, and this route has no Scaffold.
+    return Material(
       color: dialogTheme.fullScreenBackground(scheme),
       child: SafeArea(
-        child: Column(
+        // The keyboard covers the bottom actions instead of lifting them: they
+        // stay put at the bottom edge while only the body shrinks.
+        child: CustomMultiChildLayout(
+          delegate: _FullScreenLayout(MediaQuery.viewInsetsOf(context).bottom),
           children: <Widget>[
-            _buildHeader(context, theme, dialogTheme),
-            M3EDivider(color: scheme.outlineVariant),
-            Expanded(child: body),
+            LayoutId(
+              id: _Slot.top,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _buildHeader(context, theme, dialogTheme),
+                  M3EDivider(color: scheme.outlineVariant),
+                ],
+              ),
+            ),
+            LayoutId(id: _Slot.body, child: body),
+            if (bottomActions.isNotEmpty)
+              LayoutId(
+                id: _Slot.footer,
+                child: AppPageActions(children: bottomActions),
+              ),
           ],
         ),
       ),
@@ -164,12 +186,49 @@ class _AppFullScreenDialog extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (action != null) ...<Widget>[
-            action!,
-            SizedBox(width: dialogTheme.headerActionGap),
-          ],
         ],
       ),
     );
   }
+}
+
+enum _Slot { top, body, footer }
+
+class _FullScreenLayout extends MultiChildLayoutDelegate {
+  _FullScreenLayout(this.keyboardHeight);
+
+  final double keyboardHeight;
+
+  @override
+  void performLayout(Size size) {
+    final width = BoxConstraints(
+      minWidth: size.width,
+      maxWidth: size.width,
+      maxHeight: size.height,
+    );
+    final top = layoutChild(_Slot.top, width);
+    final footer = hasChild(_Slot.footer)
+        ? layoutChild(_Slot.footer, width)
+        : Size.zero;
+    final reserved = footer.height > keyboardHeight
+        ? footer.height
+        : keyboardHeight;
+    final bodyHeight = size.height - top.height - reserved;
+    layoutChild(
+      _Slot.body,
+      BoxConstraints.tightFor(
+        width: size.width,
+        height: bodyHeight < 0 ? 0 : bodyHeight,
+      ),
+    );
+    positionChild(_Slot.top, Offset.zero);
+    positionChild(_Slot.body, Offset(0, top.height));
+    if (hasChild(_Slot.footer)) {
+      positionChild(_Slot.footer, Offset(0, size.height - footer.height));
+    }
+  }
+
+  @override
+  bool shouldRelayout(_FullScreenLayout old) =>
+      old.keyboardHeight != keyboardHeight;
 }

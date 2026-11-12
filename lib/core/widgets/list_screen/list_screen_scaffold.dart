@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
@@ -14,6 +16,9 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_selection_controller.dart';
 
 /// Multi-select and batch-delete wiring of a [ListScreenScaffold].
+///
+/// While items are selected the scaffold shows a bottom "Hapus (N)" bar that
+/// calls [onDelete]; the header keeps only close, count and select-all.
 class ListScreenSelection {
   const ListScreenSelection({
     required this.controller,
@@ -198,23 +203,6 @@ class ListScreenScaffold extends StatelessWidget {
               itemCount: selection.itemCount,
               onClear: selection.onClear,
               onAllSelected: selection.onAllSelected,
-              actions: [
-                AppIconButton(
-                  onPressed: selection.isDeleting || isOffline
-                      ? null
-                      : selection.onDelete,
-                  semanticLabel: selection.deleteLabel,
-                  icon: AppSvgIcon(
-                    KawaloVectors.delete01Filled,
-                    color: selection.isDeleting || isOffline
-                        ? colorScheme.onSurface.withValues(
-                            alpha: AppStateLayer.disabledOpacity,
-                          )
-                        : colorScheme.error,
-                    size: 24,
-                  ),
-                ),
-              ],
             ),
       floatingActionButton: canCreate
           ? AppExtendedFab(
@@ -223,7 +211,24 @@ class ListScreenScaffold extends StatelessWidget {
               label: createLabel!,
             )
           : null,
-      bottomNavigationBar: bottomNavigationBar,
+      bottomNavigationBar: selection == null || !isSelecting
+          ? bottomNavigationBar
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppPageActions(
+                  children: [
+                    AppDestructiveButton(
+                      label: 'Hapus (${selection.controller.selectedCount})',
+                      semanticLabel: selection.deleteLabel,
+                      enabled: !selection.isDeleting && !isOffline,
+                      onPressed: selection.onDelete,
+                    ),
+                  ],
+                ),
+                ?bottomNavigationBar,
+              ],
+            ),
       body: SafeArea(
         top: false,
         child: AppKeyboardInsetsPadding(

@@ -21,6 +21,11 @@ class ListSelectionController {
 
   bool get isSelectionMode => controller.isSelectionMode;
 
+  int get selectedCount =>
+      _selectedIds.length > controller.selectedIndices.length
+      ? _selectedIds.length
+      : controller.selectedIndices.length;
+
   bool isSelected(int index, String id) =>
       controller.isSelected(index) || _selectedIds.contains(id);
 

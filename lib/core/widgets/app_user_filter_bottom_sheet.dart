@@ -1,10 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart' show Either;
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -19,6 +17,7 @@ import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 
 /// Opsi personil yang dapat dipilih pada [AppUserFilterBottomSheet].
 class UserFilterOption extends Equatable {
@@ -328,7 +327,11 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
           if (session != null)
             _buildOptionRow(
               label: 'Saya',
-              avatar: _buildAvatar(currentUserPic),
+              avatar: AppUserAvatar(
+                name: session.name,
+                imageUrl: currentUserPic,
+                size: 36,
+              ),
               radioValue: session.email,
               onTap: () => _onSelect(session.email),
             ),
@@ -402,7 +405,11 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
                     (user) => _buildOptionRow(
                       label: user.displayName,
                       subtitle: user.email,
-                      avatar: _buildAvatar(user.profilePic),
+                      avatar: AppUserAvatar(
+                        name: user.displayName,
+                        imageUrl: user.profilePic,
+                        size: 36,
+                      ),
                       radioValue: user.email,
                       onTap: () => _onSelect(user.email),
                     ),
@@ -430,32 +437,6 @@ class _AppUserFilterBottomSheetState extends State<AppUserFilterBottomSheet> {
       ),
       onTap: onTap,
     );
-  }
-
-  static const Widget _avatarFallback = ClipRRect(
-    borderRadius: AppRadius.borderMedium,
-    child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 36),
-  );
-
-  Widget _buildAvatar(String? pic) {
-    final isNetworkUrl =
-        pic != null &&
-        (pic.startsWith('http://') || pic.startsWith('https://'));
-
-    if (isNetworkUrl) {
-      return ClipRRect(
-        borderRadius: AppRadius.borderMedium,
-        child: CachedNetworkImage(
-          imageUrl: pic,
-          width: 36,
-          height: 36,
-          fit: BoxFit.cover,
-          placeholder: (_, _) => _avatarFallback,
-          errorWidget: (_, _, _) => _avatarFallback,
-        ),
-      );
-    }
-    return _avatarFallback;
   }
 }
 

@@ -26,6 +26,19 @@ abstract final class AppRouteNames {
   static const String incidentCreate = '/incidents/create';
   static const String incidentDetail = '/incidents/detail';
 
+  static const String shifts = '/shifts';
+  static const String forecast = '/forecast';
+  static const String forecastPersonnel = '/forecast/personnel';
+  static const String scheduleAdmin = '/schedule/admin';
+  static const String scheduleAdminDay = '/schedule/admin/day';
+  static const String scheduleAdminForm = '/schedule/admin/form';
+  static const String attendanceCheck = '/attendance/check';
+  static const String attendanceManualRequests = '/attendance/manual-requests';
+  static const String attendanceSettings = '/attendance/settings';
+  static const String changePassword = '/settings/change-password';
+  static const String faceData = '/faces';
+  static const String faceRegistration = '/faces/register';
+
   static const String ptt = '/ptt';
   static const String pttHistory = '/ptt/history';
 }
