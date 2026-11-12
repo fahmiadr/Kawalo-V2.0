@@ -16,6 +16,7 @@ class AttendanceModel extends Equatable {
     this.userEmail,
     this.userName,
     this.userProfilePic,
+    this.avatarUrl,
     this.userDuty,
     this.attendanceDt,
     this.attendanceType,
@@ -26,6 +27,10 @@ class AttendanceModel extends Equatable {
     this.shiftColor,
     this.shiftTimeWindow,
     this.groupName,
+    this.earlyLeaveMinutes,
+    this.faceVerified,
+    this.hasPhoto,
+    this.faceSimilarityPercent,
   });
 
   factory AttendanceModel.fromJson(Map<String, dynamic> json) =>
@@ -53,6 +58,9 @@ class AttendanceModel extends Equatable {
 
   /// URL atau nama file foto profil pengguna (UserProfilePic).
   final String? userProfilePic;
+
+  /// Newer key for the same photo; preferred over [userProfilePic].
+  final String? avatarUrl;
 
   /// Status dinas pengguna (UserDuty).
   final String? userDuty;
@@ -84,6 +92,20 @@ class AttendanceModel extends Equatable {
   /// Nama grup kawasan (GroupName).
   final String? groupName;
 
+  /// Menit pulang lebih cepat dari akhir shift (AEarlyMins).
+  @NullableIntFromNumConverter()
+  final int? earlyLeaveMinutes;
+
+  /// Hasil verifikasi wajah 1:1; null bila tidak diketahui.
+  final bool? faceVerified;
+
+  /// Apakah foto absensi tersedia untuk admin.
+  final bool? hasPhoto;
+
+  /// Cosine similarity (0..100); the API sends it to admin roles only.
+  @NullableIntFromNumConverter()
+  final int? faceSimilarityPercent;
+
   @override
   List<Object?> get props => [
     id,
@@ -92,6 +114,7 @@ class AttendanceModel extends Equatable {
     userEmail,
     userName,
     userProfilePic,
+    avatarUrl,
     userDuty,
     attendanceDt,
     attendanceType,
@@ -102,5 +125,9 @@ class AttendanceModel extends Equatable {
     shiftColor,
     shiftTimeWindow,
     groupName,
+    earlyLeaveMinutes,
+    faceVerified,
+    hasPhoto,
+    faceSimilarityPercent,
   ];
 }

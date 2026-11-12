@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -13,7 +13,11 @@ import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
+import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
+import 'package:kawalo_mobile/features/attendance/photo/attendance_photo_button.dart';
+import 'package:kawalo_mobile/features/attendance/photo/authenticated_photo_fetcher.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/extensions/attendance_item_ui_extension.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_shift_marker.dart';
 
@@ -24,6 +28,7 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
   const AttendanceDetailBottomSheet({
     required this.item,
     this.reverseGeocodeService,
+    this.photoFetcher,
     super.key,
   });
 
@@ -33,17 +38,22 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
   /// Layanan opsional untuk reverse geocoding alamat fisik dari koordinat.
   final ReverseGeocodeService? reverseGeocodeService;
 
+  /// Overrides the fetcher that [AttendanceModule] provides (tests).
+  final AuthenticatedPhotoFetcher? photoFetcher;
+
   /// Menampilkan [AttendanceDetailBottomSheet] dalam modal.
   static Future<void> show({
     required BuildContext context,
     required AttendanceItemEntity item,
     ReverseGeocodeService? reverseGeocodeService,
+    AuthenticatedPhotoFetcher? photoFetcher,
   }) {
     return showAppBottomSheet<void>(
       context: context,
       child: AttendanceDetailBottomSheet(
         item: item,
         reverseGeocodeService: reverseGeocodeService,
+        photoFetcher: photoFetcher,
       ),
     );
   }
@@ -69,7 +79,11 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ExcludeSemantics(child: _buildAvatar(context)),
+              AppUserAvatar(
+                name: item.displayUserName,
+                imageUrl: item.displayAvatarUrl,
+                size: 64,
+              ),
               AppSpacing.hGap200,
               Expanded(
                 child: Column(
@@ -143,11 +157,12 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
             ),
           ),
           AppSpacing.vGapSm,
-          _buildInfoCard(context),
+          _buildInfoCard(context, showSimilarity: _isAdmin(context)),
 
           AppSpacing.vGap300,
 
           // ── Tombol Aksi Bawah ──────────────────────────────────────
+          ..._buildPhotoAction(context),
           AppButton(
             style: AppButtonColor.tonal,
             shape: AppButtonShape.square,
@@ -159,36 +174,30 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(BuildContext context) {
-    final pic = item.userProfilePic;
-    final isNetworkUrl =
-        pic != null &&
-        (pic.startsWith('http://') || pic.startsWith('https://'));
+  bool _isAdmin(BuildContext context) =>
+      context.read<UserSessionCubit?>()?.state?.isAdminRole ?? false;
 
-    if (isNetworkUrl) {
-      return ClipRRect(
-        borderRadius: AppRadius.borderMedium,
-        child: CachedNetworkImage(
-          imageUrl: pic,
-          width: 64,
-          height: 64,
-          fit: BoxFit.cover,
-          placeholder: (_, _) => _buildAvatarFallback(),
-          errorWidget: (_, _, _) => _buildAvatarFallback(),
+  /// Check-in/out photos are biometric data: only admin roles may open them,
+  /// and only when the server reports that a photo exists.
+  List<Widget> _buildPhotoAction(BuildContext context) {
+    final isAdmin = _isAdmin(context);
+    final fetcher =
+        photoFetcher ?? context.read<AttendanceModule?>()?.photoFetcher;
+    if (!isAdmin || item.hasPhoto != true || fetcher == null) return const [];
+    return [
+      AttendancePhotoButton(
+        label: 'Lihat foto',
+        load: () => fetcher.fetch(
+          '/v1/attendance/${item.id}/photo',
+          name: 'attendance_${item.id}',
         ),
-      );
-    }
-    return _buildAvatarFallback();
+        discard: fetcher.discard,
+      ),
+      AppSpacing.vGapSm,
+    ];
   }
 
-  Widget _buildAvatarFallback() {
-    return const ClipRRect(
-      borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 64),
-    );
-  }
-
-  Widget _buildInfoCard(BuildContext context) {
+  Widget _buildInfoCard(BuildContext context, {required bool showSimilarity}) {
     return AppCard(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space200,
@@ -203,12 +212,37 @@ class AttendanceDetailBottomSheet extends StatelessWidget {
             value: item.displayAttendanceDt,
             trailingWidget: AppTag(
               label: item.displayDiffLabel,
-              variant: item.isLate
-                  ? AppTagVariant.error
-                  : AppTagVariant.primary,
+              variant: item.statusVariant,
               size: AppTagSize.small,
             ),
           ),
+          if (item.faceVerified != null) ...[
+            const AppDivider(),
+            _buildInfoItem(
+              context: context,
+              iconPath: KawaloColorVectors.cardTag1,
+              label: 'Verifikasi wajah',
+              value: item.isUnverified
+                  ? 'Tidak terverifikasi'
+                  : 'Terverifikasi',
+              trailingWidget: AppTag(
+                label: item.isUnverified ? 'Manual' : 'Cocok',
+                variant: item.isUnverified
+                    ? AppTagVariant.neutral
+                    : AppTagVariant.primary,
+                size: AppTagSize.small,
+              ),
+            ),
+          ],
+          if (showSimilarity && item.faceSimilarityPercent != null) ...[
+            const AppDivider(),
+            _buildInfoItem(
+              context: context,
+              iconPath: KawaloColorVectors.cardTag1,
+              label: 'Hasil pencocokan',
+              value: 'Kemiripan wajah ${item.faceSimilarityPercent}%',
+            ),
+          ],
           const AppDivider(),
           _buildInfoItem(
             context: context,

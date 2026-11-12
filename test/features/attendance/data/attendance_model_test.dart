@@ -114,5 +114,34 @@ void main() {
         -3,
       );
     });
+
+    test(
+      'fromJson reads the face and early-leave fields, null when absent',
+      () {
+        final withFields = AttendanceModel.fromJson(const <String, dynamic>{
+          'id': '7',
+          'category': 'PULANG',
+          'diff_minutes': 0,
+          'early_leave_minutes': 12,
+          'face_verified': false,
+          'has_photo': true,
+          'face_similarity_percent': 87,
+        });
+        expect(withFields.earlyLeaveMinutes, 12);
+        expect(withFields.faceVerified, isFalse);
+        expect(withFields.hasPhoto, isTrue);
+        expect(withFields.faceSimilarityPercent, 87);
+
+        final legacy = AttendanceModel.fromJson(const <String, dynamic>{
+          'id': '8',
+          'category': 'MASUK',
+          'face_verified': null,
+        });
+        expect(legacy.earlyLeaveMinutes, isNull);
+        expect(legacy.faceVerified, isNull);
+        expect(legacy.hasPhoto, isNull);
+        expect(legacy.faceSimilarityPercent, isNull);
+      },
+    );
   });
 }

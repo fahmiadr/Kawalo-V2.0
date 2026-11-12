@@ -21,6 +21,7 @@ abstract final class AttendanceMapper {
       userEmail: AppSanitizer.cleanEmail(model.userEmail),
       userName: AppSanitizer.cleanString(model.userName),
       userProfilePic: AppSanitizer.cleanString(model.userProfilePic),
+      avatarUrl: AppSanitizer.cleanString(model.avatarUrl),
       userDuty: AppSanitizer.cleanString(model.userDuty),
       attendanceDt: AppSanitizer.cleanDate(model.attendanceDt),
       attendanceType: AppSanitizer.cleanString(model.attendanceType),
@@ -31,6 +32,10 @@ abstract final class AttendanceMapper {
       shiftColor: AppSanitizer.cleanString(model.shiftColor),
       shiftTimeWindow: AppSanitizer.cleanTimeWindow(model.shiftTimeWindow),
       groupName: AppSanitizer.cleanString(model.groupName),
+      earlyLeaveMinutes: model.earlyLeaveMinutes,
+      faceVerified: model.faceVerified,
+      hasPhoto: model.hasPhoto,
+      faceSimilarityPercent: model.faceSimilarityPercent,
     );
   }
 

@@ -64,4 +64,13 @@ class AttendanceLocalModel {
 
   /// Nama grup kawasan (GroupName).
   String? groupName;
+
+  /// Menit pulang lebih cepat dari akhir shift; null untuk baris lama.
+  int? earlyLeaveMinutes;
+
+  /// Hasil verifikasi wajah; null bila tidak diketahui.
+  bool? faceVerified;
+
+  /// Apakah foto absensi tersedia untuk admin.
+  bool? hasPhoto;
 }

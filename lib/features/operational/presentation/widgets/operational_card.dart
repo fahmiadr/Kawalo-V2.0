@@ -1,6 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -8,6 +6,7 @@ import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_divider.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/presentation/extensions/operational_item_ui_extension.dart';
 
@@ -56,7 +55,10 @@ class OperationalCard extends StatelessWidget {
           // ── Header: Avatar, Nama, Email, & Chevron ───────────
           Row(
             children: [
-              _buildAvatar(context),
+              AppUserAvatar(
+                name: item.displayUserName,
+                imageUrl: item.userProfilePic,
+              ),
               AppSpacing.hGapSm,
               Expanded(
                 child: Column(
@@ -183,35 +185,6 @@ class OperationalCard extends StatelessWidget {
           size: AppTagSize.small,
         ),
       ],
-    );
-  }
-
-  Widget _buildAvatar(BuildContext context) {
-    final pic = item.userProfilePic;
-    final isNetworkUrl =
-        pic != null &&
-        (pic.startsWith('http://') || pic.startsWith('https://'));
-
-    if (isNetworkUrl) {
-      return ClipRRect(
-        borderRadius: AppRadius.borderMedium,
-        child: CachedNetworkImage(
-          imageUrl: pic,
-          width: 40,
-          height: 40,
-          fit: BoxFit.cover,
-          placeholder: (_, _) => _buildAvatarFallback(),
-          errorWidget: (_, _, _) => _buildAvatarFallback(),
-        ),
-      );
-    }
-    return _buildAvatarFallback();
-  }
-
-  Widget _buildAvatarFallback() {
-    return const ClipRRect(
-      borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 40),
     );
   }
 }

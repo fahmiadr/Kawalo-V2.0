@@ -28,7 +28,10 @@ abstract final class AttendanceLocalMapper {
       ..shiftName = AppSanitizer.cleanString(model.shiftName)
       ..shiftColor = AppSanitizer.cleanString(model.shiftColor)
       ..shiftTimeWindow = AppSanitizer.cleanTimeWindow(model.shiftTimeWindow)
-      ..groupName = AppSanitizer.cleanString(model.groupName);
+      ..groupName = AppSanitizer.cleanString(model.groupName)
+      ..earlyLeaveMinutes = model.earlyLeaveMinutes
+      ..faceVerified = model.faceVerified
+      ..hasPhoto = model.hasPhoto;
   }
 
   /// Mengonversi satu instance [AttendanceLocalModel] dari Isar database
@@ -53,6 +56,9 @@ abstract final class AttendanceLocalMapper {
       shiftColor: AppSanitizer.cleanString(local.shiftColor),
       shiftTimeWindow: AppSanitizer.cleanTimeWindow(local.shiftTimeWindow),
       groupName: AppSanitizer.cleanString(local.groupName),
+      earlyLeaveMinutes: local.earlyLeaveMinutes,
+      faceVerified: local.faceVerified,
+      hasPhoto: local.hasPhoto,
     );
   }
 

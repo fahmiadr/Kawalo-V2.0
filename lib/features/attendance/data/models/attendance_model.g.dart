@@ -16,6 +16,7 @@ AttendanceModel _$AttendanceModelFromJson(Map<String, dynamic> json) =>
       userEmail: json['user_email'] as String?,
       userName: json['user_name'] as String?,
       userProfilePic: json['user_profile_pic'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
       userDuty: json['user_duty'] as String?,
       attendanceDt: json['attendance_dt'] as String?,
       attendanceType: json['attendance_type'] as String?,
@@ -26,4 +27,12 @@ AttendanceModel _$AttendanceModelFromJson(Map<String, dynamic> json) =>
       shiftColor: json['shift_color'] as String?,
       shiftTimeWindow: json['shift_time_window'] as String?,
       groupName: json['group_name'] as String?,
+      earlyLeaveMinutes: const NullableIntFromNumConverter().fromJson(
+        json['early_leave_minutes'],
+      ),
+      faceVerified: json['face_verified'] as bool?,
+      hasPhoto: json['has_photo'] as bool?,
+      faceSimilarityPercent: const NullableIntFromNumConverter().fromJson(
+        json['face_similarity_percent'],
+      ),
     );

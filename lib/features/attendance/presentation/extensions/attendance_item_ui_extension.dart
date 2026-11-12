@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' show Color;
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/utils/app_display_formatter.dart';
+import 'package:kawalo_mobile/core/utils/duration_text.dart';
 import 'package:kawalo_mobile/core/utils/shift_color.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
@@ -12,6 +13,9 @@ import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_ite
 extension AttendanceItemUiExtension on AttendanceItemEntity {
   /// Nama personil yang aman untuk tampilan UI (em-dash jika kosong/null).
   String get displayUserName => userName.toDisplay();
+
+  /// Profile photo URL, `null` when the server sent none.
+  String? get displayAvatarUrl => avatarUrl ?? userProfilePic;
 
   /// Email personil yang aman untuk tampilan UI.
   String get displayUserEmail => userEmail.toDisplay();
@@ -79,10 +83,36 @@ extension AttendanceItemUiExtension on AttendanceItemEntity {
     return displayAttendanceType;
   }
 
-  /// Label keterlambatan waktu absensi berbasis logika domain.
+  /// Check-outs are judged by [AttendanceItemEntity.earlyLeaveMinutes]; when
+  /// the server did not send it (older API, offline cache) they fall back to
+  /// the legacy [diffMinutes] reading.
+  bool get _usesEarlyLeave =>
+      category.toUpperCase() == 'PULANG' && earlyLeaveMinutes != null;
+
+  /// Merah bila check-in terlambat atau check-out terlalu cepat, selain itu
+  /// hijau (varian primary adalah hijau merek).
+  bool get isOffSchedule =>
+      _usesEarlyLeave ? earlyLeaveMinutes! > 0 : diffMinutes > 0;
+
+  /// Warna label status: merah ([AppTagVariant.error]) atau hijau
+  /// ([AppTagVariant.primary]).
+  AppTagVariant get statusVariant =>
+      isOffSchedule ? AppTagVariant.error : AppTagVariant.primary;
+
+  /// Label status waktu absensi (terlambat / pulang lebih cepat / tepat waktu).
   String get displayDiffLabel {
+    if (_usesEarlyLeave) {
+      final early = earlyLeaveMinutes!;
+      return early > 0
+          ? 'Pulang lebih cepat ${formatMinutes(early)}'
+          : 'Tepat waktu';
+    }
     if (diffMinutes == 0) return 'Tepat waktu';
-    if (diffMinutes > 0) return 'Terlambat $diffMinutes menit';
-    return 'Lebih awal ${diffMinutes.abs()} menit';
+    if (diffMinutes > 0) return 'Terlambat ${formatMinutes(diffMinutes)}';
+    return 'Lebih awal ${formatMinutes(diffMinutes)}';
   }
+
+  /// True only when the server explicitly reports a failed face match
+  /// (manual approval or legacy row).
+  bool get isUnverified => faceVerified == false;
 }

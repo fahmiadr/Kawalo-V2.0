@@ -38,63 +38,75 @@ const AttendanceLocalModelSchema = CollectionSchema(
       name: r'diffMinutes',
       type: IsarType.long,
     ),
-    r'groupName': PropertySchema(
+    r'earlyLeaveMinutes': PropertySchema(
       id: 4,
+      name: r'earlyLeaveMinutes',
+      type: IsarType.long,
+    ),
+    r'faceVerified': PropertySchema(
+      id: 5,
+      name: r'faceVerified',
+      type: IsarType.bool,
+    ),
+    r'groupName': PropertySchema(
+      id: 6,
       name: r'groupName',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(id: 5, name: r'id', type: IsarType.string),
+    r'hasPhoto': PropertySchema(id: 7, name: r'hasPhoto', type: IsarType.bool),
+    r'id': PropertySchema(id: 8, name: r'id', type: IsarType.string),
     r'latitude': PropertySchema(
-      id: 6,
+      id: 9,
       name: r'latitude',
       type: IsarType.string,
     ),
     r'locationName': PropertySchema(
-      id: 7,
+      id: 10,
       name: r'locationName',
       type: IsarType.string,
     ),
     r'longitude': PropertySchema(
-      id: 8,
+      id: 11,
       name: r'longitude',
       type: IsarType.string,
     ),
     r'shiftColor': PropertySchema(
-      id: 9,
+      id: 12,
       name: r'shiftColor',
       type: IsarType.string,
     ),
     r'shiftName': PropertySchema(
-      id: 10,
+      id: 13,
       name: r'shiftName',
       type: IsarType.string,
     ),
     r'shiftTimeWindow': PropertySchema(
-      id: 11,
+      id: 14,
       name: r'shiftTimeWindow',
       type: IsarType.string,
     ),
     r'userDuty': PropertySchema(
-      id: 12,
+      id: 15,
       name: r'userDuty',
       type: IsarType.string,
     ),
     r'userEmail': PropertySchema(
-      id: 13,
+      id: 16,
       name: r'userEmail',
       type: IsarType.string,
     ),
     r'userName': PropertySchema(
-      id: 14,
+      id: 17,
       name: r'userName',
       type: IsarType.string,
     ),
     r'userProfilePic': PropertySchema(
-      id: 15,
+      id: 18,
       name: r'userProfilePic',
       type: IsarType.string,
     ),
   },
+
   estimateSize: _attendanceLocalModelEstimateSize,
   serialize: _attendanceLocalModelSerialize,
   deserialize: _attendanceLocalModelDeserialize,
@@ -195,6 +207,7 @@ const AttendanceLocalModelSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _attendanceLocalModelGetId,
   getLinks: _attendanceLocalModelGetLinks,
   attach: _attendanceLocalModelAttach,
@@ -300,18 +313,21 @@ void _attendanceLocalModelSerialize(
   writer.writeString(offsets[1], object.attendanceType);
   writer.writeString(offsets[2], object.category);
   writer.writeLong(offsets[3], object.diffMinutes);
-  writer.writeString(offsets[4], object.groupName);
-  writer.writeString(offsets[5], object.id);
-  writer.writeString(offsets[6], object.latitude);
-  writer.writeString(offsets[7], object.locationName);
-  writer.writeString(offsets[8], object.longitude);
-  writer.writeString(offsets[9], object.shiftColor);
-  writer.writeString(offsets[10], object.shiftName);
-  writer.writeString(offsets[11], object.shiftTimeWindow);
-  writer.writeString(offsets[12], object.userDuty);
-  writer.writeString(offsets[13], object.userEmail);
-  writer.writeString(offsets[14], object.userName);
-  writer.writeString(offsets[15], object.userProfilePic);
+  writer.writeLong(offsets[4], object.earlyLeaveMinutes);
+  writer.writeBool(offsets[5], object.faceVerified);
+  writer.writeString(offsets[6], object.groupName);
+  writer.writeBool(offsets[7], object.hasPhoto);
+  writer.writeString(offsets[8], object.id);
+  writer.writeString(offsets[9], object.latitude);
+  writer.writeString(offsets[10], object.locationName);
+  writer.writeString(offsets[11], object.longitude);
+  writer.writeString(offsets[12], object.shiftColor);
+  writer.writeString(offsets[13], object.shiftName);
+  writer.writeString(offsets[14], object.shiftTimeWindow);
+  writer.writeString(offsets[15], object.userDuty);
+  writer.writeString(offsets[16], object.userEmail);
+  writer.writeString(offsets[17], object.userName);
+  writer.writeString(offsets[18], object.userProfilePic);
 }
 
 AttendanceLocalModel _attendanceLocalModelDeserialize(
@@ -325,19 +341,22 @@ AttendanceLocalModel _attendanceLocalModelDeserialize(
   object.attendanceType = reader.readStringOrNull(offsets[1]);
   object.category = reader.readString(offsets[2]);
   object.diffMinutes = reader.readLong(offsets[3]);
-  object.groupName = reader.readStringOrNull(offsets[4]);
-  object.id = reader.readString(offsets[5]);
+  object.earlyLeaveMinutes = reader.readLongOrNull(offsets[4]);
+  object.faceVerified = reader.readBoolOrNull(offsets[5]);
+  object.groupName = reader.readStringOrNull(offsets[6]);
+  object.hasPhoto = reader.readBoolOrNull(offsets[7]);
+  object.id = reader.readString(offsets[8]);
   object.isarId = id;
-  object.latitude = reader.readStringOrNull(offsets[6]);
-  object.locationName = reader.readStringOrNull(offsets[7]);
-  object.longitude = reader.readStringOrNull(offsets[8]);
-  object.shiftColor = reader.readStringOrNull(offsets[9]);
-  object.shiftName = reader.readStringOrNull(offsets[10]);
-  object.shiftTimeWindow = reader.readStringOrNull(offsets[11]);
-  object.userDuty = reader.readStringOrNull(offsets[12]);
-  object.userEmail = reader.readStringOrNull(offsets[13]);
-  object.userName = reader.readStringOrNull(offsets[14]);
-  object.userProfilePic = reader.readStringOrNull(offsets[15]);
+  object.latitude = reader.readStringOrNull(offsets[9]);
+  object.locationName = reader.readStringOrNull(offsets[10]);
+  object.longitude = reader.readStringOrNull(offsets[11]);
+  object.shiftColor = reader.readStringOrNull(offsets[12]);
+  object.shiftName = reader.readStringOrNull(offsets[13]);
+  object.shiftTimeWindow = reader.readStringOrNull(offsets[14]);
+  object.userDuty = reader.readStringOrNull(offsets[15]);
+  object.userEmail = reader.readStringOrNull(offsets[16]);
+  object.userName = reader.readStringOrNull(offsets[17]);
+  object.userProfilePic = reader.readStringOrNull(offsets[18]);
   return object;
 }
 
@@ -357,15 +376,15 @@ P _attendanceLocalModelDeserializeProp<P>(
     case 3:
       return (reader.readLong(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 8:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 9:
       return (reader.readStringOrNull(offset)) as P;
     case 10:
@@ -379,6 +398,12 @@ P _attendanceLocalModelDeserializeProp<P>(
     case 14:
       return (reader.readStringOrNull(offset)) as P;
     case 15:
+      return (reader.readStringOrNull(offset)) as P;
+    case 16:
+      return (reader.readStringOrNull(offset)) as P;
+    case 17:
+      return (reader.readStringOrNull(offset)) as P;
+    case 18:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1731,6 +1756,142 @@ extension AttendanceLocalModelQueryFilter
     AttendanceLocalModel,
     QAfterFilterCondition
   >
+  earlyLeaveMinutesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'earlyLeaveMinutes'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  earlyLeaveMinutesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'earlyLeaveMinutes'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  earlyLeaveMinutesEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'earlyLeaveMinutes', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  earlyLeaveMinutesGreaterThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'earlyLeaveMinutes',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  earlyLeaveMinutesLessThan(int? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'earlyLeaveMinutes',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  earlyLeaveMinutesBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'earlyLeaveMinutes',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  faceVerifiedIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'faceVerified'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  faceVerifiedIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'faceVerified'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  faceVerifiedEqualTo(bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'faceVerified', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
   groupNameIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1929,6 +2090,45 @@ extension AttendanceLocalModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'groupName', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  hasPhotoIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'hasPhoto'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  hasPhotoIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'hasPhoto'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    AttendanceLocalModel,
+    AttendanceLocalModel,
+    QAfterFilterCondition
+  >
+  hasPhotoEqualTo(bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'hasPhoto', value: value),
       );
     });
   }
@@ -4327,6 +4527,34 @@ extension AttendanceLocalModelQuerySortBy
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  sortByEarlyLeaveMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'earlyLeaveMinutes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  sortByEarlyLeaveMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'earlyLeaveMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  sortByFaceVerified() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'faceVerified', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  sortByFaceVerifiedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'faceVerified', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
   sortByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
@@ -4337,6 +4565,20 @@ extension AttendanceLocalModelQuerySortBy
   sortByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  sortByHasPhoto() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasPhoto', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  sortByHasPhotoDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasPhoto', Sort.desc);
     });
   }
 
@@ -4554,6 +4796,34 @@ extension AttendanceLocalModelQuerySortThenBy
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  thenByEarlyLeaveMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'earlyLeaveMinutes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  thenByEarlyLeaveMinutesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'earlyLeaveMinutes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  thenByFaceVerified() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'faceVerified', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  thenByFaceVerifiedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'faceVerified', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
   thenByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
@@ -4564,6 +4834,20 @@ extension AttendanceLocalModelQuerySortThenBy
   thenByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  thenByHasPhoto() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasPhoto', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QAfterSortBy>
+  thenByHasPhotoDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasPhoto', Sort.desc);
     });
   }
 
@@ -4770,9 +5054,30 @@ extension AttendanceLocalModelQueryWhereDistinct
   }
 
   QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
+  distinctByEarlyLeaveMinutes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'earlyLeaveMinutes');
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
+  distinctByFaceVerified() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'faceVerified');
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
   distinctByGroupName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'groupName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, AttendanceLocalModel, QDistinct>
+  distinctByHasPhoto() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'hasPhoto');
     });
   }
 
@@ -4901,10 +5206,31 @@ extension AttendanceLocalModelQueryProperty
     });
   }
 
+  QueryBuilder<AttendanceLocalModel, int?, QQueryOperations>
+  earlyLeaveMinutesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'earlyLeaveMinutes');
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, bool?, QQueryOperations>
+  faceVerifiedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'faceVerified');
+    });
+  }
+
   QueryBuilder<AttendanceLocalModel, String?, QQueryOperations>
   groupNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'groupName');
+    });
+  }
+
+  QueryBuilder<AttendanceLocalModel, bool?, QQueryOperations>
+  hasPhotoProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'hasPhoto');
     });
   }
 

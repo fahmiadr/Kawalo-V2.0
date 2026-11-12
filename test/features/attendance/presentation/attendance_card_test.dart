@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card.dart';
 
@@ -50,6 +51,24 @@ void main() {
 
       await tester.tap(find.byType(AttendanceCard));
       expect(tapped, isTrue);
+    });
+
+    testWidgets('shows the shared avatar, initial when the photo is unusable', (
+      tester,
+    ) async {
+      const item = AttendanceItemEntity(
+        id: '9',
+        category: 'MASUK',
+        diffMinutes: 0,
+        userName: 'Ahmad Santoso',
+        userProfilePic: 'bukan-url',
+      );
+      await tester.pumpWidget(
+        buildTestableWidget(const AttendanceCard(item: item)),
+      );
+
+      expect(find.byType(AppUserAvatar), findsOneWidget);
+      expect(find.text('A'), findsOneWidget);
     });
 
     testWidgets('renders on time pulang badge correctly', (tester) async {

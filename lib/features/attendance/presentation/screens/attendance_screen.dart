@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
@@ -15,12 +17,15 @@ import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
+import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_state.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card_skeleton.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_detail_bottom_sheet.dart';
+import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_card.dart';
+import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_cubit.dart';
 
 /// Layar utama fitur Data Absensi Kehadiran.
 ///
@@ -29,10 +34,15 @@ import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendanc
 /// dan tampilan peta detail OpenStreetMap.
 class AttendanceScreen extends StatefulWidget {
   /// Membuat instance [AttendanceScreen].
-  const AttendanceScreen({super.key, this.cubit});
+  const AttendanceScreen({super.key, this.cubit, this.statsCubit});
 
   /// Instance [AttendanceCubit] opsional untuk injeksi pengujian.
   final AttendanceCubit? cubit;
+
+  /// Instance [AttendanceStatsCubit] opsional untuk injeksi pengujian. Tanpa
+  /// ini layar membuatnya dari [AttendanceModule]; bila modul tidak tersedia,
+  /// kartu ringkasan tidak ditampilkan.
+  final AttendanceStatsCubit? statsCubit;
 
   static Route<void> route() => AppPageRoute.slideFade<void>(
     settings: const RouteSettings(name: AppRouteNames.attendance),
@@ -48,10 +58,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   late final ScrollController _scrollController;
   bool _isRefreshing = false;
   bool _isSearchExpanded = false;
+  AttendanceStatsCubit? _statsCubit;
+  String? _loadedStatsKey;
 
   @override
   void initState() {
     super.initState();
+    _statsCubit =
+        widget.statsCubit ??
+        context.read<AttendanceModule?>()?.createStatsCubit();
     _scrollController = LoadMoreScrollController(
       onLoadMore: () => _resolveCubit(context).loadMoreAttendances(),
     );
@@ -65,6 +80,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (mounted) {
         final currentCubit = _resolveCubit(context);
         final result = await currentCubit.fetchAttendances();
+        // The state listener only fires on a change, so cover the case where
+        // the fetch left an already-loaded state untouched.
+        final loaded = currentCubit.state;
+        if (mounted && loaded is AttendanceLoaded) _syncStats(loaded);
         if (mounted && !_isRefreshing) {
           // Tidak menampilkan feedback saat berhasil dimuat dari server.
           // Hanya berikan feedback jika menyajikan cache (offline/server down).
@@ -84,7 +103,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
+    if (widget.statsCubit == null) unawaited(_statsCubit?.close());
     super.dispose();
+  }
+
+  /// Reloads the summary when the date range or the last sync changed; page
+  /// loads (infinite scroll) leave both untouched.
+  void _syncStats(AttendanceLoaded state) {
+    final stats = _statsCubit;
+    if (stats == null) return;
+    final today = DateTime.now().toIso8601String();
+    final from = (state.startDateIso ?? today).substring(0, 10);
+    final to = (state.endDateIso ?? today).substring(0, 10);
+    final key = '$from|$to|${state.lastSync}';
+    if (key == _loadedStatsKey) return;
+    _loadedStatsKey = key;
+    unawaited(stats.load(from: from, to: to));
   }
 
   AttendanceCubit _resolveCubit(BuildContext context) {
@@ -194,6 +228,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         if (state is AttendanceError) {
           AppSnackbar.show(context, message: state.message);
         } else if (state is AttendanceLoaded) {
+          _syncStats(state);
           final query = state.searchQuery ?? '';
           if (_searchController.text != query) {
             _searchController.text = query;
@@ -275,6 +310,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       return _buildAttendanceListView(
         attendances: state.attendances,
         isLoadingMore: state.isLoadingMore,
+        stats: _buildStatsHeader(state),
       );
     }
 
@@ -298,17 +334,33 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return const SizedBox.shrink();
   }
 
+  Widget? _buildStatsHeader(AttendanceLoaded state) {
+    final stats = _statsCubit;
+    if (stats == null) return null;
+    return AttendanceStatsCard(
+      cubit: stats,
+      rangeLabel: state.filterPeriod.resolveDisplayLabel(
+        startDate: state.startDate,
+        endDate: state.endDate,
+      ),
+    );
+  }
+
   Widget _buildAttendanceListView({
     required List<AttendanceItemEntity> attendances,
     required bool isLoadingMore,
+    Widget? stats,
   }) {
+    // The summary is list item 0 so it scrolls away with the list.
+    final offset = stats == null ? 0 : 1;
     return ListScreenListView(
       controller: _scrollController,
       bottomPadding: AppSpacing.space200,
-      itemCount: attendances.length,
+      itemCount: attendances.length + offset,
       isLoadingMore: isLoadingMore,
       itemBuilder: (context, index) {
-        final item = attendances[index];
+        if (stats != null && index == 0) return stats;
+        final item = attendances[index - offset];
         return AttendanceCard(
           item: item,
           onTap: () => _onAttendanceTapped(item),

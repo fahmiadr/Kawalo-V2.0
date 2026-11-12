@@ -7,7 +7,10 @@ import 'package:kawalo_mobile/features/attendance/data/datasources/attendance_lo
 import 'package:kawalo_mobile/features/attendance/data/datasources/attendance_remote_data_source.dart';
 import 'package:kawalo_mobile/features/attendance/data/repositories/attendance_repository_impl.dart';
 import 'package:kawalo_mobile/features/attendance/domain/repositories/attendance_repository.dart';
+import 'package:kawalo_mobile/features/attendance/photo/authenticated_photo_fetcher.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
+import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_cubit.dart';
+import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_repository.dart';
 
 /// Feature Composition Root untuk modul Absensi pada Frontend.
 ///
@@ -19,7 +22,9 @@ final class AttendanceModule implements CacheWipeableModule {
     required Isar isar,
     required NetworkInfo networkInfo,
     required SyncStorageService syncStorageService,
-  }) : _syncStorage = syncStorageService {
+  }) : _syncStorage = syncStorageService,
+       photoFetcher = AuthenticatedPhotoFetcher(apiClient: apiClient),
+       _statsRepository = AttendanceStatsRepositoryImpl(apiClient: apiClient) {
     final localDataSource = AttendanceLocalDataSourceImpl(isar: isar);
     cacheWipeable = localDataSource;
     repository = AttendanceRepositoryImpl(
@@ -31,6 +36,10 @@ final class AttendanceModule implements CacheWipeableModule {
   }
 
   final SyncStorageService _syncStorage;
+  final AttendanceStatsRepository _statsRepository;
+
+  /// Downloads admin-only check-in/out photos with the session token.
+  final AuthenticatedPhotoFetcher photoFetcher;
   late final AttendanceRepository repository;
 
   @override
@@ -43,4 +52,7 @@ final class AttendanceModule implements CacheWipeableModule {
       syncStorageService: _syncStorage,
     );
   }
+
+  AttendanceStatsCubit createStatsCubit() =>
+      AttendanceStatsCubit(repository: _statsRepository);
 }

@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_divider.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/extensions/attendance_item_ui_extension.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_shift_marker.dart';
@@ -33,6 +34,9 @@ class AttendanceCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
     final emphasizedTypeScale = theme.typography.emphasized;
+    final showSimilarity =
+        item.faceSimilarityPercent != null &&
+        (context.read<UserSessionCubit?>()?.state?.isAdminRole ?? false);
 
     final semanticLabel =
         'Absensi ${item.displayUserName}, '
@@ -41,7 +45,8 @@ class AttendanceCard extends StatelessWidget {
         'shift ${item.displayShift}, '
         'pos ${item.displayLocationName}, '
         'waktu ${item.displayAttendanceDt}, '
-        'keterangan ${item.displayDiffLabel}';
+        'keterangan ${item.displayDiffLabel}'
+        '${item.isUnverified ? ', tidak terverifikasi' : ''}';
 
     return AppCard(
       onPressed: onTap,
@@ -57,7 +62,10 @@ class AttendanceCard extends StatelessWidget {
           // ── Header: Avatar, Nama, & Email ────────────────────────
           Row(
             children: [
-              _buildAvatar(context),
+              AppUserAvatar(
+                name: item.displayUserName,
+                imageUrl: item.displayAvatarUrl,
+              ),
               AppSpacing.hGapSm,
               Expanded(
                 child: Column(
@@ -89,7 +97,23 @@ class AttendanceCard extends StatelessWidget {
           AppSpacing.vGapSm,
 
           // ── Tag Status Absensi ────────────────────────────────────
-          AppTag(label: item.displayCategory, variant: item.tagVariant),
+          Wrap(
+            spacing: AppSpacing.space100,
+            runSpacing: AppSpacing.space100,
+            children: [
+              AppTag(label: item.displayCategory, variant: item.tagVariant),
+              if (item.isUnverified)
+                const AppTag(
+                  label: 'Tidak terverifikasi',
+                  variant: AppTagVariant.neutral,
+                ),
+              if (showSimilarity)
+                AppTag(
+                  label: 'Kemiripan ${item.faceSimilarityPercent}%',
+                  variant: AppTagVariant.neutral,
+                ),
+            ],
+          ),
 
           // ── Garis Pemisah (AppDivider) ────────────────────────────
           const Padding(
@@ -151,10 +175,6 @@ class AttendanceCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final typeScale = theme.typeScale;
 
-    final statusVariant = item.isLate
-        ? AppTagVariant.error
-        : AppTagVariant.primary;
-
     return Row(
       children: [
         const AppSvgIcon.color(KawaloColorVectors.calendar1, size: 20),
@@ -172,39 +192,10 @@ class AttendanceCard extends StatelessWidget {
         AppSpacing.hGapSm,
         AppTag(
           label: item.displayDiffLabel,
-          variant: statusVariant,
+          variant: item.statusVariant,
           size: AppTagSize.small,
         ),
       ],
-    );
-  }
-
-  Widget _buildAvatar(BuildContext context) {
-    final pic = item.userProfilePic;
-    final isNetworkUrl =
-        pic != null &&
-        (pic.startsWith('http://') || pic.startsWith('https://'));
-
-    if (isNetworkUrl) {
-      return ClipRRect(
-        borderRadius: AppRadius.borderMedium,
-        child: CachedNetworkImage(
-          imageUrl: pic,
-          width: 40,
-          height: 40,
-          fit: BoxFit.cover,
-          placeholder: (_, _) => _buildAvatarFallback(),
-          errorWidget: (_, _, _) => _buildAvatarFallback(),
-        ),
-      );
-    }
-    return _buildAvatarFallback();
-  }
-
-  Widget _buildAvatarFallback() {
-    return const ClipRRect(
-      borderRadius: AppRadius.borderMedium,
-      child: AppSvgIcon.color(KawaloColorVectors.patrol3, size: 40),
     );
   }
 }

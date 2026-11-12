@@ -91,5 +91,24 @@ void main() {
       expect(entity.shiftTimeWindow, isNull);
       expect(entity.groupName, 'Cluster Melati');
     });
+
+    test('toEntity carries the face and early-leave fields', () {
+      const model = AttendanceModel(
+        id: '1',
+        category: 'PULANG',
+        diffMinutes: 0,
+        earlyLeaveMinutes: 12,
+        faceVerified: false,
+        hasPhoto: true,
+        faceSimilarityPercent: 87,
+      );
+
+      final entity = AttendanceMapper.toEntity(model);
+
+      expect(entity.earlyLeaveMinutes, 12);
+      expect(entity.faceVerified, isFalse);
+      expect(entity.hasPhoto, isTrue);
+      expect(entity.faceSimilarityPercent, 87);
+    });
   });
 }

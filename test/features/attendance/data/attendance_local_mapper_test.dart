@@ -116,5 +116,24 @@ void main() {
       expect(roundTrip.latitude, isNull);
       expect(roundTrip.longitude, '106.8456');
     });
+
+    test('the offline cache keeps early leave and face fields', () {
+      const model = AttendanceModel(
+        id: '1',
+        category: 'PULANG',
+        diffMinutes: 0,
+        earlyLeaveMinutes: 12,
+        faceVerified: false,
+        hasPhoto: true,
+      );
+
+      final restored = AttendanceLocalMapper.fromLocal(
+        AttendanceLocalMapper.toLocal(model),
+      );
+
+      expect(restored.earlyLeaveMinutes, 12);
+      expect(restored.faceVerified, isFalse);
+      expect(restored.hasPhoto, isTrue);
+    });
   });
 }
