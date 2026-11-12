@@ -43,11 +43,12 @@ class PttTranscriber(
         private const val TAG = "PttTranscriber"
 
         /**
-         * Decision T1 (open): the device path is on-device only by default, so audio never leaves the phone
-         * through the OS recognizer. Devices without an installed on-device `id-ID` model report `unsupported`
-         * and the server worker fills the gap. Set to true only after T1 allows Google's cloud recognizer.
+         * Decision T1 (12 Nov 2026): transcription priority is 1) the on-device `id-ID` model, 2) the OS default
+         * recognizer, which on most phones is Google's and sends the audio to Google's servers, 3) the server
+         * worker, which takes every turn reported `failed`/`unsupported`. Set to false to keep audio on the
+         * phone: devices without the on-device model then report `unsupported` straight to the server worker.
          */
-        const val ALLOW_CLOUD_FALLBACK = false
+        const val ALLOW_CLOUD_FALLBACK = true
 
         const val LOCALE = "id-ID"
 
@@ -89,6 +90,7 @@ class PttTranscriber(
     private val pending = ArrayDeque<Job>()
     private var session: Session? = null
     private var released = false
+    private var modelDownloadRequested = false
 
     fun beginTurn(requestId: String) {
         try {
@@ -199,6 +201,7 @@ class PttTranscriber(
                             listen(s)
                         } else {
                             val supported = support.supportedOnDeviceLanguages.any(PttTranscriptPolicy::isIndonesian)
+                            if (supported) requestModelDownload(s)
                             fallbackOrUnsupported(s, if (supported) "id_model_not_installed" else "id_not_supported_on_device")
                         }
                     } catch (t: Throwable) {
@@ -216,6 +219,21 @@ class PttTranscriber(
                 }
             },
         )
+    }
+
+    // Asks the recognizer service to fetch the missing id-ID model so later turns are transcribed on the phone
+    // instead of by the slower server worker. Only the model comes down; no audio leaves the device. Requested
+    // once per process: the service owns the download, repeating it every turn would only add noise.
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun requestModelDownload(s: Session) {
+        if (modelDownloadRequested) return
+        modelDownloadRequested = true
+        try {
+            s.recognizer?.triggerModelDownload(languageIntent())
+            Log.i(TAG, "Requested the on-device $LOCALE model download")
+        } catch (t: Throwable) {
+            Log.w(TAG, "triggerModelDownload failed: ${t.javaClass.simpleName} ${t.message}")
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
