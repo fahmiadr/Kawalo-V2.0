@@ -2,229 +2,269 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kawalo_mobile/core/cubit/theme_mode_cubit.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/services/media_picker_service.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
+import 'package:kawalo_mobile/core/widgets/app_action_tile.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
+import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
-import 'package:kawalo_mobile/features/auth/presentation/screens/group_selection_screen.dart';
+import 'package:kawalo_mobile/features/auth/presentation/screens/change_password_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/more_screen.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
+import '../../../attendance_admin/fixtures.dart';
 
-const _admin = UserGroupEntity(
-  groupUid: 'g1',
-  groupName: 'PT Kawalo Security',
-  category: 'ADMIN',
-  allowAdmin: true,
-  allowPatrol: true,
-  allowMonPatrol: false,
-  features: [],
-);
-const _guard = UserGroupEntity(
-  groupUid: 'g2',
-  groupName: 'PT Maju Bersama',
-  category: 'GUARD',
-  allowAdmin: false,
-  allowPatrol: true,
-  allowMonPatrol: false,
-  features: [],
-);
+class _MockAuthRepository extends Mock implements AuthRepository {}
 
-UserEntity _user({required List<UserGroupEntity> groups}) => UserEntity(
-  id: 'u1',
-  email: 'zaki@kawalo.co.id',
-  name: 'Ahmad Zaki',
-  groups: groups,
-  activeGroup: _admin,
-);
+class _MockUploadRepository extends Mock implements UploadRepository {}
+
+class _MockAuthBloc extends MockBloc<AuthEvent, AuthState>
+    implements AuthBloc {}
+
+class _FakePicker implements MediaPickerService {
+  _FakePicker(this.gallery);
+
+  final List<AppMediaFile> gallery;
+
+  @override
+  Future<List<AppMediaFile>> pickMultiImagesFromGallery({int? limit}) async =>
+      gallery;
+
+  @override
+  Future<List<AppMediaFile>> captureMultiImagesFromCamera(
+    BuildContext context, {
+    int maxPhotos = 4,
+    int alreadyAttachedCount = 0,
+  }) async => const [];
+
+  @override
+  Future<AppMediaFile?> pickDocumentFile() async => null;
+}
 
 void main() {
-  late MockAuthBloc authBloc;
+  const file = AppMediaFile(name: 'foto.jpg', path: '/tmp/foto.jpg');
+  const withoutPhoto = UserEntity(
+    id: 'usr_1',
+    email: 'zaki@kawalo.id',
+    name: 'Ahmad Zaki',
+    groups: [],
+  );
+
+  late _MockAuthRepository authRepository;
+  late _MockUploadRepository uploadRepository;
+  late _MockAuthBloc authBloc;
 
   setUpAll(() {
-    registerFallbackValue(const LogoutRequested());
-    PackageInfo.setMockInitialValues(
-      appName: 'Kawalo',
-      packageName: 'id.kawalo',
-      version: '1.2.3',
-      buildNumber: '45',
-      buildSignature: '',
-    );
+    registerFallbackValue(const AvatarUpdated(null));
+    registerFallbackValue(file);
   });
 
   setUp(() {
-    authBloc = MockAuthBloc();
+    authRepository = _MockAuthRepository();
+    uploadRepository = _MockUploadRepository();
+    authBloc = _MockAuthBloc();
   });
 
   Future<void> pump(
-    WidgetTester tester,
-    AuthState state, {
-    ThemeModeCubit? themeCubit,
+    WidgetTester tester, {
+    UserEntity user = withoutPhoto,
+    MediaPickerService? picker,
   }) async {
-    when(() => authBloc.state).thenReturn(state);
-    // AuthBloc lives above the Navigator, as in MyApp, so pushed routes see it.
+    when(() => authBloc.state).thenReturn(Authenticated(user: user));
     await tester.pumpWidget(
-      MultiBlocProvider(
+      MultiRepositoryProvider(
         providers: [
-          BlocProvider<AuthBloc>.value(value: authBloc),
-          if (themeCubit != null)
-            BlocProvider<ThemeModeCubit>.value(value: themeCubit),
+          RepositoryProvider<AuthRepository>.value(value: authRepository),
+          RepositoryProvider<UploadRepository>.value(value: uploadRepository),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightThemeData(),
-          home: const Scaffold(body: MoreScreen()),
+        child: BlocProvider<AuthBloc>.value(
+          value: authBloc,
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: Scaffold(body: MoreScreen(mediaPicker: picker)),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
   }
 
-  testWidgets('theme selector defaults to Terang and switches the mode', (
-    tester,
-  ) async {
-    final cubit = ThemeModeCubit(null);
-    addTearDown(cubit.close);
-    await pump(
-      tester,
-      Authenticated(user: _user(groups: [_admin])),
-      themeCubit: cubit,
-    );
-
-    expect(find.text('Otomatis'), findsOneWidget);
-    expect(find.text('Terang'), findsOneWidget);
-    expect(cubit.state, ThemeMode.light);
-
-    await tester.tap(find.text('Gelap'));
-    await tester.pumpAndSettle();
-    expect(cubit.state, ThemeMode.dark);
-
-    await tester.tap(find.text('Otomatis'));
-    await tester.pumpAndSettle();
-    expect(cubit.state, ThemeMode.system);
-  });
-
-  testWidgets('hides the theme selector without a ThemeModeCubit', (
-    tester,
-  ) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin])));
-
-    expect(find.text('Gelap'), findsNothing);
-  });
-
-  testWidgets('renders profile, role, active group and app version', (
-    tester,
-  ) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin, _guard])));
-
-    expect(find.text('Ahmad Zaki'), findsOneWidget);
-    expect(find.text('zaki@kawalo.co.id'), findsOneWidget);
-    expect(find.text('Admin'), findsOneWidget);
-    expect(find.text('PT Kawalo Security'), findsOneWidget);
-    expect(find.text('AZ'), findsOneWidget);
-    expect(find.text('Versi 1.2.3 (45)'), findsOneWidget);
-  });
-
-  testWidgets('Grup aktif text follows the dark color scheme', (tester) async {
+  Future<void> pumpWithSession(WidgetTester tester, String role) async {
     when(
       () => authBloc.state,
-    ).thenReturn(Authenticated(user: _user(groups: [_admin])));
-    // The Flutter Theme is not dark under M3EMaterialApp, so the text must
-    // carry its own color instead of inheriting DefaultTextStyle.
+    ).thenReturn(const Authenticated(user: withoutPhoto));
     await tester.pumpWidget(
-      BlocProvider<AuthBloc>.value(
-        value: authBloc,
-        child: M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          initialTheme: Brightness.dark,
-          dynamicColoring: false,
-          home: const Scaffold(body: MoreScreen()),
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<AuthRepository>.value(value: authRepository),
+          RepositoryProvider<UploadRepository>.value(value: uploadRepository),
+        ],
+        child: BlocProvider<AuthBloc>.value(
+          value: authBloc,
+          child: BlocProvider<UserSessionCubit>.value(
+            value: UserSessionCubit(session(role)),
+            child: MaterialApp(
+              theme: AppTheme.lightThemeData(),
+              home: const Scaffold(body: MoreScreen()),
+            ),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
+  }
 
-    final scheme = AppTheme.of(
-      tester.element(find.byType(MoreScreen)),
-    ).colorScheme;
-    expect(scheme.brightness, Brightness.dark);
+  Future<void> openSheet(WidgetTester tester) async {
+    await tester.tap(find.byType(AppUserAvatar));
+    await tester.pumpAndSettle();
+  }
 
-    Color? colorOf(String text) {
-      return tester.widget<Text>(find.text(text)).style?.color;
-    }
+  testWidgets('avatar is a 64 px circle with two initials', (tester) async {
+    await pump(tester);
 
-    expect(colorOf('Grup aktif'), scheme.onSurfaceVariant);
-    expect(colorOf('PT Kawalo Security'), scheme.onSurface);
+    final avatar = tester.widget<AppUserAvatar>(find.byType(AppUserAvatar));
+    expect(avatar.size, 64);
+    expect(avatar.circle, isTrue);
+    expect(avatar.maxInitials, 2);
+    expect(find.text('AZ'), findsOneWidget);
   });
 
-  testWidgets('hides Ganti Grup when the user has a single group', (
+  testWidgets('sheet offers camera and gallery, no delete without a photo', (
     tester,
   ) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin])));
+    await pump(tester);
+    await openSheet(tester);
 
-    expect(find.text('Ganti Grup'), findsNothing);
-    expect(find.text('Keluar'), findsOneWidget);
+    expect(find.text('Ambil foto'), findsOneWidget);
+    expect(find.text('Pilih dari galeri'), findsOneWidget);
+    expect(find.text('Hapus foto'), findsNothing);
   });
 
-  testWidgets('shows Ganti Grup when the user has more than one group', (
-    tester,
-  ) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin, _guard])));
+  testWidgets('sheet shows Hapus foto when a photo exists', (tester) async {
+    await pump(tester, user: withoutPhoto.withAvatar('https://x/u/a.webp'));
+    await openSheet(tester);
 
-    expect(find.text('Ganti Grup'), findsOneWidget);
+    expect(find.text('Hapus foto'), findsOneWidget);
   });
 
-  testWidgets('Ganti Grup opens the group selection screen', (tester) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin, _guard])));
+  testWidgets('deleting the photo asks for confirmation first', (tester) async {
+    when(
+      () => authRepository.updateAvatar(null),
+    ).thenAnswer((_) async => const Right(null));
+    await pump(tester, user: withoutPhoto.withAvatar('https://x/u/a.webp'));
+    await openSheet(tester);
 
-    await tester.tap(find.text('Ganti Grup'));
+    await tester.tap(find.text('Hapus foto'));
     await tester.pumpAndSettle();
-
-    expect(find.byType(GroupSelectionScreen), findsOneWidget);
-    expect(find.text('PT Maju Bersama'), findsOneWidget);
-  });
-
-  testWidgets('back on the group picker cancels the switch without logout', (
-    tester,
-  ) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin, _guard])));
-    await tester.tap(find.text('Ganti Grup'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byType(AppIconButton),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(GroupSelectionScreen), findsNothing);
-    expect(find.byType(MoreScreen), findsOneWidget);
-    verifyNever(() => authBloc.add(any()));
-  });
-
-  testWidgets('Keluar asks for confirmation before dispatching logout', (
-    tester,
-  ) async {
-    await pump(tester, Authenticated(user: _user(groups: [_admin])));
-
-    await tester.tap(find.text('Keluar'));
-    await tester.pumpAndSettle();
-    expect(find.text('Keluar dari akun?'), findsOneWidget);
+    expect(find.text('Hapus foto profil?'), findsOneWidget);
+    verifyNever(() => authRepository.updateAvatar(any()));
 
     await tester.tap(find.text('Batal'));
     await tester.pumpAndSettle();
-    verifyNever(() => authBloc.add(any()));
+    verifyNever(() => authRepository.updateAvatar(any()));
 
-    await tester.tap(find.text('Keluar'));
+    await openSheet(tester);
+    await tester.tap(find.text('Hapus foto'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Keluar').last);
+    await tester.tap(find.text('Hapus'));
     await tester.pumpAndSettle();
-    verify(() => authBloc.add(const LogoutRequested())).called(1);
+
+    verify(() => authRepository.updateAvatar(null)).called(1);
+    verify(() => authBloc.add(const AvatarUpdated(null))).called(1);
+    await tester.pumpAndSettle(const Duration(seconds: 6));
+  });
+
+  testWidgets('gallery pick is uploaded, saved and applied to the session', (
+    tester,
+  ) async {
+    when(
+      () => uploadRepository.uploadImage(any()),
+    ).thenAnswer((_) async => const Right('https://x/u/new.webp'));
+    when(
+      () => authRepository.updateAvatar('https://x/u/new.webp'),
+    ).thenAnswer((_) async => const Right('https://x/u/new.webp'));
+    await pump(tester, picker: _FakePicker(const [file]));
+    await openSheet(tester);
+
+    await tester.tap(find.text('Pilih dari galeri'));
+    await tester.pumpAndSettle();
+
+    verify(() => uploadRepository.uploadImage(file)).called(1);
+    verify(
+      () => authBloc.add(const AvatarUpdated('https://x/u/new.webp')),
+    ).called(1);
+    expect(find.text('Foto profil berhasil diperbarui.'), findsOneWidget);
+    await tester.pumpAndSettle(const Duration(seconds: 6));
+  });
+
+  testWidgets('a failed upload shows the message and leaves the session', (
+    tester,
+  ) async {
+    when(
+      () => uploadRepository.uploadImage(any()),
+    ).thenAnswer((_) async => const Left(ServerFailure('Gagal mengunggah.')));
+    await pump(tester, picker: _FakePicker(const [file]));
+    await openSheet(tester);
+
+    await tester.tap(find.text('Pilih dari galeri'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gagal mengunggah.'), findsOneWidget);
+    verifyNever(() => authRepository.updateAvatar(any()));
+    verifyNever(() => authBloc.add(any()));
+    await tester.pumpAndSettle(const Duration(seconds: 6));
+  });
+
+  testWidgets('cancelling the picker changes nothing', (tester) async {
+    await pump(tester, picker: _FakePicker(const []));
+    await openSheet(tester);
+
+    await tester.tap(find.text('Pilih dari galeri'));
+    await tester.pumpAndSettle();
+
+    verifyNever(() => uploadRepository.uploadImage(any()));
+  });
+
+  testWidgets('Ganti Password tile opens the change-password screen', (
+    tester,
+  ) async {
+    await pump(tester);
+
+    await tester.scrollUntilVisible(find.text('Ganti Password'), 100);
+    await tester.tap(find.text('Ganti Password'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ChangePasswordScreen), findsOneWidget);
+  });
+
+  testWidgets('admins get Pengaturan Absensi in the menu', (tester) async {
+    await pumpWithSession(tester, 'ADMIN');
+    expect(find.text('Pengaturan Absensi'), findsOneWidget);
+  });
+
+  testWidgets('guards do not see Pengaturan Absensi', (tester) async {
+    await pumpWithSession(tester, 'GUARD');
+    expect(find.text('Pengaturan Absensi'), findsNothing);
+  });
+
+  testWidgets('menu tiles do not touch each other', (tester) async {
+    await pumpWithSession(tester, 'ADMIN');
+    await tester.scrollUntilVisible(find.text('Keluar'), 100);
+
+    Rect tile(String title) => tester.getRect(
+      find
+          .ancestor(of: find.text(title), matching: find.byType(AppActionTile))
+          .first,
+    );
+    final upper = tile('Pengaturan Absensi');
+    final lower = tile('Ganti Password');
+    expect(lower.top - upper.bottom, greaterThan(0));
   });
 }

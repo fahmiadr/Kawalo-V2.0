@@ -4,51 +4,111 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/cubit/theme_mode_cubit.dart';
+import 'package:kawalo_mobile/core/services/media_picker_service.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/widgets/app_action_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_divider.dart';
+import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
+import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/attendance_setting_screen.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
+import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:kawalo_mobile/features/auth/presentation/cubit/profile_avatar_cubit.dart';
+import 'package:kawalo_mobile/features/auth/presentation/screens/change_password_screen.dart';
+import 'package:kawalo_mobile/features/face/face_module.dart';
+import 'package:kawalo_mobile/features/face/presentation/screens/face_data_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/cubit/app_version_cubit.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/profile_avatar_sheet.dart';
 
-/// "Lainnya" tab: profile of the signed-in user, group switch and logout.
+/// "Pengaturan" tab: profile of the signed-in user (with photo change),
+/// theme, group switch, password change and logout.
 ///
 /// Reads [AuthBloc] only for [Authenticated]; transient states (loading during
 /// logout/switch) keep showing the last profile instead of flashing empty.
 class MoreScreen extends StatelessWidget {
-  const MoreScreen({super.key});
+  const MoreScreen({super.key, this.mediaPicker});
+
+  /// Test injection; defaults to the device camera and gallery.
+  final MediaPickerService? mediaPicker;
 
   @override
   Widget build(BuildContext context) {
     // The shell tolerates a missing AuthBloc (isolated widget tests); nothing
     // here works without one, so render nothing instead of throwing.
     if (context.read<AuthBloc?>() == null) return const SizedBox.shrink();
-    return BlocProvider(
+    final authRepository = context.read<AuthRepository?>();
+    final uploadRepository = context.read<UploadRepository?>();
+    final body = BlocProvider(
       create: (_) => AppVersionCubit()..load(),
       child: BlocBuilder<AuthBloc, AuthState>(
         buildWhen: (_, current) => current is Authenticated,
         builder: (context, state) {
           final auth = state is Authenticated ? state : null;
-          return _MoreBody(user: auth?.user, role: auth?.session?.role);
+          return _MoreBody(
+            user: auth?.user,
+            role: auth?.session?.role,
+            mediaPicker: mediaPicker,
+          );
         },
       ),
     );
+    // Without both repositories (isolated widget tests) the photo stays
+    // read-only.
+    if (authRepository == null || uploadRepository == null) return body;
+    return BlocProvider(
+      create: (_) => ProfileAvatarCubit(
+        authRepository: authRepository,
+        uploadRepository: uploadRepository,
+      ),
+      child: BlocConsumer<ProfileAvatarCubit, ProfileAvatarState>(
+        listener: _onAvatarState,
+        builder: (context, state) => Stack(
+          children: [
+            body,
+            if (state is ProfileAvatarBusy)
+              const AppLoadingOverlay(semanticLabel: 'Menyimpan foto profil'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static void _onAvatarState(BuildContext context, ProfileAvatarState state) {
+    switch (state) {
+      case ProfileAvatarSuccess(:final avatarUrl, :final message):
+        context.read<AuthBloc>().add(AvatarUpdated(avatarUrl));
+        AppSnackbar.show(context, message: message);
+      case ProfileAvatarFailure(:final message):
+        AppSnackbar.show(context, message: message);
+      case ProfileAvatarIdle():
+      case ProfileAvatarBusy():
+        break;
+    }
   }
 }
 
 class _MoreBody extends StatelessWidget {
-  const _MoreBody({required this.user, required this.role});
+  const _MoreBody({
+    required this.user,
+    required this.role,
+    required this.mediaPicker,
+  });
 
   final UserEntity? user;
   final String? role;
+  final MediaPickerService? mediaPicker;
 
   static String? _roleLabel(String? role) {
     final value = role?.trim() ?? '';
@@ -61,11 +121,42 @@ class _MoreBody extends StatelessWidget {
     };
   }
 
-  static String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
-    if (parts.isEmpty) return '?';
-    final letters = parts.take(2).map((p) => p.substring(0, 1)).join();
-    return letters.toUpperCase();
+  Future<void> _changeAvatar(BuildContext context, UserEntity user) async {
+    final cubit = context.read<ProfileAvatarCubit>();
+    final hasPhoto = user.avatarUrl?.trim().isNotEmpty ?? false;
+    final action = await ProfileAvatarSheet.show(context, hasPhoto: hasPhoto);
+    if (action == null || !context.mounted) return;
+
+    if (action == ProfileAvatarAction.remove) {
+      final confirmed = await showAppConfirmationDialog(
+        context: context,
+        title: 'Hapus foto profil?',
+        message: 'Foto profil Anda akan dihapus dan diganti inisial nama.',
+      );
+      if ((confirmed ?? false) && !cubit.isClosed) {
+        unawaited(cubit.removePhoto());
+      }
+      return;
+    }
+
+    final picker = mediaPicker ?? DefaultMediaPickerService();
+    try {
+      final files = action == ProfileAvatarAction.camera
+          ? await picker.captureMultiImagesFromCamera(context, maxPhotos: 1)
+          : await picker.pickMultiImagesFromGallery(limit: 1);
+      if (files.isNotEmpty && !cubit.isClosed) {
+        unawaited(cubit.setPhoto(files.first));
+      }
+    } on Object catch (_) {
+      if (context.mounted) {
+        AppSnackbar.show(
+          context,
+          message: action == ProfileAvatarAction.camera
+              ? 'Kamera tidak dapat dibuka.'
+              : 'Galeri tidak dapat dibuka.',
+        );
+      }
+    }
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
@@ -81,6 +172,14 @@ class _MoreBody extends StatelessWidget {
       context.read<AuthBloc>().add(const LogoutRequested());
     }
   }
+
+  /// Gap between menu tiles so they do not touch.
+  static List<Widget> _spaced(List<Widget> tiles) => [
+    for (var i = 0; i < tiles.length; i++) ...[
+      if (i > 0) AppSpacing.vGap100,
+      tiles[i],
+    ],
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +205,13 @@ class _MoreBody extends StatelessWidget {
             if (user != null) ...[
               Row(
                 children: [
-                  _Avatar(name: user.name, imageUrl: user.avatarUrl),
+                  _Avatar(
+                    name: user.name,
+                    imageUrl: user.avatarUrl,
+                    onTap: context.read<ProfileAvatarCubit?>() == null
+                        ? null
+                        : () => unawaited(_changeAvatar(context, user)),
+                  ),
                   AppSpacing.hGap200,
                   Expanded(
                     child: Column(
@@ -177,26 +282,76 @@ class _MoreBody extends StatelessWidget {
               const AppDivider(),
               AppSpacing.vGapSm,
             ],
-            if (canSwitchGroup)
-              AppActionTile(
-                title: 'Ganti Grup',
-                subtitle: 'Pindah ke grup lain',
-                vectorIcon: KawaloVectors.refreshCcwDot,
-                closeOnTap: false,
-                trailing: const AppSvgIcon(
-                  KawaloVectors.arrowRight01,
-                  size: 20,
+            ..._spaced([
+              if (canSwitchGroup)
+                AppActionTile(
+                  title: 'Ganti Grup',
+                  subtitle: 'Pindah ke grup lain',
+                  vectorIcon: KawaloVectors.refreshCcwDot,
+                  closeOnTap: false,
+                  trailing: const AppSvgIcon(
+                    KawaloVectors.arrowRight01,
+                    size: 20,
+                  ),
+                  onTap: () =>
+                      unawaited(AppRouter.of(context).pushGroupSelection(user)),
                 ),
-                onTap: () =>
-                    unawaited(AppRouter.of(context).pushGroupSelection(user)),
+              if (context.read<UserSessionCubit?>()?.state?.isAdminRole ??
+                  false)
+                AppActionTile(
+                  title: 'Pengaturan Absensi',
+                  subtitle: 'Batas kemiripan wajah untuk absen',
+                  vectorIcon: KawaloVectors.userShield01,
+                  closeOnTap: false,
+                  trailing: const AppSvgIcon(
+                    KawaloVectors.arrowRight01,
+                    size: 20,
+                  ),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(AttendanceSettingScreen.route()),
+                ),
+              if (context.read<FaceModule?>() != null)
+                AppActionTile(
+                  title: 'Data Wajah',
+                  subtitle: 'Status dan daftar ulang wajah',
+                  vectorIcon: KawaloVectors.arrowRight01,
+                  closeOnTap: false,
+                  trailing: const AppSvgIcon(
+                    KawaloVectors.arrowRight01,
+                    size: 20,
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    FaceDataScreen.route(
+                      repository: context.read<FaceModule>().repository,
+                    ),
+                  ),
+                ),
+              if (context.read<AuthRepository?>() != null)
+                AppActionTile(
+                  title: 'Ganti Password',
+                  subtitle: 'Ubah password akun Anda',
+                  vectorIcon: KawaloVectors.lockPassword,
+                  closeOnTap: false,
+                  trailing: const AppSvgIcon(
+                    KawaloVectors.arrowRight01,
+                    size: 20,
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    ChangePasswordScreen.route(
+                      repository: context.read<AuthRepository>(),
+                      authBloc: context.read<AuthBloc>(),
+                    ),
+                  ),
+                ),
+              AppActionTile(
+                title: 'Keluar',
+                vectorIcon: KawaloVectors.logout03,
+                isDestructive: true,
+                closeOnTap: false,
+                onTap: () => unawaited(_confirmLogout(context)),
               ),
-            AppActionTile(
-              title: 'Keluar',
-              vectorIcon: KawaloVectors.logout03,
-              isDestructive: true,
-              closeOnTap: false,
-              onTap: () => unawaited(_confirmLogout(context)),
-            ),
+            ]),
             BlocBuilder<AppVersionCubit, String?>(
               builder: (context, version) {
                 if (version == null) return const SizedBox.shrink();
@@ -244,47 +399,34 @@ class _ThemeModeSelector extends StatelessWidget {
 }
 
 class _Avatar extends StatelessWidget {
-  const _Avatar({required this.name, required this.imageUrl});
-
-  static const double _size = 64;
+  const _Avatar({
+    required this.name,
+    required this.imageUrl,
+    required this.onTap,
+  });
 
   final String name;
   final String? imageUrl;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final url = imageUrl?.trim();
-
-    final initials = Center(
-      child: Text(
-        _MoreBody._initials(name),
-        style: theme.typeScale.titleLarge.copyWith(
-          color: colorScheme.onPrimaryContainer,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    final avatar = AppUserAvatar(
+      name: name,
+      imageUrl: imageUrl,
+      size: 64,
+      maxInitials: 2,
+      circle: true,
     );
-
+    if (onTap == null) return avatar;
     return Semantics(
-      label: 'Foto profil $name',
+      button: true,
+      label: 'Ubah foto profil',
       excludeSemantics: true,
-      child: Container(
-        width: _size,
-        height: _size,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: colorScheme.primaryContainer,
-          shape: BoxShape.circle,
-        ),
-        child: url == null || url.isEmpty
-            ? initials
-            : Image.network(
-                url,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => initials,
-              ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: avatar,
       ),
     );
   }

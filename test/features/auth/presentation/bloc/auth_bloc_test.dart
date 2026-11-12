@@ -200,6 +200,50 @@ void main() {
     );
   });
 
+  group('LogoutRequested with message', () {
+    blocTest<AuthBloc, AuthState>(
+      'carries the message into Unauthenticated for the login screen',
+      build: () {
+        when(
+          () => mockLogoutUseCase(any()),
+        ).thenAnswer((_) async => const Right(null));
+        return authBloc;
+      },
+      act: (bloc) => bloc.add(const LogoutRequested(message: 'Silakan masuk.')),
+      expect: () => [
+        const AuthLoading(),
+        const Unauthenticated(message: 'Silakan masuk.'),
+      ],
+    );
+  });
+
+  group('AvatarUpdated', () {
+    blocTest<AuthBloc, AuthState>(
+      'replaces the photo of the authenticated user and keeps the session',
+      build: () => authBloc,
+      seed: () => const Authenticated(user: tUserEntity),
+      act: (bloc) => bloc.add(const AvatarUpdated('https://x/a.webp')),
+      expect: () => [
+        Authenticated(user: tUserEntity.withAvatar('https://x/a.webp')),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'null removes the photo',
+      build: () => authBloc,
+      seed: () => Authenticated(user: tUserEntity.withAvatar('https://x/a')),
+      act: (bloc) => bloc.add(const AvatarUpdated(null)),
+      expect: () => [const Authenticated(user: tUserEntity)],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'is ignored when nobody is authenticated',
+      build: () => authBloc,
+      act: (bloc) => bloc.add(const AvatarUpdated('https://x/a.webp')),
+      expect: () => <AuthState>[],
+    );
+  });
+
   group('AuthCheckRequested', () {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, Authenticated] when active session is found',

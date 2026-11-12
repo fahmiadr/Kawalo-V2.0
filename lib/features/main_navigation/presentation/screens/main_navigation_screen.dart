@@ -122,8 +122,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 selectedIcon: AppSvgIcon(
                   KawaloVectors.moreHorizontalCircle01Filled,
                 ),
-                label: 'Lainnya',
-                semanticLabel: 'Menu lainnya',
+                label: 'Pengaturan',
+                semanticLabel: 'Menu pengaturan',
               ),
             ],
           ),

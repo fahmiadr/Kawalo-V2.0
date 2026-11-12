@@ -27,6 +27,20 @@ void main() {
       expect(result.profilePic, isNull);
     });
 
+    test('fromJson reads the role and tolerates its absence', () {
+      expect(
+        GroupMemberModel.fromJson(const {
+          'email': 'a@kawalo.id',
+          'role': 'GUARD',
+        }).role,
+        'GUARD',
+      );
+      expect(
+        GroupMemberModel.fromJson(const {'email': 'a@kawalo.id'}).role,
+        isNull,
+      );
+    });
+
     test('fromJson throws an Exception when email is missing', () {
       expect(
         () => GroupMemberModel.fromJson(const {'name': 'No Email'}),

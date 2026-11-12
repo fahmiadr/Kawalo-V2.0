@@ -3,23 +3,29 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/attendance_setting_screen.dart';
+import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/manual_requests_screen.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
+import 'package:kawalo_mobile/features/forecast/presentation/screens/forecast_screen.dart';
 import 'package:kawalo_mobile/features/group/presentation/screens/personnel_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/screens/incident_screen.dart';
 import 'package:kawalo_mobile/features/operational/presentation/screens/operational_screen.dart';
+import 'package:kawalo_mobile/features/schedule/admin/presentation/screens/schedule_admin_screen.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/extensions/schedule_ui_extension.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/screens/schedule_screen.dart';
+import 'package:kawalo_mobile/features/shift/presentation/screens/shift_screen.dart';
 
 export 'package:kawalo_mobile/core/widgets/app_text_link.dart';
 export 'package:kawalo_mobile/features/home/presentation/widgets/app_shortcut_card.dart';
@@ -90,6 +96,45 @@ class HomeShortcutsSection extends StatelessWidget {
           Navigator.of(context).push(PersonnelScreen.route());
         },
       ),
+      if (context.read<UserSessionCubit?>()?.state?.isAdminRole ?? false) ...[
+        AppShortcutItem(
+          title: 'Shift',
+          subtitle: 'Kelola Jam & Lokasi',
+          iconPath: KawaloColorVectors.calendar2,
+          onTap: () {
+            Navigator.of(context).push(ShiftScreen.route());
+          },
+        ),
+        AppShortcutItem(
+          title: 'Kelola Jadwal',
+          subtitle: 'Jadwal & Forecast',
+          iconPath: KawaloColorVectors.calendar2,
+          onTap: () {
+            Navigator.of(context).push(
+              ScheduleAdminScreen.route(
+                onForecast: (ctx) =>
+                    Navigator.of(ctx).push(ForecastScreen.route()),
+              ),
+            );
+          },
+        ),
+        AppShortcutItem(
+          title: 'Absen Manual',
+          subtitle: 'Laporan Wajah Gagal',
+          iconPath: KawaloColorVectors.checklist2,
+          onTap: () {
+            Navigator.of(context).push(ManualRequestsScreen.route());
+          },
+        ),
+        AppShortcutItem(
+          title: 'Pengaturan Absensi',
+          subtitle: 'Batas Kemiripan Wajah',
+          iconPath: KawaloColorVectors.fingerprintValidation1,
+          onTap: () {
+            Navigator.of(context).push(AttendanceSettingScreen.route());
+          },
+        ),
+      ],
       AppShortcutItem(
         title: 'Logout',
         subtitle: 'Keluar Akun',

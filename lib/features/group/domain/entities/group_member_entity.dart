@@ -7,7 +7,12 @@ import 'package:equatable/equatable.dart';
 /// di Operasional) dengan prinsip zero legacy.
 class GroupMemberEntity extends Equatable {
   /// Membuat instance [GroupMemberEntity].
-  const GroupMemberEntity({required this.email, this.name, this.profilePic});
+  const GroupMemberEntity({
+    required this.email,
+    this.name,
+    this.profilePic,
+    this.role,
+  });
 
   /// Alamat email unik pengguna anggota grup.
   final String email;
@@ -17,6 +22,10 @@ class GroupMemberEntity extends Equatable {
 
   /// URL foto profil anggota grup (opsional).
   final String? profilePic;
+
+  /// Upper-case category in the active group (`ADMIN`, `GUARD`, `USER`);
+  /// `null` when the server does not send it.
+  final String? role;
 
   /// Label nama tampilan untuk antarmuka pengguna (fallback ke email).
   String get displayName =>
@@ -39,5 +48,5 @@ class GroupMemberEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [email, name, profilePic];
+  List<Object?> get props => [email, name, profilePic, role];
 }

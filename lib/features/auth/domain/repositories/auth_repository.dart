@@ -12,4 +12,15 @@ abstract class AuthRepository {
   Future<Either<Failure, UserEntity?>> getCurrentUser();
   Future<Either<Failure, AuthSessionEntity?>> getActiveSession();
   Future<Either<Failure, UserEntity>> switchGroup({required String groupUid});
+
+  /// Sets (or with `null` clears) the profile photo on the server and in the
+  /// stored user; returns the URL the server saved.
+  Future<Either<Failure, String?>> updateAvatar(String? avatarUrl);
+
+  /// On success the server invalidates every session of the user, so the
+  /// caller must sign out afterwards.
+  Future<Either<Failure, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }

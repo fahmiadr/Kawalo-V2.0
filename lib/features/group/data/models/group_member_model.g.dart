@@ -12,6 +12,8 @@ GroupMemberModel _$GroupMemberModelFromJson(Map<String, dynamic> json) =>
         email: $checkedConvert('email', (v) => v as String),
         name: $checkedConvert('name', (v) => v as String?),
         profilePic: $checkedConvert('profilePic', (v) => v as String?),
+        avatarUrl: $checkedConvert('avatar_url', (v) => v as String?),
+        role: $checkedConvert('role', (v) => v as String?),
       );
       return val;
-    });
+    }, fieldKeyMap: const {'avatarUrl': 'avatar_url'});

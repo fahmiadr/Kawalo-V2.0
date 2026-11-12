@@ -35,7 +35,7 @@ class GroupSelectionScreen extends StatefulWidget {
   final UserEntity user;
 
   /// True when the screen is pushed over the main shell (switching group from
-  /// the Lainnya tab): back then returns to the shell instead of logging out.
+  /// the Pengaturan tab): back then returns to the shell instead of logging out.
   final bool allowCancel;
 
   @override

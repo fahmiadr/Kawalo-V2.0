@@ -24,11 +24,16 @@ import 'package:kawalo_mobile/core/upload/upload_remote_data_source.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository_impl.dart';
 import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
+import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_check_module.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
+import 'package:kawalo_mobile/features/attendance_admin/attendance_admin_module.dart';
 import 'package:kawalo_mobile/features/auth/auth_module.dart';
+import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:kawalo_mobile/features/face/face_module.dart';
+import 'package:kawalo_mobile/features/forecast/forecast_module.dart';
 import 'package:kawalo_mobile/features/group/domain/repositories/group_repository.dart';
 import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_cubit.dart';
@@ -48,6 +53,8 @@ import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_session_brid
 import 'package:kawalo_mobile/features/ptt/ptt_module.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:kawalo_mobile/features/schedule/schedule_module.dart';
+import 'package:kawalo_mobile/features/shift/presentation/cubit/shift_list_cubit.dart';
+import 'package:kawalo_mobile/features/shift/shift_module.dart';
 import 'package:kawalo_mobile/features/splash/presentation/screens/splash_screen.dart';
 
 void main() => bootstrap(AppEnvironment.dev);
@@ -69,12 +76,18 @@ class _MyAppState extends State<MyApp> {
   late final JwksService _jwksService;
   late final NetworkInfoImpl _networkInfo;
   late final UploadRepository _uploadRepository;
+  late final AuthRepository _authRepository;
   late final GuestModule _guestModule;
   late final InformationModule _informationModule;
   late final AttendanceModule _attendanceModule;
   late final OperationalModule _operationalModule;
   late final IncidentModule _incidentModule;
   late final ScheduleModule _scheduleModule;
+  late final ShiftModule _shiftModule;
+  late final ForecastModule _forecastModule;
+  late final FaceModule _faceModule;
+  late final AttendanceCheckModule _attendanceCheckModule;
+  late final AttendanceAdminModule _attendanceAdminModule;
   late final PttTranscriptModule _pttTranscriptModule;
   late final PttRepository _pttRepository;
   late final PttTranscriptUploader _pttTranscriptUploader;
@@ -141,6 +154,20 @@ class _MyAppState extends State<MyApp> {
       apiClient: _apiClient,
       networkInfo: _networkInfo,
     );
+    _shiftModule = ShiftModule(
+      apiClient: _apiClient,
+      networkInfo: _networkInfo,
+    );
+    _forecastModule = ForecastModule(
+      apiClient: _apiClient,
+      networkInfo: _networkInfo,
+    );
+    _faceModule = FaceModule(apiClient: _apiClient);
+    _attendanceCheckModule = AttendanceCheckModule(
+      apiClient: _apiClient,
+      networkInfo: _networkInfo,
+    );
+    _attendanceAdminModule = AttendanceAdminModule(apiClient: _apiClient);
     _operationalModule = OperationalModule(
       apiClient: _apiClient,
       isar: isar,
@@ -182,14 +209,14 @@ class _MyAppState extends State<MyApp> {
     );
     _apiClient.jwksService = _jwksService;
 
-    final authRepository = AuthModule.createRepository(
+    _authRepository = AuthModule.createRepository(
       apiClient: _apiClient,
       storageService: _storageService,
       jwksService: _jwksService,
     );
 
     _authBloc = AuthModule.createBloc(
-      repository: authRepository,
+      repository: _authRepository,
       cacheWiper: _cacheWiper,
     );
 
@@ -260,11 +287,22 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider<SecureStorageService>.value(value: _storageService),
         RepositoryProvider<NetworkInfo>.value(value: _networkInfo),
         RepositoryProvider<UploadRepository>.value(value: _uploadRepository),
+        RepositoryProvider<AuthRepository>.value(value: _authRepository),
         RepositoryProvider<Isar>.value(value: isar),
         RepositoryProvider<GuestModule>.value(value: _guestModule),
         RepositoryProvider<InformationModule>.value(value: _informationModule),
         RepositoryProvider<IncidentModule>.value(value: _incidentModule),
         RepositoryProvider<ScheduleModule>.value(value: _scheduleModule),
+        RepositoryProvider<AttendanceModule>.value(value: _attendanceModule),
+        RepositoryProvider<ShiftModule>.value(value: _shiftModule),
+        RepositoryProvider<ForecastModule>.value(value: _forecastModule),
+        RepositoryProvider<FaceModule>.value(value: _faceModule),
+        RepositoryProvider<AttendanceCheckModule>.value(
+          value: _attendanceCheckModule,
+        ),
+        RepositoryProvider<AttendanceAdminModule>.value(
+          value: _attendanceAdminModule,
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -287,6 +325,9 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider<ScheduleCubit>(
             create: (context) => _scheduleModule.createCubit(),
+          ),
+          BlocProvider<ShiftListCubit>(
+            create: (context) => _shiftModule.createListCubit(),
           ),
           BlocProvider<PersonnelCubit>(
             create: (context) => PersonnelCubit(repository: _groupRepository),

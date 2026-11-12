@@ -96,6 +96,17 @@ class UserEntity extends Equatable {
   /// Daftar semua grup kawasan yang diikuti pengguna.
   final List<UserGroupEntity> groups;
 
+  /// Same user with [url] as photo; `null` clears it (copyWith cannot, since
+  /// `null` there means "keep").
+  UserEntity withAvatar(String? url) => UserEntity(
+    id: id,
+    email: email,
+    name: name,
+    groups: groups,
+    avatarUrl: url,
+    activeGroup: activeGroup,
+  );
+
   @override
   List<Object?> get props => [id, email, name, avatarUrl, activeGroup, groups];
 }

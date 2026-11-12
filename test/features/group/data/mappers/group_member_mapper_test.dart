@@ -17,6 +17,21 @@ void main() {
       profilePic: 'https://example.com/pic.jpg',
     );
 
+    test('toEntity upper-cases the role and drops an empty one', () {
+      expect(
+        GroupMemberMapper.toEntity(
+          const GroupMemberModel(email: 'a@kawalo.id', role: ' guard '),
+        ).role,
+        'GUARD',
+      );
+      expect(
+        GroupMemberMapper.toEntity(
+          const GroupMemberModel(email: 'a@kawalo.id', role: ''),
+        ).role,
+        isNull,
+      );
+    });
+
     test('toEntity should map model to entity and lowercase email', () {
       final entity = GroupMemberMapper.toEntity(tModel);
       expect(entity, equals(tEntity));

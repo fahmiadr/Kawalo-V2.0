@@ -1,10 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_check_module.dart';
+import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_check_screen.dart';
+import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
+import 'package:kawalo_mobile/features/face/face_module.dart';
+import 'package:kawalo_mobile/features/schedule/presentation/screens/schedule_screen.dart';
 
 /// Komponen aksi cepat utama ("Absensi").
 ///
@@ -17,8 +24,22 @@ class HomeQuickActions extends StatelessWidget {
   /// Callback saat tombol "Absensi" ditekan.
   final VoidCallback? onAbsensiPressed;
 
-  void _defaultOnAbsensi(BuildContext context) {
-    AppSnackbar.show(context, message: 'Membuka pemindai Absensi...');
+  Future<void> _defaultOnAbsensi(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final exit = await navigator.push(
+      AttendanceCheckScreen.route(
+        module: context.read<AttendanceCheckModule>(),
+        faceRepository: context.read<FaceModule>().repository,
+      ),
+    );
+    switch (exit) {
+      case AttendanceCheckExit.openAttendanceList:
+        navigator.push(AttendanceScreen.route());
+      case AttendanceCheckExit.openSchedule:
+        navigator.push(ScheduleScreen.route());
+      case null:
+        break;
+    }
   }
 
   @override
@@ -27,7 +48,8 @@ class HomeQuickActions extends StatelessWidget {
       iconPath: KawaloColorVectors.phoneLocation1,
       label: 'Absensi',
       semanticLabel: 'Absensi',
-      onPressed: onAbsensiPressed ?? () => _defaultOnAbsensi(context),
+      onPressed:
+          onAbsensiPressed ?? () => unawaited(_defaultOnAbsensi(context)),
     );
   }
 }

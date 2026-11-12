@@ -161,7 +161,8 @@ void main() {
       expect(find.text('Beranda'), findsAtLeastNWidgets(1));
       expect(find.text('Informasi'), findsAtLeastNWidgets(1));
       expect(find.text('Laporan'), findsNothing);
-      expect(find.text('Lainnya'), findsOneWidget);
+      expect(find.text('Pengaturan'), findsOneWidget);
+      expect(find.text('Lainnya'), findsNothing);
       expect(
         tester
             .widget<AppNavigationBar>(find.byType(AppNavigationBar))
@@ -189,8 +190,8 @@ void main() {
       expect(find.bySemanticsLabel('Cari informasi'), findsOneWidget);
       expect(find.text('Belum ada informasi'), findsOneWidget);
 
-      // Tap tab "Lainnya"
-      await tester.tap(find.text('Lainnya'));
+      // Tap tab "Pengaturan"
+      await tester.tap(find.text('Pengaturan'));
       await tester.pumpAndSettle();
 
       expect(find.text('AHMAD ZAKI FAUZAN'), findsOneWidget);
@@ -208,7 +209,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(initialIndex: 2));
       await tester.pumpAndSettle();
 
-      // Index 2 is the last tab, Lainnya.
+      // Index 2 is the last tab, Pengaturan.
       expect(find.text('AHMAD ZAKI FAUZAN'), findsOneWidget);
       expect(find.text('Keluar'), findsOneWidget);
     });

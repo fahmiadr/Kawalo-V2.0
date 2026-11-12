@@ -19,6 +19,7 @@ import 'package:kawalo_mobile/features/auth/data/models/login_request_model.dart
 import 'package:kawalo_mobile/features/auth/data/models/logout_request_model.dart';
 import 'package:kawalo_mobile/features/auth/data/models/refresh_token_request_model.dart';
 import 'package:kawalo_mobile/features/auth/data/models/switch_group_request_model.dart';
+import 'package:kawalo_mobile/features/auth/data/models/user_model.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 
@@ -284,6 +285,45 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(sessionUser);
     } on AppException catch (e) {
       return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    } on Object catch (e) {
+      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String?>> updateAvatar(String? avatarUrl) async {
+    try {
+      final saved = await remoteDataSource.updateAvatar(avatarUrl);
+      final user = await localDataSource.getUser();
+      if (user != null) {
+        await localDataSource.saveUser(
+          UserModel(
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            groups: user.groups,
+            activeGroup: user.activeGroup,
+            avatarUrl: saved,
+          ),
+        );
+      }
+      return Right(saved);
+    } on Object catch (e) {
+      return Left(NetworkErrorHandler.handleExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await remoteDataSource.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return const Right(null);
     } on Object catch (e) {
       return Left(NetworkErrorHandler.handleExceptionToFailure(e));
     }

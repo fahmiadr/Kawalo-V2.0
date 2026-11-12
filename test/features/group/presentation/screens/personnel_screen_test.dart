@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_cubit.dart';
 import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_state.dart';
@@ -112,5 +113,72 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Gagal memperbarui daftar personil.'), findsOneWidget);
+  });
+
+  const people = PersonnelLoaded([
+    GroupMemberEntity(email: 'budi@test.id', name: 'Budi Santoso'),
+    GroupMemberEntity(email: 'siti@test.id', name: 'Siti'),
+    GroupMemberEntity(email: 'tanpa@kantor.id'),
+  ]);
+
+  Future<void> search(WidgetTester tester, String query) async {
+    await tester.enterText(find.byType(EditableText), query);
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  testWidgets('search filters by name, case-insensitive', (tester) async {
+    await pump(tester, people);
+
+    await search(tester, 'BUDI');
+
+    expect(find.byType(PersonnelCard), findsOneWidget);
+    expect(find.text('Budi Santoso'), findsOneWidget);
+  });
+
+  testWidgets('search filters by email', (tester) async {
+    await pump(tester, people);
+
+    await search(tester, 'kantor');
+
+    expect(find.byType(PersonnelCard), findsOneWidget);
+    expect(find.text('tanpa@kantor.id'), findsOneWidget);
+  });
+
+  testWidgets('search without a match shows the not-found state', (
+    tester,
+  ) async {
+    await pump(tester, people);
+
+    await search(tester, 'zzz');
+
+    expect(find.byType(PersonnelCard), findsNothing);
+    expect(find.text('Personil tidak ditemukan'), findsOneWidget);
+
+    await search(tester, '');
+    expect(find.byType(PersonnelCard), findsNWidgets(3));
+  });
+
+  testWidgets('the empty group has no search field', (tester) async {
+    await pump(tester, const PersonnelLoaded([]));
+
+    expect(find.byType(EditableText), findsNothing);
+  });
+
+  testWidgets('cards use the shared avatar with the initial fallback', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      const PersonnelLoaded([
+        GroupMemberEntity(
+          email: 'budi@test.id',
+          name: 'Budi',
+          profilePic: 'bukan-url',
+        ),
+      ]),
+    );
+
+    expect(find.byType(AppUserAvatar), findsOneWidget);
+    expect(find.text('B'), findsOneWidget);
   });
 }

@@ -17,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<SwitchGroupSubmitted>(_onSwitchGroupSubmitted);
     on<LogoutRequested>(_onLogoutRequested);
+    on<AvatarUpdated>(_onAvatarUpdated);
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<SessionExpiredRequested>(_onSessionExpiredRequested);
   }
@@ -92,6 +93,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  void _onAvatarUpdated(AvatarUpdated event, Emitter<AuthState> emit) {
+    final current = state;
+    if (current is! Authenticated) return;
+    emit(
+      Authenticated(
+        user: current.user.withAvatar(event.avatarUrl),
+        session: current.session,
+      ),
+    );
+  }
+
   Future<void> _onLogoutRequested(
     LogoutRequested event,
     Emitter<AuthState> emit,
@@ -104,7 +116,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on Object catch (_) {
       // Best-effort logout
     } finally {
-      emit(const Unauthenticated());
+      emit(Unauthenticated(message: event.message));
     }
   }
 

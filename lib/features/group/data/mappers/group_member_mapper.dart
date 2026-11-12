@@ -13,7 +13,10 @@ abstract final class GroupMemberMapper {
           AppSanitizer.cleanEmail(model.email) ??
           model.email.trim().toLowerCase(),
       name: AppSanitizer.cleanString(model.name),
-      profilePic: AppSanitizer.cleanString(model.profilePic),
+      profilePic:
+          AppSanitizer.cleanString(model.avatarUrl) ??
+          AppSanitizer.cleanString(model.profilePic),
+      role: AppSanitizer.cleanString(model.role)?.toUpperCase(),
     );
   }
 

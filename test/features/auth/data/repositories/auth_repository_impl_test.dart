@@ -675,4 +675,112 @@ JWT_PUBLIC_KEY="$escapedPem"
       },
     );
   });
+
+  group('updateAvatar', () {
+    const tUser = UserModel(
+      id: 'user_1',
+      email: 'test@example.com',
+      name: 'Test User',
+      groups: [],
+    );
+
+    test('saves the URL the server returned into the stored user', () async {
+      when(
+        () => mockRemoteDataSource.updateAvatar('https://x/a.webp'),
+      ).thenAnswer((_) async => 'https://x/a.webp');
+      when(() => mockLocalDataSource.getUser()).thenAnswer((_) async => tUser);
+      when(() => mockLocalDataSource.saveUser(any())).thenAnswer((_) async {});
+
+      final result = await repository.updateAvatar('https://x/a.webp');
+
+      expect(result, const Right<Failure, String?>('https://x/a.webp'));
+      final saved =
+          verify(
+                () => mockLocalDataSource.saveUser(captureAny()),
+              ).captured.single
+              as UserModel;
+      expect(saved.avatarUrl, 'https://x/a.webp');
+      expect(saved.id, 'user_1');
+    });
+
+    test('clears the stored photo when the server returns null', () async {
+      when(
+        () => mockRemoteDataSource.updateAvatar(null),
+      ).thenAnswer((_) async => null);
+      when(() => mockLocalDataSource.getUser()).thenAnswer(
+        (_) async => const UserModel(
+          id: 'user_1',
+          email: 'test@example.com',
+          name: 'Test User',
+          groups: [],
+          avatarUrl: 'https://x/old.webp',
+        ),
+      );
+      when(() => mockLocalDataSource.saveUser(any())).thenAnswer((_) async {});
+
+      final result = await repository.updateAvatar(null);
+
+      expect(result, const Right<Failure, String?>(null));
+      final saved =
+          verify(
+                () => mockLocalDataSource.saveUser(captureAny()),
+              ).captured.single
+              as UserModel;
+      expect(saved.avatarUrl, isNull);
+    });
+
+    test('returns a failure and keeps the stored user on API error', () async {
+      when(() => mockRemoteDataSource.updateAvatar(any())).thenThrow(
+        const ServerException('URL tidak valid.', 422, 'VALIDATION_ERROR'),
+      );
+
+      final result = await repository.updateAvatar('nope');
+
+      expect(result.isLeft(), isTrue);
+      verifyNever(() => mockLocalDataSource.saveUser(any()));
+    });
+  });
+
+  group('changePassword', () {
+    test('returns Right when the API accepts the change', () async {
+      when(
+        () => mockRemoteDataSource.changePassword(
+          currentPassword: 'old-pass',
+          newPassword: 'new-pass-1',
+        ),
+      ).thenAnswer((_) async {});
+
+      final result = await repository.changePassword(
+        currentPassword: 'old-pass',
+        newPassword: 'new-pass-1',
+      );
+
+      expect(result.isRight(), isTrue);
+    });
+
+    test('keeps status code and error code of a rejected password', () async {
+      when(
+        () => mockRemoteDataSource.changePassword(
+          currentPassword: any(named: 'currentPassword'),
+          newPassword: any(named: 'newPassword'),
+        ),
+      ).thenThrow(
+        const ServerException(
+          'Password saat ini salah.',
+          403,
+          'AUTH_INVALID_CREDENTIALS',
+        ),
+      );
+
+      final result = await repository.changePassword(
+        currentPassword: 'x',
+        newPassword: 'new-pass-1',
+      );
+
+      final failure = result.swap().getOrElse((_) => throw StateError('right'));
+      expect(failure.statusCode, 403);
+      expect(failure.errorCode, 'AUTH_INVALID_CREDENTIALS');
+      expect(failure.message, 'Password saat ini salah.');
+    });
+  });
 }

@@ -67,7 +67,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Kawalo memerlukan akses lokasi presisi Anda untuk memvalidasi posisi dinas saat melakukan presensi dan pelaporan operasional.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Kawalo memerlukan akses kamera untuk mengambil foto dokumentasi kegiatan operasional, bukti serah terima pos jaga, dan identitas tamu dinas, serta untuk memindai kode QR tamu.</string>
+	<string>Kawalo memerlukan akses kamera untuk mengambil foto dokumentasi kegiatan operasional, bukti serah terima pos jaga, dan identitas tamu dinas, untuk memindai kode QR tamu, serta untuk verifikasi wajah saat check-in dan check-out absensi.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Kawalo memerlukan akses galeri foto untuk memilih lampiran bukti dokumentasi laporan operasional dan presensi.</string>
 </dict>
