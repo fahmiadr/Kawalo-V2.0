@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
@@ -182,9 +183,21 @@ void main() {
         // Selection app bar is active with count '1'
         expect(find.byType(AppSelectionAppBar), findsOneWidget);
         expect(find.text('1'), findsOneWidget);
+        // Delete lives in the bottom bar, never in the header.
+        expect(find.text('Hapus (1)'), findsOneWidget);
         expect(
-          find.bySemanticsLabel('Hapus data tamu terpilih'),
-          findsOneWidget,
+          find.descendant(
+            of: find.byType(AppSelectionAppBar),
+            matching: find.byType(AppIconButton),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: find.byType(AppSelectionAppBar),
+            matching: find.textContaining('Hapus'),
+          ),
+          findsNothing,
         );
 
         // Create FAB is hidden in selection mode
@@ -339,9 +352,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('2'), findsOneWidget);
+        expect(find.text('Hapus (2)'), findsOneWidget);
 
-        // Tap delete icon
-        await tester.tap(find.bySemanticsLabel('Hapus data tamu terpilih'));
+        // Tap bottom delete button
+        await tester.tap(find.text('Hapus (2)'));
         await tester.pumpAndSettle();
 
         // Confirmation dialog appears
@@ -358,8 +372,8 @@ void main() {
         verifyZeroInteractions(mockDeleteBatchUseCase);
         expect(find.text('2'), findsOneWidget);
 
-        // Tap delete icon again and confirm
-        await tester.tap(find.bySemanticsLabel('Hapus data tamu terpilih'));
+        // Tap bottom delete button again and confirm
+        await tester.tap(find.text('Hapus (2)'));
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Hapus'));
@@ -457,14 +471,11 @@ void main() {
       await tester.longPress(find.text('Bambang Sudarsono'));
       await tester.pumpAndSettle();
 
-      final deleteBtnFinder = find.byWidgetPredicate(
-        (w) =>
-            w is AppIconButton && w.semanticLabel == 'Hapus data tamu terpilih',
+      final deleteBtn = tester.widget<AppDestructiveButton>(
+        find.byType(AppDestructiveButton),
       );
-      expect(deleteBtnFinder, findsOneWidget);
-
-      final iconButton = tester.widget<AppIconButton>(deleteBtnFinder);
-      expect(iconButton.onPressed, isNull);
+      expect(deleteBtn.label, 'Hapus (1)');
+      expect(deleteBtn.enabled, isFalse);
     });
   });
 }

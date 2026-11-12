@@ -7,6 +7,7 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_category.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_cubit.dart';
@@ -112,6 +113,13 @@ void main() {
 
       // Action button "Kirim"
       expect(find.text('Kirim'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppPageActions),
+          matching: find.text('Kirim'),
+        ),
+        findsOneWidget,
+      );
 
       // Section titles & subtitles
       expect(find.text('Kategori insiden'), findsOneWidget);
@@ -556,7 +564,7 @@ void main() {
       final kirim = tester.widget<AppButton>(
         find.widgetWithText(AppButton, 'Kirim'),
       );
-      expect(kirim.onPressed, isNull);
+      expect(kirim.enabled, isFalse);
     });
 
     testWidgets('failed photo shows the error and retries on Coba lagi', (

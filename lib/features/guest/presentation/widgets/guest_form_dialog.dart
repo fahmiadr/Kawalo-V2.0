@@ -97,27 +97,24 @@ class GuestFormDialog extends StatefulWidget {
       final result = await AppDialog.showFullScreen<GuestItemEntity>(
         context,
         title: title,
-        action: BlocSelector<GuestFormCubit, GuestFormState, bool>(
-          bloc: resolvedCubit,
-          selector: (state) => state.canPressSubmit,
-          builder: (actionContext, canPressSubmit) {
-            return Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.space100),
-              child: AppButton(
-                style: AppButtonColor.text,
-                onPressed: canPressSubmit
-                    ? () {
-                        final activeSession =
-                            actionContext.read<UserSessionCubit?>()?.state ??
-                            session;
-                        resolvedCubit.submit(session: activeSession);
-                      }
-                    : null,
+        bottomActions: [
+          BlocSelector<GuestFormCubit, GuestFormState, bool>(
+            bloc: resolvedCubit,
+            selector: (state) => state.canPressSubmit,
+            builder: (actionContext, canPressSubmit) {
+              return AppButton(
+                size: AppButtonSize.md,
+                enabled: canPressSubmit,
+                onPressed: () {
+                  final activeSession =
+                      actionContext.read<UserSessionCubit?>()?.state ?? session;
+                  resolvedCubit.submit(session: activeSession);
+                },
                 child: const Text('Simpan'),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
+        ],
         body: GuestFormDialog(
           cubit: resolvedCubit,
           mediaPickerService: mediaPickerService,

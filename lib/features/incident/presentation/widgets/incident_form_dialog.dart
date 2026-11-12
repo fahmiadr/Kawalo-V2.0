@@ -87,27 +87,24 @@ class IncidentFormDialog extends StatefulWidget {
       final result = await AppDialog.showFullScreen<IncidentEntity>(
         context,
         title: title,
-        action: BlocSelector<IncidentFormCubit, IncidentFormState, bool>(
-          bloc: resolvedCubit,
-          selector: (state) => state.canPressSubmit,
-          builder: (actionContext, canPressSubmit) {
-            return Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.space100),
-              child: AppButton(
-                style: AppButtonColor.text,
-                onPressed: canPressSubmit
-                    ? () {
-                        final activeSession =
-                            actionContext.read<UserSessionCubit?>()?.state ??
-                            session;
-                        resolvedCubit.submit(session: activeSession);
-                      }
-                    : null,
+        bottomActions: [
+          BlocSelector<IncidentFormCubit, IncidentFormState, bool>(
+            bloc: resolvedCubit,
+            selector: (state) => state.canPressSubmit,
+            builder: (actionContext, canPressSubmit) {
+              return AppButton(
+                size: AppButtonSize.md,
+                enabled: canPressSubmit,
+                onPressed: () {
+                  final activeSession =
+                      actionContext.read<UserSessionCubit?>()?.state ?? session;
+                  resolvedCubit.submit(session: activeSession);
+                },
                 child: const Text('Kirim'),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
+        ],
         body: IncidentFormDialog(
           cubit: resolvedCubit,
           mediaPickerService: mediaPickerService,

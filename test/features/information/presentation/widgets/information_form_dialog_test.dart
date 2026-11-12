@@ -9,6 +9,7 @@ import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_params.dart';
@@ -133,6 +134,76 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
   }
+
+  group('InformationFormDialog submit placement', () {
+    Future<void> open(
+      WidgetTester tester,
+      InformationFormCubit cubit, {
+      InformationItemEntity? item,
+    }) async {
+      configureTestView(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) =>
+              M3ETheme(data: AppTheme.m3eLight(), child: child!),
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => InformationFormDialog.show(
+                context: context,
+                cubit: cubit,
+                mediaPickerService: mockMediaPicker,
+              ),
+              child: const Text('Buka'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka'));
+      await tester.pumpAndSettle();
+    }
+
+    InformationFormCubit buildCubit({InformationItemEntity? item}) =>
+        InformationFormCubit(
+          uploadRepository: FakeUploadRepository(),
+          createInformationUseCase: mockCreateUseCase,
+          updateInformationUseCase: mockUpdateUseCase,
+          initialItem: item,
+        );
+
+    testWidgets('create puts Posting only in the bottom actions', (
+      tester,
+    ) async {
+      final cubit = buildCubit();
+      await open(tester, cubit);
+
+      expect(find.text('Posting informasi'), findsOneWidget);
+      expect(find.text('Posting'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppPageActions),
+          matching: find.text('Posting'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Hapus'), findsNothing);
+      await cubit.close();
+    });
+
+    testWidgets('edit puts Simpan only in the bottom actions', (tester) async {
+      final cubit = buildCubit(item: dummyItem);
+      await open(tester, cubit);
+
+      expect(find.text('Simpan'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppPageActions),
+          matching: find.text('Simpan'),
+        ),
+        findsOneWidget,
+      );
+      await cubit.close();
+    });
+  });
 
   group('InformationFormDialog Widget Tests', () {
     testWidgets('renders create form with empty fields and default category', (

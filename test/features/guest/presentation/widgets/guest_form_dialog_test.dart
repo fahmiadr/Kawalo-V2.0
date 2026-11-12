@@ -6,6 +6,7 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
@@ -143,6 +144,13 @@ void main() {
       expect(find.text('Tujuan & detail kunjungan'), findsOneWidget);
       expect(find.text('Dokumentasi foto tamu'), findsOneWidget);
       expect(find.text('Simpan'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppPageActions),
+          matching: find.text('Simpan'),
+        ),
+        findsOneWidget,
+      );
 
       await cubit.close();
     });

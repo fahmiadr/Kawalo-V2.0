@@ -12,8 +12,10 @@ import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
@@ -160,12 +162,18 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
     IncidentEntity incident,
     AuthSessionEntity? session,
   ) async {
+    final repliesCount = context
+        .read<IncidentDetailCubit>()
+        .state
+        .replies
+        .length;
     final confirmed = await showAppConfirmationDialog(
       context: context,
       title: 'Hapus Laporan Insiden?',
       message:
-          'Laporan insiden ini akan dihapus secara permanen dari pandangan '
-          'pengguna. Tindakan ini hanya dapat dilakukan oleh Administrator.',
+          'Laporan insiden "${incident.title}" beserta $repliesCount balasan '
+          'akan dihapus secara permanen dari pandangan pengguna. Tindakan ini '
+          'hanya dapat dilakukan oleh Administrator.',
       confirmText: 'Hapus Insiden',
     );
 
@@ -232,12 +240,6 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
             isOffline: isOffline,
             onPressed: () => _confirmResolve(context, incident, session),
           );
-        } else if (canDelete) {
-          trailingWidget = IncidentDetailDeleteButton(
-            isDeleting: state.isDeleting,
-            isOffline: isOffline,
-            onPressed: () => _confirmDelete(context, incident, session),
-          );
         }
 
         return AppLoadingOverlay(
@@ -262,13 +264,36 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
             // bottomNavigationBar exists, so the composer's own SafeArea sees 0.
             // The banner must therefore keep reserving the system nav inset,
             // tinted like the bar above it.
-            bottomNavigationBar: AppBottomOfflineBanner(
-              isOffline: isOffline,
-              keepSafeAreaWhenHidden: true,
-              safeAreaColor: state.isReadOnly
-                  ? colorScheme.surfaceContainerHigh
-                  : colorScheme.surfaceContainer,
-            ),
+            // With the delete bar the bar's own SafeArea covers the inset, so the
+            // banner must not reserve it a second time.
+            bottomNavigationBar: canDelete
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppPageActions(
+                        children: [
+                          AppDestructiveButton(
+                            label: 'Hapus Insiden',
+                            semanticLabel: 'Hapus laporan insiden',
+                            enabled: !state.isDeleting && !isOffline,
+                            onPressed: () =>
+                                _confirmDelete(context, incident, session),
+                          ),
+                        ],
+                      ),
+                      AppBottomOfflineBanner(
+                        isOffline: isOffline,
+                        useSafeArea: false,
+                      ),
+                    ],
+                  )
+                : AppBottomOfflineBanner(
+                    isOffline: isOffline,
+                    keepSafeAreaWhenHidden: true,
+                    safeAreaColor: state.isReadOnly
+                        ? colorScheme.surfaceContainerHigh
+                        : colorScheme.surfaceContainer,
+                  ),
             body: SafeArea(
               top: false,
               bottom: false,

@@ -7,19 +7,16 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/app_toolbar.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
@@ -96,23 +93,6 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
   bool _isDeleting = false;
   bool _isCheckingOut = false;
   bool _isAcknowledging = false;
-  late final AppToolbarVisibilityController _toolbarVisibilityController;
-  late final AppToolbarScrollBehavior _scrollBehavior;
-
-  @override
-  void initState() {
-    super.initState();
-    _toolbarVisibilityController = AppToolbarVisibilityController();
-    _scrollBehavior = AppToolbarScrollBehavior.exitAlways(
-      controller: _toolbarVisibilityController,
-    );
-  }
-
-  @override
-  void dispose() {
-    _toolbarVisibilityController.dispose();
-    super.dispose();
-  }
 
   GuestCubit? _resolveCubit(BuildContext context) {
     if (widget.cubit != null) return widget.cubit;
@@ -388,149 +368,115 @@ class _GuestDetailScreenState extends State<GuestDetailScreen> {
             isCheckingOut: _isCheckingOut,
             enabled: !isOffline,
           ),
-          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-          body: SafeArea(
-            top: false,
-            bottom: false,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: AppToolbarScrollWrapper(
-                    behavior: _scrollBehavior,
-                    child: AppRefreshIndicator.contained(
-                      semanticsLabel: 'Memuat ulang detail data tamu',
-                      onRefresh: _handleRefresh,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.only(
-                          left: AppSpacing.space200,
-                          right: AppSpacing.space200,
-                          top: AppSpacing.space150,
-                          bottom: AppLayout.toolbarScrollClearance(context),
-                        ),
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxWidth: AppLayout.contentMaxWidth,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // ── Meta Atas (Nama Grup) ───────────────────
-                                GuestDetailTopMeta(item: currentItem),
-
-                                AppSpacing.vGap200,
-
-                                // ── Aksi: Konfirmasi Kunjungan ──────────────
-                                if (canAcknowledge) ...[
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: AppButton(
-                                      enabled: !isOffline && !_isAcknowledging,
-                                      semanticLabel:
-                                          'Konfirmasi kunjungan tamu '
-                                          '${currentItem.displayGuestName}',
-                                      onPressed: isOffline || _isAcknowledging
-                                          ? null
-                                          : () => _onAcknowledgePressed(
-                                              context,
-                                              currentItem,
-                                            ),
-                                      child: const Text('Konfirmasi tamu'),
-                                    ),
-                                  ),
-                                  AppSpacing.vGap200,
-                                ],
-
-                                // ── Card 1: Log Aktivitas Tamu (Timeline) ───
-                                GuestDetailTimelineCard(item: currentItem),
-
-                                AppSpacing.vGap200,
-
-                                // ── Card 2: Profil & Identitas Tamu ─────────
-                                GuestDetailProfileCard(item: currentItem),
-
-                                AppSpacing.vGap200,
-
-                                // ── Card 3: Informasi Kunjungan ─────────────
-                                GuestDetailVisitInfoCard(item: currentItem),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                if (hasAnyAction)
-                  AppToolbar.floating(
-                    alignment: Alignment.bottomCenter,
-                    safeArea: true,
-                    scrollBehavior: _scrollBehavior,
-                    visibilityController: _toolbarVisibilityController,
-                    actions: [
-                      if (canDelete)
-                        AppToolbarWidget(
-                          child: AppIconButton(
-                            onPressed: _isDeleting || isOffline
-                                ? null
-                                : () => _onDeletePressed(context, currentItem),
-                            tooltip: 'Hapus data tamu',
+          // With the action bar its own SafeArea covers the system inset, so
+          // the banner must not reserve it a second time.
+          bottomNavigationBar: hasAnyAction
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppPageActions(
+                      children: [
+                        if (canUpdate)
+                          AppButton(
+                            enabled: !isOffline,
                             semanticLabel:
-                                'Hapus data tamu '
-                                '${currentItem.displayGuestName}',
-                            icon: AppSvgIcon(
-                              KawaloVectors.delete01,
-                              color: _isDeleting || isOffline
-                                  ? colorScheme.onSurface.withValues(
-                                      alpha: AppStateLayer.disabledOpacity,
-                                    )
-                                  : colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      if (canCreate)
-                        AppToolbarWidget(
-                          child: AppIconButton(
-                            onPressed: isOffline
-                                ? null
-                                : () => _onCreatePressed(context),
-                            tooltip: 'Tambah tamu',
-                            semanticLabel: 'Tambah data tamu',
-                            variant: AppIconButtonColor.filled,
-                            icon: AppSvgIcon(
-                              KawaloVectors.add01,
-                              color: isOffline
-                                  ? colorScheme.onSurface.withValues(
-                                      alpha: AppStateLayer.disabledOpacity,
-                                    )
-                                  : colorScheme.onPrimary,
-                            ),
-                          ),
-                        ),
-                      if (canUpdate)
-                        AppToolbarWidget(
-                          child: AppIconButton(
+                                'Ubah data tamu ${currentItem.displayGuestName}',
                             onPressed: isOffline
                                 ? null
                                 : () => _onEditPressed(context, currentItem),
-                            tooltip: 'Edit data tamu',
+                            child: const Text('Ubah'),
+                          ),
+                        if (canCreate)
+                          AppButton(
+                            style: AppButtonColor.tonal,
+                            enabled: !isOffline,
+                            semanticLabel: 'Tambah data tamu',
+                            onPressed: isOffline
+                                ? null
+                                : () => _onCreatePressed(context),
+                            child: const Text('Tambah Tamu'),
+                          ),
+                        if (canDelete)
+                          AppDestructiveButton(
+                            label: 'Hapus Tamu',
                             semanticLabel:
-                                'Edit data tamu '
+                                'Hapus data tamu '
                                 '${currentItem.displayGuestName}',
-                            icon: AppSvgIcon(
-                              KawaloVectors.edit03,
-                              color: isOffline
-                                  ? colorScheme.onSurface.withValues(
-                                      alpha: AppStateLayer.disabledOpacity,
-                                    )
-                                  : colorScheme.onSurface,
+                            enabled: !_isDeleting && !isOffline,
+                            onPressed: () =>
+                                _onDeletePressed(context, currentItem),
+                          ),
+                      ],
+                    ),
+                    AppBottomOfflineBanner(
+                      isOffline: isOffline,
+                      useSafeArea: false,
+                    ),
+                  ],
+                )
+              : AppBottomOfflineBanner(isOffline: isOffline),
+          body: SafeArea(
+            top: false,
+            bottom: false,
+            child: AppRefreshIndicator.contained(
+              semanticsLabel: 'Memuat ulang detail data tamu',
+              onRefresh: _handleRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(
+                  AppSpacing.space200,
+                ).copyWith(top: AppSpacing.space150),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppLayout.contentMaxWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Meta Atas (Nama Grup) ───────────────────
+                        GuestDetailTopMeta(item: currentItem),
+
+                        AppSpacing.vGap200,
+
+                        // ── Aksi: Konfirmasi Kunjungan ──────────────
+                        if (canAcknowledge) ...[
+                          SizedBox(
+                            width: double.infinity,
+                            child: AppButton(
+                              enabled: !isOffline && !_isAcknowledging,
+                              semanticLabel:
+                                  'Konfirmasi kunjungan tamu '
+                                  '${currentItem.displayGuestName}',
+                              onPressed: isOffline || _isAcknowledging
+                                  ? null
+                                  : () => _onAcknowledgePressed(
+                                      context,
+                                      currentItem,
+                                    ),
+                              child: const Text('Konfirmasi tamu'),
                             ),
                           ),
-                        ),
-                    ],
+                          AppSpacing.vGap200,
+                        ],
+
+                        // ── Card 1: Log Aktivitas Tamu (Timeline) ───
+                        GuestDetailTimelineCard(item: currentItem),
+
+                        AppSpacing.vGap200,
+
+                        // ── Card 2: Profil & Identitas Tamu ─────────
+                        GuestDetailProfileCard(item: currentItem),
+
+                        AppSpacing.vGap200,
+
+                        // ── Card 3: Informasi Kunjungan ─────────────
+                        GuestDetailVisitInfoCard(item: currentItem),
+                      ],
+                    ),
                   ),
-              ],
+                ),
+              ),
             ),
           ),
         ),

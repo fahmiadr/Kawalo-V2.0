@@ -10,12 +10,14 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
+import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/delete_batch_result.dart';
@@ -312,9 +314,13 @@ void main() {
 
         // Contextual selection app bar is visible
         expect(find.text('1'), findsOneWidget);
+        expect(find.text('Hapus (1)'), findsOneWidget);
         expect(
-          find.bySemanticsLabel('Hapus informasi terpilih'),
-          findsOneWidget,
+          find.descendant(
+            of: find.byType(AppSelectionAppBar),
+            matching: find.textContaining('Hapus'),
+          ),
+          findsNothing,
         );
 
         // Tap cancel/close button to exit selection mode
@@ -376,8 +382,8 @@ void main() {
         await tester.longPress(find.text('Pemeriksaan Pos Jaga Utama'));
         await tester.pumpAndSettle();
 
-        // Tap delete button in app bar
-        await tester.tap(find.bySemanticsLabel('Hapus informasi terpilih'));
+        // Tap the bottom delete button
+        await tester.tap(find.text('Hapus (1)'));
         await tester.pumpAndSettle();
 
         // Confirmation dialog is shown
@@ -832,14 +838,10 @@ void main() {
       await tester.longPress(find.text('Info Judul'));
       await tester.pumpAndSettle();
 
-      final deleteBtnFinder = find.byWidgetPredicate(
-        (w) =>
-            w is AppIconButton && w.semanticLabel == 'Hapus informasi terpilih',
+      final deleteBtn = tester.widget<AppDestructiveButton>(
+        find.byType(AppDestructiveButton),
       );
-      expect(deleteBtnFinder, findsOneWidget);
-
-      final iconButton = tester.widget<AppIconButton>(deleteBtnFinder);
-      expect(iconButton.onPressed, isNull);
+      expect(deleteBtn.enabled, isFalse);
     });
 
     testWidgets('does NOT trigger reactive refresh when coming back online if '

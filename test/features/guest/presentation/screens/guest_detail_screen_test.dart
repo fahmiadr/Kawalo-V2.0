@@ -14,12 +14,12 @@ import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_toolbar.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
@@ -301,7 +301,7 @@ void main() {
     });
 
     testWidgets(
-      'renders 3 toolbar buttons with high emphasis on Tambah for ADMIN role',
+      'renders Ubah, Tambah Tamu, Hapus Tamu stacked in that order for ADMIN',
       (tester) async {
         const adminSession = AuthSessionEntity(
           userId: '1',
@@ -324,43 +324,44 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppToolbar), findsOneWidget);
+        expect(find.byType(AppPageActions), findsOneWidget);
 
-        final deleteBtnFinder = find.byWidgetPredicate(
-          (w) =>
-              w is AppIconButton &&
-              w.semanticLabel == 'Hapus data tamu Bambang Sudarsono',
-        );
-        final createBtnFinder = find.byWidgetPredicate(
-          (w) => w is AppIconButton && w.semanticLabel == 'Tambah data tamu',
-        );
-        final editBtnFinder = find.byWidgetPredicate(
-          (w) =>
-              w is AppIconButton &&
-              w.semanticLabel == 'Edit data tamu Bambang Sudarsono',
-        );
+        final editBtn = find.widgetWithText(AppButton, 'Ubah');
+        final createBtn = find.widgetWithText(AppButton, 'Tambah Tamu');
+        final deleteBtn = find.widgetWithText(AppButton, 'Hapus Tamu');
 
-        expect(deleteBtnFinder, findsOneWidget);
-        expect(createBtnFinder, findsOneWidget);
-        expect(editBtnFinder, findsOneWidget);
+        expect(editBtn, findsOneWidget);
+        expect(createBtn, findsOneWidget);
+        expect(deleteBtn, findsOneWidget);
 
+        expect(tester.widget<AppButton>(editBtn).style, AppButtonColor.filled);
+        expect(tester.widget<AppButton>(createBtn).style, AppButtonColor.tonal);
+        expect(find.byType(AppDestructiveButton), findsOneWidget);
+
+        final editY = tester.getTopLeft(editBtn).dy;
+        final createY = tester.getTopLeft(createBtn).dy;
+        final deleteY = tester.getTopLeft(deleteBtn).dy;
+        expect(editY, lessThan(createY));
+        expect(createY, lessThan(deleteY));
+
+        final screenWidth =
+            tester.view.physicalSize.width / tester.view.devicePixelRatio;
         expect(
-          tester.widget<AppIconButton>(deleteBtnFinder).variant,
-          AppIconButtonColor.standard,
-        );
-        expect(
-          tester.widget<AppIconButton>(createBtnFinder).variant,
-          AppIconButtonColor.filled,
+          tester.getSize(deleteBtn).width,
+          closeTo(screenWidth - 2 * 16, 1),
         );
         expect(
-          tester.widget<AppIconButton>(editBtnFinder).variant,
-          AppIconButtonColor.standard,
+          find.descendant(
+            of: find.byType(AppHomeAppBar),
+            matching: find.textContaining('Hapus'),
+          ),
+          findsNothing,
         );
       },
     );
 
     testWidgets(
-      'renders all 3 toolbar buttons for GUARD role on own created guest',
+      'renders all 3 labeled buttons for GUARD role on own created guest',
       (tester) async {
         const guardOwnSession = AuthSessionEntity(
           userId: '2',
@@ -383,14 +384,14 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppToolbar), findsOneWidget);
+        expect(find.byType(AppPageActions), findsOneWidget);
         expect(
           find.bySemanticsLabel('Hapus data tamu Bambang Sudarsono'),
           findsOneWidget,
         );
         expect(find.bySemanticsLabel('Tambah data tamu'), findsOneWidget);
         expect(
-          find.bySemanticsLabel('Edit data tamu Bambang Sudarsono'),
+          find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono'),
           findsOneWidget,
         );
       },
@@ -420,20 +421,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppToolbar), findsOneWidget);
+        expect(find.byType(AppPageActions), findsOneWidget);
         expect(find.bySemanticsLabel('Tambah data tamu'), findsOneWidget);
         expect(
           find.bySemanticsLabel('Hapus data tamu Bambang Sudarsono'),
           findsNothing,
         );
         expect(
-          find.bySemanticsLabel('Edit data tamu Bambang Sudarsono'),
+          find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono'),
           findsNothing,
         );
       },
     );
 
-    testWidgets('hides toolbar for non-ADMIN and non-GUARD roles', (
+    testWidgets('hides action bar for non-ADMIN and non-GUARD roles', (
       tester,
     ) async {
       const viewerSession = AuthSessionEntity(
@@ -457,14 +458,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppToolbar), findsNothing);
+      expect(find.byType(AppPageActions), findsNothing);
+      expect(find.text('Ubah'), findsNothing);
+      expect(find.text('Tambah Tamu'), findsNothing);
+      expect(find.text('Hapus Tamu'), findsNothing);
       expect(
         find.bySemanticsLabel('Hapus data tamu Bambang Sudarsono'),
         findsNothing,
       );
       expect(find.bySemanticsLabel('Tambah data tamu'), findsNothing);
       expect(
-        find.bySemanticsLabel('Edit data tamu Bambang Sudarsono'),
+        find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono'),
         findsNothing,
       );
     });
@@ -567,7 +571,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final editBtn = find.bySemanticsLabel('Edit data tamu Bambang Sudarsono');
+      final editBtn = find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono');
       expect(editBtn, findsOneWidget);
 
       await tester.tap(editBtn);
@@ -807,7 +811,9 @@ void main() {
       expect(find.byType(GuestDetailScreen), findsOneWidget);
     });
 
-    testWidgets('disables delete button when offline', (tester) async {
+    testWidgets('disables Ubah, Tambah Tamu and Hapus Tamu when offline', (
+      tester,
+    ) async {
       const adminSession = AuthSessionEntity(
         userId: '1',
         email: 'admin@kawalo.id',
@@ -841,40 +847,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final deleteBtnFinder = find.byWidgetPredicate(
-        (w) =>
-            w is AppIconButton &&
-            w.semanticLabel == 'Hapus data tamu Bambang Sudarsono',
-      );
-      final createBtnFinder = find.byWidgetPredicate(
-        (w) => w is AppIconButton && w.semanticLabel == 'Tambah data tamu',
-      );
-      final editBtnFinder = find.byWidgetPredicate(
-        (w) =>
-            w is AppIconButton &&
-            w.semanticLabel == 'Edit data tamu Bambang Sudarsono',
-      );
+      final deleteBtnFinder = find.widgetWithText(AppButton, 'Hapus Tamu');
+      final createBtnFinder = find.widgetWithText(AppButton, 'Tambah Tamu');
+      final editBtnFinder = find.widgetWithText(AppButton, 'Ubah');
 
       expect(deleteBtnFinder, findsOneWidget);
       expect(createBtnFinder, findsOneWidget);
       expect(editBtnFinder, findsOneWidget);
 
-      expect(tester.widget<AppIconButton>(deleteBtnFinder).onPressed, isNull);
-      expect(tester.widget<AppIconButton>(createBtnFinder).onPressed, isNull);
-      expect(tester.widget<AppIconButton>(editBtnFinder).onPressed, isNull);
-
-      expect(
-        tester.widget<AppIconButton>(deleteBtnFinder).variant,
-        AppIconButtonColor.standard,
-      );
-      expect(
-        tester.widget<AppIconButton>(createBtnFinder).variant,
-        AppIconButtonColor.filled,
-      );
-      expect(
-        tester.widget<AppIconButton>(editBtnFinder).variant,
-        AppIconButtonColor.standard,
-      );
+      expect(tester.widget<AppButton>(deleteBtnFinder).enabled, isFalse);
+      expect(tester.widget<AppButton>(createBtnFinder).enabled, isFalse);
+      expect(tester.widget<AppButton>(editBtnFinder).enabled, isFalse);
 
       expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
 

@@ -10,10 +10,12 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
+import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_toolbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_cubit.dart';
@@ -181,10 +183,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppToolbar), findsOneWidget);
-      expect(find.bySemanticsLabel('Posting informasi'), findsOneWidget);
+      expect(find.byType(AppPageActions), findsOneWidget);
+      expect(find.bySemanticsLabel('Tambah informasi'), findsOneWidget);
       expect(
-        find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
+        find.bySemanticsLabel('Ubah informasi Pelatihan Tanggap Darurat'),
         findsOneWidget,
       );
       expect(
@@ -218,10 +220,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppToolbar), findsOneWidget);
-      expect(find.bySemanticsLabel('Posting informasi'), findsOneWidget);
+      expect(find.byType(AppPageActions), findsOneWidget);
+      expect(find.bySemanticsLabel('Tambah informasi'), findsOneWidget);
       expect(
-        find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
+        find.bySemanticsLabel('Ubah informasi Pelatihan Tanggap Darurat'),
         findsOneWidget,
       );
       expect(
@@ -255,10 +257,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppToolbar), findsOneWidget);
-        expect(find.bySemanticsLabel('Posting informasi'), findsOneWidget);
+        expect(find.byType(AppPageActions), findsOneWidget);
+        expect(find.bySemanticsLabel('Tambah informasi'), findsOneWidget);
         expect(
-          find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
+          find.bySemanticsLabel('Ubah informasi Pelatihan Tanggap Darurat'),
           findsNothing,
         );
         expect(
@@ -268,7 +270,7 @@ void main() {
       },
     );
 
-    testWidgets('hides AppToolbar for non-ADMIN and non-GUARD roles', (
+    testWidgets('hides action bar for non-ADMIN and non-GUARD roles', (
       tester,
     ) async {
       const viewerSession = AuthSessionEntity(
@@ -293,10 +295,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppToolbar), findsNothing);
-      expect(find.bySemanticsLabel('Posting informasi'), findsNothing);
+      expect(find.byType(AppPageActions), findsNothing);
+      expect(find.text('Ubah'), findsNothing);
+      expect(find.text('Tambah Informasi'), findsNothing);
+      expect(find.text('Hapus Informasi'), findsNothing);
+      expect(find.bySemanticsLabel('Tambah informasi'), findsNothing);
       expect(
-        find.bySemanticsLabel('Edit informasi Pelatihan Tanggap Darurat'),
+        find.bySemanticsLabel('Ubah informasi Pelatihan Tanggap Darurat'),
         findsNothing,
       );
       expect(
@@ -346,14 +351,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final postBtn = find.byWidgetPredicate(
-        (w) => w is AppIconButton && w.semanticLabel == 'Posting informasi',
-      );
+      final postBtn = find.widgetWithText(AppButton, 'Tambah Informasi');
       expect(postBtn, findsOneWidget);
-      expect(
-        tester.widget<AppIconButton>(postBtn).variant,
-        AppIconButtonColor.filled,
-      );
 
       await tester.tap(postBtn);
       await tester.pumpAndSettle();
@@ -408,7 +407,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final editBtn = find.bySemanticsLabel(
-        'Edit informasi Pelatihan Tanggap Darurat',
+        'Ubah informasi Pelatihan Tanggap Darurat',
       );
       expect(editBtn, findsOneWidget);
 
@@ -466,6 +465,12 @@ void main() {
 
       expect(find.byType(AppConfirmationDialog), findsOneWidget);
       expect(find.text('Hapus informasi?'), findsOneWidget);
+      expect(
+        find.text(
+          'Informasi "Pelatihan Tanggap Darurat" akan dihapus secara permanen.',
+        ),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Hapus'));
       await tester.pump();
@@ -542,7 +547,7 @@ void main() {
       },
     );
 
-    testWidgets('disables all toolbar buttons when offline', (tester) async {
+    testWidgets('disables all action buttons when offline', (tester) async {
       const adminSession = AuthSessionEntity(
         userId: '1',
         email: 'admin@kawalo.id',
@@ -575,39 +580,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final postBtnFinder = find.byWidgetPredicate(
-        (w) => w is AppIconButton && w.semanticLabel == 'Posting informasi',
-      );
-      final editBtnFinder = find.byWidgetPredicate(
-        (w) =>
-            w is AppIconButton &&
-            w.semanticLabel == 'Edit informasi Pelatihan Tanggap Darurat',
-      );
-      final deleteBtnFinder = find.byWidgetPredicate(
-        (w) =>
-            w is AppIconButton &&
-            w.semanticLabel == 'Hapus informasi Pelatihan Tanggap Darurat',
-      );
+      final postBtnFinder = find.widgetWithText(AppButton, 'Tambah Informasi');
+      final editBtnFinder = find.widgetWithText(AppButton, 'Ubah');
+      final deleteBtnFinder = find.widgetWithText(AppButton, 'Hapus Informasi');
 
       expect(postBtnFinder, findsOneWidget);
       expect(editBtnFinder, findsOneWidget);
       expect(deleteBtnFinder, findsOneWidget);
-      expect(
-        tester.widget<AppIconButton>(postBtnFinder).variant,
-        AppIconButtonColor.filled,
-      );
-      expect(
-        tester.widget<AppIconButton>(editBtnFinder).variant,
-        AppIconButtonColor.standard,
-      );
-      expect(
-        tester.widget<AppIconButton>(deleteBtnFinder).variant,
-        AppIconButtonColor.standard,
-      );
 
-      expect(tester.widget<AppIconButton>(postBtnFinder).onPressed, isNull);
-      expect(tester.widget<AppIconButton>(editBtnFinder).onPressed, isNull);
-      expect(tester.widget<AppIconButton>(deleteBtnFinder).onPressed, isNull);
+      expect(tester.widget<AppButton>(postBtnFinder).enabled, isFalse);
+      expect(tester.widget<AppButton>(editBtnFinder).enabled, isFalse);
+      expect(tester.widget<AppButton>(deleteBtnFinder).enabled, isFalse);
 
       expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
 
@@ -618,7 +601,8 @@ void main() {
     });
 
     testWidgets(
-      'scrolling down hides floating toolbar and scrolling up restores it',
+      'stacks Ubah above Tambah Informasi above Hapus Informasi in the '
+      'bottom bar, not in the app bar',
       (tester) async {
         const adminSession = AuthSessionEntity(
           userId: '1',
@@ -642,38 +626,43 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppToolbar), findsOneWidget);
+        final editBtn = find.widgetWithText(AppButton, 'Ubah');
+        final createBtn = find.widgetWithText(AppButton, 'Tambah Informasi');
+        final deleteBtn = find.widgetWithText(AppButton, 'Hapus Informasi');
 
-        final postBtnFinder = find.byWidgetPredicate(
-          (w) => w is AppIconButton && w.semanticLabel == 'Posting informasi',
+        expect(find.byType(AppPageActions), findsOneWidget);
+        expect(find.byType(AppDestructiveButton), findsOneWidget);
+        expect(tester.widget<AppButton>(editBtn).style, AppButtonColor.filled);
+        expect(tester.widget<AppButton>(createBtn).style, AppButtonColor.tonal);
+
+        final editY = tester.getTopLeft(editBtn).dy;
+        final createY = tester.getTopLeft(createBtn).dy;
+        final deleteY = tester.getTopLeft(deleteBtn).dy;
+        expect(editY, lessThan(createY));
+        expect(createY, lessThan(deleteY));
+        expect(deleteY, greaterThan(500));
+
+        final screenWidth =
+            tester.view.physicalSize.width / tester.view.devicePixelRatio;
+        expect(
+          tester.getSize(deleteBtn).width,
+          closeTo(screenWidth - 2 * 16, 1),
         );
-        expect(postBtnFinder, findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AppHomeAppBar),
+            matching: find.textContaining('Hapus'),
+          ),
+          findsNothing,
+        );
 
-        // Verify initial position is at bottom of screen (not in center)
-        final initialY = tester.getCenter(postBtnFinder).dy;
-        expect(initialY, greaterThan(500));
-
-        // Drag up (scrolling down the content)
+        // The bar is fixed: scrolling the content must not move it.
         await tester.drag(
           find.byType(SingleChildScrollView),
           const Offset(0, -300),
         );
         await tester.pumpAndSettle();
-
-        // Verify toolbar moved off-screen (translated downwards)
-        final scrolledDownY = tester.getCenter(postBtnFinder).dy;
-        expect(scrolledDownY, greaterThan(initialY));
-
-        // Drag down (scrolling up the content)
-        await tester.drag(
-          find.byType(SingleChildScrollView),
-          const Offset(0, 300),
-        );
-        await tester.pumpAndSettle();
-
-        // Verify toolbar returned to its original bottom position
-        final restoredY = tester.getCenter(postBtnFinder).dy;
-        expect(restoredY, closeTo(initialY, 1.0));
+        expect(tester.getTopLeft(deleteBtn).dy, deleteY);
       },
     );
 

@@ -150,11 +150,13 @@ class InformationFormDialog extends StatefulWidget {
       final result = await AppDialog.showFullScreen<InformationItemEntity>(
         context,
         title: title,
-        action: InformationFormSubmitAction(
-          cubit: resolvedCubit,
-          label: actionLabel,
-          session: session,
-        ),
+        bottomActions: [
+          InformationFormSubmitAction(
+            cubit: resolvedCubit,
+            label: actionLabel,
+            session: session,
+          ),
+        ],
         body: InformationFormDialog(
           cubit: resolvedCubit,
           mediaPickerService: mediaPickerService,
