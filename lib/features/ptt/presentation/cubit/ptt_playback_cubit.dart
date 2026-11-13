@@ -29,10 +29,20 @@ class PttPlaybackCubit extends Cubit<PttPlaybackState> {
   /// stopped, so a slow download of a superseded request is dropped.
   int _request = 0;
 
+  /// True while a seek is in flight, so positions from before it are not
+  /// taken as the new baseline.
+  bool _seeking = false;
+
+  /// just_audio extrapolates the position from the moment `play()` is called,
+  /// before the native player has produced any sound; the player's first real
+  /// report then lands behind the guess and the bar jumps back, repeatedly
+  /// during the first moments. While playing, the shown position therefore
+  /// only moves forward: a lower report waits until playback catches up. Seeks
+  /// set the position themselves.
   void _onPosition(Duration position) {
-    if (state.status == PttPlaybackStatus.playing) {
-      emit(state.copyWith(position: position));
-    }
+    if (state.status != PttPlaybackStatus.playing || _seeking) return;
+    if (position < state.position) return;
+    emit(state.copyWith(position: position));
   }
 
   void _onCompleted() {
@@ -98,7 +108,12 @@ class PttPlaybackCubit extends Cubit<PttPlaybackState> {
       return;
     }
     emit(state.copyWith(position: position));
-    await _player.seek(position);
+    _seeking = true;
+    try {
+      await _player.seek(position);
+    } finally {
+      _seeking = false;
+    }
   }
 
   /// Used before a recording is deleted, so nothing keeps playing from it.

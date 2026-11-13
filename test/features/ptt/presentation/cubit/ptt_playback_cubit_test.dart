@@ -118,6 +118,49 @@ void main() {
     expect(cubit.state.position, const Duration(seconds: 3));
   });
 
+  // Regression: just_audio guesses ahead from the play() call and the native
+  // player's first real reports land behind the guess. Replays that sequence.
+  test('the start of playback never moves the position backwards', () async {
+    final seen = <Duration>[];
+    final sub = cubit.stream.listen((s) => seen.add(s.position));
+    await cubit.toggle(recording('a'));
+
+    for (final ms in [0, 120, 240, 30, 60, 260, 280]) {
+      player.position.add(Duration(milliseconds: ms));
+    }
+    await Future<void>.delayed(Duration.zero);
+    await sub.cancel();
+
+    for (var i = 1; i < seen.length; i++) {
+      expect(seen[i], greaterThanOrEqualTo(seen[i - 1]), reason: '$seen');
+    }
+    expect(cubit.state.position, const Duration(milliseconds: 280));
+  });
+
+  test(
+    'a seek back is kept, and stale positions during it are ignored',
+    () async {
+      final seek = Completer<void>();
+      final slowPlayer = _SlowSeekPlayer(seek.future);
+      final c = PttPlaybackCubit(repository: repository, player: slowPlayer);
+      addTearDown(c.close);
+      await c.toggle(recording('a'));
+      slowPlayer.position.add(const Duration(seconds: 5));
+      await Future<void>.delayed(Duration.zero);
+
+      final pending = c.seek('a', const Duration(seconds: 2));
+      slowPlayer.position.add(const Duration(milliseconds: 5100));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.position, const Duration(seconds: 2));
+
+      seek.complete();
+      await pending;
+      slowPlayer.position.add(const Duration(milliseconds: 2050));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.position, const Duration(milliseconds: 2050));
+    },
+  );
+
   test('seek moves the loaded recording only', () async {
     await cubit.seek('a', const Duration(seconds: 2));
     expect(player.calls, isEmpty);
@@ -191,4 +234,13 @@ void main() {
     expect(player.calls, contains('dispose'));
     verify(() => repository.clearAudioCache()).called(1);
   });
+}
+
+class _SlowSeekPlayer extends FakePlayer {
+  _SlowSeekPlayer(this._seekDone);
+
+  final Future<void> _seekDone;
+
+  @override
+  Future<void> seek(Duration p) => _seekDone;
 }

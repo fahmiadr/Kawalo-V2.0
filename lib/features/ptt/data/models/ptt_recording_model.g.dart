@@ -28,6 +28,7 @@ PttRecordingModel _$PttRecordingModelFromJson(Map<String, dynamic> json) =>
       transcriptLocale: json['transcript_locale'] as String?,
       transcriptSource: json['transcript_source'] as String?,
       transcriptStatus: json['transcript_status'] as String?,
+      waveform: json['waveform'] as String?,
     );
 
 PttRecordingPageModel _$PttRecordingPageModelFromJson(

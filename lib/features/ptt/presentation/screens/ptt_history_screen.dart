@@ -170,9 +170,11 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
       controller: _scrollController,
       reverse: true,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space150,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.space200,
+        AppSpacing.space100,
+        AppSpacing.space200,
+        AppSpacing.space300,
       ),
       itemCount: rows.length + (state.isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
@@ -193,6 +195,8 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
             key: ValueKey(recording.id),
             recording: recording,
             isMe: recording.isSpokenBy(session?.email),
+            isFirstInGroup: row.isFirstInGroup,
+            isLastInGroup: row.isLastInGroup,
             playback: playback,
             canDelete: canDelete,
             isDeleting: state.deletingIds.contains(recording.id),
@@ -208,18 +212,36 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
     );
   }
 
+  /// Turns of one speaker this close together share one avatar and name.
+  static const _groupGap = Duration(minutes: 5);
+
   /// [items] are newest first. In the reversed list a day's separator must come
   /// after (above) its oldest turn, so it is inserted when the day changes.
+  /// On screen `items[i + 1]` sits directly above `items[i]`.
   static List<_Row> _rowsFor(List<PttRecordingEntity> items) {
     final rows = <_Row>[];
     for (var i = 0; i < items.length; i++) {
-      rows.add(_Row.recording(items[i]));
+      final above = i == items.length - 1 ? null : items[i + 1];
+      final below = i == 0 ? null : items[i - 1];
+      rows.add(
+        _Row.recording(
+          items[i],
+          isFirstInGroup: !_sameGroup(above, items[i]),
+          isLastInGroup: !_sameGroup(items[i], below),
+        ),
+      );
       final isLastOfDay =
-          i == items.length - 1 ||
-          !_sameDay(items[i].startedAt, items[i + 1].startedAt);
+          above == null || !_sameDay(items[i].startedAt, above.startedAt);
       if (isLastOfDay) rows.add(_Row.date(items[i].startedAt));
     }
     return rows;
+  }
+
+  static bool _sameGroup(PttRecordingEntity? older, PttRecordingEntity? newer) {
+    if (older == null || newer == null) return false;
+    return older.speakerId == newer.speakerId &&
+        _sameDay(older.startedAt, newer.startedAt) &&
+        newer.startedAt.difference(older.startedAt).abs() <= _groupGap;
   }
 
   static bool _sameDay(DateTime a, DateTime b) =>
@@ -227,11 +249,20 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
 }
 
 class _Row {
-  const _Row.recording(PttRecordingEntity this.recording) : date = null;
-  const _Row.date(DateTime this.date) : recording = null;
+  const _Row.recording(
+    PttRecordingEntity this.recording, {
+    required this.isFirstInGroup,
+    required this.isLastInGroup,
+  }) : date = null;
+  const _Row.date(DateTime this.date)
+    : recording = null,
+      isFirstInGroup = false,
+      isLastInGroup = false;
 
   final PttRecordingEntity? recording;
   final DateTime? date;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 }
 
 class _DateSeparator extends StatelessWidget {
@@ -253,12 +284,13 @@ class _DateSeparator extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
+    // The turn below always starts a group and brings its own top gap.
     return Center(
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: AppSpacing.space100),
+        margin: const EdgeInsets.only(top: AppSpacing.space300),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space150,
-          vertical: AppSpacing.space50,
+          horizontal: AppSpacing.space200,
+          vertical: AppSpacing.space75,
         ),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,

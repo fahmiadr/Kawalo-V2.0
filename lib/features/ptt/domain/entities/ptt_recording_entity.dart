@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 
 enum PttTranscriptSource {
@@ -27,6 +29,7 @@ class PttRecordingEntity extends Equatable {
     this.transcriptLocale,
     this.transcriptSource,
     this.transcriptStatus,
+    this.waveform,
   });
 
   final String id;
@@ -47,6 +50,10 @@ class PttRecordingEntity extends Equatable {
   /// Raw server status (`done`, `no_speech`, ...); kept for logic only, the UI
   /// never shows it.
   final String? transcriptStatus;
+
+  /// Loudness bars `0..255` measured by the server over the whole turn; null
+  /// for turns recorded before it kept them.
+  final Uint8List? waveform;
 
   /// Trimmed transcript, or null when there is nothing worth showing.
   String? get displayTranscript {
@@ -74,5 +81,6 @@ class PttRecordingEntity extends Equatable {
     transcriptLocale,
     transcriptSource,
     transcriptStatus,
+    waveform,
   ];
 }

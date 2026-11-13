@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/features/ptt/data/mappers/ptt_recording_mapper.dart';
 import 'package:kawalo_mobile/features/ptt/data/models/ptt_recording_model.dart';
@@ -113,5 +115,15 @@ void main() {
       map(item({'transcript_source': 'server'})).transcriptSource,
       PttTranscriptSource.server,
     );
+  });
+
+  test('decodes the waveform; absent or malformed means none', () {
+    final bytes = List.generate(48, (i) => i * 5);
+    final e = map(item({'waveform': base64.encode(bytes)}));
+    expect(e.waveform, bytes);
+
+    expect(map(item()).waveform, isNull);
+    expect(map(item({'waveform': null})).waveform, isNull);
+    expect(map(item({'waveform': 'not base64!'})).waveform, isNull);
   });
 }

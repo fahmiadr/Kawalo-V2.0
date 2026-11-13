@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
@@ -8,9 +10,14 @@ import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_recording_entity.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_playback_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_duration_format.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_waveform.dart';
 
-/// Voice-note style bubble of one recorded PTT turn: initial, play/pause,
-/// seekable progress bar, duration and time. Own turns sit on the right.
+/// Voice-note style bubble of one recorded PTT turn: play/pause, seekable
+/// waveform, length and clock time. Own turns sit on the right.
+///
+/// Consecutive turns of one speaker form a group: only the first shows the
+/// avatar and name and carries the pointed corner, so a burst of short turns
+/// reads as one block.
 ///
 /// Purely presentational; the screen feeds it the playback state of this
 /// recording only, so a ticking position rebuilds one bubble, not the list.
@@ -22,10 +29,19 @@ class PttRecordingBubble extends StatefulWidget {
     required this.onTogglePlay,
     required this.onSeek,
     super.key,
+    this.isFirstInGroup = true,
+    this.isLastInGroup = true,
     this.canDelete = false,
     this.isDeleting = false,
     this.onDelete,
   });
+
+  static const double avatarSize = 32;
+
+  /// Bubbles without a transcript grow with the clip up to this length, the
+  /// server's cap on one turn.
+  static const Duration longestTurn = Duration(seconds: 30);
+  static const double minWidth = 208;
 
   final PttRecordingEntity recording;
   final bool isMe;
@@ -35,6 +51,9 @@ class PttRecordingBubble extends StatefulWidget {
   final PttPlaybackState playback;
   final VoidCallback onTogglePlay;
   final ValueChanged<Duration> onSeek;
+
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   /// Administrators only; the delete button is not built otherwise.
   final bool canDelete;
@@ -46,8 +65,7 @@ class PttRecordingBubble extends StatefulWidget {
 }
 
 class _PttRecordingBubbleState extends State<PttRecordingBubble> {
-  /// Slider value while the thumb is dragged; the player position would
-  /// otherwise pull it back under the finger.
+  /// Waveform position while it is dragged, for the time label.
   double? _dragFraction;
 
   bool get _isActive => widget.playback.isActive(widget.recording.id);
@@ -72,6 +90,38 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
         '${t.minute.toString().padLeft(2, '0')}';
   }
 
+  double _bubbleWidth(double available, {required bool hasTranscript}) {
+    final max = available * 0.92;
+    if (hasTranscript) return max;
+    final min = math.min(PttRecordingBubble.minWidth, max);
+    final share =
+        widget.recording.duration.inMilliseconds /
+        PttRecordingBubble.longestTurn.inMilliseconds;
+    // Square root so the common 2 to 10 s turns still differ visibly.
+    return min + (max - min) * math.sqrt(share.clamp(0.0, 1.0));
+  }
+
+  BorderRadius _shape() {
+    const round = AppRadius.radiusLgIncreased;
+    final tail = widget.isFirstInGroup
+        ? AppRadius.radiusXs
+        : AppRadius.radiusSm;
+    final joined = widget.isLastInGroup ? round : AppRadius.radiusSm;
+    return widget.isMe
+        ? BorderRadius.only(
+            topLeft: round,
+            bottomLeft: round,
+            topRight: tail,
+            bottomRight: joined,
+          )
+        : BorderRadius.only(
+            topLeft: tail,
+            bottomLeft: joined,
+            topRight: round,
+            bottomRight: round,
+          );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
@@ -79,6 +129,7 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
     final typeScale = theme.typeScale;
     final isMe = widget.isMe;
     final total = widget.recording.duration;
+    final transcript = widget.recording.displayTranscript;
 
     final bubbleColor = isMe
         ? colorScheme.primaryContainer
@@ -90,32 +141,17 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
         ? colorScheme.onPrimaryContainer
         : colorScheme.onSurfaceVariant;
 
-    final shownFraction = _dragFraction ?? _fraction;
-    final shownPosition = _isActive
-        ? Duration(milliseconds: (total.inMilliseconds * shownFraction).round())
-        : Duration.zero;
-    // Counts down while playing like a voice note; the full length otherwise.
-    final timeLabel = _isActive && _status != PttPlaybackStatus.loading
-        ? formatPttDuration(shownPosition)
-        : formatPttDuration(total);
-
     final isPlaying = _status == PttPlaybackStatus.playing;
     final isLoading = _status == PttPlaybackStatus.loading;
+    final canSeek = _isActive && !isLoading;
 
-    final avatar = CircleAvatar(
-      radius: 20,
-      backgroundColor: isMe
-          ? colorScheme.primary
-          : colorScheme.secondaryContainer,
-      child: Text(
-        _initial,
-        style: typeScale.titleMedium.copyWith(
-          color: isMe
-              ? colorScheme.onPrimary
-              : colorScheme.onSecondaryContainer,
-        ),
-      ),
+    final shownFraction = _dragFraction ?? _fraction;
+    final shownPosition = Duration(
+      milliseconds: (total.inMilliseconds * shownFraction).round(),
     );
+    final lengthLabel = canSeek
+        ? '${formatPttDuration(shownPosition)} / ${formatPttDuration(total)}'
+        : formatPttDuration(total);
 
     final playButton = SizedBox.square(
       dimension: AppStateLayer.minTouchTarget,
@@ -126,92 +162,63 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
                 child: AppLoadingIndicator(),
               ),
             )
-          : IconButton(
+          : IconButton.filled(
               onPressed: widget.onTogglePlay,
               tooltip: isPlaying ? 'Jeda rekaman' : 'Putar rekaman',
+              style: IconButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+              ),
               icon: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: 32,
-                color: textColor,
+                size: 28,
               ),
             ),
     );
 
-    final transcript = widget.recording.displayTranscript;
+    final metaStyle = typeScale.labelMedium.copyWith(color: metaColor);
 
-    final audioBody = Column(
+    final audio = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (!isMe)
-          Padding(
-            padding: const EdgeInsets.only(left: AppSpacing.space150),
-            child: Text(
-              widget.recording.speakerName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.typography.emphasized.labelMedium.copyWith(
-                color: textColor,
-              ),
-            ),
-          ),
         Row(
           children: [
             playButton,
+            AppSpacing.hGap150,
             Expanded(
-              child: SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  trackHeight: 4,
-                  activeTrackColor: colorScheme.primary,
-                  inactiveTrackColor: colorScheme.outlineVariant,
-                  thumbColor: colorScheme.primary,
-                ),
-                child: Slider(
-                  value: shownFraction,
-                  semanticFormatterCallback: (_) =>
-                      '$timeLabel dari ${formatPttDuration(total)}',
-                  onChanged: _isActive && !isLoading
-                      ? (value) => setState(() => _dragFraction = value)
-                      : null,
-                  onChangeEnd: (value) {
-                    setState(() => _dragFraction = null);
-                    widget.onSeek(
-                      Duration(
-                        milliseconds: (total.inMilliseconds * value).round(),
-                      ),
-                    );
-                  },
-                ),
+              child: PttWaveform(
+                bars: widget.recording.waveform,
+                value: shownFraction,
+                total: total,
+                playedColor: colorScheme.primary,
+                unplayedColor: textColor.withValues(alpha: 0.3),
+                onChanged: canSeek
+                    ? (value) => setState(() => _dragFraction = value)
+                    : null,
+                onChangeEnd: canSeek
+                    ? (value) {
+                        setState(() => _dragFraction = null);
+                        widget.onSeek(
+                          Duration(
+                            milliseconds: (total.inMilliseconds * value)
+                                .round(),
+                          ),
+                        );
+                      }
+                    : null,
               ),
             ),
           ],
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.space150),
-          child: Row(
-            children: [
-              Text(
-                timeLabel,
-                style: typeScale.labelSmall.copyWith(color: metaColor),
-              ),
-              const Spacer(),
-              Text(
-                _time,
-                style: typeScale.labelSmall.copyWith(color: metaColor),
-              ),
-            ],
-          ),
+        AppSpacing.vGap50,
+        Row(
+          children: [
+            Expanded(child: Text(lengthLabel, style: metaStyle)),
+            AppSpacing.hGap100,
+            Text(_time, style: metaStyle),
+          ],
         ),
-      ],
-    );
-
-    final audio = Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isMe) ...[avatar, AppSpacing.hGapXs],
-        Flexible(child: audioBody),
-        if (isMe) ...[AppSpacing.hGapXs, avatar],
       ],
     );
 
@@ -220,38 +227,32 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
     final audioPart = transcript == null
         ? audio
         : Container(
-            padding: const EdgeInsets.all(AppSpacing.space100),
+            padding: const EdgeInsets.all(AppSpacing.space150),
             decoration: BoxDecoration(
               color: textColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderRadius: AppRadius.borderMedium,
             ),
             child: audio,
           );
 
-    final maxWidth = MediaQuery.sizeOf(context).width * 0.88;
+    final showName = !isMe && widget.isFirstInGroup;
 
-    final bubble = Container(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.space100),
-      constraints: BoxConstraints(maxWidth: maxWidth),
-      padding: const EdgeInsets.all(AppSpacing.space100),
-      decoration: BoxDecoration(
-        color: bubbleColor,
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(AppRadius.lg),
-          topRight: const Radius.circular(AppRadius.lg),
-          bottomLeft: Radius.circular(isMe ? AppRadius.lg : AppRadius.xs),
-          bottomRight: Radius.circular(isMe ? AppRadius.xs : AppRadius.lg),
-        ),
-      ),
+    final bubbleBody = Container(
+      padding: const EdgeInsets.all(AppSpacing.space150),
+      decoration: BoxDecoration(color: bubbleColor, borderRadius: _shape()),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (showName) ...[
+            _SpeakerName(name: widget.recording.speakerName),
+            AppSpacing.vGap100,
+          ],
           audioPart,
           if (transcript != null)
             _TranscriptBlock(text: transcript, color: textColor),
           if (widget.canDelete) ...[
-            AppSpacing.vGapSm,
+            AppSpacing.vGap150,
             Align(
               alignment: Alignment.centerRight,
               child: _DeleteButton(
@@ -264,9 +265,65 @@ class _PttRecordingBubbleState extends State<PttRecordingBubble> {
       ),
     );
 
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: bubble,
+    final avatar = widget.isFirstInGroup
+        ? CircleAvatar(
+            radius: PttRecordingBubble.avatarSize / 2,
+            backgroundColor: colorScheme.secondaryContainer,
+            child: Text(
+              _initial,
+              style: typeScale.labelLarge.copyWith(
+                color: colorScheme.onSecondaryContainer,
+              ),
+            ),
+          )
+        : const SizedBox(width: PttRecordingBubble.avatarSize);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        top: widget.isFirstInGroup ? AppSpacing.space250 : AppSpacing.space75,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Both sides reserve the avatar column, so own and others' bubbles
+          // share one width scale.
+          const avatarSlot =
+              PttRecordingBubble.avatarSize + AppSpacing.space100;
+          final width = _bubbleWidth(
+            constraints.maxWidth - avatarSlot,
+            hasTranscript: transcript != null,
+          );
+          final bubble = SizedBox(width: width, child: bubbleBody);
+          return Row(
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isMe) ...[avatar, AppSpacing.hGap100],
+              bubble,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SpeakerName extends StatelessWidget {
+  const _SpeakerName({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = AppTheme.of(context);
+    return Text(
+      name,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: theme.typography.emphasized.labelLarge.copyWith(
+        color: theme.colorScheme.primary,
+      ),
     );
   }
 }
@@ -295,9 +352,9 @@ class _TranscriptBlockState extends State<_TranscriptBlock> {
 
     return Padding(
       padding: const EdgeInsets.only(
-        left: AppSpacing.space100,
-        right: AppSpacing.space100,
-        top: AppSpacing.space100,
+        left: AppSpacing.space50,
+        right: AppSpacing.space50,
+        top: AppSpacing.space150,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {

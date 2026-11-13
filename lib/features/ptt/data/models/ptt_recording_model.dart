@@ -41,6 +41,7 @@ class PttRecordingModel {
     this.transcriptLocale,
     this.transcriptSource,
     this.transcriptStatus,
+    this.waveform,
   });
 
   factory PttRecordingModel.fromJson(Map<String, dynamic> json) =>
@@ -61,6 +62,10 @@ class PttRecordingModel {
   final String? transcriptLocale;
   final String? transcriptSource;
   final String? transcriptStatus;
+
+  /// Base64 of 48 loudness bytes; absent on older servers and for turns
+  /// recorded before the server kept waveforms.
+  final String? waveform;
 }
 
 @JsonSerializable(createToJson: false, fieldRename: FieldRename.snake)

@@ -105,6 +105,37 @@ void main() {
     expect(find.text('Kemarin'), findsOneWidget);
   });
 
+  testWidgets('turns of one speaker minutes apart share one name', (
+    tester,
+  ) async {
+    final now = DateTime.now();
+    final at = DateTime(now.year, now.month, now.day, 9);
+    await pump(
+      tester,
+      PttRecordingsState(
+        status: PttRecordingsStatus.loaded,
+        items: [
+          recording(
+            'c',
+            speakerId: 'usr_budi',
+            startedAt: at.add(const Duration(minutes: 30)),
+          ),
+          recording(
+            'b',
+            speakerId: 'usr_budi',
+            startedAt: at.add(const Duration(minutes: 2)),
+          ),
+          recording('a', speakerId: 'usr_budi', startedAt: at),
+        ],
+      ),
+      user: session(),
+    );
+
+    // a and b form one group; c, half an hour later, starts another.
+    expect(find.text('Budi'), findsNWidgets(2));
+    expect(find.byType(CircleAvatar), findsNWidgets(2));
+  });
+
   testWidgets('a GUARD with allowAdmin still sees no delete button', (
     tester,
   ) async {

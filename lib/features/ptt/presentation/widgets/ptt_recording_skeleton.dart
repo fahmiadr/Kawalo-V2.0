@@ -18,12 +18,12 @@ class PttRecordingSkeleton extends StatelessWidget {
       itemBuilder: (context, index) => Align(
         alignment: index.isEven ? Alignment.centerLeft : Alignment.centerRight,
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: AppSpacing.space50),
-          width: MediaQuery.sizeOf(context).width * 0.7,
-          height: 64,
+          margin: const EdgeInsets.only(top: AppSpacing.space250),
+          width: MediaQuery.sizeOf(context).width * 0.66,
+          height: 92,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: AppRadius.borderLarge,
+            borderRadius: const BorderRadius.all(AppRadius.radiusLgIncreased),
           ),
         ),
       ),
