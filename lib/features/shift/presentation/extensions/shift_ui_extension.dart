@@ -10,9 +10,6 @@ String formatShiftDuration(int minutes) {
   return rest == 0 ? '$hours jam' : '$hours jam $rest menit';
 }
 
-/// "25 m", "100 m", "1 km".
-String formatShiftRadius(int metres) => metres == 1000 ? '1 km' : '$metres m';
-
 extension ShiftUiExtension on ShiftEntity {
   /// `null` for an empty or purple legacy colour.
   Color? get accentColor => parseShiftColor(color);

@@ -12,7 +12,6 @@ import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
-import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 import 'package:kawalo_mobile/features/shift/domain/entities/shift_entity.dart';
 import 'package:kawalo_mobile/features/shift/domain/value_objects/shift_clock.dart';
 import 'package:kawalo_mobile/features/shift/domain/value_objects/shift_form_values.dart';
@@ -20,7 +19,6 @@ import 'package:kawalo_mobile/features/shift/presentation/cubit/shift_form_cubit
 import 'package:kawalo_mobile/features/shift/presentation/cubit/shift_form_state.dart';
 import 'package:kawalo_mobile/features/shift/presentation/extensions/shift_ui_extension.dart';
 import 'package:kawalo_mobile/features/shift/presentation/widgets/shift_color_picker.dart';
-import 'package:kawalo_mobile/features/shift/presentation/widgets/shift_location_section.dart';
 import 'package:kawalo_mobile/features/shift/presentation/widgets/shift_time_field.dart';
 import 'package:kawalo_mobile/features/shift/shift_module.dart';
 
@@ -63,7 +61,6 @@ class ShiftFormDialog extends StatefulWidget {
 class _ShiftFormDialogState extends State<ShiftFormDialog> {
   late final TextEditingController _name;
   late final TextEditingController _description;
-  late final TextEditingController _locationName;
 
   ShiftFormCubit get _cubit => widget.cubit;
 
@@ -73,37 +70,13 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
     final values = _cubit.state.values;
     _name = TextEditingController(text: values.name);
     _description = TextEditingController(text: values.description);
-    _locationName = TextEditingController(text: values.locationName);
   }
 
   @override
   void dispose() {
     _name.dispose();
     _description.dispose();
-    _locationName.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickPoint() async {
-    final values = _cubit.state.values;
-    final hasPoint = values.latitude != null && values.longitude != null;
-    final picked = await AppMapPickerDialog.show(
-      context,
-      initialLatitude: values.latitude,
-      initialLongitude: values.longitude,
-      autoTriggerGps: !hasPoint,
-    );
-    if (picked == null) return;
-    _cubit.setCoordinates(picked.latitude, picked.longitude);
-    // Prefill the name from the street address only when the admin has not
-    // typed one.
-    final address = picked.address;
-    if (_locationName.text.trim().isEmpty && address != null) {
-      _locationName.text = address.length > ShiftFormValues.textMax
-          ? address.substring(0, ShiftFormValues.textMax)
-          : address;
-      _cubit.setLocationName(_locationName.text);
-    }
   }
 
   Future<void> _confirmDiscard() async {
@@ -229,17 +202,6 @@ class _ShiftFormDialogState extends State<ShiftFormDialog> {
                           errorText: errors.description,
                           textInputAction: TextInputAction.next,
                           onChanged: _cubit.setDescription,
-                        ),
-                        AppSpacing.vGap300,
-                        ShiftLocationSection(
-                          state: state,
-                          locationNameController: _locationName,
-                          onLimitChanged: _cubit.setLimitLocation,
-                          onPickPoint: () => unawaited(_pickPoint()),
-                          onLocationNameChanged: _cubit.setLocationName,
-                          onRadiusPreset: _cubit.selectRadiusPreset,
-                          onRadiusCustom: _cubit.selectCustomRadius,
-                          onRadiusText: _cubit.setRadiusText,
                         ),
                       ],
                     ),

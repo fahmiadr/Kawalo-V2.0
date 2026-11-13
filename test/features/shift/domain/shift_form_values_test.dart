@@ -34,7 +34,7 @@ void main() {
   });
 
   group('ShiftFormValues.validate', () {
-    test('a minimal shift without location is valid', () {
+    test('a minimal shift is valid', () {
       expect(_valid().validate().isValid, isTrue);
     });
 
@@ -68,77 +68,33 @@ void main() {
       expect(values.validate().isValid, isTrue);
     });
 
-    test('location needs coordinates and a radius of 10 to 1000 m', () {
-      final on = _valid().copyWith(limitLocation: true);
-      expect(on.validate().location, 'Pilih titik lokasi absen di peta.');
-
-      final located = on.copyWith(latitude: -6.2, longitude: 106.8);
-      expect(located.validate().isValid, isTrue);
-
-      for (final bad in ['9', '1001', '', '50.5', 'abc']) {
-        expect(
-          located.copyWith(radiusText: bad).validate().radius,
-          'Radius absen harus 10 sampai 1000 meter.',
-          reason: bad,
-        );
-      }
-      for (final good in ['10', '1000', ' 250 ']) {
-        expect(located.copyWith(radiusText: good).validate().radius, isNull);
-      }
-    });
-
-    test('rejects the (0, 0) coordinate', () {
-      final values = _valid().copyWith(
-        limitLocation: true,
-        latitude: 0,
-        longitude: 0,
+    test('the description is at most 128 characters', () {
+      expect(
+        _valid().copyWith(description: 'a' * 129).validate().description,
+        'Deskripsi maksimal 128 karakter.',
       );
-      expect(values.validate().location, 'Koordinat lokasi tidak valid.');
-    });
-
-    test('ignores location fields while the limit is off', () {
-      final values = _valid().copyWith(
-        radiusText: '5',
-        locationName: 'x' * 500,
+      expect(
+        _valid().copyWith(description: 'a' * 128).validate().description,
+        isNull,
       );
-      expect(values.validate().isValid, isTrue);
     });
   });
 
   group('ShiftFormValues.toInput', () {
-    test('drops the location and blank text when the limit is off', () {
+    test('trims the text and drops a blank description', () {
       final input = _valid()
-          .copyWith(
-            name: ' Shift Pagi ',
-            description: '  ',
-            latitude: -6.2,
-            longitude: 106.8,
-            locationName: 'Pos',
-          )
+          .copyWith(name: ' Shift Pagi ', description: '  ')
           .toInput();
       expect(input.name, 'Shift Pagi');
       expect(input.description, isNull);
-      expect(input.locationName, isNull);
-      expect(input.latitude, isNull);
-      expect(input.radius, isNull);
     });
 
-    test('carries the location and an uppercase colour when limited', () {
+    test('carries an uppercase colour and the description', () {
       final input = _valid()
-          .copyWith(
-            color: '#f2a900',
-            limitLocation: true,
-            latitude: -6.2146,
-            longitude: 106.8199,
-            locationName: ' Pos Utama ',
-            radiusText: '200',
-          )
+          .copyWith(color: '#f2a900', description: ' Keliling ')
           .toInput();
       expect(input.color, '#F2A900');
-      expect(input.locationName, 'Pos Utama');
-      expect(input.latitude, -6.2146);
-      expect(input.longitude, 106.8199);
-      expect(input.radius, 200);
+      expect(input.description, 'Keliling');
     });
   });
 }

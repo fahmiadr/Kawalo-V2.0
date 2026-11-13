@@ -10,10 +10,6 @@ class ShiftModel extends Equatable {
     required this.endTime,
     required this.color,
     this.description,
-    this.locationName,
-    this.latitude,
-    this.longitude,
-    this.radius,
   });
 
   factory ShiftModel.fromJson(Map<String, dynamic> json) => ShiftModel(
@@ -23,10 +19,6 @@ class ShiftModel extends Equatable {
     endTime: json['end_time'] as String? ?? '',
     color: json['color'] as String? ?? '',
     description: json['description'] as String?,
-    locationName: json['location_name'] as String?,
-    latitude: (json['glat'] as num?)?.toDouble(),
-    longitude: (json['glong'] as num?)?.toDouble(),
-    radius: (json['radius'] as num?)?.toInt(),
   );
 
   final String uid;
@@ -39,10 +31,6 @@ class ShiftModel extends Equatable {
   final String endTime;
   final String color;
   final String? description;
-  final String? locationName;
-  final double? latitude;
-  final double? longitude;
-  final int? radius;
 
   @override
   List<Object?> get props => [
@@ -52,9 +40,5 @@ class ShiftModel extends Equatable {
     endTime,
     color,
     description,
-    locationName,
-    latitude,
-    longitude,
-    radius,
   ];
 }

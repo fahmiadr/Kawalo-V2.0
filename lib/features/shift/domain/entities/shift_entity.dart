@@ -9,10 +9,6 @@ class ShiftEntity extends Equatable {
     required this.endTime,
     required this.color,
     this.description,
-    this.locationName,
-    this.latitude,
-    this.longitude,
-    this.radius,
   });
 
   final String uid;
@@ -23,16 +19,6 @@ class ShiftEntity extends Equatable {
   /// `#RRGGBB`; legacy rows may hold colours outside the app palette.
   final String color;
   final String? description;
-  final String? locationName;
-
-  /// Both coordinates are null when attendance is not limited to a location.
-  final double? latitude;
-  final double? longitude;
-
-  /// Metres; non-null exactly when the coordinates are.
-  final int? radius;
-
-  bool get hasLocation => latitude != null && longitude != null;
 
   bool get endsNextDay => startTime.endsNextDay(endTime);
 
@@ -46,9 +32,5 @@ class ShiftEntity extends Equatable {
     endTime,
     color,
     description,
-    locationName,
-    latitude,
-    longitude,
-    radius,
   ];
 }

@@ -9,10 +9,6 @@ class ShiftRequestModel extends Equatable {
     required this.endTime,
     required this.color,
     this.description,
-    this.locationName,
-    this.latitude,
-    this.longitude,
-    this.radius,
   });
 
   factory ShiftRequestModel.fromInput(ShiftInput input) => ShiftRequestModel(
@@ -21,10 +17,6 @@ class ShiftRequestModel extends Equatable {
     endTime: input.endTime.toString(),
     color: input.color,
     description: input.description,
-    locationName: input.locationName,
-    latitude: input.latitude,
-    longitude: input.longitude,
-    radius: input.radius,
   );
 
   final String name;
@@ -32,35 +24,17 @@ class ShiftRequestModel extends Equatable {
   final String endTime;
   final String color;
   final String? description;
-  final String? locationName;
-  final double? latitude;
-  final double? longitude;
-  final int? radius;
 
-  /// Optional fields are sent as explicit nulls: PUT replaces the shift, so
-  /// they must clear what was stored.
+  /// The description is sent as an explicit null: PUT replaces the shift, so
+  /// it must clear what was stored.
   Map<String, dynamic> toJson() => {
     'name': name,
     'start_time': startTime,
     'end_time': endTime,
     'color': color,
     'description': description,
-    'location_name': locationName,
-    'glat': latitude,
-    'glong': longitude,
-    'radius': radius,
   };
 
   @override
-  List<Object?> get props => [
-    name,
-    startTime,
-    endTime,
-    color,
-    description,
-    locationName,
-    latitude,
-    longitude,
-    radius,
-  ];
+  List<Object?> get props => [name, startTime, endTime, color, description];
 }

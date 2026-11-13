@@ -31,10 +31,6 @@ const Map<String, dynamic> _json = {
   'duration_mins': 480,
   'color': '#3B82F6',
   'description': null,
-  'location_name': 'Pos Utama',
-  'glat': -6.2088,
-  'glong': 106,
-  'radius': 100,
 };
 
 const _input = ShiftInput(
@@ -48,18 +44,12 @@ ShiftModel _model({
   String uid = 'a',
   String start = '07:00',
   String end = '15:00',
-  double? lat,
-  double? long,
-  int? radius,
 }) => ShiftModel(
   uid: uid,
   name: 'Shift',
   startTime: start,
   endTime: end,
   color: '#3B82F6',
-  latitude: lat,
-  longitude: long,
-  radius: radius,
 );
 
 void main() {
@@ -69,61 +59,47 @@ void main() {
   });
 
   group('ShiftModel', () {
-    test('parses the API item, accepting integer coordinates', () {
+    test('parses the API item', () {
       final model = ShiftModel.fromJson(_json);
       expect(model.uid, '0193a1f2c3d47e8f9a0b1c2d3e4f5a6b');
       expect(model.startTime, '07:00');
       expect(model.description, isNull);
-      expect(model.locationName, 'Pos Utama');
-      expect(model.latitude, -6.2088);
-      expect(model.longitude, 106.0);
-      expect(model.radius, 100);
     });
 
-    test('keeps null coordinates and radius', () {
+    test('ignores location fields a legacy server may still send', () {
       final model = ShiftModel.fromJson(
         Map<String, dynamic>.of(_json)
-          ..['glat'] = null
-          ..['glong'] = null
-          ..['radius'] = null,
+          ..['location_name'] = 'Pos'
+          ..['glat'] = -6.2
+          ..['glong'] = 106.8
+          ..['radius'] = 100,
       );
-      expect(model.latitude, isNull);
-      expect(model.radius, isNull);
+      expect(model, ShiftModel.fromJson(_json));
     });
   });
 
   group('ShiftRequestModel', () {
-    test('sends optional fields as explicit nulls', () {
+    test('sends the description as an explicit null and no location', () {
       expect(ShiftRequestModel.fromInput(_input).toJson(), {
         'name': 'Shift Pagi',
         'start_time': '07:00',
         'end_time': '15:00',
         'color': '#3B82F6',
         'description': null,
-        'location_name': null,
-        'glat': null,
-        'glong': null,
-        'radius': null,
       });
     });
 
-    test('sends the location of a limited shift', () {
+    test('sends the clocks of an overnight shift', () {
       const input = ShiftInput(
         name: 'Shift Malam',
         startTime: ShiftClock(22, 0),
         endTime: ShiftClock(6, 0),
         color: '#546E7A',
         description: 'Keliling',
-        locationName: 'Pos',
-        latitude: -6.2,
-        longitude: 106.8,
-        radius: 50,
       );
       final json = ShiftRequestModel.fromInput(input).toJson();
       expect(json['start_time'], '22:00');
       expect(json['end_time'], '06:00');
-      expect(json['glat'], -6.2);
-      expect(json['radius'], 50);
       expect(json['description'], 'Keliling');
     });
   });
@@ -136,18 +112,6 @@ void main() {
       expect(entity.startTime, const ShiftClock(22, 0));
       expect(entity.endsNextDay, isTrue);
       expect(entity.durationMinutes, 480);
-    });
-
-    test('keeps the location only when both coordinates exist', () {
-      final located = ShiftMapper.toEntity(
-        _model(lat: -6.2, long: 106.8, radius: 100),
-      )!;
-      expect(located.hasLocation, isTrue);
-      expect(located.radius, 100);
-
-      final half = ShiftMapper.toEntity(_model(lat: -6.2, radius: 100))!;
-      expect(half.hasLocation, isFalse);
-      expect(half.radius, isNull);
     });
 
     test('drops rows without a uid or with an unreadable clock', () {

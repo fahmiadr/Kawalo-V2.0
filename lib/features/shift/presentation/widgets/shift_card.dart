@@ -25,15 +25,12 @@ class ShiftCard extends StatelessWidget {
     final onAccent = shift.accentColor == null
         ? colorScheme.onPrimaryContainer
         : onShiftColor(accent);
-    final radius = shift.radius;
-    final place = shift.locationName;
 
     return AppCard(
       onPressed: onTap,
       semanticLabel:
           '${shift.name}, ${shift.displaySchedule}'
-          '${shift.endsNextDay ? ', berakhir besok' : ''}'
-          '${shift.hasLocation ? ', radius ${formatShiftRadius(radius ?? 0)}' : ', tanpa batas lokasi'}',
+          '${shift.endsNextDay ? ', berakhir besok' : ''}',
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space200,
         vertical: AppSpacing.space150,
@@ -91,23 +88,6 @@ class ShiftCard extends StatelessWidget {
                     size: AppTagSize.small,
                   )
                 : null,
-          ),
-          AppSpacing.vGap50,
-          _DetailRow(
-            iconPath: KawaloColorVectors.location1,
-            text: shift.hasLocation
-                ? (place ?? 'Lokasi absen sudah diatur')
-                : 'Lokasi absen belum diatur',
-            tag: shift.hasLocation && radius != null
-                ? AppTag(
-                    label: 'Radius ${formatShiftRadius(radius)}',
-                    size: AppTagSize.small,
-                  )
-                : const AppTag(
-                    label: 'Tanpa batas lokasi',
-                    variant: AppTagVariant.tertiary,
-                    size: AppTagSize.small,
-                  ),
           ),
         ],
       ),

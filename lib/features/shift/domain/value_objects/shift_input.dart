@@ -10,10 +10,6 @@ class ShiftInput extends Equatable {
     required this.endTime,
     required this.color,
     this.description,
-    this.locationName,
-    this.latitude,
-    this.longitude,
-    this.radius,
   });
 
   final String name;
@@ -21,21 +17,7 @@ class ShiftInput extends Equatable {
   final ShiftClock endTime;
   final String color;
   final String? description;
-  final String? locationName;
-  final double? latitude;
-  final double? longitude;
-  final int? radius;
 
   @override
-  List<Object?> get props => [
-    name,
-    startTime,
-    endTime,
-    color,
-    description,
-    locationName,
-    latitude,
-    longitude,
-    radius,
-  ];
+  List<Object?> get props => [name, startTime, endTime, color, description];
 }

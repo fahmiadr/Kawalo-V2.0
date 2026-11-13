@@ -34,10 +34,6 @@ const _pagi = ShiftEntity(
   startTime: ShiftClock(7, 0),
   endTime: ShiftClock(15, 0),
   color: '#F2A900',
-  locationName: 'Pos Utama',
-  latitude: -6.2146,
-  longitude: 106.8199,
-  radius: 100,
 );
 
 const _malam = ShiftEntity(
@@ -112,10 +108,9 @@ void main() {
       expect(find.text('2 shift aktif'), findsOneWidget);
       expect(find.text('Manajemen Shift'), findsOneWidget);
       expect(find.text('07:00–15:00 · 8 jam'), findsOneWidget);
-      expect(find.text('Radius 100 m'), findsOneWidget);
-      expect(find.text('Pos Utama'), findsOneWidget);
       expect(find.text('Berakhir besok'), findsOneWidget);
-      expect(find.text('Tanpa batas lokasi'), findsOneWidget);
+      expect(find.textContaining('Radius'), findsNothing);
+      expect(find.textContaining('lokasi'), findsNothing);
       expect(find.text('Tambah Shift'), findsOneWidget);
     });
 
@@ -156,7 +151,7 @@ void main() {
       return cubit;
     }
 
-    testWidgets('a new shift shows the fields and no radius until limited', (
+    testWidgets('a new shift shows the fields and no location section', (
       tester,
     ) async {
       await pump(tester);
@@ -166,7 +161,7 @@ void main() {
       expect(find.text('Jam selesai *'), findsOneWidget);
       expect(find.text('Warna shift'), findsOneWidget);
       expect(find.text('Kuning'), findsOneWidget);
-      expect(find.text('Batasi lokasi absen'), findsOneWidget);
+      expect(find.text('Lokasi absen'), findsNothing);
       expect(find.text('Radius absen'), findsNothing);
       expect(
         find.text(
@@ -174,56 +169,6 @@ void main() {
           'termasuk yang sudah lewat.',
         ),
         findsNothing,
-      );
-    });
-
-    testWidgets('limiting the location reveals the picker and radius chips', (
-      tester,
-    ) async {
-      final cubit = await pump(tester);
-
-      cubit.setLimitLocation(true);
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.text('Belum ada titik lokasi'), findsOneWidget);
-      expect(find.text('Radius absen'), findsOneWidget);
-      for (final label in [
-        '25 m',
-        '50 m',
-        '100 m',
-        '200 m',
-        '500 m',
-        '1 km',
-        'Lainnya',
-      ]) {
-        expect(find.text(label), findsWidgets, reason: label);
-      }
-    });
-
-    testWidgets('"Lainnya" opens the custom radius field with its error', (
-      tester,
-    ) async {
-      final cubit = await pump(tester);
-      cubit
-        ..setLimitLocation(true)
-        ..setCoordinates(-6.2, 106.8);
-      await tester.pump();
-      await tester.pump();
-
-      await tester.tap(find.text('Lainnya'));
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('Radius (meter) *'), findsOneWidget);
-      expect(find.text('Atur sendiri'), findsOneWidget);
-
-      cubit.setRadiusText('1500');
-      await cubit.submit();
-      await tester.pump();
-      await tester.pump();
-      expect(
-        find.text('Radius absen harus 10 sampai 1000 meter.'),
-        findsOneWidget,
       );
     });
 
@@ -290,7 +235,6 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Durasi 8 jam'), findsOneWidget);
-      expect(find.text('Radius absen'), findsOneWidget);
     });
   });
   group('ShiftFormDialog.show bottom actions', () {

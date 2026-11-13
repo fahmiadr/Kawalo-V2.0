@@ -19,10 +19,7 @@ const _saved = ShiftEntity(
   startTime: ShiftClock(7, 0),
   endTime: ShiftClock(15, 0),
   color: '#F2A900',
-  locationName: 'Pos',
-  latitude: -6.2,
-  longitude: 106.8,
-  radius: 150,
+  description: 'Keliling',
 );
 
 void main() {
@@ -47,21 +44,16 @@ void main() {
       final cubit = create();
       final values = cubit.state.values;
       expect(cubit.isEdit, isFalse);
-      expect(values.limitLocation, isFalse);
-      expect(values.radiusText, '100');
       expect(values.color, '#F2A900');
-      expect(cubit.state.isCustomRadius, isFalse);
       expect(cubit.state.isDirty, isFalse);
       addTearDown(cubit.close);
     });
 
-    test('editing loads the shift; a non-preset radius opens "Lainnya"', () {
+    test('editing loads the shift', () {
       final cubit = create(initial: _saved);
       expect(cubit.isEdit, isTrue);
       expect(cubit.state.values.name, 'Shift Pagi');
-      expect(cubit.state.values.limitLocation, isTrue);
-      expect(cubit.state.values.radiusText, '150');
-      expect(cubit.state.isCustomRadius, isTrue);
+      expect(cubit.state.values.description, 'Keliling');
       expect(cubit.state.isDirty, isFalse);
       addTearDown(cubit.close);
     });
@@ -82,17 +74,11 @@ void main() {
   });
 
   group('editing', () {
-    test('radius presets and "Lainnya" switch the mode', () {
-      final cubit = create()..selectCustomRadius();
-      expect(cubit.state.isCustomRadius, isTrue);
-      expect(cubit.state.values.radiusText, '100');
-
-      cubit.setRadiusText('250');
-      expect(cubit.state.values.radius, 250);
-
-      cubit.selectRadiusPreset(500);
-      expect(cubit.state.isCustomRadius, isFalse);
-      expect(cubit.state.values.radiusText, '500');
+    test('edits mark the form dirty until they are reverted', () {
+      final cubit = create(initial: _saved)..setDescription('Jaga');
+      expect(cubit.state.isDirty, isTrue);
+      cubit.setDescription('Keliling');
+      expect(cubit.state.isDirty, isFalse);
       addTearDown(cubit.close);
     });
 
@@ -134,7 +120,7 @@ void main() {
               as ShiftInput;
       expect(sent.name, 'Shift Siang');
       expect(sent.startTime, const ShiftClock(15, 0));
-      expect(sent.latitude, isNull);
+      expect(sent.endTime, const ShiftClock(23, 0));
       expect(cubit.state.status, ShiftFormStatus.editing);
       addTearDown(cubit.close);
     });
@@ -149,38 +135,6 @@ void main() {
 
       verify(() => repository.updateShift('a', any())).called(1);
       verifyNever(() => repository.createShift(any()));
-      addTearDown(cubit.close);
-    });
-
-    test('passes the chosen location and radius', () async {
-      when(
-        () => repository.createShift(any()),
-      ).thenAnswer((_) async => const Right(_saved));
-      final cubit = create();
-      fillValid(cubit);
-      cubit
-        ..setLimitLocation(true)
-        ..setCoordinates(-6.2146, 106.8199)
-        ..selectRadiusPreset(50);
-
-      await cubit.submit();
-
-      final sent =
-          verify(() => repository.createShift(captureAny())).captured.single
-              as ShiftInput;
-      expect(sent.latitude, -6.2146);
-      expect(sent.radius, 50);
-      addTearDown(cubit.close);
-    });
-
-    test('blocks a limited shift without a point', () async {
-      final cubit = create();
-      fillValid(cubit);
-      cubit.setLimitLocation(true);
-
-      expect(await cubit.submit(), isNull);
-      expect(cubit.state.errors.location, 'Pilih titik lokasi absen di peta.');
-      verifyZeroInteractions(repository);
       addTearDown(cubit.close);
     });
 

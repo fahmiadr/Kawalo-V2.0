@@ -10,7 +10,6 @@ class ShiftFormState extends Equatable {
     this.status = ShiftFormStatus.editing,
     this.showErrors = false,
     this.serverNameError,
-    this.isCustomRadius = false,
   });
 
   final ShiftFormValues values;
@@ -24,9 +23,6 @@ class ShiftFormState extends Equatable {
 
   /// Name conflict reported by the server; cleared by the next name edit.
   final String? serverNameError;
-
-  /// The radius field shows free input instead of a preset chip.
-  final bool isCustomRadius;
 
   bool get isBusy => status != ShiftFormStatus.editing;
 
@@ -43,7 +39,6 @@ class ShiftFormState extends Equatable {
     ShiftFormValues? values,
     ShiftFormStatus? status,
     bool? showErrors,
-    bool? isCustomRadius,
     String? Function()? serverNameError,
   }) => ShiftFormState(
     values: values ?? this.values,
@@ -53,7 +48,6 @@ class ShiftFormState extends Equatable {
     serverNameError: serverNameError != null
         ? serverNameError()
         : this.serverNameError,
-    isCustomRadius: isCustomRadius ?? this.isCustomRadius,
   );
 
   @override
@@ -63,6 +57,5 @@ class ShiftFormState extends Equatable {
     status,
     showErrors,
     serverNameError,
-    isCustomRadius,
   ];
 }

@@ -9,9 +9,6 @@ abstract final class ShiftMapper {
     final end = ShiftClock.tryParse(model.endTime);
     if (model.uid.isEmpty || start == null || end == null) return null;
 
-    final lat = model.latitude;
-    final long = model.longitude;
-    final located = lat != null && long != null;
     return ShiftEntity(
       uid: model.uid,
       name: model.name,
@@ -19,10 +16,6 @@ abstract final class ShiftMapper {
       endTime: end,
       color: model.color,
       description: model.description,
-      locationName: model.locationName,
-      latitude: located ? lat : null,
-      longitude: located ? long : null,
-      radius: located ? model.radius : null,
     );
   }
 
