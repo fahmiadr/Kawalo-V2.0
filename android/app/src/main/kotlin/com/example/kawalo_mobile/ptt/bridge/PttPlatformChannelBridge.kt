@@ -27,11 +27,16 @@ object PttPlatformChannelBridge : MethodChannel.MethodCallHandler, EventChannel.
 
     private var appContext: Context? = null
     private var activityRef: WeakReference<MainActivity>? = null
+    private var boundMessenger: Any? = null
 
     fun init(activity: MainActivity, flutterEngine: FlutterEngine) {
         activityRef = WeakReference(activity)
         appContext = activity.applicationContext
         val messenger = flutterEngine.dartExecutor.binaryMessenger
+        // The engine outlives the activity (see MainActivity); re-registering the event channel for a new
+        // activity would leave the already-listening Dart stream bound to a stale handler.
+        if (messenger === boundMessenger) return
+        boundMessenger = messenger
 
         methodChannel = MethodChannel(messenger, CONTROL_CHANNEL).apply {
             setMethodCallHandler(this@PttPlatformChannelBridge)

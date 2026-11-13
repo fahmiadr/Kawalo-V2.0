@@ -49,11 +49,11 @@ void main() {
       'saveTokens delegates writing access and refresh tokens to storage',
       () async {
         when(
-          () => mockStorage.saveAccessToken(any()),
-        ).thenAnswer((_) async => {});
-        when(
-          () => mockStorage.saveRefreshToken(any()),
-        ).thenAnswer((_) async => {});
+          () => mockStorage.saveTokens(
+            accessToken: any(named: 'accessToken'),
+            refreshToken: any(named: 'refreshToken'),
+          ),
+        ).thenAnswer((_) async {});
         when(
           () => mockStorage.setOnboardingCompleted(
             completed: any(named: 'completed'),
@@ -63,10 +63,10 @@ void main() {
         await localDataSource.saveTokens(tTokens);
 
         verify(
-          () => mockStorage.saveAccessToken('test_access_token'),
-        ).called(1);
-        verify(
-          () => mockStorage.saveRefreshToken('test_refresh_token'),
+          () => mockStorage.saveTokens(
+            accessToken: 'test_access_token',
+            refreshToken: 'test_refresh_token',
+          ),
         ).called(1);
         verify(() => mockStorage.setOnboardingCompleted()).called(1);
       },

@@ -170,6 +170,16 @@ class PttCubit extends Cubit<PttState> {
             preemptedBy: preemptedBy,
           ),
         );
+      } else if (eventState == 'RELEASED' &&
+          (state is PttTransmitting || state is PttRequestingFloor)) {
+        // Sent only when the notification's Talk/Stop button ends a turn
+        // that this cubit never started.
+        emit(
+          PttIdle(
+            channel: state.channel,
+            floorState: const PttFloorStateEntity.idle(),
+          ),
+        );
       }
     });
 

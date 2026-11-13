@@ -12,9 +12,13 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.SoundPool
+import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -25,6 +29,8 @@ import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 import com.example.kawalo_mobile.MainActivity
 import com.example.kawalo_mobile.R
+import com.example.kawalo_mobile.auth.AuthTokenChannel
+import com.example.kawalo_mobile.auth.AuthTokenVault
 import com.example.kawalo_mobile.ptt.audio.PttAudioEngine
 import com.example.kawalo_mobile.ptt.audio.PttTranscriber
 import com.example.kawalo_mobile.ptt.bridge.PttPlatformChannelBridge
@@ -36,6 +42,7 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import org.json.JSONObject
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class PttForegroundService : Service() {
@@ -49,6 +56,7 @@ class PttForegroundService : Service() {
         const val ACTION_START_TRANSMISSION = "com.example.kawalo_mobile.ptt.START_TRANSMISSION"
         const val ACTION_STOP_TRANSMISSION = "com.example.kawalo_mobile.ptt.STOP_TRANSMISSION"
         const val ACTION_UPDATE_AUTH_TOKEN = "com.example.kawalo_mobile.ptt.UPDATE_AUTH_TOKEN"
+        const val ACTION_TOGGLE_TRANSMISSION = "com.example.kawalo_mobile.ptt.TOGGLE_TRANSMISSION"
 
         const val EXTRA_CHANNEL_URL = "channelUrl"
         const val EXTRA_GROUP_UID = "groupUid"
@@ -56,9 +64,45 @@ class PttForegroundService : Service() {
         const val EXTRA_REQUEST_ID = "requestId"
 
         private const val STABLE_CONNECTION_MS = 10_000L
+
+        // A freshly refreshed token that the socket still rejects (e.g. a revoked session version) must not
+        // rotate the refresh token on every reconnect attempt.
+        private const val REFRESH_COOLDOWN_MS = 60_000L
+
+        // Channel of the current join, kept so a service restarted after process death can rejoin by itself.
+        private const val CHANNEL_PREFS = "kawalo_ptt_service"
+        private const val PREF_CHANNEL_URL = "channel_url"
+        private const val PREF_GROUP_UID = "group_uid"
+
+        // The channel stays joined for the whole login (no shift gate since 13 Nov 2026), so the lock is
+        // re-armed before its timeout instead of being held without one.
+        // ponytail: held for as long as the channel is joined; an idle-aware release needs the AudioTrack
+        // to stop between turns first.
+        private const val WAKE_LOCK_TIMEOUT_MS = 12 * 60 * 60 * 1000L
+        private const val WAKE_LOCK_RENEW_MS = 11 * 60 * 60 * 1000L
+
+        private const val TEXT_CONNECTING = "Menghubungkan ke Saluran PTT..."
+        private const val TEXT_CONNECTED = "Saluran PTT Terhubung - Siap Bicara"
+        private const val TEXT_RECONNECTING = "Menyambung ulang ke Saluran PTT..."
     }
 
     private var wakeLock: PowerManager.WakeLock? = null
+    private var wifiLock: WifiManager.WifiLock? = null
+    private val wakeLockHandler = Handler(Looper.getMainLooper())
+    private val renewWakeLock = object : Runnable {
+        override fun run() {
+            wakeLock?.acquire(WAKE_LOCK_TIMEOUT_MS)
+            wakeLockHandler.postDelayed(this, WAKE_LOCK_RENEW_MS)
+        }
+    }
+
+    // What the ongoing notification shows (see notificationText()). Written from OkHttp callbacks and from
+    // service intents on the main thread.
+    @Volatile private var connectionText = TEXT_CONNECTING
+    @Volatile private var isConnected = false
+    @Volatile private var speakerName: String? = null
+    @Volatile private var isTransmitting = false
+    @Volatile private var isForegroundStarted = false
     private var audioEngine: PttAudioEngine? = null
     private var transcriber: PttTranscriber? = null
 
@@ -79,7 +123,11 @@ class PttForegroundService : Service() {
     private var webSocket: WebSocket? = null
     private var activeChannelUrl: String? = null
     private var activeGroupUid: String? = null
+    // Fallback for the rare case the vault is unreadable; the vault's token always wins.
     private var activeToken: String? = null
+    private var tokenInUse: String? = null
+    private val refreshExecutor = Executors.newSingleThreadExecutor()
+    private var lastRefreshAt = 0L
     private val reconnectHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var isReconnecting = false
     private var reconnectAttempt = 0
@@ -92,7 +140,7 @@ class PttForegroundService : Service() {
 
     // MediaSession for screen-off headset button capture (BLK-03)
     private var mediaSession: MediaSessionCompat? = null
-    private var isPttTriggerPressed = false
+    @Volatile private var isPttTriggerPressed = false
 
     // OEM Rugged Side-Key Receiver
     private val oemKeyReceiver = object : BroadcastReceiver() {
@@ -109,33 +157,51 @@ class PttForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        AuthTokenVault.init(this)
         acquireWakeLock()
+        acquireWifiLock()
         initAudioAndHaptics()
         initMediaSession()
         registerOemKeyReceivers()
         createNotificationChannel()
     }
 
+    // Sticky: after process death the system restarts the service with a null intent and it rejoins the saved
+    // channel with the vault's tokens, without Dart. Android 12+ allows that background start only when the
+    // app is exempt from battery optimization (asked after login); otherwise startForeground throws and the
+    // service stops until the app is opened.
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val action = intent?.action ?: return START_STICKY
+        val action = intent?.action ?: return restoreChannel()
+        // A trigger or token intent (hardware key, late Dart call) would otherwise recreate a stopped service
+        // as a background service that holds the wake lock without a channel.
+        if (action != ACTION_JOIN_CHANNEL && !isForegroundStarted) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         when (action) {
             ACTION_JOIN_CHANNEL -> {
-                val channelUrl = intent.getStringExtra(EXTRA_CHANNEL_URL) ?: return START_STICKY
-                val groupUid = intent.getStringExtra(EXTRA_GROUP_UID) ?: return START_STICKY
-                val token = intent.getStringExtra(EXTRA_TOKEN) ?: return START_STICKY
+                val channelUrl = intent.getStringExtra(EXTRA_CHANNEL_URL) ?: return START_NOT_STICKY
+                val groupUid = intent.getStringExtra(EXTRA_GROUP_UID) ?: return START_NOT_STICKY
+                val token = intent.getStringExtra(EXTRA_TOKEN) ?: return START_NOT_STICKY
 
-                startForegroundWithNotification("Menghubungkan ke Saluran PTT...")
+                // Dart rejoins on every app resume; a service that rejoined by itself must not drop the socket.
+                if (isConnected && channelUrl == activeChannelUrl && groupUid == activeGroupUid) {
+                    PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "CONNECTED"))
+                    return START_STICKY
+                }
+                getSharedPreferences(CHANNEL_PREFS, MODE_PRIVATE).edit()
+                    .putString(PREF_CHANNEL_URL, channelUrl)
+                    .putString(PREF_GROUP_UID, groupUid)
+                    .apply()
+                startForegroundWithNotification(TEXT_CONNECTING)
                 // No-op while already playing; re-arms playback if the AudioTrack failed to initialize earlier.
                 audioEngine?.startPlayback()
-                connectWebSocket(channelUrl, groupUid, token)
+                activeToken = token
+                connectWebSocket(channelUrl, groupUid)
             }
 
-            ACTION_LEAVE_CHANNEL -> {
-                disconnectWebSocket()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
-            }
+            ACTION_LEAVE_CHANNEL -> endChannel()
 
             ACTION_START_TRANSMISSION -> {
                 val requestId = intent.getStringExtra(EXTRA_REQUEST_ID) ?: "req_${System.currentTimeMillis()}"
@@ -144,6 +210,18 @@ class PttForegroundService : Service() {
 
             ACTION_STOP_TRANSMISSION -> {
                 handlePttTriggerReleased()
+            }
+
+            // A notification action delivers a single click, never press and release, so the notification
+            // button toggles. The server's 30 s time-out timer ends a turn that is never stopped.
+            ACTION_TOGGLE_TRANSMISSION -> {
+                if (isPttTriggerPressed) {
+                    handlePttTriggerReleased()
+                    // Dart did not start this turn, so it would otherwise keep showing it as transmitting.
+                    PttPlatformChannelBridge.dispatchEvent("transmissionStateChanged", mapOf("state" to "RELEASED"))
+                } else {
+                    handlePttTriggerPressed("req_ntf_${System.currentTimeMillis()}")
+                }
             }
 
             ACTION_UPDATE_AUTH_TOKEN -> {
@@ -157,6 +235,37 @@ class PttForegroundService : Service() {
         return START_STICKY
     }
 
+    private fun restoreChannel(): Int {
+        val prefs = getSharedPreferences(CHANNEL_PREFS, MODE_PRIVATE)
+        val channelUrl = prefs.getString(PREF_CHANNEL_URL, null)
+        val groupUid = prefs.getString(PREF_GROUP_UID, null)
+        if (channelUrl == null || groupUid == null || AuthTokenVault.refreshToken() == null) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        try {
+            startForegroundWithNotification(TEXT_CONNECTING)
+        } catch (e: Exception) {
+            Log.w(TAG, "Cannot restart PTT in the background: ${e.message}")
+            isForegroundStarted = false
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        Log.i(TAG, "Restored PTT channel after a restart")
+        audioEngine?.startPlayback()
+        connectWebSocket(channelUrl, groupUid)
+        return START_STICKY
+    }
+
+    /** Leaves the channel for good: a user leave, a logout, or a session the server ended. */
+    private fun endChannel() {
+        isForegroundStarted = false
+        disconnectWebSocket()
+        getSharedPreferences(CHANNEL_PREFS, MODE_PRIVATE).edit().clear().apply()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     /* ---------------- Lifecycle & Initialization ---------------- */
@@ -165,7 +274,20 @@ class PttForegroundService : Service() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Kawalo::PttWakeLock").apply {
             setReferenceCounted(false)
-            acquire(12 * 60 * 60 * 1000L) // 12-hour max patrol shift
+            acquire(WAKE_LOCK_TIMEOUT_MS)
+        }
+        wakeLockHandler.postDelayed(renewWakeLock, WAKE_LOCK_RENEW_MS)
+    }
+
+    // Keeps Wi-Fi out of power save while the screen is off so voice packets are not batched. Android 14
+    // deprecated HIGH_PERF and its successor (LOW_LATENCY) only works with the screen on, so on 14+ this may
+    // do nothing; it is harmless there.
+    @Suppress("DEPRECATION")
+    private fun acquireWifiLock() {
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager ?: return
+        wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Kawalo::PttWifiLock").apply {
+            setReferenceCounted(false)
+            acquire()
         }
     }
 
@@ -262,6 +384,9 @@ class PttForegroundService : Service() {
             ).apply {
                 description = "Layanan aktif komunikasi suara Walkie-Talkie di latar belakang"
                 setShowBadge(false)
+                // User decision 13 Nov 2026: the speaker's name and the Talk/Stop button must work from the
+                // lock screen, accepting that anyone holding the phone sees who is talking.
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
@@ -269,7 +394,9 @@ class PttForegroundService : Service() {
     }
 
     private fun startForegroundWithNotification(statusText: String) {
-        val notification = buildNotification(statusText)
+        connectionText = statusText
+        isForegroundStarted = true
+        val notification = buildNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Android 14+ (API 34/35/36): Layanan latar belakang PTT saat idle/mendengarkan
             // hanya memerlukan tipe mediaPlayback. Tipe microphone ditambahkan secara dinamis
@@ -284,7 +411,8 @@ class PttForegroundService : Service() {
         }
     }
 
-    private fun updateForegroundServiceType(isRecording: Boolean) {
+    /** False when the system refused the microphone type (e.g. started from the background on Android 14+). */
+    private fun updateForegroundServiceType(isRecording: Boolean): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val hasRecordAudio = androidx.core.content.ContextCompat.checkSelfPermission(
                 this,
@@ -297,18 +425,32 @@ class PttForegroundService : Service() {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
             }
             try {
-                startForeground(
-                    NOTIFICATION_ID,
-                    buildNotification(if (isRecording) "Transmisi Suara Aktif" else "Saluran PTT Terhubung"),
-                    type
-                )
+                startForeground(NOTIFICATION_ID, buildNotification(), type)
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to update foreground service type: ${e.message}")
+                return false
             }
+        } else {
+            refreshNotification()
+        }
+        return true
+    }
+
+    private fun notificationText(): String {
+        val speaker = speakerName
+        return when {
+            isTransmitting -> "Anda sedang bicara"
+            isConnected && speaker != null -> "$speaker sedang bicara"
+            else -> connectionText
         }
     }
 
-    private fun buildNotification(statusText: String): Notification {
+    private fun refreshNotification() {
+        if (!isForegroundStarted) return
+        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification())
+    }
+
+    private fun buildNotification(): Notification {
         val launchIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -317,22 +459,39 @@ class PttForegroundService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Kawalo PTT Aktif")
-            .setContentText(statusText)
+            .setContentText(notificationText())
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+
+        val canTalk = androidx.core.content.ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.RECORD_AUDIO
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (isConnected && canTalk) {
+            val toggleIntent = PendingIntent.getService(
+                this,
+                1,
+                Intent(this, PttForegroundService::class.java).setAction(ACTION_TOGGLE_TRANSMISSION),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(0, if (isPttTriggerPressed) "Berhenti" else "Bicara", toggleIntent)
+        }
+        return builder.build()
     }
 
     /* ---------------- WebSocket Networking ---------------- */
 
-    private fun connectWebSocket(channelUrl: String, groupUid: String, token: String) {
+    private fun connectWebSocket(channelUrl: String, groupUid: String) {
         activeChannelUrl = channelUrl
         activeGroupUid = groupUid
-        activeToken = token
+        val token = AuthTokenVault.accessToken() ?: activeToken.orEmpty()
+        tokenInUse = token
 
         val generation = ++socketGeneration
         reconnectHandler.removeCallbacksAndMessages(null)
@@ -370,7 +529,9 @@ class PttForegroundService : Service() {
                 // closes at once must not be retried every 2 s forever.
                 reconnectHandler.postDelayed(resetAttemptRunnable, STABLE_CONNECTION_MS)
                 isReconnecting = false
-                startForegroundWithNotification("Saluran PTT Terhubung - Siap Bicara")
+                isConnected = true
+                speakerName = null
+                startForegroundWithNotification(TEXT_CONNECTED)
                 PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "CONNECTED"))
             }
 
@@ -407,6 +568,7 @@ class PttForegroundService : Service() {
                 // A server-side close (restart, deploy) is not a user leave: keep the channel alive by
                 // reconnecting like after a failure, otherwise incoming audio stays silent until the app reopens.
                 PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "RECONNECTING"))
+                showReconnecting()
                 scheduleReconnect()
             }
 
@@ -417,22 +579,57 @@ class PttForegroundService : Service() {
                 val bodyStr = try { response?.body?.string() } catch (_: Exception) { null }
                 Log.e(TAG, "PTT WebSocket failure: ${t.message} | HTTP $respCode ($respMsg) | Body: $bodyStr", t)
                 PttPlatformChannelBridge.dispatchEvent("connectionStatusChanged", mapOf("status" to "RECONNECTING"))
+                showReconnecting()
                 if (respCode == 401) {
-                    // The held access token expired while the socket was down; only Dart can refresh it. The
-                    // new token arrives through ACTION_UPDATE_AUTH_TOKEN and the next reconnect attempt uses it.
-                    PttPlatformChannelBridge.dispatchEvent("authTokenRejected", emptyMap())
+                    // The access token expired while the socket was down. The service refreshes it itself
+                    // (the vault is the only refresher), so Dart is no longer asked to.
+                    onTokenRejected(token, generation)
+                } else {
+                    scheduleReconnect()
                 }
-                scheduleReconnect()
             }
         })
+    }
+
+    private fun showReconnecting() {
+        isConnected = false
+        speakerName = null
+        connectionText = TEXT_RECONNECTING
+        refreshNotification()
+    }
+
+    private fun onTokenRejected(rejectedToken: String, generation: Int) {
+        val now = SystemClock.elapsedRealtime()
+        if (lastRefreshAt != 0L && now - lastRefreshAt < REFRESH_COOLDOWN_MS) {
+            scheduleReconnect()
+            return
+        }
+        lastRefreshAt = now
+        refreshExecutor.execute {
+            val result = AuthTokenVault.refresh(rejectedToken)
+            reconnectHandler.post {
+                if (generation != socketGeneration) return@post
+                when (result) {
+                    AuthTokenVault.RefreshResult.Rejected, AuthTokenVault.RefreshResult.NoSession -> {
+                        Log.w(TAG, "PTT session ended while refreshing ($result); leaving the channel")
+                        if (result == AuthTokenVault.RefreshResult.Rejected) AuthTokenChannel.notifySessionEnded()
+                        PttPlatformChannelBridge.dispatchEvent(
+                            "connectionStatusChanged",
+                            mapOf("status" to "DISCONNECTED")
+                        )
+                        endChannel()
+                    }
+                    else -> scheduleReconnect()
+                }
+            }
+        }
     }
 
     private fun scheduleReconnect() {
         if (isReconnecting) return
         val url = activeChannelUrl
         val group = activeGroupUid
-        val token = activeToken
-        if (url.isNullOrEmpty() || group.isNullOrEmpty() || token.isNullOrEmpty()) {
+        if (url.isNullOrEmpty() || group.isNullOrEmpty()) {
             return
         }
 
@@ -443,10 +640,8 @@ class PttForegroundService : Service() {
         Log.i(TAG, "Scheduling PTT WebSocket reconnect in ${delayMs}ms (attempt #$reconnectAttempt)")
         reconnectHandler.postDelayed({
             isReconnecting = false
-            if (activeChannelUrl != null && activeGroupUid != null && activeToken != null) {
-                Log.i(TAG, "Attempting PTT WebSocket auto-reconnect...")
-                connectWebSocket(activeChannelUrl!!, activeGroupUid!!, activeToken!!)
-            }
+            Log.i(TAG, "Attempting PTT WebSocket auto-reconnect...")
+            connectWebSocket(url, group)
         }, delayMs)
     }
 
@@ -478,12 +673,29 @@ class PttForegroundService : Service() {
                         return
                     }
 
+                    // Lazy microphone start with dynamic FGS type update. Without the microphone type the
+                    // system would hand a background recorder silence, so the turn is dropped instead.
+                    isTransmitting = true
+                    if (!updateForegroundServiceType(true)) {
+                        isTransmitting = false
+                        handlePttTriggerReleased()
+                        playBonkTone()
+                        vibratePattern(longArrayOf(0, 100, 50, 100))
+                        PttPlatformChannelBridge.dispatchEvent(
+                            "transmissionStateChanged",
+                            mapOf(
+                                "state" to "DENIED",
+                                "requestId" to json.optString("requestId"),
+                                "reason" to "MICROPHONE_UNAVAILABLE"
+                            )
+                        )
+                        return
+                    }
+
                     // Play Chirp & vibrate 50ms pulse
                     playChirpTone()
                     vibrateHaptic(50)
 
-                    // Lazy microphone start with dynamic FGS type update
-                    updateForegroundServiceType(true)
                     val requestId = json.optString("requestId").ifEmpty { lastRequestId.orEmpty() }
                     if (requestId.isNotEmpty()) transcriber?.beginTurn(requestId)
                     audioEngine?.startRecording()
@@ -499,6 +711,8 @@ class PttForegroundService : Service() {
                 }
 
                 "FLOOR_DENIED" -> {
+                    isPttTriggerPressed = false
+                    refreshNotification()
                     // Play Bonk & double 100ms vibration
                     playBonkTone()
                     vibratePattern(longArrayOf(0, 100, 50, 100))
@@ -525,6 +739,8 @@ class PttForegroundService : Service() {
 
                 "FLOOR_REVOKED" -> {
                     // Preempted by Admin or TOT expired: Mute microphone immediately
+                    isPttTriggerPressed = false
+                    isTransmitting = false
                     audioEngine?.stopRecording()
                     transcriber?.endTurn()
                     updateForegroundServiceType(false)
@@ -560,6 +776,9 @@ class PttForegroundService : Service() {
                             "role" to speakerObj.optString("role")
                         )
                     } else null
+
+                    speakerName = if (state == "IDLE") null else speakerObj?.optString("name")?.ifBlank { null } ?: "Anggota grup"
+                    refreshNotification()
 
                     if (state == "IDLE") {
                         playRogerTone()
@@ -631,10 +850,12 @@ class PttForegroundService : Service() {
                 )
             )
         }
+        refreshNotification()
     }
 
     private fun handlePttTriggerReleased() {
         isPttTriggerPressed = false
+        isTransmitting = false
         audioEngine?.stopRecording()
         transcriber?.endTurn()
         updateForegroundServiceType(false)
@@ -673,6 +894,7 @@ class PttForegroundService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         disconnectWebSocket()
+        refreshExecutor.shutdown()
         audioEngine?.stopRecording()
         transcriber?.release()
         audioEngine?.stopPlayback()
@@ -681,7 +903,11 @@ class PttForegroundService : Service() {
         try {
             unregisterReceiver(oemKeyReceiver)
         } catch (_: Exception) {}
+        wakeLockHandler.removeCallbacks(renewWakeLock)
         wakeLock?.let {
+            if (it.isHeld) it.release()
+        }
+        wifiLock?.let {
             if (it.isHeld) it.release()
         }
     }

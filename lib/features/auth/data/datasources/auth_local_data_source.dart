@@ -25,8 +25,10 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   @override
   Future<void> saveTokens(AuthTokensModel tokens) async {
-    await storageService.saveAccessToken(tokens.accessToken);
-    await storageService.saveRefreshToken(tokens.refreshToken);
+    await storageService.saveTokens(
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    );
     await storageService.setOnboardingCompleted();
   }
 

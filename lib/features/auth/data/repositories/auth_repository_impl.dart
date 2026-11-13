@@ -160,9 +160,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // mencegah phantom background request yang merusak rotasi sesi di server.
       if (refreshToken != null && refreshToken.isNotEmpty) {
         final cancelToken = DioCancellationToken();
+        // The ApiClient refresher stores the new pair itself; writing it again
+        // here could put back a pair the PTT service has rotated meanwhile.
+        final client = _apiClient;
         try {
           Future<AuthTokensModel> executeRefresh() async {
-            final client = _apiClient;
             if (client != null) {
               final renewed = await client.refreshAccessToken(
                 refreshToken: refreshToken,
@@ -213,7 +215,7 @@ class AuthRepositoryImpl implements AuthRepository {
           }
 
           final newSession = _sessionFromPayload(newPayload);
-          await localDataSource.saveTokens(newTokens);
+          if (client == null) await localDataSource.saveTokens(newTokens);
           await localDataSource.saveSession(newSession);
           return Right(userEntity);
         } on AppException catch (e) {

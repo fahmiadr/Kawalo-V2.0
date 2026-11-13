@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:kawalo_mobile/core/security/jwks_service.dart';
+import 'package:kawalo_mobile/core/storage/native_token_store.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/utils/jwt_utils.dart';
 
@@ -165,6 +166,8 @@ class AuthInterceptor extends QueuedInterceptor {
     String? customRefreshToken, {
     CancelToken? cancelToken,
   }) async {
+    final native = storageService.nativeTokens;
+    if (native != null) return await _executeNativeRefresh(native);
     try {
       final token =
           customRefreshToken ?? await storageService.getRefreshToken();
@@ -221,6 +224,45 @@ class AuthInterceptor extends QueuedInterceptor {
       // Bila kendala jaringan (timeout, connection error, offline),
       // JANGAN bersihkan sesi! Pengguna tetap berhak berada di mode offline.
       return null;
+    } on Object catch (_) {
+      return null;
+    }
+  }
+
+  /// Android: the native vault sends the refresh token (and stores the new
+  /// pair) so the PTT service and Dart never rotate the same token twice.
+  /// A cancel token cannot stop it; a result that arrives after the caller gave
+  /// up is still stored, which is what keeps the rotation intact.
+  Future<({String accessToken, String refreshToken})?> _executeNativeRefresh(
+    NativeTokenStore native,
+  ) async {
+    try {
+      final result = await native.refresh(
+        staleAccessToken: await storageService.getAccessToken(),
+      );
+      final accessToken = result.accessToken;
+      final refreshToken = result.refreshToken;
+      switch (result.status) {
+        case NativeRefreshStatus.ok
+            when accessToken != null && refreshToken != null:
+          final verified = await JwtUtils.verifyAndDecode(
+            accessToken,
+            jwksService: jwksService,
+          );
+          if (verified == null) {
+            await storageService.clearAuthSession();
+            onSessionExpired?.call(SessionExpiredReason.securityAnomaly);
+            return null;
+          }
+          onTokenRefreshed?.call(accessToken);
+          return (accessToken: accessToken, refreshToken: refreshToken);
+        case NativeRefreshStatus.rejected:
+          await storageService.clearAuthSession();
+          onSessionExpired?.call(SessionExpiredReason.tokenExpired);
+          return null;
+        case _:
+          return null;
+      }
     } on Object catch (_) {
       return null;
     }

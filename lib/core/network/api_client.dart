@@ -67,6 +67,19 @@ class ApiClient {
     );
     dio.interceptors.add(authInterceptor);
 
+    final nativeTokens = storageService.nativeTokens;
+    if (nativeTokens != null) {
+      unawaited(nativeTokens.configure(effectiveBaseUrl).catchError((_) {}));
+      // The PTT service refreshed on its own and the server refused: end the
+      // session here too, exactly like a refused refresh from Dart.
+      nativeTokens.onSessionEnded = () async {
+        await storageService.clearAuthSession();
+        authInterceptor.onSessionExpired?.call(
+          SessionExpiredReason.tokenExpired,
+        );
+      };
+    }
+
     if (kDebugMode) {
       dio.interceptors.add(_StreamSafeLogInterceptor());
     }

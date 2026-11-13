@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,7 @@ import 'package:kawalo_mobile/core/security/models/security_violation_type.dart'
 import 'package:kawalo_mobile/core/security/presentation/app_security_blocked_screen.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/storage/cache_wiper.dart';
+import 'package:kawalo_mobile/core/storage/native_token_store.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -114,7 +116,9 @@ class _MyAppState extends State<MyApp> {
 
     final isar = widget.isar!;
 
-    _storageService = SecureStorageService();
+    _storageService = SecureStorageService(
+      nativeTokens: Platform.isAndroid ? NativeTokenStore() : null,
+    );
     _apiClient = ApiClient(storage: _storageService);
     _networkInfo = NetworkInfoImpl();
     _uploadRepository = UploadRepositoryImpl(

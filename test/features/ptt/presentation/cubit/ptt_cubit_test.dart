@@ -297,6 +297,33 @@ void main() {
     );
 
     blocTest<PttCubit, PttState>(
+      'returns to PttIdle when the notification button ends the turn',
+      build: createCubit,
+      seed: () => const PttTransmitting(
+        channel: PttChannelEntity(groupUid: 'grp_01'),
+        floorState: PttFloorStateEntity(status: PttFloorStatus.transmitting),
+      ),
+      act: (_) => transmissionController.add({'state': 'RELEASED'}),
+      expect: () => [
+        const PttIdle(
+          channel: PttChannelEntity(groupUid: 'grp_01'),
+          floorState: PttFloorStateEntity.idle(),
+        ),
+      ],
+    );
+
+    blocTest<PttCubit, PttState>(
+      'ignores RELEASED while listening to someone else',
+      build: createCubit,
+      seed: () => const PttListening(
+        channel: PttChannelEntity(groupUid: 'grp_01'),
+        floorState: PttFloorStateEntity(status: PttFloorStatus.transmitting),
+      ),
+      act: (_) => transmissionController.add({'state': 'RELEASED'}),
+      expect: () => <PttState>[],
+    );
+
+    blocTest<PttCubit, PttState>(
       'reacts to floor occupied by emitting PttListening',
       build: createCubit,
       seed: () => const PttIdle(

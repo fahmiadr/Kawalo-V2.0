@@ -19,6 +19,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/screens/information_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/more_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/background_access_sheet.dart';
 
 /// Halaman shell navigasi utama aplikasi Kawalo.
 ///
@@ -42,6 +43,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(BackgroundAccessSheet.maybeShow(context));
+    });
   }
 
   void _onDestinationSelected(int index) {

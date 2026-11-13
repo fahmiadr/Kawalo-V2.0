@@ -4,10 +4,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/network/auth_interceptor.dart';
 import 'package:kawalo_mobile/core/security/jwks_service.dart';
+import 'package:kawalo_mobile/core/storage/native_token_store.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockDio extends Mock implements Dio {}
+
+class MockNativeTokenStore extends Mock implements NativeTokenStore {}
 
 class MockSecureStorageService extends Mock implements SecureStorageService {}
 
@@ -510,6 +513,99 @@ JWT_PUBLIC_KEY="$escapedPem"
           ),
         ),
       ).called(1);
+    });
+  });
+
+  group('AuthInterceptor native vault (Android)', () {
+    late MockNativeTokenStore native;
+    final expired = generateTestToken(isExpired: true);
+
+    setUp(() {
+      native = MockNativeTokenStore();
+      when(() => mockStorage.nativeTokens).thenReturn(native);
+      when(() => mockStorage.getAccessToken()).thenAnswer((_) async => expired);
+      when(
+        () => mockStorage.clearAuthSession(
+          preserveEmail: any(named: 'preserveEmail'),
+        ),
+      ).thenAnswer((_) async {});
+    });
+
+    test('refreshes through the vault and never posts the refresh token from '
+        'Dart', () async {
+      final fresh = generateTestToken();
+      when(() => native.refresh(staleAccessToken: expired)).thenAnswer(
+        (_) async => (
+          status: NativeRefreshStatus.ok,
+          accessToken: fresh,
+          refreshToken: 'rotated',
+        ),
+      );
+      String? pushed;
+      interceptor.onTokenRefreshed = (token) => pushed = token;
+
+      final renewed = await interceptor.refreshAccessToken();
+
+      expect(renewed?.accessToken, fresh);
+      expect(pushed, fresh);
+      verifyNever(
+        () => mockTokenDio.post<Map<String, dynamic>>(
+          any(),
+          data: any(named: 'data'),
+        ),
+      );
+      verifyNever(() => mockStorage.saveAccessToken(any()));
+    });
+
+    test('a refused refresh clears the session and reports it', () async {
+      when(() => native.refresh(staleAccessToken: expired)).thenAnswer(
+        (_) async => (
+          status: NativeRefreshStatus.rejected,
+          accessToken: null,
+          refreshToken: null,
+        ),
+      );
+      SessionExpiredReason? reason;
+      interceptor.onSessionExpired = (r) => reason = r;
+
+      expect(await interceptor.refreshAccessToken(), isNull);
+      expect(reason, SessionExpiredReason.tokenExpired);
+      verify(() => mockStorage.clearAuthSession()).called(1);
+    });
+
+    test('offline keeps the session', () async {
+      when(() => native.refresh(staleAccessToken: expired)).thenAnswer(
+        (_) async => (
+          status: NativeRefreshStatus.unavailable,
+          accessToken: null,
+          refreshToken: null,
+        ),
+      );
+      var expiredCalled = false;
+      interceptor.onSessionExpired = (_) => expiredCalled = true;
+
+      expect(await interceptor.refreshAccessToken(), isNull);
+      expect(expiredCalled, isFalse);
+      verifyNever(
+        () => mockStorage.clearAuthSession(
+          preserveEmail: any(named: 'preserveEmail'),
+        ),
+      );
+    });
+
+    test('an unverifiable token from the vault ends the session', () async {
+      when(() => native.refresh(staleAccessToken: expired)).thenAnswer(
+        (_) async => (
+          status: NativeRefreshStatus.ok,
+          accessToken: '$expired.forged',
+          refreshToken: 'rotated',
+        ),
+      );
+      SessionExpiredReason? reason;
+      interceptor.onSessionExpired = (r) => reason = r;
+
+      expect(await interceptor.refreshAccessToken(), isNull);
+      expect(reason, SessionExpiredReason.securityAnomaly);
     });
   });
 }
