@@ -35,6 +35,7 @@ abstract final class AppRouteNames {
   static const String attendanceCheck = '/attendance/check';
   static const String attendanceManualRequests = '/attendance/manual-requests';
   static const String attendanceSettings = '/attendance/settings';
+  static const String attendanceLocation = '/attendance/location';
   static const String changePassword = '/settings/change-password';
   static const String faceData = '/faces';
   static const String faceRegistration = '/faces/register';

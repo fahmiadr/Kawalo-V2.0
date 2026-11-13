@@ -112,4 +112,62 @@ void main() {
       ),
     ).called(1);
   });
+
+  test('reads the attendance point from the envelope data', () async {
+    when(() => apiClient.get('/v1/attendance/location')).thenAnswer(
+      (_) async => {
+        'data': {
+          'configured': true,
+          'glat': -6.2,
+          'glong': 106.8,
+          'radius': 100,
+        },
+      },
+    );
+
+    final model = await dataSource.getLocation();
+
+    expect(model.toEntity().configured, isTrue);
+    expect(model.toEntity().radius, 100);
+  });
+
+  test(
+    'saving the point sends a trimmed name only when it is not blank',
+    () async {
+      when(
+        () => apiClient.put(any<String>(), body: any<Object?>(named: 'body')),
+      ).thenAnswer((_) async => {'data': <String, dynamic>{}});
+
+      await dataSource.saveLocation(
+        latitude: -6.2,
+        longitude: 106.8,
+        radius: 50,
+        locationName: ' Pos Utama ',
+      );
+      await dataSource.saveLocation(
+        latitude: -6.2,
+        longitude: 106.8,
+        radius: 50,
+        locationName: '   ',
+      );
+
+      verify(
+        () => apiClient.put(
+          '/v1/attendance/location',
+          body: {
+            'location_name': 'Pos Utama',
+            'glat': -6.2,
+            'glong': 106.8,
+            'radius': 50,
+          },
+        ),
+      ).called(1);
+      verify(
+        () => apiClient.put(
+          '/v1/attendance/location',
+          body: {'glat': -6.2, 'glong': 106.8, 'radius': 50},
+        ),
+      ).called(1);
+    },
+  );
 }

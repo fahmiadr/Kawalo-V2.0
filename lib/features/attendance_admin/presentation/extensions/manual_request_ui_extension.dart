@@ -40,8 +40,8 @@ extension ManualRequestUiExtension on ManualRequestEntity {
     if (distance == null) return null;
     final radius = radiusMeters;
     return radius == null
-        ? '$distance m dari lokasi shift'
-        : '$distance m dari lokasi shift (radius $radius m)';
+        ? '$distance m dari titik absen'
+        : '$distance m dari titik absen (radius $radius m)';
   }
 
   /// Red/green carry the on-time meaning elsewhere in attendance, so a pending

@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
@@ -20,6 +19,7 @@ import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/attendance_admin/attendance_admin_module.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_setting_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_setting_cubit.dart';
+import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/attendance_panel.dart';
 
 const _presets = [30, 40, 50, 60, 70];
 
@@ -185,7 +185,7 @@ class _Content extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.space200),
       children: [
-        _Panel(
+        AttendancePanel(
           color: colors.surfaceContainerLow,
           child: Text(
             'Persentase kemiripan minimal agar wajah dianggap cocok saat '
@@ -195,7 +195,7 @@ class _Content extends StatelessWidget {
         ),
         if (!isAdmin) ...[
           AppSpacing.vGapSm,
-          _Panel(
+          AttendancePanel(
             color: colors.surfaceContainerHigh,
             child: Text(
               'Hanya admin yang dapat mengubah pengaturan ini.',
@@ -287,7 +287,7 @@ class _HintPanel extends StatelessWidget {
         true,
       ),
     };
-    return _Panel(
+    return AttendancePanel(
       color: warn ? colors.errorContainer : colors.surfaceContainerHigh,
       child: Text(
         label,
@@ -298,21 +298,4 @@ class _HintPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Panel extends StatelessWidget {
-  const _Panel({required this.color, required this.child});
-
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(AppSpacing.space200),
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: AppRadius.borderMedium,
-    ),
-    child: child,
-  );
 }

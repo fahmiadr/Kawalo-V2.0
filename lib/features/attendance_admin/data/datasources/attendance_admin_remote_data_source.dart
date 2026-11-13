@@ -1,4 +1,5 @@
 import 'package:kawalo_mobile/core/network/api_client.dart';
+import 'package:kawalo_mobile/features/attendance_admin/data/models/attendance_location_model.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/models/attendance_setting_model.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/models/manual_request_model.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/face_photo_entity.dart';
@@ -63,6 +64,35 @@ class AttendanceAdminRemoteDataSource {
       body: {'face_match_percent': percent},
     ),
   );
+
+  Future<AttendanceLocationModel> getLocation() async =>
+      _location(await apiClient.get('/v1/attendance/location'));
+
+  /// A blank [locationName] is omitted; the server then stores no name.
+  Future<AttendanceLocationModel> saveLocation({
+    required double latitude,
+    required double longitude,
+    required int radius,
+    String? locationName,
+  }) async => _location(
+    await apiClient.put(
+      '/v1/attendance/location',
+      body: {
+        if (locationName != null && locationName.trim().isNotEmpty)
+          'location_name': locationName.trim(),
+        'glat': latitude,
+        'glong': longitude,
+        'radius': radius,
+      },
+    ),
+  );
+
+  static AttendanceLocationModel _location(Map<String, dynamic> response) {
+    final data = response['data'];
+    return AttendanceLocationModel(
+      data is Map<String, dynamic> ? data : const {},
+    );
+  }
 
   static AttendanceSettingModel _setting(Map<String, dynamic> response) {
     final data = response['data'];

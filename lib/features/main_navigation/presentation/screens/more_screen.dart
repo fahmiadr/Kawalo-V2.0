@@ -19,6 +19,7 @@ import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
+import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/attendance_location_screen.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/attendance_setting_screen.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
@@ -297,7 +298,20 @@ class _MoreBody extends StatelessWidget {
                       unawaited(AppRouter.of(context).pushGroupSelection(user)),
                 ),
               if (context.read<UserSessionCubit?>()?.state?.isAdminRole ??
-                  false)
+                  false) ...[
+                AppActionTile(
+                  title: 'Tentukan Titik Absen',
+                  subtitle: 'Satu titik dan radius untuk semua shift',
+                  vectorIcon: KawaloVectors.location01,
+                  closeOnTap: false,
+                  trailing: const AppSvgIcon(
+                    KawaloVectors.arrowRight01,
+                    size: 20,
+                  ),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(AttendanceLocationScreen.route()),
+                ),
                 AppActionTile(
                   title: 'Pengaturan Absensi',
                   subtitle: 'Batas kemiripan wajah untuk absen',
@@ -311,6 +325,7 @@ class _MoreBody extends StatelessWidget {
                     context,
                   ).push(AttendanceSettingScreen.route()),
                 ),
+              ],
               if (context.read<FaceModule?>() != null)
                 AppActionTile(
                   title: 'Data Wajah',

@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/exceptions.dart';
 import 'package:kawalo_mobile/features/attendance/photo/authenticated_photo_fetcher.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/datasources/attendance_admin_remote_data_source.dart';
+import 'package:kawalo_mobile/features/attendance_admin/data/models/attendance_location_model.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/models/attendance_setting_model.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/models/manual_request_model.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/repositories/attendance_admin_repository_impl.dart';
@@ -116,5 +117,75 @@ void main() {
     final result = await repository.getSetting();
 
     expect(result.isLeft(), isTrue);
+  });
+
+  test('maps the loaded attendance point to an entity', () async {
+    when(() => remote.getLocation()).thenAnswer(
+      (_) async => const AttendanceLocationModel({
+        'configured': true,
+        'glat': -6.2,
+        'glong': 106.8,
+        'radius': 120,
+      }),
+    );
+
+    final result = await repository.getLocation();
+
+    expect(result.toNullable()?.configured, isTrue);
+    expect(result.toNullable()?.radius, 120);
+  });
+
+  test('saving the point forwards the values', () async {
+    when(
+      () => remote.saveLocation(
+        latitude: any(named: 'latitude'),
+        longitude: any(named: 'longitude'),
+        radius: any(named: 'radius'),
+        locationName: any(named: 'locationName'),
+      ),
+    ).thenAnswer(
+      (_) async => const AttendanceLocationModel({
+        'configured': true,
+        'glat': -6.2,
+        'glong': 106.8,
+        'radius': 50,
+      }),
+    );
+
+    final result = await repository.saveLocation(
+      latitude: -6.2,
+      longitude: 106.8,
+      radius: 50,
+      locationName: 'Pos',
+    );
+
+    expect(result.isRight(), isTrue);
+    verify(
+      () => remote.saveLocation(
+        latitude: -6.2,
+        longitude: 106.8,
+        radius: 50,
+        locationName: 'Pos',
+      ),
+    ).called(1);
+  });
+
+  test('a rejected point save becomes a failure with the 403 status', () async {
+    when(
+      () => remote.saveLocation(
+        latitude: any(named: 'latitude'),
+        longitude: any(named: 'longitude'),
+        radius: any(named: 'radius'),
+        locationName: any(named: 'locationName'),
+      ),
+    ).thenThrow(const ServerException('Hanya admin yang dapat mengubah.', 403));
+
+    final result = await repository.saveLocation(
+      latitude: -6.2,
+      longitude: 106.8,
+      radius: 50,
+    );
+
+    expect(result.getLeft().toNullable()?.statusCode, 403);
   });
 }

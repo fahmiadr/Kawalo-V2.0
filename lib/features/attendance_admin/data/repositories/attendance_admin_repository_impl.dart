@@ -3,6 +3,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/network/network_error_handler.dart';
 import 'package:kawalo_mobile/features/attendance/photo/authenticated_photo_fetcher.dart';
 import 'package:kawalo_mobile/features/attendance_admin/data/datasources/attendance_admin_remote_data_source.dart';
+import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_location_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_setting_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/face_photo_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/manual_request_entity.dart';
@@ -66,6 +67,25 @@ class AttendanceAdminRepositoryImpl implements AttendanceAdminRepository {
       _guard(
         () async => (await remoteDataSource.saveSetting(percent)).toEntity(),
       );
+
+  @override
+  Future<Either<Failure, AttendanceLocationEntity>> getLocation() =>
+      _guard(() async => (await remoteDataSource.getLocation()).toEntity());
+
+  @override
+  Future<Either<Failure, AttendanceLocationEntity>> saveLocation({
+    required double latitude,
+    required double longitude,
+    required int radius,
+    String? locationName,
+  }) => _guard(
+    () async => (await remoteDataSource.saveLocation(
+      latitude: latitude,
+      longitude: longitude,
+      radius: radius,
+      locationName: locationName,
+    )).toEntity(),
+  );
 
   Future<Either<Failure, T>> _guard<T>(Future<T> Function() run) async {
     try {

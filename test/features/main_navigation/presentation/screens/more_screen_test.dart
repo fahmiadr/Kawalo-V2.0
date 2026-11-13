@@ -254,6 +254,16 @@ void main() {
     expect(find.text('Pengaturan Absensi'), findsNothing);
   });
 
+  testWidgets('admins get Tentukan Titik Absen in the menu', (tester) async {
+    await pumpWithSession(tester, 'ADMIN');
+    expect(find.text('Tentukan Titik Absen'), findsOneWidget);
+  });
+
+  testWidgets('guards do not see Tentukan Titik Absen', (tester) async {
+    await pumpWithSession(tester, 'GUARD');
+    expect(find.text('Tentukan Titik Absen'), findsNothing);
+  });
+
   testWidgets('menu tiles do not touch each other', (tester) async {
     await pumpWithSession(tester, 'ADMIN');
     await tester.scrollUntilVisible(find.text('Keluar'), 100);
@@ -266,5 +276,7 @@ void main() {
     final upper = tile('Pengaturan Absensi');
     final lower = tile('Ganti Password');
     expect(lower.top - upper.bottom, greaterThan(0));
+    final point = tile('Tentukan Titik Absen');
+    expect(upper.top - point.bottom, greaterThan(0));
   });
 }

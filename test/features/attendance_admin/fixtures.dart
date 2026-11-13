@@ -1,4 +1,5 @@
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_location_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_setting_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/manual_request_entity.dart';
 
@@ -44,6 +45,24 @@ AttendanceSettingEntity attendanceSetting({
   minPercent: 20,
   maxPercent: 95,
   isDefault: isDefault,
+  updatedBy: updatedBy,
+  updatedAt: updatedAt,
+);
+
+AttendanceLocationEntity attendanceLocation({
+  bool configured = false,
+  int radius = 100,
+  String? name = 'Pos Utama',
+  String? updatedBy,
+  String? updatedAt,
+}) => AttendanceLocationEntity(
+  configured: configured,
+  locationName: configured ? name : null,
+  latitude: configured ? -6.2146 : null,
+  longitude: configured ? 106.8199 : null,
+  radius: configured ? radius : null,
+  minRadius: 10,
+  maxRadius: 1000,
   updatedBy: updatedBy,
   updatedAt: updatedAt,
 );

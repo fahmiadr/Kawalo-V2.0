@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_location_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_setting_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/face_photo_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/manual_request_entity.dart';
@@ -32,4 +33,14 @@ abstract class AttendanceAdminRepository {
 
   /// A null [percent] restores the server default.
   Future<Either<Failure, AttendanceSettingEntity>> saveSetting(int? percent);
+
+  Future<Either<Failure, AttendanceLocationEntity>> getLocation();
+
+  /// Replaces the group's attendance point; a blank [locationName] clears it.
+  Future<Either<Failure, AttendanceLocationEntity>> saveLocation({
+    required double latitude,
+    required double longitude,
+    required int radius,
+    String? locationName,
+  });
 }
