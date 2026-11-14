@@ -53,7 +53,7 @@ abstract class OperationalState extends Equatable implements ListFilterState {
   List<Object?> get props => [];
 }
 
-/// Keadaan awal sebelum aktifitas operasional diambil.
+/// Keadaan awal sebelum aktivitas operasional diambil.
 class OperationalInitial extends OperationalState {
   /// Membuat instance [OperationalInitial].
   const OperationalInitial({this.lastSync = ''});
@@ -65,7 +65,7 @@ class OperationalInitial extends OperationalState {
   List<Object?> get props => [lastSync];
 }
 
-/// Keadaan saat memuat aktifitas operasional dari sumber data.
+/// Keadaan saat memuat aktivitas operasional dari sumber data.
 class OperationalLoading extends OperationalState {
   /// Membuat instance [OperationalLoading].
   const OperationalLoading({this.lastSync = ''});
@@ -77,7 +77,7 @@ class OperationalLoading extends OperationalState {
   List<Object?> get props => [lastSync];
 }
 
-/// Keadaan ketika aktifitas operasional berhasil dimuat.
+/// Keadaan ketika aktivitas operasional berhasil dimuat.
 class OperationalLoaded extends OperationalState implements ListLoadedState {
   /// Membuat instance [OperationalLoaded].
   const OperationalLoaded({
@@ -187,7 +187,7 @@ class OperationalLoaded extends OperationalState implements ListLoadedState {
   ];
 }
 
-/// Keadaan ketika terjadi kegagalan pengambilan aktifitas operasional.
+/// Keadaan ketika terjadi kegagalan pengambilan aktivitas operasional.
 class OperationalError extends OperationalState {
   /// Membuat instance [OperationalError].
   const OperationalError({

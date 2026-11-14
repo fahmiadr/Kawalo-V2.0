@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_state.dart';
-import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_detail_app_bar.dart';
-import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_detail_profile_card.dart';
-import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_detail_summary_card.dart';
-import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_detail_timeline_card.dart';
-import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_detail_top_meta.dart';
+import 'package:kawalo_mobile/features/operational/presentation/extensions/operational_item_ui_extension.dart';
 
-/// Melakukan navigasi ke layar detail operasional personil menggunakan rute
-/// standar Material 3 Expressive [AppPageRoute.forwardBackward].
+/// Pushes [OperationalDetailScreen], sharing the list's [OperationalCubit] so
+/// a refresh here updates the list too.
 Future<void> navigateToOperationalDetailScreen(
   BuildContext context, {
   required OperationalItemEntity item,
@@ -48,24 +44,25 @@ Future<void> navigateToOperationalDetailScreen(
   );
 }
 
-/// Tampilan layar penuh untuk detail riwayat dan linimasa tugas personil.
+/// One member's duty day: start and latest state, then every reported
+/// activity (newest first, as sent by the server).
 class OperationalDetailScreen extends StatefulWidget {
-  /// Membuat instance [OperationalDetailScreen].
   const OperationalDetailScreen({
     required this.item,
     this.onRefresh,
     this.cubit,
+    this.clock = DateTime.now,
     super.key,
   });
 
-  /// Data personil operasional yang ditampilkan.
   final OperationalItemEntity item;
 
-  /// Callback opsional saat swipe refresh.
+  /// Test hook replacing the cubit refresh.
   final Future<void> Function()? onRefresh;
 
-  /// Cubit opsional untuk manajemen aktifitas operasional.
   final OperationalCubit? cubit;
+
+  final DateTime Function() clock;
 
   @override
   State<OperationalDetailScreen> createState() =>
@@ -79,20 +76,6 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
   void initState() {
     super.initState();
     _item = widget.item;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final cubit = _resolveCubit(context);
-        if (cubit != null && cubit.state is OperationalLoaded) {
-          final loaded = cubit.state as OperationalLoaded;
-          final updated = _findOperational(loaded.operationals, _item);
-          if (updated != _item) {
-            setState(() {
-              _item = updated;
-            });
-          }
-        }
-      }
-    });
   }
 
   @override
@@ -112,15 +95,7 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
     }
   }
 
-  bool _resolveIsOffline(BuildContext context) {
-    try {
-      final connectivityCubit = context.watch<ConnectivityCubit?>();
-      return connectivityCubit?.state == ConnectivityStatus.offline;
-    } on Object catch (_) {
-      return false;
-    }
-  }
-
+  /// Same member and day in a refreshed list, or [target] when it is gone.
   OperationalItemEntity _findOperational(
     List<OperationalItemEntity> list,
     OperationalItemEntity target,
@@ -137,75 +112,89 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
   }
 
   Future<void> _handleRefresh() async {
+    final onRefresh = widget.onRefresh;
     final cubit = _resolveCubit(context);
-    if (widget.onRefresh != null) {
-      await widget.onRefresh!();
-      if (mounted) {
-        AppSnackbar.show(
-          context,
-          message: 'Aktifitas operasional berhasil diperbarui.',
-        );
-      }
-      return;
-    }
-
-    if (cubit != null) {
+    if (onRefresh != null) {
+      await onRefresh();
+    } else if (cubit != null) {
       await cubit.refreshOperationals();
-      if (mounted) {
-        if (cubit.state is OperationalLoaded) {
-          final loadedState = cubit.state as OperationalLoaded;
-          final updated = _findOperational(loadedState.operationals, _item);
-          setState(() {
-            _item = updated;
-          });
-          AppSnackbar.show(
-            context,
-            message: 'Aktifitas operasional berhasil diperbarui.',
-          );
-        }
-      }
+      final state = cubit.state;
+      if (!mounted || state is! OperationalLoaded) return;
+      setState(() => _item = _findOperational(state.operationals, _item));
+    } else {
       return;
     }
-
-    await Future<void>.delayed(const Duration(milliseconds: 600));
     if (mounted) {
       AppSnackbar.show(
         context,
-        message: 'Aktifitas operasional berhasil diperbarui.',
+        message: 'Aktivitas operasional berhasil diperbarui.',
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
     final cubit = _resolveCubit(context);
+    if (cubit == null) return _buildScaffold(_item);
+    return BlocBuilder<OperationalCubit, OperationalState>(
+      bloc: cubit,
+      builder: (context, state) => _buildScaffold(
+        state is OperationalLoaded
+            ? _findOperational(state.operationals, _item)
+            : _item,
+      ),
+    );
+  }
 
-    Widget buildScaffold({
-      required OperationalItemEntity currentItem,
-      required String greeting,
-    }) {
-      final isOffline = _resolveIsOffline(context);
+  Widget _buildScaffold(OperationalItemEntity item) {
+    final tones = KawaloTones.of(context);
+    final isOffline =
+        context.watch<ConnectivityCubit?>()?.state ==
+        ConnectivityStatus.offline;
+    final now = widget.clock();
 
-      return Scaffold(
-        backgroundColor: colorScheme.surface,
-        appBar: OperationalDetailAppBar(greeting: greeting),
-        bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-        body: SafeArea(
-          top: false,
-          child: AppRefreshIndicator.contained(
-            semanticsLabel: 'Memuat ulang detail aktifitas operasional',
-            onRefresh: _handleRefresh,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(
-                left: AppSpacing.space200,
-                right: AppSpacing.space200,
-                top: AppSpacing.space150,
-                bottom: AppSpacing.space200,
+    return Scaffold(
+      backgroundColor: tones.background,
+      appBar: AppBar(
+        backgroundColor: tones.background,
+        surfaceTintColor: Colors.transparent,
+        titleSpacing: 4,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              item.displayUserName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: tones.ink,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
               ),
-              child: Center(
+            ),
+            Text(
+              item.displayLatestDuty,
+              style: TextStyle(
+                color: tones.ink2,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
+      body: SafeArea(
+        top: false,
+        child: AppRefreshIndicator.contained(
+          semanticsLabel: 'Memuat ulang detail aktivitas operasional',
+          onRefresh: _handleRefresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
+            children: [
+              Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     maxWidth: AppLayout.contentMaxWidth,
@@ -213,59 +202,204 @@ class _OperationalDetailScreenState extends State<OperationalDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── Meta Atas (Nama Grup) ─────────────────────────────
-                      OperationalDetailTopMeta(item: currentItem),
-
-                      AppSpacing.vGap200,
-
-                      OperationalDetailProfileCard(item: currentItem),
-                      AppSpacing.vGap200,
-                      OperationalDetailSummaryCard(item: currentItem),
-                      AppSpacing.vGap200,
-                      OperationalDetailTimelineCard(item: currentItem),
+                      _SummaryBox(item: item, now: now),
+                      const SizedBox(height: 14),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          (_isToday(item.dutyDate, now)
+                                  ? 'Riwayat hari ini'
+                                  : 'Riwayat aktivitas')
+                              .toUpperCase(),
+                          style: TextStyle(
+                            color: tones.ink2,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.84,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (item.timeline.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Text(
+                            'Belum ada riwayat aktivitas dinas.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: tones.ink2, fontSize: 15),
+                          ),
+                        )
+                      else
+                        for (final (i, entry) in item.timeline.indexed) ...[
+                          if (i > 0) const SizedBox(height: 8),
+                          _TimelineRow(
+                            entry: entry,
+                            isLatest: i == 0,
+                            now: now,
+                          ),
+                        ],
                     ],
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// [dutyDate] is "YYYY-MM-DD"; without it the day is unknown.
+  static bool _isToday(String? dutyDate, DateTime now) {
+    final date = dutyDate == null ? null : DateTime.tryParse(dutyDate);
+    return date != null &&
+        date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+}
+
+class _SummaryBox extends StatelessWidget {
+  const _SummaryBox({required this.item, required this.now});
+
+  final OperationalItemEntity item;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final tones = KawaloTones.of(context);
+
+    Widget kv(String key, String value) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Text(key, style: TextStyle(color: tones.ink2, fontSize: 14)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: AppTheme.monoFigures.copyWith(
+                color: tones.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: tones.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: tones.line),
+      ),
+      child: Column(
+        children: [
+          kv('Mulai dinas', compactDutyTime(item.firstActivityDt, now)),
+          kv('Status terkini', item.displayLatestStateLine(now)),
+          kv('Total aktivitas', item.displayTotalActivities),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelineRow extends StatelessWidget {
+  const _TimelineRow({
+    required this.entry,
+    required this.isLatest,
+    required this.now,
+  });
+
+  final DutyTimelineEntity entry;
+  final bool isLatest;
+  final DateTime now;
+
+  Future<void> _copyId(BuildContext context, String uid) async {
+    await Clipboard.setData(ClipboardData(text: uid));
+    if (context.mounted) {
+      AppSnackbar.show(context, message: 'ID aktivitas disalin.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tones = KawaloTones.of(context);
+    final uid = entry.journeyUid?.trim() ?? '';
+    final time = entry.displayClock(now);
+
+    return Semantics(
+      label: '${entry.displayState}, ${entry.displayDuty}, $time',
+      hint: uid.isEmpty ? null : 'Tekan lama untuk menyalin ID aktivitas',
+      excludeSemantics: true,
+      child: Material(
+        color: tones.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: tones.line),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onLongPress: uid.isEmpty ? null : () => _copyId(context, uid),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isLatest ? tones.pat.soft : tones.surface2,
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(
+                    Icons.schedule_rounded,
+                    size: 20,
+                    color: isLatest ? tones.pat.color : tones.ink2,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entry.displayState,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: tones.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      AppStatusPill(
+                        label: entry.displayDuty,
+                        kind: entry.isOnDuty
+                            ? AppStatusKind.ok
+                            : AppStatusKind.neutral,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  time,
+                  style: AppTheme.monoFigures.copyWith(
+                    color: tones.ink2,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      );
-    }
-
-    if (cubit != null) {
-      return BlocConsumer<OperationalCubit, OperationalState>(
-        bloc: cubit,
-        listener: (context, state) {
-          if (state is OperationalLoaded) {
-            final updated = _findOperational(state.operationals, _item);
-            if (updated != _item) {
-              setState(() {
-                _item = updated;
-              });
-            }
-          }
-        },
-        builder: (context, state) {
-          final effectiveItem = state is OperationalLoaded
-              ? _findOperational(state.operationals, _item)
-              : _item;
-          final effectiveGreeting = state.lastSync.isNotEmpty
-              ? state.lastSync
-              : (cubit.currentGreeting.isNotEmpty
-                    ? cubit.currentGreeting
-                    : AppDateFormat.formatGreeting(DateTime.now()));
-          return buildScaffold(
-            currentItem: effectiveItem,
-            greeting: effectiveGreeting,
-          );
-        },
-      );
-    }
-
-    return buildScaffold(
-      currentItem: _item,
-      greeting: AppDateFormat.formatGreeting(DateTime.now()),
+      ),
     );
   }
 }

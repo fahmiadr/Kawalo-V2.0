@@ -20,6 +20,8 @@ extension DutyTimelineUiExtension on DutyTimelineEntity {
   /// Menandakan apakah tugas ini berstatus "ON DUTY".
   bool get isOnDuty => displayDuty.toUpperCase().contains('ON');
 
+  String displayClock(DateTime now) => compactDutyTime(stateDt ?? dutyDt, now);
+
   /// Menentukan varian [AppTagVariant] untuk tugas linimasa.
   AppTagVariant displayDutyTagVariant({bool isFirst = false}) {
     if (isOnDuty) {
@@ -90,6 +92,10 @@ extension OperationalItemUiExtension on OperationalItemEntity {
   String get displayFirstActivityTime =>
       firstActivityDt.toDisplayFormat(AppDateFormat.formatRawDate);
 
+  /// "Patroli Aktif · 09.20": the latest state and when it was reported.
+  String displayLatestStateLine(DateTime now) =>
+      '$displayLatestState · ${compactDutyTime(latestStateDt ?? latestDutyDt, now)}';
+
   /// Total aktivitas yang aman untuk tampilan UI.
   String get displayTotalActivities => totalActivities.toString();
 
@@ -121,4 +127,18 @@ extension OperationalItemUiExtension on OperationalItemEntity {
     }
     return AppTagVariant.secondary;
   }
+}
+
+/// "09.20" for a time on [now]'s day, "8 Jul 09.20" otherwise; an unparsable
+/// value is shown as sent.
+String compactDutyTime(String? raw, DateTime now) {
+  final parsed = AppDateFormat.tryParse(raw)?.toLocal();
+  if (parsed == null) return raw.toDisplay();
+  String two(int v) => v.toString().padLeft(2, '0');
+  final clock = '${two(parsed.hour)}.${two(parsed.minute)}';
+  final sameDay =
+      parsed.year == now.year &&
+      parsed.month == now.month &&
+      parsed.day == now.day;
+  return sameDay ? clock : '${AppDateFormat.formatDayMonth(parsed)} $clock';
 }

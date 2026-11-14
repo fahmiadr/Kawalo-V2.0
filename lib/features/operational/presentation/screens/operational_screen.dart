@@ -4,15 +4,12 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
+import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
@@ -22,15 +19,12 @@ import 'package:kawalo_mobile/features/operational/presentation/screens/operatio
 import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_card.dart';
 import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_card_skeleton.dart';
 
-/// Layar utama fitur Aktifitas Operasional Tenaga Kerja.
-///
-/// Menyajikan data pemantauan aktivitas personil operasional yang
-/// dikelompokkan berdasarkan userEmail dari tabel tkdutyjourney.
+/// Read-only duty activity of the group's members (one row per member per
+/// day, grouped by e-mail from `tkdutyjourney`).
 class OperationalScreen extends StatefulWidget {
-  /// Membuat instance [OperationalScreen].
   const OperationalScreen({super.key, this.cubit});
 
-  /// Instance [OperationalCubit] opsional untuk injeksi pengujian.
+  /// Test injection; defaults to the [OperationalCubit] of the widget tree.
   final OperationalCubit? cubit;
 
   static Route<void> route() => AppPageRoute.slideFade<void>(
@@ -109,7 +103,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
           context,
           result: result,
           hasData: cubit.state.displayedOperationals.isNotEmpty,
-          successMessage: 'Aktifitas operasional berhasil diperbarui.',
+          successMessage: 'Aktivitas operasional berhasil diperbarui.',
         );
       }
     } finally {
@@ -171,6 +165,16 @@ class _OperationalScreenState extends State<OperationalScreen> {
     }
   }
 
+  Future<void> _onThisWeek() async {
+    final cubit = _resolveCubit(context);
+    _showFeedback(
+      cubit,
+      await cubit.setFilter(
+        AppDateFilterResult.sanitize(period: AppDateFilterPeriod.thisWeek),
+      ),
+    );
+  }
+
   Future<void> _onResetDateFilter() async {
     final cubit = _resolveCubit(context);
     _showFeedback(cubit, await cubit.resetDateFilter());
@@ -207,10 +211,10 @@ class _OperationalScreenState extends State<OperationalScreen> {
             state is OperationalInitial || state is OperationalLoading;
 
         return ListScreenScaffold(
-          title: 'Aktifitas operasional',
-          searchLabel: 'Cari aktifitas operasional',
-          refreshLabel: 'Memuat ulang aktifitas operasional',
-          greeting: state.lastSync,
+          title: 'Aktivitas Operasional',
+          searchLabel: 'Cari aktivitas operasional',
+          refreshLabel: 'Memuat ulang aktivitas operasional',
+          lastSync: state.lastSync,
           isInitialLoading: isInitialLoading,
           isOffline: isOffline,
           isSearchExpanded: _isSearchExpanded,
@@ -219,16 +223,16 @@ class _OperationalScreenState extends State<OperationalScreen> {
           onOpenSearch: _onOpenSearch,
           onCloseSearch: _onCloseSearch,
           onRefresh: () => _handleRefresh(cubit),
-          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-          filterBar: ListFilterBar(
+          filterBar: _DateChips(
             isLoading: isInitialLoading,
-            isDateActive: state.hasActiveDateFilter,
-            dateLabel: state.filterPeriod.resolveDisplayLabel(
+            period: state.filterPeriod,
+            customLabel: state.filterPeriod.resolveDisplayLabel(
               startDate: state.startDate,
               endDate: state.endDate,
             ),
-            onDatePressed: _onFilterPressed,
-            onDateReset: _onResetDateFilter,
+            onToday: _onResetDateFilter,
+            onThisWeek: _onThisWeek,
+            onPick: _onFilterPressed,
           ),
           body: _buildBody(context, state, cubit),
         );
@@ -258,7 +262,6 @@ class _OperationalScreenState extends State<OperationalScreen> {
   ) {
     if (state is OperationalInitial || state is OperationalLoading) {
       return ListScreenSkeleton(
-        bottomPadding: AppSpacing.space200,
         itemBuilder: (_, _) => const OperationalCardSkeleton(),
       );
     }
@@ -267,7 +270,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
       if (state.operationals.isEmpty) {
         if (state.hasActiveFilter) {
           return ListEmptySearchResult(
-            noun: 'aktifitas operasional',
+            noun: 'aktivitas operasional',
             onReset: _resetAllFilters,
           );
         }
@@ -287,7 +290,7 @@ class _OperationalScreenState extends State<OperationalScreen> {
         );
       }
       return ListErrorState(
-        noun: 'aktifitas operasional',
+        noun: 'aktivitas operasional',
         message: state.message,
         onRetry: () {
           final query = _searchController.text;
@@ -305,7 +308,6 @@ class _OperationalScreenState extends State<OperationalScreen> {
   }) {
     return ListScreenListView(
       controller: _scrollController,
-      bottomPadding: AppSpacing.space200,
       itemCount: operationals.length,
       isLoadingMore: isLoadingMore,
       itemBuilder: (context, index) {
@@ -319,10 +321,75 @@ class _OperationalScreenState extends State<OperationalScreen> {
   }
 
   Widget _buildEmptyGroupState() {
-    return const AppEmptyState(
-      icon: AppSvgIcon.color(KawaloColorVectors.patrol2),
-      title: 'Belum ada aktifitas operasional',
-      description: 'Belum ada aktifitas tugas personil pada hari ini.',
+    return AppEmptyState(
+      icon: Icon(
+        Icons.bar_chart_rounded,
+        size: 64,
+        color: KawaloTones.of(context).ink2,
+      ),
+      title: 'Belum ada aktivitas',
+      description: 'Aktivitas dinas anggota pada tanggal ini tampil di sini.',
+    );
+  }
+}
+
+/// "Hari ini" / "Pekan ini" / "Pilih tanggal": the first two are one-tap
+/// presets of the date filter, the last opens the full date sheet and shows
+/// the chosen range once active.
+class _DateChips extends StatelessWidget {
+  const _DateChips({
+    required this.isLoading,
+    required this.period,
+    required this.customLabel,
+    required this.onToday,
+    required this.onThisWeek,
+    required this.onPick,
+  });
+
+  final bool isLoading;
+  final AppDateFilterPeriod period;
+  final String customLabel;
+  final VoidCallback onToday;
+  final VoidCallback onThisWeek;
+  final VoidCallback onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final picked =
+        period == AppDateFilterPeriod.thisMonth ||
+        period == AppDateFilterPeriod.custom;
+    Widget chip(String label, {required bool selected, VoidCallback? onTap}) =>
+        AppChip(
+          type: AppChipType.filter,
+          label: label,
+          selected: selected,
+          onPressed: isLoading ? null : onTap,
+        );
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Row(
+        children: [
+          chip(
+            AppDateFilterPeriod.today.label,
+            selected: period == AppDateFilterPeriod.today,
+            onTap: onToday,
+          ),
+          const SizedBox(width: 6),
+          chip(
+            AppDateFilterPeriod.thisWeek.label,
+            selected: period == AppDateFilterPeriod.thisWeek,
+            onTap: onThisWeek,
+          ),
+          const SizedBox(width: 6),
+          chip(
+            picked ? customLabel : 'Pilih tanggal',
+            selected: picked,
+            onTap: onPick,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,14 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_cubit.dart';
 import 'package:kawalo_mobile/features/operational/presentation/cubit/operational_state.dart';
 import 'package:kawalo_mobile/features/operational/presentation/screens/operational_detail_screen.dart';
-import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_detail_top_meta.dart';
 import 'package:mocktail/mocktail.dart';
 
 void main() {
@@ -24,7 +20,8 @@ void main() {
     groupName: 'Tim Bravo Patroli',
     latestDuty: 'Patroli Lingkungan',
     latestState: 'Aktif',
-    latestDutyDt: '2026-07-08T10:00:00Z',
+    latestDutyDt: '2026-07-08T10:00:00',
+    dutyDate: '2026-07-08',
     totalActivities: 5,
     timeline: [
       DutyTimelineEntity(
@@ -32,14 +29,14 @@ void main() {
         journeyUid: 'journey-001',
         duty: 'Patroli Lingkungan',
         state: 'Aktif',
-        dutyDt: '2026-07-08T10:00:00Z',
+        dutyDt: '2026-07-08T10:00:00',
       ),
       DutyTimelineEntity(
         id: '2',
         journeyUid: 'journey-002',
         duty: 'Pemeriksaan Pos',
         state: 'Selesai',
-        dutyDt: '2026-07-08T09:00:00Z',
+        dutyDt: '2026-07-08T09:00:00',
       ),
     ],
   );
@@ -50,39 +47,50 @@ void main() {
   }) {
     return M3EMaterialApp(
       data: AppTheme.m3eLight(),
-      home: OperationalDetailScreen(item: item, onRefresh: onRefresh),
+      localizationsDelegates: AppTheme.localizationsDelegates,
+      home: OperationalDetailScreen(
+        item: item,
+        onRefresh: onRefresh,
+        clock: () => DateTime(2026, 7, 8, 12),
+      ),
     );
   }
 
   group('OperationalDetailScreen Widget Tests', () {
-    testWidgets('renders AppHomeAppBar, top meta, profile card, and timeline', (
+    testWidgets("shows the name, summary and today's history", (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildDetailWidget(item: sampleWorker));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppHomeAppBar), findsOneWidget);
-      expect(find.text('Detail operasional'), findsOneWidget);
-
-      // Top meta
-      expect(find.byType(OperationalDetailTopMeta), findsOneWidget);
-      expect(find.text('Tim Bravo Patroli'), findsOneWidget);
-
-      // Profile card
       expect(find.text('Agus Pratama'), findsOneWidget);
-      expect(find.text('agus@kawalo.id'), findsOneWidget);
-
-      // Summary card
-      expect(find.text('Ringkasan dinas harian'), findsOneWidget);
-
-      // Timeline card
-      expect(find.text('Riwayat aktivitas dinas'), findsOneWidget);
+      expect(find.text('Mulai dinas'), findsOneWidget);
+      expect(find.text('09.00'), findsNWidgets(2));
+      expect(find.text('Aktif · 10.00'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
+      expect(find.text('RIWAYAT HARI INI'), findsOneWidget);
+      expect(find.text('Selesai'), findsOneWidget);
       expect(find.text('Pemeriksaan Pos'), findsOneWidget);
+      expect(find.text('10.00'), findsOneWidget);
+    });
 
-      // No SOS FAB
-      expect(find.byType(AppExtendedFab), findsNothing);
-      expect(find.text('SOS'), findsNothing);
-      expect(find.byType(AppCard), findsNWidgets(3));
+    testWidgets('another day is labelled as activity history', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          localizationsDelegates: AppTheme.localizationsDelegates,
+          home: OperationalDetailScreen(
+            item: sampleWorker,
+            clock: () => DateTime(2026, 7, 9),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('RIWAYAT AKTIVITAS'), findsOneWidget);
+      expect(find.text('8 Jul 10.00'), findsOneWidget);
     });
 
     testWidgets(
@@ -101,7 +109,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.fling(
-          find.text('Agus Pratama'),
+          find.text('Mulai dinas'),
           const Offset(0, 300),
           1000,
         );
@@ -113,30 +121,39 @@ void main() {
       },
     );
 
-    testWidgets('displays lastSync greeting when cubit is provided', (
+    testWidgets('follows the refreshed item from the cubit', (
       WidgetTester tester,
     ) async {
       final mockCubit = MockOperationalCubit();
+      const refreshed = OperationalItemEntity(
+        id: 'agus@kawalo.id_2026-07-08',
+        userEmail: 'agus@kawalo.id',
+        userName: 'Agus Pratama',
+        latestDuty: 'OFF DUTY',
+        latestState: 'Pulang',
+        latestDutyDt: '2026-07-08T15:00:00',
+        dutyDate: '2026-07-08',
+        totalActivities: 6,
+        timeline: [],
+      );
       when(() => mockCubit.state).thenReturn(
-        const OperationalLoaded(
-          operationals: [sampleWorker],
-          lastSync: 'Diperbarui Kemarin, 14.20',
-        ),
+        const OperationalLoaded(operationals: [refreshed], lastSync: ''),
       );
       when(
         () => mockCubit.stream,
       ).thenAnswer((_) => const Stream<OperationalState>.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Selamat Siang');
 
       await tester.pumpWidget(
         M3EMaterialApp(
           data: AppTheme.m3eLight(),
+          localizationsDelegates: AppTheme.localizationsDelegates,
           home: OperationalDetailScreen(item: sampleWorker, cubit: mockCubit),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Diperbarui Kemarin, 14.20'), findsOneWidget);
+      expect(find.text('OFF DUTY'), findsOneWidget);
+      expect(find.text('Belum ada riwayat aktivitas dinas.'), findsOneWidget);
     });
 
     testWidgets('renders AppBottomOfflineBanner when offline', (
@@ -152,6 +169,7 @@ void main() {
           value: offlineConnectivityCubit,
           child: M3EMaterialApp(
             data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
             home: const OperationalDetailScreen(item: sampleWorker),
           ),
         ),
@@ -175,6 +193,7 @@ void main() {
           value: onlineConnectivityCubit,
           child: M3EMaterialApp(
             data: AppTheme.m3eLight(),
+            localizationsDelegates: AppTheme.localizationsDelegates,
             home: const OperationalDetailScreen(item: sampleWorker),
           ),
         ),

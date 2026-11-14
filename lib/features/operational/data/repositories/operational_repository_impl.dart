@@ -27,10 +27,10 @@ class OperationalRepositoryImpl implements OperationalRepository {
     this.networkInfo,
   });
 
-  /// Sumber aktifitas operasional jarak jauh.
+  /// Sumber aktivitas operasional jarak jauh.
   final OperationalRemoteDataSource remoteDataSource;
 
-  /// Sumber aktifitas operasional lokal untuk mode offline dan caching.
+  /// Sumber aktivitas operasional lokal untuk mode offline dan caching.
   final OperationalLocalDataSource? localDataSource;
 
   /// Layanan persistensi waktu sinkronisasi.

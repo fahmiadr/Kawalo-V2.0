@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/presentation/widgets/operational_card.dart';
 
@@ -46,19 +46,46 @@ void main() {
       await tester.pumpWidget(buildTestWidget(sampleWorkerWithoutPic));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppCard), findsOneWidget);
+      expect(find.byType(AppUserAvatar), findsOneWidget);
       expect(find.text('Agus Pratama'), findsOneWidget);
-      expect(find.text('agus@kawalo.id'), findsOneWidget);
-      expect(find.byType(AppSvgIcon), findsWidgets);
+      expect(find.text('AP'), findsOneWidget);
+      expect(find.widgetWithText(AppStatusPill, 'ON DUTY'), findsOneWidget);
     });
 
     testWidgets('handles network photo URL gracefully', (tester) async {
       await tester.pumpWidget(buildTestWidget(sampleWorkerWithPic));
       await tester.pump();
 
-      expect(find.byType(AppCard), findsOneWidget);
+      expect(find.byType(AppUserAvatar), findsOneWidget);
       expect(find.text('Agus Pratama'), findsOneWidget);
-      expect(find.text('agus@kawalo.id'), findsOneWidget);
+    });
+
+    testWidgets('shows the latest state with its time and an OFF DUTY pill', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        M3EMaterialApp(
+          data: AppTheme.m3eLight(),
+          home: Scaffold(
+            body: OperationalCard(
+              item: const OperationalItemEntity(
+                id: 'x',
+                userEmail: 'x@kawalo.id',
+                userName: 'Ahmad Fauzi',
+                latestDuty: 'OFF DUTY',
+                latestState: 'Pulang',
+                latestStateDt: '2026-09-22T07:02:00',
+                totalActivities: 2,
+                timeline: <DutyTimelineEntity>[],
+              ),
+              clock: () => DateTime(2026, 9, 22, 12),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Pulang · 07.02'), findsOneWidget);
+      expect(find.widgetWithText(AppStatusPill, 'OFF DUTY'), findsOneWidget);
     });
   });
 }

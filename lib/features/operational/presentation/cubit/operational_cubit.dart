@@ -31,7 +31,7 @@ class OperationalCubit
          syncKey: AppConstants.syncKeyOperational,
        );
 
-  /// Repositori aktifitas operasional.
+  /// Repositori aktivitas operasional.
   final OperationalRepository repository;
 
   @override
@@ -47,7 +47,7 @@ class OperationalCubit
     return null;
   }
 
-  /// Mengambil aktifitas operasional dari REST API (fallback ke cache lokal saat offline).
+  /// Mengambil aktivitas operasional dari REST API (fallback ke cache lokal saat offline).
   Future<AppFetchResult> fetchOperationals({
     String? search,
     AppDateFilterPeriod? filterPeriod,
@@ -65,7 +65,7 @@ class OperationalCubit
     isRefresh: false,
   );
 
-  /// Memperbarui aktifitas operasional via pull-to-refresh tanpa skeleton.
+  /// Memperbarui aktivitas operasional via pull-to-refresh tanpa skeleton.
   Future<AppFetchResult> refreshOperationals({
     String? search,
     AppDateFilterPeriod? filterPeriod,

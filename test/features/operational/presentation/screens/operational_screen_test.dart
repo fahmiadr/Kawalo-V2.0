@@ -7,14 +7,14 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
+import 'package:kawalo_mobile/core/widgets/app_inline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/operational/domain/entities/operational_item_entity.dart';
 import 'package:kawalo_mobile/features/operational/domain/repositories/operational_repository.dart';
 import 'package:kawalo_mobile/features/operational/domain/value_objects/get_operationals_params.dart';
@@ -126,22 +126,24 @@ void main() {
   group('OperationalScreen Tests', () {
     tearDown(AppSnackbar.hideCurrent);
     testWidgets(
-      'renders AppHomeAppBar with back button, title, and search icon button',
+      'renders AppTopBar with back button, title, and search icon button',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
-        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
-        expect(find.text('Aktifitas operasional'), findsOneWidget);
+        expect(find.byType(AppTopBar), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
+        expect(find.text('Aktivitas Operasional'), findsOneWidget);
         expect(find.bySemanticsLabel('Kembali'), findsOneWidget);
         expect(
-          find.bySemanticsLabel('Cari aktifitas operasional'),
+          find.bySemanticsLabel('Cari aktivitas operasional'),
           findsOneWidget,
         );
 
         expect(find.byType(AppSearchBar), findsNothing);
-        expect(find.text('Tanggal'), findsOneWidget);
+        expect(find.text('Hari ini'), findsOneWidget);
+        expect(find.text('Pekan ini'), findsOneWidget);
+        expect(find.text('Pilih tanggal'), findsOneWidget);
         expect(find.bySemanticsLabel('Filter pencarian'), findsNothing);
       },
     );
@@ -154,20 +156,20 @@ void main() {
         await tester.pumpAndSettle();
 
         final searchToggleBtn = find.bySemanticsLabel(
-          'Cari aktifitas operasional',
+          'Cari aktivitas operasional',
         );
         expect(searchToggleBtn, findsOneWidget);
-        expect(find.text('Aktifitas operasional'), findsOneWidget);
+        expect(find.text('Aktivitas Operasional'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
 
         // Tap search icon button -> opens search bar
         await tester.tap(searchToggleBtn);
         await tester.pumpAndSettle();
 
-        expect(find.text('Aktifitas operasional'), findsNothing);
+        expect(find.text('Aktivitas Operasional'), findsNothing);
         expect(find.byType(AppSearchBar), findsOneWidget);
-        expect(find.text('Cari aktifitas operasional'), findsOneWidget);
-        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Cari aktivitas operasional'), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
 
         final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
         expect(cancelToggleBtn, findsOneWidget);
@@ -177,9 +179,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(AppSearchBar), findsNothing);
-        expect(find.text('Aktifitas operasional'), findsOneWidget);
+        expect(find.text('Aktivitas Operasional'), findsOneWidget);
         expect(
-          find.bySemanticsLabel('Cari aktifitas operasional'),
+          find.bySemanticsLabel('Cari aktivitas operasional'),
           findsOneWidget,
         );
       },
@@ -194,7 +196,6 @@ void main() {
       expect(find.byType(OperationalCard), findsNWidgets(2));
       expect(find.text('Agus Setiawan'), findsOneWidget);
       expect(find.text('Hendra Pratama'), findsOneWidget);
-      expect(find.text('agus.security@kawalo.id'), findsOneWidget);
       expect(find.text('Patroli Lingkungan'), findsOneWidget);
     });
 
@@ -227,7 +228,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+      await tester.tap(find.bySemanticsLabel('Cari aktivitas operasional'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(AppSearchBar), 'Agus');
@@ -258,13 +259,13 @@ void main() {
       expect(find.byType(AppRefreshIndicator), findsOneWidget);
     });
 
-    testWidgets('renders Belum ada aktifitas operasional when list is empty '
+    testWidgets('renders Belum ada aktivitas when list is empty '
         'without filter', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(initialWorkers: []));
       await tester.pumpAndSettle();
 
-      expect(find.text('Belum ada aktifitas operasional'), findsOneWidget);
-      expect(find.text('Aktifitas operasional tidak ditemukan'), findsNothing);
+      expect(find.text('Belum ada aktivitas'), findsOneWidget);
+      expect(find.text('Aktivitas operasional tidak ditemukan'), findsNothing);
     });
 
     testWidgets(
@@ -297,7 +298,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+        await tester.tap(find.bySemanticsLabel('Cari aktivitas operasional'));
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(AppSearchBar), 'NonExistentWorker');
@@ -305,10 +306,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Aktifitas operasional tidak ditemukan'),
+          find.text('Aktivitas operasional tidak ditemukan'),
           findsOneWidget,
         );
-        expect(find.text('Belum ada aktifitas operasional'), findsNothing);
+        expect(find.text('Belum ada aktivitas'), findsNothing);
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
 
         // Tap reset
@@ -321,7 +322,7 @@ void main() {
     );
 
     testWidgets(
-      'renders AppBottomOfflineBanner at the bottom when offline and reacts to '
+      'renders the inline offline notice when offline and reacts to '
       'online reconnect',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
@@ -351,32 +352,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
+        expect(find.byType(AppInlineBanner), findsOneWidget);
         expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
+          find.textContaining('Anda offline. Menampilkan data tersimpan.'),
           findsOneWidget,
         );
 
-        // Verify reconnecting triggers auto-refresh and shows then hides banner
+        // Reconnecting triggers auto-refresh and removes the notice.
         connectivityCubit.setStatus(ConnectivityStatus.online);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        expect(find.text('Kembali online'), findsOneWidget);
-
-        // Advance dwell duration & exit animation
-        await tester.pump(const Duration(milliseconds: 2600));
         await tester.pumpAndSettle();
 
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsNothing,
-        );
-        expect(find.text('Kembali online'), findsNothing);
-        final banner = tester.widget<AppBottomOfflineBanner>(
-          find.byType(AppBottomOfflineBanner),
-        );
-        expect(banner.isOffline, isFalse);
+        expect(find.byType(AppInlineBanner), findsNothing);
 
         await operationalCubit.close();
         await connectivityCubit.close();
@@ -409,7 +395,7 @@ void main() {
       verify(() => mockRepo.getOperationals(any())).called(1);
 
       // Open search then tap/focus search bar without changing text
-      await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+      await tester.tap(find.bySemanticsLabel('Cari aktivitas operasional'));
       await tester.pumpAndSettle();
       await tester.tap(find.byType(AppSearchBar));
       await tester.pump();
@@ -465,7 +451,7 @@ void main() {
               const Right(OperationalResult(items: <OperationalItemEntity>[])),
         );
 
-        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+        await tester.tap(find.bySemanticsLabel('Cari aktivitas operasional'));
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(AppSearchBar), 'TidakAda');
@@ -523,18 +509,18 @@ void main() {
 
         // 1 initial fetch failed
         verify(() => mockRepo.getOperationals(any())).called(1);
-        expect(find.text('Gagal memuat aktifitas operasional'), findsOneWidget);
+        expect(find.text('Gagal memuat aktivitas operasional'), findsOneWidget);
         expect(find.text('Coba lagi'), findsOneWidget);
 
         // Search with text 'Agus'
-        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+        await tester.tap(find.bySemanticsLabel('Cari aktivitas operasional'));
         await tester.pumpAndSettle();
         await tester.enterText(find.byType(AppSearchBar), 'Agus');
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 400));
         await tester.pumpAndSettle();
 
-        expect(find.text('Gagal memuat aktifitas operasional'), findsOneWidget);
+        expect(find.text('Gagal memuat aktivitas operasional'), findsOneWidget);
         expect(find.text('Coba lagi'), findsOneWidget);
 
         // When user taps 'Coba lagi', it should retry WITH search 'Agus'
@@ -596,7 +582,9 @@ void main() {
           find.byType(AppSearchBar),
         );
         expect(searchBar.controller?.text, 'Agus');
-        final filterChip = tester.widget<AppChip>(find.byType(AppChip));
+        final filterChip = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'Pekan ini'),
+        );
         expect(filterChip.selected, isTrue);
 
         await operationalCubit.close();
@@ -604,7 +592,7 @@ void main() {
     );
 
     testWidgets(
-      'renders empty search state and offline bottom banner when offline and '
+      'renders empty search state and offline notice when offline and '
       'no results found',
       (WidgetTester tester) async {
         registerFallbackValue(const GetOperationalsParams());
@@ -637,9 +625,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
+        expect(find.byType(AppInlineBanner), findsOneWidget);
         expect(
-          find.text('Aktifitas operasional tidak ditemukan'),
+          find.text('Aktivitas operasional tidak ditemukan'),
           findsOneWidget,
         );
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
@@ -675,7 +663,7 @@ void main() {
         verify(() => mockRepo.getOperationals(any())).called(1);
 
         // 2. Open search bar
-        await tester.tap(find.bySemanticsLabel('Cari aktifitas operasional'));
+        await tester.tap(find.bySemanticsLabel('Cari aktivitas operasional'));
         await tester.pumpAndSettle();
 
         // Verify no fetch triggered on open

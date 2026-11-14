@@ -4,7 +4,7 @@ import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/features/operational/data/models/operational_model.dart';
 import 'package:kawalo_mobile/features/operational/data/models/operational_query_model.dart';
 
-/// Kontrak remote datasource untuk aktifitas operasional tenaga kerja.
+/// Kontrak remote datasource untuk aktivitas operasional tenaga kerja.
 ///
 /// Selaras 100% dengan kontrak backend `GetOperationalQueryDto` dan
 /// `OperationalWorkerItemDto`.

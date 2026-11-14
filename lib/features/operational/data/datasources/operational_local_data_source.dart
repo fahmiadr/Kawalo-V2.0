@@ -4,7 +4,7 @@ import 'package:kawalo_mobile/features/operational/data/mappers/operational_loca
 import 'package:kawalo_mobile/features/operational/data/models/operational_local_model.dart';
 import 'package:kawalo_mobile/features/operational/data/models/operational_model.dart';
 
-/// Kontrak sumber aktifitas operasional lokal untuk penyimpanan dan fallback
+/// Kontrak sumber aktivitas operasional lokal untuk penyimpanan dan fallback
 /// offline.
 abstract class OperationalLocalDataSource implements CacheWipeable {
   /// Menyimpan daftar kartu pekerja operasional ke cache lokal.
@@ -22,7 +22,7 @@ abstract class OperationalLocalDataSource implements CacheWipeable {
   /// (rolling window eviction 30 hari).
   Future<void> deleteOlderThan(DateTime threshold);
 
-  /// Mengosongkan seluruh cache aktifitas operasional.
+  /// Mengosongkan seluruh cache aktivitas operasional.
   @override
   Future<void> clearCache();
 }
