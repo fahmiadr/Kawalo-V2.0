@@ -41,6 +41,7 @@ import 'package:kawalo_mobile/features/group/group_module.dart';
 import 'package:kawalo_mobile/features/group/presentation/cubit/personnel_cubit.dart';
 import 'package:kawalo_mobile/features/guest/guest_module.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
+import 'package:kawalo_mobile/features/home/home_module.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/information/information_module.dart';
@@ -90,6 +91,7 @@ class _MyAppState extends State<MyApp> {
   late final FaceModule _faceModule;
   late final AttendanceCheckModule _attendanceCheckModule;
   late final AttendanceAdminModule _attendanceAdminModule;
+  late final HomeModule _homeModule;
   late final PttTranscriptModule _pttTranscriptModule;
   late final PttRepository _pttRepository;
   late final PttTranscriptUploader _pttTranscriptUploader;
@@ -172,6 +174,7 @@ class _MyAppState extends State<MyApp> {
       networkInfo: _networkInfo,
     );
     _attendanceAdminModule = AttendanceAdminModule(apiClient: _apiClient);
+    _homeModule = HomeModule(apiClient: _apiClient, storage: _storageService);
     _operationalModule = OperationalModule(
       apiClient: _apiClient,
       isar: isar,
@@ -307,6 +310,7 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider<AttendanceAdminModule>.value(
           value: _attendanceAdminModule,
         ),
+        RepositoryProvider<HomeModule>.value(value: _homeModule),
       ],
       child: MultiBlocProvider(
         providers: [
