@@ -7,6 +7,7 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
@@ -64,6 +65,7 @@ Widget _detail(GuestItemEntity item, GuestCubit cubit, AuthSessionEntity me) {
 void main() {
   setUpAll(() {
     registerFallbackValue(const GuestItemEntity(id: '1'));
+    registerFallbackValue(GuestListScope.today);
   });
 
   tearDown(AppSnackbar.hideCurrent);
@@ -85,13 +87,13 @@ void main() {
       await tester.pumpWidget(_detail(_waiting, cubit, me));
       await tester.pumpAndSettle();
 
-      final button = find.text('Konfirmasi tamu');
+      final button = find.text('Konfirmasi Kedatangan');
       expect(button, findsOneWidget);
 
       await tester.tap(button);
       await tester.pumpAndSettle();
       expect(find.byType(AppConfirmationDialog), findsOneWidget);
-      expect(find.text('Konfirmasi kunjungan?'), findsOneWidget);
+      expect(find.text('Konfirmasi kedatangan?'), findsOneWidget);
 
       await tester.tap(
         find.descendant(
@@ -103,7 +105,7 @@ void main() {
 
       verify(() => cubit.acknowledgeGuest(_waiting, session: me)).called(1);
       expect(
-        find.text('Kunjungan tamu "Sinta Wulandari" berhasil dikonfirmasi.'),
+        find.text('Kedatangan "Sinta Wulandari" berhasil dikonfirmasi.'),
         findsOneWidget,
       );
     });
@@ -125,7 +127,7 @@ void main() {
 
       await tester.pumpWidget(_detail(_waiting, cubit, me));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Konfirmasi tamu'));
+      await tester.tap(find.text('Konfirmasi Kedatangan'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.descendant(
@@ -149,7 +151,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Konfirmasi tamu'), findsNothing);
+      expect(find.text('Konfirmasi Kedatangan'), findsNothing);
     });
 
     testWidgets('is hidden once the visit is confirmed', (tester) async {
@@ -162,77 +164,64 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Konfirmasi tamu'), findsNothing);
+      expect(find.text('Konfirmasi Kedatangan'), findsNothing);
     });
   });
 
-  group('GuestScreen "Masih di lokasi" chip', () {
-    testWidgets('toggles the is_active filter through the cubit', (
-      tester,
-    ) async {
-      final cubit = _cubit(const GuestLoaded(guests: [_waiting], lastSync: ''));
-      when(
-        () => cubit.fetchGuests(
-          search: any(named: 'search'),
-          filterPeriod: any(named: 'filterPeriod'),
-          startDate: any(named: 'startDate'),
-          endDate: any(named: 'endDate'),
-          creatorEmail: any(named: 'creatorEmail'),
-          creatorName: any(named: 'creatorName'),
-        ),
-      ).thenAnswer((_) async => AppFetchResult.success);
-      when(
-        () => cubit.changeActiveFilter(isActive: any(named: 'isActive')),
-      ).thenAnswer((_) async => AppFetchResult.success);
-
+  group('GuestScreen scope chips', () {
+    Future<void> pump(WidgetTester tester, GuestCubit cubit) async {
       await tester.pumpWidget(
         M3EMaterialApp(
+          localizationsDelegates: AppTheme.localizationsDelegates,
           data: AppTheme.m3eLight(),
           home: GuestScreen(cubit: cubit),
         ),
       );
       await tester.pumpAndSettle();
+    }
 
-      await tester.tap(find.text('Masih di lokasi'));
+    _MockGuestCubit scopedCubit(GuestState state) {
+      final cubit = _cubit(state);
+      when(cubit.fetchGuests).thenAnswer((_) async => AppFetchResult.success);
+      when(
+        () => cubit.changeScope(any()),
+      ).thenAnswer((_) async => AppFetchResult.success);
+      return cubit;
+    }
+
+    testWidgets('"Di lokasi" asks the cubit for on-site guests', (
+      tester,
+    ) async {
+      final cubit = scopedCubit(
+        const GuestLoaded(guests: [_waiting], lastSync: ''),
+      );
+      await pump(tester, cubit);
+
+      await tester.tap(find.widgetWithText(AppChip, 'Di lokasi'));
       await tester.pumpAndSettle();
 
-      verify(() => cubit.changeActiveFilter(isActive: true)).called(1);
+      verify(() => cubit.changeScope(GuestListScope.onSite)).called(1);
     });
 
-    testWidgets('a second tap clears the filter', (tester) async {
-      final cubit = _cubit(
+    testWidgets('the selected chip does not refetch; another one does', (
+      tester,
+    ) async {
+      final cubit = scopedCubit(
         const GuestLoaded(
           guests: [_waiting],
           lastSync: '',
           filterIsActive: true,
         ),
       );
-      when(
-        () => cubit.fetchGuests(
-          search: any(named: 'search'),
-          filterPeriod: any(named: 'filterPeriod'),
-          startDate: any(named: 'startDate'),
-          endDate: any(named: 'endDate'),
-          creatorEmail: any(named: 'creatorEmail'),
-          creatorName: any(named: 'creatorName'),
-        ),
-      ).thenAnswer((_) async => AppFetchResult.success);
-      when(
-        () => cubit.changeActiveFilter(isActive: any(named: 'isActive')),
-      ).thenAnswer((_) async => AppFetchResult.success);
+      await pump(tester, cubit);
 
-      await tester.pumpWidget(
-        M3EMaterialApp(
-          data: AppTheme.m3eLight(),
-          home: GuestScreen(cubit: cubit),
-        ),
-      );
+      await tester.tap(find.widgetWithText(AppChip, 'Di lokasi'));
       await tester.pumpAndSettle();
+      verifyNever(() => cubit.changeScope(any()));
 
-      await tester.tap(find.text('Masih di lokasi'));
+      await tester.tap(find.widgetWithText(AppChip, 'Semua'));
       await tester.pumpAndSettle();
-
-      verify(cubit.changeActiveFilter).called(1);
+      verify(() => cubit.changeScope(GuestListScope.all)).called(1);
     });
   });
 }

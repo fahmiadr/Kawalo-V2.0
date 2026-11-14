@@ -174,4 +174,41 @@ extension GuestUiExtension on GuestItemEntity {
 
   /// Mendapatkan tanggal & waktu pembaruan client untuk ditampilkan.
   String get displayClientUpdatedAt => AppDateFormat.formatRawGreeting(guestDt);
+
+  /// Up to two initials of the guest name for the list avatar.
+  String get initials {
+    final words = (guestName ?? '').trim().split(RegExp(r'\s+'));
+    final letters = words.where((w) => w.isNotEmpty).take(2).map((w) => w[0]);
+    final result = letters.join().toUpperCase();
+    return result.isEmpty ? '?' : result;
+  }
+
+  String get entryClock => _clock(guestDt);
+
+  String get confirmationClock => _clock(guestAckDt);
+
+  String get exitClock => _clock(guestOutDt);
+
+  /// Status pill of the redesign: "Keluar 09.10", "Di lokasi" once the host
+  /// acknowledged, otherwise "Belum dikonfirmasi".
+  String get presenceLabel {
+    if (isExited) return 'Keluar $exitClock';
+    if (isConfirmed) return 'Di lokasi';
+    return 'Belum dikonfirmasi';
+  }
+}
+
+/// "07.21" for today, "8 Nov 07.21" for another day, "—" when missing.
+String _clock(String? raw, {DateTime? now}) {
+  final parsed = AppDateFormat.tryParse(raw)?.toLocal();
+  if (parsed == null) return '—';
+  final ref = now ?? DateTime.now();
+  final hm =
+      '${parsed.hour.toString().padLeft(2, '0')}.'
+      '${parsed.minute.toString().padLeft(2, '0')}';
+  final sameDay =
+      parsed.year == ref.year &&
+      parsed.month == ref.month &&
+      parsed.day == ref.day;
+  return sameDay ? hm : '${AppDateFormat.formatDayMonth(parsed)} $hm';
 }

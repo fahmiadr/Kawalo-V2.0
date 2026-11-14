@@ -9,13 +9,15 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
+import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
+import 'package:kawalo_mobile/core/widgets/app_inline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/domain/usecases/delete_batch_guest/delete_batch_guest_usecase.dart';
@@ -24,9 +26,9 @@ import 'package:kawalo_mobile/features/guest/domain/value_objects/get_guests_par
 import 'package:kawalo_mobile/features/guest/domain/value_objects/guest_result.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
+import 'package:kawalo_mobile/features/guest/presentation/screens/guest_detail_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dart';
-import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/guest_fixtures.dart';
@@ -95,6 +97,7 @@ void main() {
         cubit ??
         createMockGuestCubit(guests: initialGuests, greeting: initialGreeting);
     Widget app = M3EMaterialApp(
+      localizationsDelegates: AppTheme.localizationsDelegates,
       data: AppTheme.m3eLight(),
       home: GuestScreen(cubit: effectiveCubit),
     );
@@ -110,15 +113,15 @@ void main() {
   group('GuestScreen Tests', () {
     tearDown(AppSnackbar.hideCurrent);
     testWidgets(
-      'renders AppHomeAppBar with back button, title, and search icon '
+      'renders AppTopBar with back button, title, and search icon '
       'toggle button',
       (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
-        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.byType(AppTopBar), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
+        expect(find.text('Buku Tamu'), findsOneWidget);
         expect(find.bySemanticsLabel('Kembali'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
@@ -134,10 +137,10 @@ void main() {
 
         final searchToggleBtn = find.bySemanticsLabel('Cari data tamu');
         expect(searchToggleBtn, findsOneWidget);
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
 
-        final titleRect = tester.getRect(find.text('Data tamu'));
+        final titleRect = tester.getRect(find.text('Buku Tamu'));
         final backRect = tester.getRect(find.bySemanticsLabel('Kembali'));
         expect(titleRect.left - backRect.right, equals(8));
 
@@ -145,10 +148,10 @@ void main() {
         await tester.tap(searchToggleBtn);
         await tester.pumpAndSettle();
 
-        expect(find.text('Data tamu'), findsNothing);
+        expect(find.text('Buku Tamu'), findsNothing);
         expect(find.byType(AppSearchBar), findsOneWidget);
         expect(find.text('Cari data tamu'), findsOneWidget);
-        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
 
         final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
         expect(cancelToggleBtn, findsOneWidget);
@@ -164,27 +167,19 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(AppSearchBar), findsNothing);
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
       },
     );
 
-    testWidgets('renders WITHOUT navigation bar', (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AppNavigationBar), findsNothing);
-    });
-
-    testWidgets('renders with surface background color matching M3 standard', (
+    testWidgets('renders on the redesign page background', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      final colorScheme = AppTheme.m3eLight().colorScheme;
-      expect(scaffold.backgroundColor, colorScheme.surface);
+      expect(scaffold.backgroundColor, KawaloTones.light.background);
     });
 
     testWidgets('renders guest cards and allows filtering via search', (
@@ -279,8 +274,8 @@ void main() {
       await tester.tap(find.text('Bambang Sudarsono'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Detail tamu'), findsOneWidget);
-      expect(find.text('Detail kunjungan'), findsOneWidget);
+      expect(find.byType(GuestDetailScreen), findsOneWidget);
+      expect(find.text('Masuk'), findsOneWidget);
     });
 
     testWidgets('pull-to-refresh triggers data refresh indicator', (
@@ -326,7 +321,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+      expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
 
       await tester.fling(
         find.text('Bambang Sudarsono'),
@@ -340,15 +335,14 @@ void main() {
       expect(find.text('Data tamu berhasil diperbarui.'), findsOneWidget);
     });
 
-    testWidgets('renders Extended FAB Tambah tamu', (
+    testWidgets('renders the bottom "Catat Tamu" action instead of a FAB', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppExtendedFab), findsOneWidget);
-      expect(find.text('Tamu'), findsOneWidget);
-      expect(find.text('SOS'), findsNothing);
+      expect(find.byType(AppExtendedFab), findsNothing);
+      expect(find.widgetWithText(AppTaskButton, 'Catat Tamu'), findsOneWidget);
     });
 
     testWidgets(
@@ -361,7 +355,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari data tamu'), findsOneWidget);
         expect(find.byType(GuestCard), findsWidgets);
       },
@@ -373,7 +367,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget(initialGuests: []));
         await tester.pumpAndSettle();
 
-        expect(find.text('Belum ada data tamu'), findsOneWidget);
+        expect(find.text('Belum ada tamu hari ini'), findsOneWidget);
         expect(find.text('Data tamu tidak ditemukan'), findsNothing);
       },
     );
@@ -419,7 +413,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Data tamu tidak ditemukan'), findsOneWidget);
-        expect(find.text('Belum ada data tamu'), findsNothing);
+        expect(find.text('Belum ada tamu hari ini'), findsNothing);
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
 
         await tester.tap(find.text('Reset filter & pencarian'));
@@ -434,7 +428,7 @@ void main() {
     );
 
     testWidgets(
-      'renders AppBottomOfflineBanner at the bottom when offline and reacts to '
+      'renders the inline offline notice when offline and reacts to '
       'online reconnect',
       (WidgetTester tester) async {
         registerFallbackValue(const GetGuestsParams());
@@ -461,6 +455,7 @@ void main() {
           BlocProvider<ConnectivityCubit>.value(
             value: connectivityCubit,
             child: M3EMaterialApp(
+              localizationsDelegates: AppTheme.localizationsDelegates,
               data: AppTheme.m3eLight(),
               home: GuestScreen(cubit: guestCubit),
             ),
@@ -468,32 +463,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
+        expect(find.byType(AppInlineBanner), findsOneWidget);
         expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
+          find.textContaining('Anda offline. Menampilkan data tersimpan.'),
           findsOneWidget,
         );
 
-        // Verify reconnecting triggers auto-refresh and shows then hides banner
+        // Reconnecting triggers auto-refresh and removes the notice.
         connectivityCubit.setStatus(ConnectivityStatus.online);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        expect(find.text('Kembali online'), findsOneWidget);
-
-        // Advance dwell duration & exit animation
-        await tester.pump(const Duration(milliseconds: 2600));
         await tester.pumpAndSettle();
 
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsNothing,
-        );
-        expect(find.text('Kembali online'), findsNothing);
-        final banner = tester.widget<AppBottomOfflineBanner>(
-          find.byType(AppBottomOfflineBanner),
-        );
-        expect(banner.isOffline, isFalse);
+        expect(find.byType(AppInlineBanner), findsNothing);
 
         await guestCubit.close();
         await connectivityCubit.close();
@@ -519,6 +499,7 @@ void main() {
 
       await tester.pumpWidget(
         M3EMaterialApp(
+          localizationsDelegates: AppTheme.localizationsDelegates,
           data: AppTheme.m3eLight(),
           home: GuestScreen(cubit: guestCubit),
         ),
@@ -572,6 +553,7 @@ void main() {
 
         await tester.pumpWidget(
           M3EMaterialApp(
+            localizationsDelegates: AppTheme.localizationsDelegates,
             data: AppTheme.m3eLight(),
             home: GuestScreen(cubit: guestCubit),
           ),
@@ -637,6 +619,7 @@ void main() {
 
         await tester.pumpWidget(
           M3EMaterialApp(
+            localizationsDelegates: AppTheme.localizationsDelegates,
             data: AppTheme.m3eLight(),
             home: MediaQuery(
               data: const MediaQueryData(disableAnimations: true),
@@ -713,19 +696,22 @@ void main() {
         // Mount GuestScreen
         await tester.pumpWidget(
           M3EMaterialApp(
+            localizationsDelegates: AppTheme.localizationsDelegates,
             data: AppTheme.m3eLight(),
             home: GuestScreen(cubit: guestCubit),
           ),
         );
         await tester.pumpAndSettle();
 
-        // Expect search bar to contain 'Bambang' and filter chip to display
-        // 'Pekan ini'
+        // Search is kept; a non-today period selects the "Semua" chip.
         final searchBar = tester.widget<AppSearchBar>(
           find.byType(AppSearchBar),
         );
         expect(searchBar.controller?.text, 'Bambang');
-        expect(find.text('Pekan ini'), findsOneWidget);
+        final all = tester.widget<AppChip>(
+          find.widgetWithText(AppChip, 'Semua'),
+        );
+        expect(all.selected, isTrue);
 
         await guestCubit.close();
       },
@@ -751,6 +737,7 @@ void main() {
 
         await tester.pumpWidget(
           M3EMaterialApp(
+            localizationsDelegates: AppTheme.localizationsDelegates,
             data: AppTheme.m3eLight(),
             home: GuestScreen(cubit: guestCubit),
           ),

@@ -33,7 +33,9 @@ class GuestFormDestinationField extends StatelessWidget {
             destState.validationAttempt > 0 ||
             cubit.state.destination.isNotEmpty;
         return AppTextField(
-          label: 'Destinasi tujuan *',
+          label: 'Tujuan',
+          isRequired: true,
+          placeholder: 'Contoh: Blok C No. 12',
           variant: AppTextFieldVariant.outlined,
           controller: controller,
           focusNode: focusNode,

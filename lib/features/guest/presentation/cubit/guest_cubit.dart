@@ -262,6 +262,37 @@ class GuestCubit extends ListFetchCubit<GuestState, GuestItemEntity> {
   Future<AppFetchResult> changeActiveFilter({bool? isActive}) =>
       fetchGuests(isActive: isActive, clearActiveFilter: isActive == null);
 
+  /// "Di lokasi" and "Semua" ignore the visit date: a guest who arrived
+  /// yesterday may still be on site.
+  Future<AppFetchResult> changeScope(GuestListScope scope, {DateTime? now}) {
+    if (scope == GuestListScope.today) {
+      return fetchGuests(
+        filterPeriod: AppDateFilterPeriod.today,
+        clearActiveFilter: true,
+      );
+    }
+    // ponytail: the date filter has no "no range" option (core
+    // `AppDateFilterResult`), so "all dates" is a range from 2000 to today.
+    // Add an unbounded period there if the API ever rejects wide ranges.
+    final range = AppDateFilterResult.sanitize(
+      period: AppDateFilterPeriod.custom,
+      startDate: DateTime(2000),
+      endDate: now ?? DateTime.now(),
+      scope: AppDateFilterScope.pastOnly,
+      referenceNow: now,
+    );
+    final onSite = scope == GuestListScope.onSite;
+    return fetchGuests(
+      filterPeriod: AppDateFilterPeriod.custom,
+      startDate: range.startDate,
+      endDate: range.endDate,
+      startDateIso: range.startDateIso,
+      endDateIso: range.endDateIso,
+      isActive: onSite ? true : null,
+      clearActiveFilter: !onSite,
+    );
+  }
+
   /// Mengatur ulang seluruh filter waktu, pencarian, pembuat, dan status ke
   /// default.
   Future<AppFetchResult> resetFilters() => resetAllFiltersWith(

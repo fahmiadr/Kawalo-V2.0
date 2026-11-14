@@ -6,6 +6,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/presentation/qr_scan/guest_qr_scanner.dart';
@@ -72,6 +73,7 @@ void main() {
     didPop = false;
     await tester.pumpWidget(
       M3EMaterialApp(
+        localizationsDelegates: AppTheme.localizationsDelegates,
         data: AppTheme.m3eLight(),
         home: Builder(
           builder: (context) => Scaffold(
@@ -189,7 +191,7 @@ void main() {
     verify(() => repo.getGuestByIdentifier(uid)).called(2);
   });
 
-  testWidgets('the outlined action stays readable on the dark panel', (
+  testWidgets('the second action is the neutral button on the dark panel', (
     tester,
   ) async {
     stubLookup(const Left(NoInternetFailure()));
@@ -198,8 +200,10 @@ void main() {
     scanner.emit(uid);
     await tester.pumpAndSettle();
 
-    final label = tester.element(find.text('Pindai lagi'));
-    expect(DefaultTextStyle.of(label).style.color, Colors.white);
+    final button = tester.widget<AppTaskButton>(
+      find.widgetWithText(AppTaskButton, 'Pindai lagi'),
+    );
+    expect(button.variant, AppTaskButtonVariant.secondary);
   });
 
   testWidgets('an unrelated QR is reported without calling the API', (
@@ -244,9 +248,9 @@ void main() {
     addTearDown(tester.view.reset);
     await pumpScreen(tester);
 
-    expect(find.text('Izin kamera dinonaktifkan'), findsOneWidget);
+    expect(find.text('Izin kamera dibutuhkan'), findsOneWidget);
 
-    await tester.tap(find.text('Buka pengaturan'));
+    await tester.tap(find.text('Buka Pengaturan'));
     await tester.pump();
     verify(() => launcher.openAppSettings()).called(1);
 

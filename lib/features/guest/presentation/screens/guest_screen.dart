@@ -11,22 +11,18 @@ import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
-import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_batch_delete.dart';
-import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_selection_controller.dart';
-import 'package:kawalo_mobile/features/group/presentation/group_member_filter_options.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
@@ -37,22 +33,10 @@ import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dar
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card_skeleton.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form_dialog.dart';
 
-/// Layar utama fitur Data Tamu.
-///
-/// Mengambil data dari REST API (cache lokal saat offline) dengan isolasi
-/// data grup aktif multi-tenant.
-///
-/// Fitur:
-/// - Menggunakan [AppSelectionAppBar] dengan mode seleksi kontekstual
-///   M3 Expressive.
-/// - Terintegrasi dengan [GuestCubit] untuk unidirectional data flow.
-/// - Shimmer skeleton saat memuat data awal.
-/// - Infinite scroll dengan indikator muat halaman uncontained.
-/// - Bottom sheet filter waktu dengan dot badge indikator aktif.
-/// - Multi-selection & batch delete dengan otorisasi berbasis peran (ABAC/RBAC).
-/// - Extended FAB "Tambah tamu" untuk pembuatan data tamu baru.
+/// Buku Tamu list (redesign 2026): "Di lokasi" / "Hari ini" / "Semua" chips,
+/// search and QR scan in the top bar, one "Catat Tamu" action at the bottom.
+/// Long-press selects rows for batch delete (only rows the user may delete).
 class GuestScreen extends StatefulWidget {
-  /// Membuat instance [GuestScreen].
   const GuestScreen({super.key, this.cubit, this.qrScannerFactory});
 
   /// Instance [GuestCubit] opsional untuk injeksi pengujian.
@@ -313,83 +297,11 @@ class _GuestScreenState extends State<GuestScreen> {
     _showFeedback(currentCubit, result);
   }
 
-  Future<void> _onFilterPressed() async {
+  Future<void> _onScopeSelected(GuestListScope scope) async {
     _selection.clear();
     final cubit = _resolveCubit(context);
-    final state = cubit.state;
-    final now = DateTime.now();
-
-    final result = await showAppDateFilterBottomSheet(
-      context: context,
-      title: 'Tanggal',
-      subtitle: 'Rentang waktu',
-      scope: AppDateFilterScope.pastOnly,
-      currentPeriod: state.filterPeriod,
-      initialStartDate: state.startDate ?? now,
-      initialEndDate: state.endDate ?? now,
-    );
-
-    if (result != null && mounted) {
-      _showFeedback(cubit, await cubit.setFilter(result));
-    }
-  }
-
-  Future<void> _onResetDateFilter() async {
-    _selection.clear();
-    final cubit = _resolveCubit(context);
-    _showFeedback(cubit, await cubit.resetDateFilter());
-  }
-
-  Future<void> _onOpenCreatorPicker() async {
-    _selection.clear();
-    final cubit = _resolveCubit(context);
-    final session = _resolveSession(context);
-    final result = await showAppUserFilterBottomSheet(
-      context: context,
-      onLoadUsers: () => loadGroupMemberFilterOptions(cubit.loadGroupMembers),
-      selectedEmail: cubit.state.filterCreatorEmail,
-      currentUserSession: session,
-    );
-    if (!mounted) return;
-    if (result != null) {
-      final fetchResult = await cubit.changeCreatorFilter(
-        email: result.selectedUser?.email,
-        name: result.selectedUser?.name,
-      );
-      _showFeedback(cubit, fetchResult);
-    }
-  }
-
-  Future<void> _onResetCreatorFilter() async {
-    _selection.clear();
-    final cubit = _resolveCubit(context);
-    _showFeedback(cubit, await cubit.changeCreatorFilter());
-  }
-
-  Future<void> _onToggleMine() async {
-    _selection.clear();
-    final cubit = _resolveCubit(context);
-    final session = _resolveSession(context);
-    final userEmail = session?.email;
-    final userName = session?.name;
-    if (userEmail == null) return;
-    final activeCreatorEmail = cubit.state.filterCreatorEmail;
-    final isCurrentlyMine = activeCreatorEmail == userEmail;
-
-    final fetchResult = isCurrentlyMine
-        ? await cubit.changeCreatorFilter()
-        : await cubit.changeCreatorFilter(email: userEmail, name: userName);
-    _showFeedback(cubit, fetchResult);
-  }
-
-  Future<void> _onToggleActive() async {
-    _selection.clear();
-    final cubit = _resolveCubit(context);
-    final isOn = cubit.state.hasActiveStatusFilter;
-    _showFeedback(
-      cubit,
-      await cubit.changeActiveFilter(isActive: isOn ? null : true),
-    );
+    if (cubit.state.scope == scope) return;
+    _showFeedback(cubit, await cubit.changeScope(scope));
   }
 
   Future<void> _resetAllFilters() async {
@@ -428,10 +340,10 @@ class _GuestScreenState extends State<GuestScreen> {
         final isInitialLoading = state is GuestInitial || state is GuestLoading;
 
         return ListScreenScaffold(
-          title: 'Data tamu',
+          title: 'Buku Tamu',
           searchLabel: 'Cari data tamu',
           refreshLabel: 'Memuat ulang data tamu',
-          greeting: state.lastSync,
+          lastSync: state.lastSync,
           trailingActions: _isSearchExpanded
               ? const []
               : [
@@ -462,11 +374,15 @@ class _GuestScreenState extends State<GuestScreen> {
           onOpenSearch: _onOpenSearch,
           onCloseSearch: _onCloseSearch,
           onRefresh: () => _handleRefresh(cubit),
-          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-          filterBar: _buildFilterBar(
+          bottomNavigationBar: _buildBottomBar(
+            canCreate:
+                GuestItemEntity.canBeCreatedBySession(session) &&
+                !_selection.isSelectionMode,
+            isOffline: isOffline,
+          ),
+          filterBar: _buildScopeChips(
             state: state,
             isLoading: isInitialLoading,
-            session: session,
           ),
           body: _buildBody(context, state, cubit, session),
           selection: ListScreenSelection(
@@ -486,10 +402,6 @@ class _GuestScreenState extends State<GuestScreen> {
             deletingLabel: 'Menghapus data tamu terpilih',
             deletingMessage: 'Menghapus data tamu...',
           ),
-          createLabel: 'Tamu',
-          onCreate: GuestItemEntity.canBeCreatedBySession(session)
-              ? _onOpenCreateForm
-              : null,
           canPop: !_selection.isSelectionMode,
           onPopBlocked: _selection.clear,
         );
@@ -524,14 +436,13 @@ class _GuestScreenState extends State<GuestScreen> {
       return _buildLoadingSkeleton();
     } else if (state is GuestLoaded) {
       if (state.displayedGuests.isEmpty) {
-        if (state.hasActiveFilter) {
+        if (state.searchQuery?.isNotEmpty ?? false) {
           return ListEmptySearchResult(
             noun: 'data tamu',
             onReset: _resetAllFilters,
           );
-        } else {
-          return _buildEmptyGroupState();
         }
+        return _buildEmptyState(state.scope);
       } else {
         return _buildGuestListView(
           guests: state.displayedGuests,
@@ -561,50 +472,27 @@ class _GuestScreenState extends State<GuestScreen> {
     }
   }
 
-  Widget _buildFilterBar({
+  Widget _buildScopeChips({
     required bool isLoading,
-    required AuthSessionEntity? session,
     required GuestState state,
   }) {
-    final colorScheme = AppTheme.of(context).colorScheme;
-    return ListFilterBar(
-      isLoading: isLoading,
-      isDateActive: state.hasActiveDateFilter,
-      dateLabel: state.filterPeriod.resolveDisplayLabel(
-        startDate: state.startDate,
-        endDate: state.endDate,
+    Widget chip(GuestListScope scope, String label) => AppChip(
+      type: AppChipType.filter,
+      label: label,
+      selected: state.scope == scope,
+      onPressed: isLoading ? null : () => _onScopeSelected(scope),
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          chip(GuestListScope.onSite, 'Di lokasi'),
+          chip(GuestListScope.today, 'Hari ini'),
+          chip(GuestListScope.all, 'Semua'),
+        ],
       ),
-      onDatePressed: _onFilterPressed,
-      onDateReset: _onResetDateFilter,
-      chips: [
-        ListCreatorFilterChip(
-          session: session,
-          isLoading: isLoading,
-          isActive: state.hasActiveCreatorFilter,
-          activeEmail: state.filterCreatorEmail,
-          activeName: state.filterCreatorName ?? state.filterCreatorEmail,
-          onOpenPicker: _onOpenCreatorPicker,
-          onReset: _onResetCreatorFilter,
-          onToggleMine: _onToggleMine,
-        ),
-        AppChip(
-          type: AppChipType.filter,
-          label: 'Masih di lokasi',
-          selected: state.hasActiveStatusFilter,
-          leading: state.hasActiveStatusFilter
-              ? AppSvgIcon(
-                  KawaloVectors.checkFilled,
-                  size: 18,
-                  color: isLoading
-                      ? colorScheme.onSurface.withValues(
-                          alpha: AppStateLayer.disabledOpacity,
-                        )
-                      : colorScheme.onSecondaryContainer,
-                )
-              : null,
-          onPressed: isLoading ? null : _onToggleActive,
-        ),
-      ],
     );
   }
 
@@ -640,13 +528,39 @@ class _GuestScreenState extends State<GuestScreen> {
     );
   }
 
-  Widget _buildEmptyGroupState() {
-    return const AppEmptyState(
-      icon: AppSvgIcon.color(KawaloColorVectors.guestValidation),
-      title: 'Belum ada data tamu',
-      description:
-          'Belum ada kunjungan tamu '
-          'pada hari ini.',
+  Widget? _buildBottomBar({required bool canCreate, required bool isOffline}) {
+    if (!canCreate) return null;
+    return AppTaskFooter(
+      children: [
+        AppTaskButton(
+          label: 'Catat Tamu',
+          icon: Icons.add_rounded,
+          tone: KawaloTones.of(context).gst,
+          onPressed: isOffline ? null : _onOpenCreateForm,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(GuestListScope scope) {
+    final (title, description) = switch (scope) {
+      GuestListScope.onSite => (
+        'Tidak ada tamu di lokasi',
+        'Semua tamu yang tercatat sudah check-out.',
+      ),
+      GuestListScope.today => (
+        'Belum ada tamu hari ini',
+        'Tamu yang Anda catat atau pindai QR-nya tampil di sini.',
+      ),
+      GuestListScope.all => (
+        'Belum ada data tamu',
+        'Tamu yang Anda catat atau pindai QR-nya tampil di sini.',
+      ),
+    };
+    return AppEmptyState(
+      icon: const AppSvgIcon.color(KawaloColorVectors.guestValidation),
+      title: title,
+      description: description,
     );
   }
 }

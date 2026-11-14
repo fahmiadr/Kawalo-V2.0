@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
@@ -27,6 +28,14 @@ class MockUpdateGuestUseCase extends Mock implements UpdateGuestUseCase {}
 class MockGuestRepository extends Mock implements GuestRepository {}
 
 class MockMediaPickerService extends Mock implements MediaPickerService {}
+
+Future<void> toggleMore(WidgetTester tester) async {
+  final more = find.textContaining('Detail lain', findRichText: true);
+  await tester.ensureVisible(more);
+  await tester.pumpAndSettle();
+  await tester.tap(more);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   late MockCreateGuestUseCase mockCreateGuestUseCase;
@@ -139,15 +148,21 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GuestFormDialog), findsOneWidget);
-      expect(find.text('Tambah tamu'), findsOneWidget);
-      expect(find.text('Informasi tamu & identitas'), findsOneWidget);
-      expect(find.text('Tujuan & detail kunjungan'), findsOneWidget);
-      expect(find.text('Dokumentasi foto tamu'), findsOneWidget);
-      expect(find.text('Simpan'), findsOneWidget);
+      expect(find.text('Tamu Baru'), findsOneWidget);
+      expect(find.widgetWithText(AppTextField, 'Nama tamu*'), findsOneWidget);
+      expect(find.widgetWithText(AppTextField, 'Tujuan*'), findsOneWidget);
+      expect(find.text('TAMU'), findsOneWidget);
+      expect(find.text('Foto tamu (opsional)'), findsOneWidget);
+      expect(
+        find.textContaining('Detail lain', findRichText: true),
+        findsOneWidget,
+      );
+      // Optional fields stay folded on a new guest.
+      expect(find.text('Keperluan kunjungan'), findsNothing);
       expect(
         find.descendant(
           of: find.byType(AppPageActions),
-          matching: find.text('Simpan'),
+          matching: find.widgetWithText(AppTaskButton, 'Simpan Tamu'),
         ),
         findsOneWidget,
       );
@@ -167,9 +182,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GuestFormDialog), findsOneWidget);
-      expect(find.text('Edit data tamu'), findsOneWidget);
+      expect(find.text('Ubah Data Tamu'), findsOneWidget);
       expect(find.text('Hendra Budiman'), findsOneWidget);
       expect(find.text('Blok B1 No. 3'), findsOneWidget);
+      // The guest has optional values, so the section opens by itself.
+      expect(find.text('B 9999 ZZ'), findsOneWidget);
+      expect(find.text('Bertamu'), findsOneWidget);
 
       await cubit.close();
     });
@@ -181,6 +199,9 @@ void main() {
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
       await tester.tap(find.text('Buka Formulir'));
+      await tester.pumpAndSettle();
+
+      await toggleMore(tester);
       await tester.pumpAndSettle();
 
       final hostField = find.widgetWithText(
@@ -281,16 +302,15 @@ void main() {
         'Hendra Budiman',
       );
       await tester.enterText(
-        find.widgetWithText(AppTextField, 'Destinasi tujuan *'),
+        find.widgetWithText(AppTextField, 'Tujuan*'),
         'Blok B1 No. 3',
       );
 
-      // Select guest type from dropdown
-      cubit.onGuestTypeChanged('TAMU');
+      await tester.tap(find.widgetWithText(AppChip, 'TAMU'));
       await tester.pumpAndSettle();
+      expect(cubit.state.guestType, 'TAMU');
 
-      // Tap Simpan
-      await tester.tap(find.widgetWithText(AppButton, 'Simpan'));
+      await tester.tap(find.widgetWithText(AppTaskButton, 'Simpan Tamu'));
       await tester.pumpAndSettle();
 
       verify(() => mockCreateGuestUseCase(any())).called(1);
@@ -307,6 +327,8 @@ void main() {
 
         await tester.pumpWidget(buildTestWidget(cubit: cubit));
         await tester.tap(find.text('Buka Formulir'));
+        await tester.pumpAndSettle();
+        await toggleMore(tester);
         await tester.pumpAndSettle();
 
         // Initially, Tanpa Identitas should be selected
@@ -403,6 +425,82 @@ void main() {
         await cubit.close();
       },
     );
+
+    testWidgets('an invalid folded field opens "Detail lain"', (tester) async {
+      final cubit = buildCubit();
+
+      await tester.pumpWidget(buildTestWidget(cubit: cubit));
+      await tester.tap(find.text('Buka Formulir'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(AppTextField, 'Nama tamu*'),
+        'Hendra',
+      );
+      await tester.enterText(
+        find.widgetWithText(AppTextField, 'Tujuan*'),
+        'Blok B1',
+      );
+      await tester.tap(find.widgetWithText(AppChip, 'TAMU'));
+      await tester.pumpAndSettle();
+
+      // Pick KTP without a number, then fold the section again.
+      await toggleMore(tester);
+      await tester.ensureVisible(find.widgetWithText(AppChip, 'KTP'));
+      await tester.tap(find.widgetWithText(AppChip, 'KTP'));
+      await tester.pumpAndSettle();
+      await toggleMore(tester);
+      expect(find.text('Nomor identitas (KTP) *'), findsNothing);
+
+      await tester.tap(find.widgetWithText(AppTaskButton, 'Simpan Tamu'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.widgetWithText(AppTextField, 'Nomor identitas (KTP) *'),
+        findsOneWidget,
+      );
+      verifyNever(() => mockCreateGuestUseCase(any()));
+
+      await cubit.close();
+    });
+
+    testWidgets('a failed save keeps the data and offers to retry', (
+      tester,
+    ) async {
+      when(
+        () => mockCreateGuestUseCase(any()),
+      ).thenAnswer((_) async => const Left(ServerFailure('Server sibuk.')));
+      final cubit = buildCubit();
+
+      await tester.pumpWidget(buildTestWidget(cubit: cubit));
+      await tester.tap(find.text('Buka Formulir'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(AppTextField, 'Nama tamu*'),
+        'Hendra',
+      );
+      await tester.enterText(
+        find.widgetWithText(AppTextField, 'Tujuan*'),
+        'Blok B1',
+      );
+      await tester.tap(find.widgetWithText(AppChip, 'TAMU'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(AppTaskButton, 'Simpan Tamu'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GuestFormDialog), findsOneWidget);
+      expect(
+        find.textContaining('Gagal menyimpan. Data tidak hilang'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Server sibuk.'), findsOneWidget);
+      expect(
+        find.widgetWithText(AppTaskButton, 'Coba Simpan Lagi'),
+        findsOneWidget,
+      );
+      expect(find.text('Hendra'), findsOneWidget);
+
+      await cubit.close();
+    });
 
     testWidgets('renders safely under 200% dynamic text scaling', (
       tester,

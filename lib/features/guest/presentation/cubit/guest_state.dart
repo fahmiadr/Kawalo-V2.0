@@ -4,6 +4,9 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 
+/// Quick filters of the guest list: "Di lokasi", "Hari ini", "Semua".
+enum GuestListScope { onSite, today, all }
+
 /// Keadaan dasar untuk fitur data tamu.
 abstract class GuestState extends Equatable implements ListFilterState {
   /// Membuat instance [GuestState].
@@ -29,6 +32,12 @@ abstract class GuestState extends Equatable implements ListFilterState {
 
   /// Apakah filter status "Masih di lokasi" sedang aktif.
   bool get hasActiveStatusFilter => false;
+
+  GuestListScope get scope {
+    if (filterIsActive ?? false) return GuestListScope.onSite;
+    if (filterPeriod == AppDateFilterPeriod.today) return GuestListScope.today;
+    return GuestListScope.all;
+  }
 
   /// Tanggal awal rentang kustom (jika [filterPeriod] adalah custom).
   @override

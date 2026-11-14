@@ -21,13 +21,10 @@ class GuestFormValidators {
   static String? validateDestination(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        fieldName: 'Destinasi kunjungan',
-      );
+      return AppValidator.validateRequired(trimmed, fieldName: 'Tujuan');
     }
     if (value.length > 128) {
-      return 'Destinasi kunjungan maksimal 128 karakter.';
+      return 'Tujuan maksimal 128 karakter.';
     }
     return null;
   }

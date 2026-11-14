@@ -3,9 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
-import 'package:kawalo_mobile/core/widgets/app_divider.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_card.dart';
 
@@ -51,6 +50,7 @@ void main() {
     bool isSelectable = true,
   }) {
     return M3EMaterialApp(
+      localizationsDelegates: AppTheme.localizationsDelegates,
       data: AppTheme.m3eLight(),
       home: Scaffold(
         body: Center(
@@ -71,38 +71,45 @@ void main() {
   }
 
   group('GuestCard Widget Tests', () {
-    testWidgets('renders all card details with exited status (Keluar)', (
+    testWidgets('exited guest shows name, type, destination and Keluar', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildCardWidget(sampleExitedGuest));
       await tester.pumpAndSettle();
 
       expect(find.byType(AppCard), findsOneWidget);
-      expect(find.byType(AppDivider), findsOneWidget);
-      expect(find.byType(AppTag), findsNWidgets(2));
       expect(find.text('Bambang Sudarsono'), findsOneWidget);
-      expect(find.text('Visitor • KTP'), findsOneWidget);
-      expect(find.text('Taxi • KTP'), findsOneWidget); // category tag
-      expect(find.text('JKN Veranda'), findsOneWidget); // destination
-      expect(find.text('Jemput Mrs. Carine'), findsOneWidget);
-      expect(find.text('Status terakhir: 08 Jul 2026 15:21'), findsOneWidget);
-      expect(find.text('Keluar'), findsOneWidget);
+      expect(find.text('BS'), findsOneWidget);
+      expect(find.text('Visitor · JKN Veranda'), findsOneWidget);
+      expect(find.text('8 Jul 14.00'), findsOneWidget);
+      expect(find.text('Keluar 8 Jul 15.21'), findsOneWidget);
+      expect(find.byType(AppStatusPill), findsOneWidget);
     });
 
-    testWidgets('renders all card details with waiting status (Masuk)', (
+    testWidgets('unacknowledged guest shows "Belum dikonfirmasi"', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(buildCardWidget(sampleWaitingGuest));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppTag), findsNWidgets(2));
       expect(find.text('Reni Marsiti'), findsOneWidget);
-      expect(find.text('Visitor • SIM'), findsOneWidget);
-      expect(find.text('Taxi • OTHER'), findsOneWidget); // category tag
-      expect(find.text('Cluster Flamboyan'), findsOneWidget); // destination
-      expect(find.text('Jemput Anna Depalma'), findsOneWidget);
-      expect(find.text('Status terakhir: 08 Jul 2026 14:01'), findsOneWidget);
-      expect(find.text('Masuk'), findsOneWidget);
+      expect(find.text('Visitor · Cluster Flamboyan'), findsOneWidget);
+      final pill = tester.widget<AppStatusPill>(find.byType(AppStatusPill));
+      expect(pill.label, 'Belum dikonfirmasi');
+      expect(pill.kind, AppStatusKind.warn);
+    });
+
+    testWidgets('acknowledged guest still on site shows "Di lokasi"', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        buildCardWidget(sampleExitedGuest.copyWithForTest()),
+      );
+      await tester.pumpAndSettle();
+
+      final pill = tester.widget<AppStatusPill>(find.byType(AppStatusPill));
+      expect(pill.label, 'Di lokasi');
+      expect(pill.kind, AppStatusKind.ok);
     });
 
     testWidgets('triggers onTap callback when card is tapped', (
@@ -128,7 +135,7 @@ void main() {
 
       final card = tester.widget<AppCard>(find.byType(AppCard));
       expect(card.semanticLabel, contains('Data tamu Bambang Sudarsono'));
-      expect(card.semanticLabel, contains('status terakhir Keluar'));
+      expect(card.semanticLabel, contains('status Keluar'));
     });
 
     testWidgets(
@@ -142,7 +149,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.text('Bambang Sudarsono'), findsOneWidget);
-        expect(find.text('Keluar'), findsOneWidget);
+        expect(find.text('Keluar 8 Jul 15.21'), findsOneWidget);
       },
     );
 
@@ -204,4 +211,16 @@ void main() {
       },
     );
   });
+}
+
+extension on GuestItemEntity {
+  /// Same guest, acknowledged but not checked out.
+  GuestItemEntity copyWithForTest() => GuestItemEntity(
+    id: id,
+    guestName: guestName,
+    guestDestination: guestDestination,
+    guestType: guestType,
+    guestDt: guestDt,
+    guestAckDt: guestAckDt,
+  );
 }

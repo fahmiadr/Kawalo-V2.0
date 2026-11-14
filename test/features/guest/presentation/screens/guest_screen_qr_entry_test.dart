@@ -32,6 +32,7 @@ void main() {
   Future<void> pumpScreen(WidgetTester tester, {bool settle = true}) async {
     await tester.pumpWidget(
       M3EMaterialApp(
+        localizationsDelegates: AppTheme.localizationsDelegates,
         data: AppTheme.m3eLight(),
         navigatorObservers: [routes],
         home: GuestScreen(cubit: cubit, qrScannerFactory: () => scanner),

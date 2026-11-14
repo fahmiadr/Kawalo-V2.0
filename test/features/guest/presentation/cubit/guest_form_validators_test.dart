@@ -16,11 +16,11 @@ void main() {
     test('validateDestination requires a non-blank value up to 128 chars', () {
       expect(
         GuestFormValidators.validateDestination(' '),
-        'Destinasi kunjungan wajib diisi',
+        'Tujuan wajib diisi',
       );
       expect(
         GuestFormValidators.validateDestination('a' * 129),
-        'Destinasi kunjungan maksimal 128 karakter.',
+        'Tujuan maksimal 128 karakter.',
       );
       expect(GuestFormValidators.validateDestination('Blok A1'), isNull);
     });

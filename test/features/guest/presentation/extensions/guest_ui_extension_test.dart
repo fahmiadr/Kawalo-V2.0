@@ -139,5 +139,46 @@ void main() {
         expect(guestHyphen.hasCheckout, isFalse);
       },
     );
+
+    test('initials take the first letters of up to two words', () {
+      expect(tGuest.initials, 'BS');
+      expect(const GuestItemEntity(id: 'x', guestName: 'maya').initials, 'M');
+      expect(const GuestItemEntity(id: 'x').initials, '?');
+    });
+
+    test('presenceLabel follows exit, then acknowledgement', () {
+      final today = DateTime.now();
+      final out = DateTime(today.year, today.month, today.day, 9, 10);
+      expect(
+        GuestItemEntity(
+          id: 'x',
+          guestAckDt: '2026-01-01T07:00:00',
+          guestOutDt: out.toIso8601String(),
+        ).presenceLabel,
+        'Keluar 09.10',
+      );
+      expect(
+        const GuestItemEntity(
+          id: 'x',
+          guestAckDt: '2026-01-01T07:00:00',
+        ).presenceLabel,
+        'Di lokasi',
+      );
+      expect(
+        const GuestItemEntity(id: 'x').presenceLabel,
+        'Belum dikonfirmasi',
+      );
+    });
+
+    test('clock times show the date only for another day', () {
+      expect(
+        const GuestItemEntity(
+          id: 'x',
+          guestDt: '2020-03-08T07:21:00',
+        ).entryClock,
+        '8 Mar 07.21',
+      );
+      expect(const GuestItemEntity(id: 'x').entryClock, '—');
+    });
   });
 }

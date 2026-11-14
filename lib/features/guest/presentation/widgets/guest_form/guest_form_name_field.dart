@@ -9,33 +9,25 @@ class GuestFormNameField extends StatelessWidget {
     required this.cubit,
     required this.controller,
     required this.focusNode,
-    required this.identityNumberFocusNode,
-    required this.addressFocusNode,
+    required this.nextFocusNode,
     super.key,
   });
 
   final GuestFormCubit cubit;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final FocusNode identityNumberFocusNode;
-  final FocusNode addressFocusNode;
+  final FocusNode nextFocusNode;
 
   @override
   Widget build(BuildContext context) {
     return BlocSelector<
       GuestFormCubit,
       GuestFormState,
-      ({
-        String? error,
-        bool enabled,
-        bool hasIdentityType,
-        int validationAttempt,
-      })
+      ({String? error, bool enabled, int validationAttempt})
     >(
       selector: (state) => (
         error: state.nameError,
         enabled: !state.isSubmitting,
-        hasIdentityType: state.hasIdentityType,
         validationAttempt: state.validationAttempt,
       ),
       builder: (context, nameState) {
@@ -51,13 +43,8 @@ class GuestFormNameField extends StatelessWidget {
           errorText: showError ? nameState.error : null,
           textInputAction: TextInputAction.next,
           onChanged: cubit.onNameChanged,
-          onSubmitted: (_) {
-            if (nameState.hasIdentityType && nameState.enabled) {
-              identityNumberFocusNode.requestFocus();
-            } else {
-              addressFocusNode.requestFocus();
-            }
-          },
+          placeholder: 'Nama lengkap',
+          onSubmitted: (_) => nextFocusNode.requestFocus(),
         );
       },
     );

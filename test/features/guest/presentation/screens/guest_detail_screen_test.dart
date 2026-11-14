@@ -6,26 +6,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_state.dart';
-import 'package:kawalo_mobile/features/guest/presentation/extensions/guest_ui_extension.dart';
 import 'package:kawalo_mobile/features/guest/presentation/screens/guest_detail_screen.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form_dialog.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,222 +32,175 @@ class MockGuestCubit extends Mock implements GuestCubit {}
 
 class MockGuestFormCubit extends Mock implements GuestFormCubit {}
 
-void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+const _admin = AuthSessionEntity(
+  userId: '1',
+  email: 'admin@kawalo.id',
+  name: 'Admin',
+  role: 'ADMIN',
+  allowAdmin: true,
+  allowPatrol: true,
+  allowMonPatrol: true,
+);
 
+const _guard = AuthSessionEntity(
+  userId: '2',
+  email: 'guard@kawalo.id',
+  name: 'Guard',
+  role: 'GUARD',
+  allowAdmin: false,
+  allowPatrol: true,
+  allowMonPatrol: false,
+);
+
+const _resident = AuthSessionEntity(
+  userId: '3',
+  email: 'warga@kawalo.id',
+  name: 'Warga',
+  role: 'USER',
+  allowAdmin: false,
+  allowPatrol: false,
+  allowMonPatrol: false,
+);
+
+/// Acknowledged, still on site.
+const GuestItemEntity _onSite = GuestFixtures.sampleWaitingGuest;
+const GuestItemEntity _exited = GuestFixtures.sampleExitedGuest;
+
+/// Not acknowledged yet.
+const GuestItemEntity _unconfirmed = GuestFixtures.sampleDetailTamu2Guest;
+
+MockGuestCubit _cubitWith(GuestItemEntity item) {
+  final cubit = MockGuestCubit();
+  when(() => cubit.state).thenReturn(GuestLoaded(guests: [item], lastSync: ''));
+  when(() => cubit.stream).thenAnswer((_) => const Stream<GuestState>.empty());
+  when(() => cubit.currentGreeting).thenReturn('');
+  return cubit;
+}
+
+Widget _app(
+  GuestItemEntity item, {
+  AuthSessionEntity? session,
+  GuestCubit? cubit,
+  ConnectivityStatus connectivity = ConnectivityStatus.online,
+  GuestFormCubit? formCubit,
+}) {
+  return MultiBlocProvider(
+    providers: [
+      if (session != null)
+        BlocProvider<UserSessionCubit>.value(value: UserSessionCubit(session)),
+      BlocProvider<ConnectivityCubit>.value(
+        value: ConnectivityCubit(initialState: connectivity, autoStart: false),
+      ),
+      if (formCubit != null)
+        BlocProvider<GuestFormCubit>.value(value: formCubit),
+    ],
+    child: M3EMaterialApp(
+      localizationsDelegates: AppTheme.localizationsDelegates,
+      data: AppTheme.m3eLight(),
+      home: GuestDetailScreen(item: item, cubit: cubit),
+    ),
+  );
+}
+
+void main() {
   setUpAll(() {
     registerFallbackValue(const GuestItemEntity(id: '1'));
   });
 
-  const sampleExitedGuest = GuestFixtures.sampleExitedGuest;
-  const sampleWaitingGuest = GuestFixtures.sampleWaitingGuest;
+  tearDown(AppSnackbar.hideCurrent);
 
-  Widget buildDetailWidget(GuestItemEntity item) {
-    return M3EMaterialApp(
-      data: AppTheme.m3eLight(),
-      home: GuestDetailScreen(item: item),
-    );
-  }
+  group('GuestDetailScreen content', () {
+    testWidgets('shows name, type, presence, times and details', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(_exited, session: _admin));
+      await tester.pumpAndSettle();
 
-  group('GuestDetailScreen Widget Tests', () {
+      expect(find.text('Bambang Sudarsono'), findsOneWidget);
+      expect(find.text('Visitor'), findsOneWidget);
+      final pill = tester.widget<AppStatusPill>(find.byType(AppStatusPill));
+      expect(pill.label, startsWith('Keluar '));
+      for (final label in ['Masuk', 'Dikonfirmasi', 'Keluar', 'Tujuan']) {
+        expect(find.text(label), findsOneWidget);
+      }
+      expect(find.text('Wisnu wijayadi - Veranda'), findsOneWidget);
+      expect(find.text('KTP CT 10713'), findsOneWidget);
+      expect(find.text('B 2706 SBX'), findsOneWidget);
+      expect(find.text('Check-out oleh'), findsOneWidget);
+      expect(find.text('QR-VER-2706-SBX'), findsOneWidget);
+    });
+
     testWidgets('shows the typed host name', (tester) async {
       const typedHost = GuestItemEntity(
         id: '7',
         guestName: 'Tamu Teks',
         guestToName: 'Pak Slamet',
       );
-      await tester.pumpWidget(buildDetailWidget(typedHost));
+      await tester.pumpWidget(_app(typedHost));
       await tester.pumpAndSettle();
 
-      expect(find.text('Bertemu dengan'), findsOneWidget);
+      expect(find.text('Bertemu'), findsOneWidget);
       expect(find.text('Pak Slamet'), findsOneWidget);
     });
 
-    testWidgets(
-      'renders exactly 3 cards, meta info, and details for exited guest',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildDetailWidget(sampleExitedGuest));
-        await tester.pumpAndSettle();
+    testWidgets('unconfirmed guest shows "Belum dikonfirmasi"', (tester) async {
+      await tester.pumpWidget(_app(_unconfirmed));
+      await tester.pumpAndSettle();
 
-        // Top Meta: Waktu pembaruan client & Nama Grup
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
-        expect(
-          find.byWidgetPredicate(
-            (w) => w is Text && (w.data?.startsWith('Diperbarui') ?? false),
-          ),
-          findsOneWidget,
-        );
-        expect(find.text(sampleExitedGuest.displayGroupName), findsOneWidget);
+      final pill = tester.widget<AppStatusPill>(find.byType(AppStatusPill));
+      expect(pill.label, 'Belum dikonfirmasi');
+      expect(pill.kind, AppStatusKind.warn);
+    });
 
-        // Card 1: Timeline
-        expect(find.text('Masuk'), findsOneWidget);
-        expect(find.text(sampleExitedGuest.displayEntryTime), findsOneWidget);
-        expect(find.text('Konfirmasi'), findsNothing);
-        expect(find.text('Keluar'), findsOneWidget);
-        expect(find.text(sampleExitedGuest.displayExitTime), findsOneWidget);
-
-        // Card 2: Profil & Identitas Tamu
-        expect(find.text(sampleExitedGuest.displayName), findsOneWidget);
-        expect(
-          find.text('No. tamu: ${sampleExitedGuest.displayGuestNumber}'),
-          findsOneWidget,
-        );
-        expect(
-          find.text(
-            '${sampleExitedGuest.displayIdentityType}: '
-            '${sampleExitedGuest.displayIdNumber}',
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('Alamat asal'), findsOneWidget);
-        expect(find.text(sampleExitedGuest.displayAddress), findsOneWidget);
-        expect(find.text('Kode akses QR'), findsOneWidget);
-        expect(find.text(sampleExitedGuest.displayQrUid), findsOneWidget);
-        expect(find.text('Salin kode'), findsOneWidget);
-
-        // Card 3: Informasi Kunjungan & Penanggung Jawab
-        expect(find.text('Detail kunjungan'), findsOneWidget);
-        expect(find.text('Tujuan'), findsOneWidget);
-        expect(find.text(sampleExitedGuest.displayPurpose), findsOneWidget);
-        expect(find.text('Destinasi'), findsOneWidget);
-        expect(find.text(sampleExitedGuest.displayDestination), findsOneWidget);
-
-        expect(find.text('Bertemu dengan'), findsOneWidget);
-        expect(find.text('Petugas pencatat dan verifikasi'), findsOneWidget);
-        expect(find.text('Dicatat oleh'), findsOneWidget);
-
-        // In fixture data, host, recorder, and checkout share the same email
-        expect(
-          find.text(sampleExitedGuest.displayGuestToUserName),
-          findsNWidgets(2),
-        );
-        expect(
-          find.text(sampleExitedGuest.displayGuestToUserEmail),
-          findsNWidgets(3),
-        );
-
-        // Verify exactly 3 cards use AppCard with elevated variant
-        expect(find.byType(AppCard), findsNWidgets(3));
-        for (final card in tester.widgetList<AppCard>(find.byType(AppCard))) {
-          expect(card.variant, equals(AppCardVariant.elevated));
-        }
-
-        // Verify SOS Extended FAB does not exist (removed)
-        expect(find.byType(AppExtendedFab), findsNothing);
-        expect(find.text('SOS'), findsNothing);
-      },
-    );
-
-    tearDown(AppSnackbar.hideCurrent);
-
-    testWidgets(
-      'tapping Salin kode button copies QR to clipboard and shows snackbar',
-      (WidgetTester tester) async {
-        final methodCalls = <MethodCall>[];
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+    testWidgets('copies the QR code', (tester) async {
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String?;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
           SystemChannels.platform,
-          (methodCall) async {
-            methodCalls.add(methodCall);
-            return null;
-          },
-        );
-
-        await tester.pumpWidget(buildDetailWidget(sampleExitedGuest));
-        await tester.pumpAndSettle();
-
-        final copyButton = find.widgetWithText(AppButton, 'Salin kode');
-        expect(copyButton, findsOneWidget);
-
-        await tester.ensureVisible(copyButton);
-        await tester.tap(copyButton);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        final copyCall = methodCalls.firstWhere(
-          (call) => call.method == 'Clipboard.setData',
-        );
-        final arguments = copyCall.arguments as Map<dynamic, dynamic>;
-        expect(arguments['text'], equals(sampleExitedGuest.displayQrUid));
-
-        expect(
-          find.text('Kode akses QR disalin ke papan klip.'),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets('renders correctly for waiting guest (status Menunggu)', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(buildDetailWidget(sampleWaitingGuest));
-      await tester.pumpAndSettle();
-
-      expect(find.text(sampleWaitingGuest.displayName), findsOneWidget);
-      expect(find.text('-'), findsOneWidget); // exit time is '-'
-      expect(find.text('Ahmad Subarjo'), findsOneWidget);
-      expect(find.text('ahmad@kawalo.id'), findsOneWidget);
-    });
-
-    testWidgets('renders correctly for DetailTamu2 '
-        '(pending confirmation & exit with "-")', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        buildDetailWidget(GuestFixtures.sampleDetailTamu2Guest),
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text(GuestFixtures.sampleDetailTamu2Guest.displayName),
-        findsOneWidget,
-      );
-      expect(
-        find.text(
-          'No. tamu: '
-          '${GuestFixtures.sampleDetailTamu2Guest.displayGuestNumber}',
+          null,
         ),
-        findsOneWidget,
       );
-      expect(find.text('Jemput Mr Sean'), findsOneWidget);
-      expect(find.text('Wisnu wijayadi'), findsNWidgets(2));
-      expect(find.text('wisnu@veranda.com'), findsNWidgets(2));
-    });
 
-    testWidgets('does not render SOS Extended FAB', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(buildDetailWidget(sampleExitedGuest));
+      await tester.pumpWidget(_app(_exited));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('QR-VER-2706-SBX'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppExtendedFab), findsNothing);
-      expect(find.text('SOS'), findsNothing);
+      expect(copied, 'QR-VER-2706-SBX');
+      expect(find.text('Kode akses QR disalin.'), findsOneWidget);
     });
 
-    testWidgets('renders safely under 200% dynamic text scaling', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('renders under 200% text scaling', (tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2.0;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-      await tester.pumpWidget(buildDetailWidget(sampleExitedGuest));
+      await tester.pumpWidget(_app(_onSite, session: _admin));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Detail kunjungan'), findsOneWidget);
-      expect(find.text(sampleExitedGuest.displayName), findsOneWidget);
     });
 
-    testWidgets('navigateToGuestDetailScreen pushes standard M3E screen', (
-      WidgetTester tester,
+    testWidgets('navigateToGuestDetailScreen pushes the screen', (
+      tester,
     ) async {
       await tester.pumpWidget(
         M3EMaterialApp(
+          localizationsDelegates: AppTheme.localizationsDelegates,
           data: AppTheme.m3eLight(),
           home: Scaffold(
             body: Builder(
               builder: (context) => ElevatedButton(
-                onPressed: () => navigateToGuestDetailScreen(
-                  context,
-                  item: sampleExitedGuest,
-                ),
+                onPressed: () =>
+                    navigateToGuestDetailScreen(context, item: _exited),
                 child: const Text('Buka Detail'),
               ),
             ),
@@ -261,800 +210,212 @@ void main() {
 
       await tester.tap(find.text('Buka Detail'));
       await tester.pumpAndSettle();
-
-      // Verify title in top app bar and content
-      expect(find.text('Detail tamu'), findsOneWidget);
       expect(find.byType(GuestDetailScreen), findsOneWidget);
-      expect(find.text(sampleExitedGuest.displayName), findsOneWidget);
 
-      // Verify back button pops the route
-      await tester.tap(find.bySemanticsLabel('Kembali'));
+      await tester.pageBack();
       await tester.pumpAndSettle();
-
-      expect(find.text('Buka Detail'), findsOneWidget);
       expect(find.byType(GuestDetailScreen), findsNothing);
     });
 
-    testWidgets('pull-to-refresh on GuestDetailScreen triggers refresh and '
-        'shows snackbar', (WidgetTester tester) async {
-      await tester.pumpWidget(buildDetailWidget(sampleExitedGuest));
+    testWidgets('pull-to-refresh refreshes the list cubit', (tester) async {
+      final cubit = _cubitWith(_exited);
+      when(cubit.refreshGuests).thenAnswer((_) async => AppFetchResult.success);
+
+      await tester.pumpWidget(_app(_exited, cubit: cubit));
       await tester.pumpAndSettle();
-
-      expect(find.byType(AppHomeAppBar), findsOneWidget);
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is Text && (w.data?.startsWith('Diperbarui') ?? false),
-        ),
-        findsOneWidget,
-      );
-
-      await tester.fling(
-        find.text('Log aktivitas'),
-        const Offset(0, 300),
-        1000,
-      );
+      await tester.fling(find.text('Masuk'), const Offset(0, 300), 1000);
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
+      verify(cubit.refreshGuests).called(1);
       expect(find.text('Data tamu berhasil diperbarui.'), findsOneWidget);
     });
+  });
 
-    testWidgets(
-      'renders Ubah, Tambah Tamu, Hapus Tamu stacked in that order for ADMIN',
-      (tester) async {
-        const adminSession = AuthSessionEntity(
-          userId: '1',
-          email: 'admin@kawalo.id',
-          name: 'Super Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(adminSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: const GuestDetailScreen(item: sampleExitedGuest),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppPageActions), findsOneWidget);
-
-        final editBtn = find.widgetWithText(AppButton, 'Ubah');
-        final createBtn = find.widgetWithText(AppButton, 'Tambah Tamu');
-        final deleteBtn = find.widgetWithText(AppButton, 'Hapus Tamu');
-
-        expect(editBtn, findsOneWidget);
-        expect(createBtn, findsOneWidget);
-        expect(deleteBtn, findsOneWidget);
-
-        expect(tester.widget<AppButton>(editBtn).style, AppButtonColor.filled);
-        expect(tester.widget<AppButton>(createBtn).style, AppButtonColor.tonal);
-        expect(find.byType(AppDestructiveButton), findsOneWidget);
-
-        final editY = tester.getTopLeft(editBtn).dy;
-        final createY = tester.getTopLeft(createBtn).dy;
-        final deleteY = tester.getTopLeft(deleteBtn).dy;
-        expect(editY, lessThan(createY));
-        expect(createY, lessThan(deleteY));
-
-        final screenWidth =
-            tester.view.physicalSize.width / tester.view.devicePixelRatio;
-        expect(
-          tester.getSize(deleteBtn).width,
-          closeTo(screenWidth - 2 * 16, 1),
-        );
-        expect(
-          find.descendant(
-            of: find.byType(AppHomeAppBar),
-            matching: find.textContaining('Hapus'),
-          ),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets(
-      'renders all 3 labeled buttons for GUARD role on own created guest',
-      (tester) async {
-        const guardOwnSession = AuthSessionEntity(
-          userId: '2',
-          email: 'wisnu@veranda.com',
-          name: 'Wisnu',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(guardOwnSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: const GuestDetailScreen(item: sampleExitedGuest),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppPageActions), findsOneWidget);
-        expect(
-          find.bySemanticsLabel('Hapus data tamu Bambang Sudarsono'),
-          findsOneWidget,
-        );
-        expect(find.bySemanticsLabel('Tambah data tamu'), findsOneWidget);
-        expect(
-          find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono'),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets(
-      'shows only Tambah button for GUARD role on someone else guest',
-      (tester) async {
-        const guardOtherSession = AuthSessionEntity(
-          userId: '3',
-          email: 'other_guard@kawalo.id',
-          name: 'Other Guard',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(guardOtherSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: const GuestDetailScreen(item: sampleExitedGuest),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppPageActions), findsOneWidget);
-        expect(find.bySemanticsLabel('Tambah data tamu'), findsOneWidget);
-        expect(
-          find.bySemanticsLabel('Hapus data tamu Bambang Sudarsono'),
-          findsNothing,
-        );
-        expect(
-          find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono'),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets('hides action bar for non-ADMIN and non-GUARD roles', (
+  group('GuestDetailScreen bottom action', () {
+    testWidgets('unacknowledged guest offers "Konfirmasi Kedatangan"', (
       tester,
     ) async {
-      const viewerSession = AuthSessionEntity(
-        userId: '4',
-        email: 'viewer@kawalo.id',
-        name: 'Warga Komplek',
-        role: 'VIEWER',
-        allowAdmin: false,
-        allowPatrol: false,
-        allowMonPatrol: false,
-      );
+      await tester.pumpWidget(_app(_unconfirmed, session: _guard));
+      await tester.pumpAndSettle();
 
-      await tester.pumpWidget(
-        BlocProvider<UserSessionCubit>.value(
-          value: UserSessionCubit(viewerSession),
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: const GuestDetailScreen(item: sampleExitedGuest),
+      expect(find.text('Konfirmasi Kedatangan'), findsOneWidget);
+      expect(find.text('Check-out Tamu'), findsNothing);
+    });
+
+    testWidgets('acknowledged guest offers check-out with a confirm dialog', (
+      tester,
+    ) async {
+      final cubit = _cubitWith(_onSite);
+      final completer = Completer<Either<Failure, GuestItemEntity>>();
+      when(
+        () => cubit.checkoutGuest(
+          any(),
+          session: any(named: 'session'),
+          qrUid: any(named: 'qrUid'),
+        ),
+      ).thenAnswer((_) => completer.future);
+
+      await tester.pumpWidget(_app(_onSite, session: _guard, cubit: cubit));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Konfirmasi Kedatangan'), findsNothing);
+      await tester.tap(find.text('Check-out Tamu'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppConfirmationDialog), findsOneWidget);
+      expect(find.text('Check-out Reni Marsiti?'), findsOneWidget);
+      expect(find.textContaining('Jam keluar dicatat'), findsOneWidget);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AppConfirmationDialog),
+          matching: find.text('Check-out'),
+        ),
+      );
+      await tester.pump();
+      final button = tester.widget<AppTaskButton>(
+        find.widgetWithText(AppTaskButton, 'Check-out Tamu'),
+      );
+      expect(button.isLoading, isTrue);
+
+      completer.complete(
+        const Right(
+          GuestItemEntity(
+            id: '2',
+            guestName: 'Reni Marsiti',
+            guestOutDt: '2026-09-28T15:00:00.000Z',
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppPageActions), findsNothing);
-      expect(find.text('Ubah'), findsNothing);
-      expect(find.text('Tambah Tamu'), findsNothing);
-      expect(find.text('Hapus Tamu'), findsNothing);
-      expect(
-        find.bySemanticsLabel('Hapus data tamu Bambang Sudarsono'),
-        findsNothing,
-      );
-      expect(find.bySemanticsLabel('Tambah data tamu'), findsNothing);
-      expect(
-        find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono'),
-        findsNothing,
-      );
+      verify(() => cubit.checkoutGuest(_onSite, session: _guard)).called(1);
+      expect(find.textContaining('check-out pukul'), findsOneWidget);
     });
 
-    testWidgets('tapping create button opens GuestFormDialog', (tester) async {
-      final mockCubit = MockGuestCubit();
-      when(() => mockCubit.state).thenReturn(
-        const GuestLoaded(guests: [sampleExitedGuest], lastSync: '10:00'),
-      );
-      when(
-        () => mockCubit.stream,
-      ).thenAnswer((_) => const Stream<GuestState>.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
+    testWidgets('checked-out guest has no bottom action', (tester) async {
+      await tester.pumpWidget(_app(_exited, session: _admin));
+      await tester.pumpAndSettle();
 
-      final mockFormCubit = MockGuestFormCubit();
-      when(() => mockFormCubit.state).thenReturn(const GuestFormState());
-      when(
-        () => mockFormCubit.stream,
-      ).thenAnswer((_) => const Stream<GuestFormState>.empty());
+      expect(find.byType(AppTaskButton), findsNothing);
+    });
 
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Super Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
+    testWidgets('residents get no action, edit or delete', (tester) async {
+      await tester.pumpWidget(_app(_onSite, session: _resident));
+      await tester.pumpAndSettle();
 
+      expect(find.byType(AppTaskButton), findsNothing);
+      expect(find.byTooltip('Ubah data tamu'), findsNothing);
+      expect(find.byTooltip('Hapus data tamu'), findsNothing);
+    });
+
+    testWidgets('offline disables the action and shows the banner', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(adminSession),
-            ),
-            BlocProvider<GuestFormCubit>.value(value: mockFormCubit),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: GuestDetailScreen(item: sampleExitedGuest, cubit: mockCubit),
-          ),
+        _app(
+          _onSite,
+          session: _admin,
+          connectivity: ConnectivityStatus.offline,
         ),
       );
       await tester.pumpAndSettle();
 
-      final createBtn = find.bySemanticsLabel('Tambah data tamu');
-      expect(createBtn, findsOneWidget);
-
-      await tester.tap(createBtn);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(GuestFormDialog), findsOneWidget);
-    });
-
-    testWidgets('tapping edit button opens GuestFormDialog', (tester) async {
-      final mockCubit = MockGuestCubit();
-      when(() => mockCubit.state).thenReturn(
-        const GuestLoaded(guests: [sampleExitedGuest], lastSync: '10:00'),
+      final button = tester.widget<AppTaskButton>(
+        find.widgetWithText(AppTaskButton, 'Check-out Tamu'),
       );
-      when(
-        () => mockCubit.stream,
-      ).thenAnswer((_) => const Stream<GuestState>.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
+      expect(button.onPressed, isNull);
+      expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
+      final edit = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.edit_outlined),
+      );
+      expect(edit.onPressed, isNull);
+    });
+  });
 
-      final mockFormCubit = MockGuestFormCubit();
-      when(() => mockFormCubit.state).thenReturn(
+  group('GuestDetailScreen top bar', () {
+    testWidgets('edit opens the guest form', (tester) async {
+      final formCubit = MockGuestFormCubit();
+      when(() => formCubit.state).thenReturn(
         const GuestFormState(
           mode: GuestFormMode.update,
           name: 'Bambang Sudarsono',
         ),
       );
       when(
-        () => mockFormCubit.stream,
+        () => formCubit.stream,
       ).thenAnswer((_) => const Stream<GuestFormState>.empty());
 
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Super Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
-
       await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(adminSession),
-            ),
-            BlocProvider<GuestFormCubit>.value(value: mockFormCubit),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: GuestDetailScreen(item: sampleExitedGuest, cubit: mockCubit),
-          ),
+        _app(
+          _exited,
+          session: _admin,
+          cubit: _cubitWith(_exited),
+          formCubit: formCubit,
         ),
       );
       await tester.pumpAndSettle();
-
-      final editBtn = find.bySemanticsLabel('Ubah data tamu Bambang Sudarsono');
-      expect(editBtn, findsOneWidget);
-
-      await tester.tap(editBtn);
+      await tester.tap(find.byTooltip('Ubah data tamu'));
       await tester.pumpAndSettle();
 
       expect(find.byType(GuestFormDialog), findsOneWidget);
+      expect(find.text('Ubah Data Tamu'), findsOneWidget);
     });
 
-    testWidgets(
-      'tapping delete shows confirmation dialog and cancel dismisses',
-      (tester) async {
-        const adminSession = AuthSessionEntity(
-          userId: '1',
-          email: 'admin@kawalo.id',
-          name: 'Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(adminSession),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: const GuestDetailScreen(item: sampleExitedGuest),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        final deleteBtn = find.bySemanticsLabel(
-          'Hapus data tamu Bambang Sudarsono',
-        );
-        expect(deleteBtn, findsOneWidget);
-        await tester.tap(deleteBtn);
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppConfirmationDialog), findsOneWidget);
-        expect(find.text('Hapus data tamu?'), findsOneWidget);
-        expect(
-          find.text(
-            'Data tamu "Bambang Sudarsono" akan dihapus secara permanen.',
-          ),
-          findsOneWidget,
-        );
-
-        // Tap Batal
-        await tester.tap(find.text('Batal'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Hapus data tamu?'), findsNothing);
-      },
-    );
-
-    testWidgets('shows confirmation dialog, displays loading overlay, '
-        'and executes delete on confirm', (tester) async {
-      final deleteCompleter = Completer<Either<Failure, void>>();
-      final mockCubit = MockGuestCubit();
-
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
-
-      when(() => mockCubit.state).thenReturn(
-        const GuestLoaded(guests: [sampleExitedGuest], lastSync: '10:00'),
-      );
+    testWidgets('delete confirms, shows the overlay and pops', (tester) async {
+      final cubit = _cubitWith(_exited);
+      final completer = Completer<Either<Failure, void>>();
       when(
-        () => mockCubit.stream,
-      ).thenAnswer((_) => const Stream<GuestState>.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
-      when(
-        () => mockCubit.deleteGuest(any(), session: any(named: 'session')),
-      ).thenAnswer((_) => deleteCompleter.future);
+        () => cubit.deleteGuest(any(), session: any(named: 'session')),
+      ).thenAnswer((_) => completer.future);
 
-      await tester.pumpWidget(
-        BlocProvider<UserSessionCubit>.value(
-          value: UserSessionCubit(adminSession),
-          child: M3EMaterialApp(
-            data: AppTheme.m3eLight(),
-            home: GuestDetailScreen(item: sampleExitedGuest, cubit: mockCubit),
-          ),
-        ),
-      );
+      await tester.pumpWidget(_app(_exited, session: _admin, cubit: cubit));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Hapus data tamu'));
       await tester.pumpAndSettle();
 
-      final deleteBtn = find.bySemanticsLabel(
-        'Hapus data tamu Bambang Sudarsono',
-      );
-      await tester.tap(deleteBtn);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AppConfirmationDialog), findsOneWidget);
       expect(find.text('Hapus data tamu?'), findsOneWidget);
-
-      // Tap Hapus
+      expect(
+        find.text(
+          'Data tamu "Bambang Sudarsono" akan dihapus secara permanen.',
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Hapus'));
       await tester.pump();
+      expect(
+        tester
+            .widget<AppLoadingOverlay>(find.byType(AppLoadingOverlay))
+            .isLoading,
+        isTrue,
+      );
 
-      expect(find.byType(AppLoadingOverlay), findsOneWidget);
-
-      deleteCompleter.complete(const Right(null));
+      completer.complete(const Right(null));
       await tester.pumpAndSettle();
 
-      verify(
-        () => mockCubit.deleteGuest(sampleExitedGuest, session: adminSession),
-      ).called(1);
+      verify(() => cubit.deleteGuest(_exited, session: _admin)).called(1);
       expect(find.text('Data tamu berhasil dihapus.'), findsOneWidget);
     });
 
-    testWidgets(
-      'GUARD can delete their own guest and passes guardOwnSession to '
-      'deleteGuest',
-      (tester) async {
-        final deleteCompleter = Completer<Either<Failure, void>>();
-        final mockCubit = MockGuestCubit();
-
-        const guardOwnSession = AuthSessionEntity(
-          userId: '2',
-          email: 'wisnu@veranda.com',
-          name: 'Guard Wisnu',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: false,
-        );
-
-        const ownGuest = sampleExitedGuest;
-
-        when(
-          () => mockCubit.state,
-        ).thenReturn(const GuestLoaded(guests: [ownGuest], lastSync: '10:00'));
-        when(
-          () => mockCubit.stream,
-        ).thenAnswer((_) => const Stream<GuestState>.empty());
-        when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
-        when(
-          () => mockCubit.deleteGuest(any(), session: any(named: 'session')),
-        ).thenAnswer((_) => deleteCompleter.future);
-
-        await tester.pumpWidget(
-          BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(guardOwnSession),
-            child: M3EMaterialApp(
-              data: AppTheme.m3eLight(),
-              home: GuestDetailScreen(item: ownGuest, cubit: mockCubit),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        final deleteBtn = find.bySemanticsLabel(
-          'Hapus data tamu Bambang Sudarsono',
-        );
-        expect(deleteBtn, findsOneWidget);
-        await tester.tap(deleteBtn);
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Hapus'));
-        await tester.pump();
-
-        deleteCompleter.complete(const Right(null));
-        await tester.pumpAndSettle();
-
-        verify(
-          () => mockCubit.deleteGuest(ownGuest, session: guardOwnSession),
-        ).called(1);
-        expect(find.text('Data tamu berhasil dihapus.'), findsOneWidget);
-      },
-    );
-
-    testWidgets('shows error snackbar and dismisses loading overlay '
-        'when deleteGuest fails', (tester) async {
-      final deleteCompleter = Completer<Either<Failure, void>>();
-      final mockCubit = MockGuestCubit();
-
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
-
-      when(() => mockCubit.state).thenReturn(
-        const GuestLoaded(guests: [sampleExitedGuest], lastSync: '10:00'),
-      );
+    testWidgets('a failed delete keeps the screen and shows the error', (
+      tester,
+    ) async {
+      final cubit = _cubitWith(_exited);
       when(
-        () => mockCubit.stream,
-      ).thenAnswer((_) => const Stream<GuestState>.empty());
-      when(() => mockCubit.currentGreeting).thenReturn('Selamat Pagi');
-      when(
-        () => mockCubit.deleteGuest(any(), session: any(named: 'session')),
-      ).thenAnswer((_) => deleteCompleter.future);
+        () => cubit.deleteGuest(any(), session: any(named: 'session')),
+      ).thenAnswer((_) async => const Left(ServerFailure('Gagal menghapus.')));
 
-      await tester.pumpWidget(
-        BlocProvider<UserSessionCubit>.value(
-          value: UserSessionCubit(adminSession),
-          child: M3EMaterialApp(
-            data: AppTheme.m3eLight(),
-            home: GuestDetailScreen(item: sampleExitedGuest, cubit: mockCubit),
-          ),
-        ),
-      );
+      await tester.pumpWidget(_app(_exited, session: _admin, cubit: cubit));
       await tester.pumpAndSettle();
-
-      final deleteBtn = find.bySemanticsLabel(
-        'Hapus data tamu Bambang Sudarsono',
-      );
-      await tester.tap(deleteBtn);
+      await tester.tap(find.byTooltip('Hapus data tamu'));
       await tester.pumpAndSettle();
-
       await tester.tap(find.text('Hapus'));
-      await tester.pump();
-
-      expect(find.byType(AppLoadingOverlay), findsOneWidget);
-
-      deleteCompleter.complete(
-        const Left(ServerFailure('Gagal menghapus data tamu di server.')),
-      );
       await tester.pumpAndSettle();
 
-      verify(
-        () => mockCubit.deleteGuest(sampleExitedGuest, session: adminSession),
-      ).called(1);
-
-      expect(find.text('Gagal menghapus data tamu di server.'), findsOneWidget);
+      expect(find.text('Gagal menghapus.'), findsOneWidget);
       expect(find.byType(GuestDetailScreen), findsOneWidget);
     });
-
-    testWidgets('disables Ubah, Tambah Tamu and Hapus Tamu when offline', (
-      tester,
-    ) async {
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
-
-      final offlineConnectivityCubit = ConnectivityCubit(
-        initialState: ConnectivityStatus.offline,
-        autoStart: false,
-      );
-
-      await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(adminSession),
-            ),
-            BlocProvider<ConnectivityCubit>.value(
-              value: offlineConnectivityCubit,
-            ),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: const GuestDetailScreen(item: sampleExitedGuest),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final deleteBtnFinder = find.widgetWithText(AppButton, 'Hapus Tamu');
-      final createBtnFinder = find.widgetWithText(AppButton, 'Tambah Tamu');
-      final editBtnFinder = find.widgetWithText(AppButton, 'Ubah');
-
-      expect(deleteBtnFinder, findsOneWidget);
-      expect(createBtnFinder, findsOneWidget);
-      expect(editBtnFinder, findsOneWidget);
-
-      expect(tester.widget<AppButton>(deleteBtnFinder).enabled, isFalse);
-      expect(tester.widget<AppButton>(createBtnFinder).enabled, isFalse);
-      expect(tester.widget<AppButton>(editBtnFinder).enabled, isFalse);
-
-      expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
-
-      await tester.tap(deleteBtnFinder);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AppConfirmationDialog), findsNothing);
-    });
-
-    testWidgets('hides AppBottomOfflineBanner when online', (
-      WidgetTester tester,
-    ) async {
-      const adminSession = AuthSessionEntity(
-        userId: '1',
-        email: 'admin@kawalo.id',
-        name: 'Super Admin',
-        role: 'ADMIN',
-        allowAdmin: true,
-        allowPatrol: true,
-        allowMonPatrol: true,
-      );
-
-      final onlineConnectivityCubit = ConnectivityCubit(autoStart: false);
-
-      await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(adminSession),
-            ),
-            BlocProvider<ConnectivityCubit>.value(
-              value: onlineConnectivityCubit,
-            ),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: const GuestDetailScreen(item: sampleExitedGuest),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Mode offline — Menampilkan data tersimpan'),
-        findsNothing,
-      );
-      expect(find.text('Kembali online'), findsNothing);
-      final banner = tester.widget<AppBottomOfflineBanner>(
-        find.byType(AppBottomOfflineBanner),
-      );
-      expect(banner.isOffline, isFalse);
-    });
-
-    testWidgets(
-      'shows Check-out button in AppBar for active guest and Guard session',
-      (tester) async {
-        const guardSession = AuthSessionEntity(
-          userId: '2',
-          email: 'guard@kawalo.id',
-          name: 'Guard Duty',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        await tester.pumpWidget(
-          MultiBlocProvider(
-            providers: [
-              BlocProvider<UserSessionCubit>.value(
-                value: UserSessionCubit(guardSession),
-              ),
-            ],
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: const GuestDetailScreen(item: sampleWaitingGuest),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('Check-out'), findsOneWidget);
-      },
-    );
-
-    testWidgets('hides Check-out button for exited guest or Resident session', (
-      tester,
-    ) async {
-      const residentSession = AuthSessionEntity(
-        userId: '3',
-        email: 'resident@kawalo.id',
-        name: 'Resident',
-        role: 'RESIDENT',
-        allowAdmin: false,
-        allowPatrol: false,
-        allowMonPatrol: false,
-      );
-
-      // Exited guest under Guard session
-      await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<UserSessionCubit>.value(
-              value: UserSessionCubit(residentSession),
-            ),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.lightThemeData(),
-            home: const GuestDetailScreen(item: sampleWaitingGuest),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Check-out'), findsNothing);
-    });
-
-    testWidgets(
-      'checkout flow executes confirmation and triggers cubit.checkoutGuest',
-      (tester) async {
-        const guardSession = AuthSessionEntity(
-          userId: '2',
-          email: 'guard@kawalo.id',
-          name: 'Guard Duty',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        final mockCubit = MockGuestCubit();
-        const updatedGuest = GuestItemEntity(
-          id: '2',
-          guestName: 'Reni Marsiti',
-          guestOutDt: '2026-11-02T12:00:00.000Z',
-        );
-
-        when(() => mockCubit.state).thenReturn(
-          const GuestLoaded(guests: [sampleWaitingGuest], lastSync: ''),
-        );
-        when(() => mockCubit.stream).thenAnswer((_) => const Stream.empty());
-        when(() => mockCubit.currentGreeting).thenReturn('');
-        when(
-          () => mockCubit.checkoutGuest(
-            any(),
-            session: any(named: 'session'),
-            qrUid: any(named: 'qrUid'),
-          ),
-        ).thenAnswer((_) async => const Right(updatedGuest));
-
-        await tester.pumpWidget(
-          MultiBlocProvider(
-            providers: [
-              BlocProvider<UserSessionCubit>.value(
-                value: UserSessionCubit(guardSession),
-              ),
-            ],
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: GuestDetailScreen(
-                item: sampleWaitingGuest,
-                cubit: mockCubit,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        final checkoutBtn = find.text('Check-out');
-        expect(checkoutBtn, findsOneWidget);
-
-        await tester.tap(checkoutBtn);
-        await tester.pumpAndSettle();
-
-        // Confirmation dialog should be visible
-        expect(find.byType(AppConfirmationDialog), findsOneWidget);
-        expect(find.text('Check-out tamu?'), findsOneWidget);
-
-        // Tap confirm "Check-out" button in dialog
-        final confirmBtn = find.descendant(
-          of: find.byType(AppConfirmationDialog),
-          matching: find.text('Check-out'),
-        );
-        await tester.tap(confirmBtn);
-        await tester.pumpAndSettle();
-
-        verify(
-          () => mockCubit.checkoutGuest(
-            sampleWaitingGuest,
-            session: guardSession,
-          ),
-        ).called(1);
-
-        expect(
-          find.text('Tamu "Reni Marsiti" berhasil check-out.'),
-          findsOneWidget,
-        );
-      },
-    );
   });
 }

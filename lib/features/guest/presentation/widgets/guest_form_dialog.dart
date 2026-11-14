@@ -9,12 +9,10 @@ import 'package:kawalo_mobile/core/theme/app_motion.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_section.dart';
 import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/guest_module.dart';
@@ -30,19 +28,25 @@ import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form/gue
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_photo_source_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/information/presentation/models/information_form_media_item.dart';
 
-/// Formulir pendaftaran (create) dan pembaruan (update) data tamu
-/// berbasis Material 3 Expressive Fullscreen Dialog.
+/// Fields folded into "Detail lain (opsional)"; an invalid one expands it.
+const _moreDetailFields = {
+  'identityNumber',
+  'address',
+  'guestNumber',
+  'hostName',
+  'purpose',
+};
+
+/// Create/edit guest form (redesign 2026), shown as a full-screen dialog that
+/// covers the bottom bar. Only Nama tamu, Tipe tamu and Tujuan are required
+/// (the API requires the same three); the photo is optional and every other
+/// field sits in the collapsed "Detail lain (opsional)" section.
 class GuestFormDialog extends StatefulWidget {
-  /// Membuat instance [GuestFormDialog].
   const GuestFormDialog({super.key, this.cubit, this.mediaPickerService});
 
-  /// Instance [GuestFormCubit] opsional untuk injeksi atau pengujian.
   final GuestFormCubit? cubit;
-
-  /// Layanan opsional untuk pemilihan media foto (kamera & galeri).
   final MediaPickerService? mediaPickerService;
 
-  /// Menampilkan dialog penambahan (pendaftaran) tamu baru.
   static Future<GuestItemEntity?> showCreate(
     BuildContext context, {
     GuestFormCubit? formCubit,
@@ -57,7 +61,6 @@ class GuestFormDialog extends StatefulWidget {
     );
   }
 
-  /// Menampilkan dialog pembaruan (edit) data tamu yang sudah ada.
   static Future<GuestItemEntity?> showUpdate(
     BuildContext context, {
     required GuestItemEntity item,
@@ -74,7 +77,6 @@ class GuestFormDialog extends StatefulWidget {
     );
   }
 
-  /// Menampilkan dialog formulir tamu dalam mode fullscreen dialog.
   static Future<GuestItemEntity?> show({
     required BuildContext context,
     GuestItemEntity? initialItem,
@@ -86,7 +88,6 @@ class GuestFormDialog extends StatefulWidget {
         ? (cubit, false)
         : _resolveCubitFromContext(context, initialItem: initialItem);
     final isCreate = resolvedCubit.state.isCreateMode;
-    final title = isCreate ? 'Tambah tamu' : 'Edit data tamu';
 
     AuthSessionEntity? session;
     try {
@@ -96,21 +97,33 @@ class GuestFormDialog extends StatefulWidget {
     try {
       final result = await AppDialog.showFullScreen<GuestItemEntity>(
         context,
-        title: title,
+        title: isCreate ? 'Tamu Baru' : 'Ubah Data Tamu',
         bottomActions: [
-          BlocSelector<GuestFormCubit, GuestFormState, bool>(
+          BlocBuilder<GuestFormCubit, GuestFormState>(
             bloc: resolvedCubit,
-            selector: (state) => state.canPressSubmit,
-            builder: (actionContext, canPressSubmit) {
-              return AppButton(
-                size: AppButtonSize.md,
-                enabled: canPressSubmit,
-                onPressed: () {
-                  final activeSession =
-                      actionContext.read<UserSessionCubit?>()?.state ?? session;
-                  resolvedCubit.submit(session: activeSession);
-                },
-                child: const Text('Simpan'),
+            buildWhen: (a, b) =>
+                a.canPressSubmit != b.canPressSubmit || a.status != b.status,
+            builder: (actionContext, state) {
+              final (label, icon) = state.isSubmitting
+                  ? ('Menyimpan…', null)
+                  : state.isFailure
+                  ? ('Coba Simpan Lagi', Icons.refresh_rounded)
+                  : (
+                      isCreate ? 'Simpan Tamu' : 'Simpan Perubahan',
+                      Icons.check_rounded,
+                    );
+              return AppTaskButton(
+                label: label,
+                icon: icon,
+                tone: KawaloTones.of(actionContext).gst,
+                isLoading: state.isSubmitting,
+                onPressed: state.canPressSubmit || state.isSubmitting
+                    ? () => resolvedCubit.submit(
+                        session:
+                            actionContext.read<UserSessionCubit?>()?.state ??
+                            session,
+                      )
+                    : null,
               );
             },
           ),
@@ -171,23 +184,23 @@ class GuestFormDialog extends StatefulWidget {
 
 class _GuestFormDialogState extends State<GuestFormDialog>
     with SingleTickerProviderStateMixin {
-  late final TextEditingController _nameController;
-  late final TextEditingController _destinationController;
-  late final TextEditingController _identityNumberController;
-  late final TextEditingController _guestNumberController;
-  late final TextEditingController _hostNameController;
-  late final TextEditingController _purposeController;
-  late final TextEditingController _addressController;
+  final _nameController = TextEditingController();
+  final _destinationController = TextEditingController();
+  final _identityNumberController = TextEditingController();
+  final _guestNumberController = TextEditingController();
+  final _hostNameController = TextEditingController();
+  final _purposeController = TextEditingController();
+  final _addressController = TextEditingController();
 
-  late final FocusNode _nameFocusNode;
-  late final FocusNode _destinationFocusNode;
-  late final FocusNode _hostNameFocusNode;
-  late final FocusNode _identityNumberFocusNode;
-  late final FocusNode _guestNumberFocusNode;
-  late final FocusNode _purposeFocusNode;
-  late final FocusNode _addressFocusNode;
+  final _nameFocusNode = FocusNode();
+  final _destinationFocusNode = FocusNode();
+  final _hostNameFocusNode = FocusNode();
+  final _identityNumberFocusNode = FocusNode();
+  final _guestNumberFocusNode = FocusNode();
+  final _purposeFocusNode = FocusNode();
+  final _addressFocusNode = FocusNode();
 
-  late final ScrollController _scrollController;
+  final _scrollController = ScrollController();
   late final AnimationController _shimmerController;
   late final MediaPickerService _mediaPicker;
 
@@ -195,28 +208,13 @@ class _GuestFormDialogState extends State<GuestFormDialog>
   bool _isDiscarding = false;
   int _lastValidationAttempt = 0;
 
+  /// Null until the first build decides it from the edited guest.
+  bool? _showMore;
+
   @override
   void initState() {
     super.initState();
     _mediaPicker = widget.mediaPickerService ?? DefaultMediaPickerService();
-    _scrollController = ScrollController();
-
-    _nameController = TextEditingController();
-    _destinationController = TextEditingController();
-    _identityNumberController = TextEditingController();
-    _guestNumberController = TextEditingController();
-    _hostNameController = TextEditingController();
-    _purposeController = TextEditingController();
-    _addressController = TextEditingController();
-
-    _nameFocusNode = FocusNode();
-    _destinationFocusNode = FocusNode();
-    _hostNameFocusNode = FocusNode();
-    _identityNumberFocusNode = FocusNode();
-    _guestNumberFocusNode = FocusNode();
-    _purposeFocusNode = FocusNode();
-    _addressFocusNode = FocusNode();
-
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -226,71 +224,68 @@ class _GuestFormDialogState extends State<GuestFormDialog>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final cubit = _resolveCubit(context);
-    final state = cubit.state;
+    final state = _resolveCubit(context).state;
 
-    if (_nameController.text != state.name) {
-      _nameController.text = state.name;
+    void sync(TextEditingController c, String value) {
+      if (c.text != value) c.text = value;
     }
-    if (_destinationController.text != state.destination) {
-      _destinationController.text = state.destination;
-    }
-    if (_identityNumberController.text != state.identityNumber) {
-      _identityNumberController.text = state.identityNumber;
-    }
-    if (_guestNumberController.text != state.guestNumber) {
-      _guestNumberController.text = state.guestNumber;
-    }
-    if (_hostNameController.text != state.hostName) {
-      _hostNameController.text = state.hostName;
-    }
-    if (_purposeController.text != state.purpose) {
-      _purposeController.text = state.purpose;
-    }
-    if (_addressController.text != state.address) {
-      _addressController.text = state.address;
-    }
+
+    sync(_nameController, state.name);
+    sync(_destinationController, state.destination);
+    sync(_identityNumberController, state.identityNumber);
+    sync(_guestNumberController, state.guestNumber);
+    sync(_hostNameController, state.hostName);
+    sync(_purposeController, state.purpose);
+    sync(_addressController, state.address);
+
+    _showMore ??=
+        (state.identityType?.isNotEmpty ?? false) ||
+        [
+          state.identityNumber,
+          state.address,
+          state.guestNumber,
+          state.hostName,
+          state.purpose,
+        ].any((v) => v.trim().isNotEmpty);
 
     _updateShimmerAnimation(state);
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _destinationController.dispose();
-    _identityNumberController.dispose();
-    _guestNumberController.dispose();
-    _hostNameController.dispose();
-    _purposeController.dispose();
-    _addressController.dispose();
-
-    _nameFocusNode.dispose();
-    _destinationFocusNode.dispose();
-    _hostNameFocusNode.dispose();
-    _identityNumberFocusNode.dispose();
-    _guestNumberFocusNode.dispose();
-    _purposeFocusNode.dispose();
-    _addressFocusNode.dispose();
-
+    for (final c in [
+      _nameController,
+      _destinationController,
+      _identityNumberController,
+      _guestNumberController,
+      _hostNameController,
+      _purposeController,
+      _addressController,
+    ]) {
+      c.dispose();
+    }
+    for (final f in [
+      _nameFocusNode,
+      _destinationFocusNode,
+      _hostNameFocusNode,
+      _identityNumberFocusNode,
+      _guestNumberFocusNode,
+      _purposeFocusNode,
+      _addressFocusNode,
+    ]) {
+      f.dispose();
+    }
     _scrollController.dispose();
     _shimmerController.dispose();
     _internalCubit?.close();
     super.dispose();
   }
 
-  void _updateShimmerAnimation([GuestFormState? state]) {
-    final s = state ?? _resolveCubit(context).state;
-    final isLoading = s.isLoadingMasterTypes;
-    final isReducedMotion = AppMotion.isReducedMotion(context);
-
-    if (isLoading && !isReducedMotion) {
-      if (!_shimmerController.isAnimating) {
-        _shimmerController.repeat();
-      }
-    } else {
-      if (_shimmerController.isAnimating) {
-        _shimmerController.stop();
-      }
+  void _updateShimmerAnimation(GuestFormState state) {
+    if (state.isLoadingMasterTypes && !AppMotion.isReducedMotion(context)) {
+      if (!_shimmerController.isAnimating) _shimmerController.repeat();
+    } else if (_shimmerController.isAnimating) {
+      _shimmerController.stop();
     }
   }
 
@@ -311,49 +306,47 @@ class _GuestFormDialogState extends State<GuestFormDialog>
     final source = await GuestPhotoSourceBottomSheet.show(context);
     if (source == null || !mounted) return;
 
-    var picked = <AppMediaFile>[];
-    if (source == GuestPhotoSource.camera) {
-      picked = await _mediaPicker.captureMultiImagesFromCamera(
-        context,
-        maxPhotos: 1,
-      );
-    } else {
-      picked = await _mediaPicker.pickMultiImagesFromGallery(limit: 1);
-    }
+    final picked = source == GuestPhotoSource.camera
+        ? await _mediaPicker.captureMultiImagesFromCamera(context, maxPhotos: 1)
+        : await _mediaPicker.pickMultiImagesFromGallery(limit: 1);
 
     if (picked.isNotEmpty && mounted) {
-      final file = picked.first;
-      final mediaItem = InformationFormMediaItem.fromAppMediaFile(file);
-      cubit.onPhotoMediaChanged(mediaItem);
+      cubit.onPhotoMediaChanged(
+        InformationFormMediaItem.fromAppMediaFile(picked.first),
+      );
     }
   }
 
   void _handleValidationFocus(GuestFormState state) {
-    if (state.validationAttempt > _lastValidationAttempt) {
-      _lastValidationAttempt = state.validationAttempt;
-      final firstInvalid = state.firstInvalidField;
-      if (firstInvalid == 'name') {
-        _nameFocusNode.requestFocus();
-      } else if (firstInvalid == 'identityNumber') {
-        _identityNumberFocusNode.requestFocus();
-      } else if (firstInvalid == 'destination') {
-        _destinationFocusNode.requestFocus();
-      } else if (firstInvalid == 'guestNumber') {
-        _guestNumberFocusNode.requestFocus();
-      } else if (firstInvalid == 'hostName') {
-        _hostNameFocusNode.requestFocus();
-      } else if (firstInvalid == 'purpose') {
-        _purposeFocusNode.requestFocus();
-      } else if (firstInvalid == 'address') {
-        _addressFocusNode.requestFocus();
-      }
+    if (state.validationAttempt <= _lastValidationAttempt) return;
+    _lastValidationAttempt = state.validationAttempt;
+    final firstInvalid = state.firstInvalidField;
+    final node = switch (firstInvalid) {
+      'name' => _nameFocusNode,
+      'destination' => _destinationFocusNode,
+      'identityNumber' => _identityNumberFocusNode,
+      'guestNumber' => _guestNumberFocusNode,
+      'hostName' => _hostNameFocusNode,
+      'purpose' => _purposeFocusNode,
+      'address' => _addressFocusNode,
+      _ => null,
+    };
+    if (node == null) return;
+    if (_moreDetailFields.contains(firstInvalid) && _showMore != true) {
+      // The field only exists once the section is open.
+      setState(() => _showMore = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) node.requestFocus();
+      });
+    } else {
+      node.requestFocus();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = _resolveCubit(context);
-    final colorScheme = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
 
     return BlocProvider<GuestFormCubit>.value(
       value: cubit,
@@ -361,26 +354,21 @@ class _GuestFormDialogState extends State<GuestFormDialog>
         listener: (context, state) {
           _updateShimmerAnimation(state);
           _handleValidationFocus(state);
-
           if (state.status == GuestFormStatus.success &&
               state.createdOrUpdatedItem != null) {
             Navigator.of(context).pop(state.createdOrUpdatedItem);
-          } else if (state.status == GuestFormStatus.failure &&
-              state.errorMessage != null) {
-            AppSnackbar.show(context, message: state.errorMessage!);
           }
         },
         child:
             BlocSelector<
               GuestFormCubit,
               GuestFormState,
-              ({bool isSuccess, bool isDirty, bool isSubmitting, bool isCreate})
+              ({bool isSuccess, bool isDirty, bool isSubmitting})
             >(
               selector: (state) => (
                 isSuccess: state.isSuccess,
                 isDirty: state.isDirty,
                 isSubmitting: state.isSubmitting,
-                isCreate: state.isCreateMode,
               ),
               builder: (popContext, record) {
                 return PopScope(
@@ -399,61 +387,49 @@ class _GuestFormDialogState extends State<GuestFormDialog>
                     }
                   },
                   child: Scaffold(
-                    backgroundColor: colorScheme.surface,
+                    backgroundColor: tones.background,
                     resizeToAvoidBottomInset: false,
-                    body: BlocSelector<GuestFormCubit, GuestFormState, bool>(
-                      selector: (state) => state.isSubmitting,
-                      builder: (context, isSubmitting) {
-                        final overlayMsg = record.isCreate
-                            ? 'Mendaftarkan tamu baru...'
-                            : 'Menyimpan perubahan data tamu...';
-
-                        return AppLoadingOverlay(
-                          isLoading: isSubmitting,
-                          message: overlayMsg,
-                          child: AppKeyboardInsetsPadding(
-                            child: SingleChildScrollView(
-                              controller: _scrollController,
-                              keyboardDismissBehavior:
-                                  ScrollViewKeyboardDismissBehavior.onDrag,
-                              padding: const EdgeInsets.only(
-                                left: AppSpacing.space200,
-                                right: AppSpacing.space200,
-                                top: AppSpacing.space150,
-                                bottom: AppSpacing.space800 * 2,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // ── SEKSI 1: INFORMASI TAMU & IDENTITAS ──────
-                                  _buildIdentitySection(cubit, isSubmitting),
-
-                                  AppSpacing.vGap300,
-
-                                  // ── SEKSI 2: TUJUAN & DETAIL KUNJUNGAN ───────
-                                  _buildVisitSection(cubit, isSubmitting),
-
-                                  AppSpacing.vGap300,
-
-                                  // ── SEKSI 3: DOKUMENTASI FOTO TAMU ───────────
-                                  AppFormSection.uncontained(
-                                    title: 'Dokumentasi foto tamu',
-                                    subtitle:
-                                        'Lampiran foto identitas atau wajah tamu '
-                                        'pengunjung (opsional).',
-                                    child: GuestFormPhotoSection(
-                                      cubit: cubit,
-                                      isSubmitting: isSubmitting,
-                                      onPickPhoto: () =>
-                                          _handlePickPhoto(cubit),
-                                    ),
-                                  ),
-                                ],
+                    body: AppKeyboardInsetsPadding(
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _FailureBanner(cubit: cubit),
+                            GuestFormNameField(
+                              cubit: cubit,
+                              controller: _nameController,
+                              focusNode: _nameFocusNode,
+                              nextFocusNode: _destinationFocusNode,
+                            ),
+                            AppSpacing.vGap200,
+                            GuestFormGuestTypeField(
+                              cubit: cubit,
+                              shimmerController: _shimmerController,
+                            ),
+                            AppSpacing.vGap200,
+                            GuestFormDestinationField(
+                              cubit: cubit,
+                              controller: _destinationController,
+                              focusNode: _destinationFocusNode,
+                            ),
+                            AppSpacing.vGap300,
+                            AppFormSection.uncontained(
+                              title: 'Foto tamu (opsional)',
+                              child: GuestFormPhotoSection(
+                                cubit: cubit,
+                                isSubmitting: record.isSubmitting,
+                                onPickPhoto: () => _handlePickPhoto(cubit),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                            AppSpacing.vGap300,
+                            _buildMoreDetails(cubit, record.isSubmitting),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -463,109 +439,206 @@ class _GuestFormDialogState extends State<GuestFormDialog>
     );
   }
 
-  Widget _buildIdentitySection(GuestFormCubit cubit, bool isSubmitting) {
-    return AppFormSection(
-      title: 'Informasi tamu & identitas',
-      subtitle:
-          'Data diri dan verifikasi tanda pengenal '
-          'pengunjung.',
+  Widget _buildMoreDetails(GuestFormCubit cubit, bool isSubmitting) {
+    final tones = KawaloTones.of(context);
+    final expanded = _showMore ?? false;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: tones.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: tones.line),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Input Nama Tamu
-          GuestFormNameField(
-            cubit: cubit,
-            controller: _nameController,
-            focusNode: _nameFocusNode,
-            identityNumberFocusNode: _identityNumberFocusNode,
-            addressFocusNode: _addressFocusNode,
+          Semantics(
+            button: true,
+            expanded: expanded,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () => setState(() => _showMore = !expanded),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 56),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                text: 'Detail lain ',
+                                style: TextStyle(
+                                  color: tones.ink,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: '(opsional)',
+                                    style: TextStyle(
+                                      color: tones.ink2,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (!expanded)
+                              Text(
+                                'Identitas, plat kendaraan, tuan rumah, '
+                                'keperluan, alamat',
+                                style: TextStyle(
+                                  color: tones.ink2,
+                                  fontSize: 13,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        expanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        color: tones.ink2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-          AppSpacing.vGap200,
-
-          // Dropdown Tipe Tamu
-          GuestFormGuestTypeField(
-            cubit: cubit,
-            shimmerController: _shimmerController,
-          ),
-          AppSpacing.vGap200,
-
-          // Seksi Jenis & Nomor Identitas
-          GuestFormIdentityFields(
-            cubit: cubit,
-            identityNumberController: _identityNumberController,
-            identityNumberFocusNode: _identityNumberFocusNode,
-            addressFocusNode: _addressFocusNode,
-          ),
-          AppSpacing.vGap200,
-
-          // Input Alamat Asal
-          AppTextField(
-            label: 'Alamat asal',
-            variant: AppTextFieldVariant.outlined,
-            controller: _addressController,
-            focusNode: _addressFocusNode,
-            enabled: !isSubmitting,
-            textInputAction: TextInputAction.next,
-            onChanged: cubit.onAddressChanged,
-            onSubmitted: (_) => _guestNumberFocusNode.requestFocus(),
-          ),
-          AppSpacing.vGap200,
-
-          // Input Nomor Tamu / Plat Kendaraan
-          AppTextField(
-            label: 'Nomor tamu / Plat kendaraan',
-            variant: AppTextFieldVariant.outlined,
-            controller: _guestNumberController,
-            focusNode: _guestNumberFocusNode,
-            enabled: !isSubmitting,
-            textInputAction: TextInputAction.next,
-            onChanged: cubit.onGuestNumberChanged,
-            onSubmitted: (_) => _purposeFocusNode.requestFocus(),
-          ),
+          if (expanded)
+            BlocSelector<
+              GuestFormCubit,
+              GuestFormState,
+              (String?, String?, String?)
+            >(
+              bloc: cubit,
+              selector: (s) =>
+                  (s.guestNumberError, s.purposeError, s.addressError),
+              builder: (context, errors) => Padding(
+                padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    GuestFormIdentityFields(
+                      cubit: cubit,
+                      identityNumberController: _identityNumberController,
+                      identityNumberFocusNode: _identityNumberFocusNode,
+                      addressFocusNode: _guestNumberFocusNode,
+                    ),
+                    AppSpacing.vGap200,
+                    AppTextField(
+                      label: 'Nomor tamu / Plat kendaraan',
+                      variant: AppTextFieldVariant.outlined,
+                      controller: _guestNumberController,
+                      focusNode: _guestNumberFocusNode,
+                      enabled: !isSubmitting,
+                      errorText: errors.$1,
+                      textInputAction: TextInputAction.next,
+                      onChanged: cubit.onGuestNumberChanged,
+                      onSubmitted: (_) => _hostNameFocusNode.requestFocus(),
+                    ),
+                    AppSpacing.vGap200,
+                    GuestFormHostField(
+                      cubit: cubit,
+                      controller: _hostNameController,
+                      focusNode: _hostNameFocusNode,
+                      nextFocusNode: _purposeFocusNode,
+                    ),
+                    AppSpacing.vGap200,
+                    AppTextField(
+                      label: 'Keperluan kunjungan',
+                      variant: AppTextFieldVariant.outlined,
+                      controller: _purposeController,
+                      focusNode: _purposeFocusNode,
+                      enabled: !isSubmitting,
+                      errorText: errors.$2,
+                      textInputAction: TextInputAction.next,
+                      onChanged: cubit.onPurposeChanged,
+                      onSubmitted: (_) => _addressFocusNode.requestFocus(),
+                    ),
+                    AppSpacing.vGap200,
+                    AppTextField(
+                      label: 'Alamat asal',
+                      variant: AppTextFieldVariant.outlined,
+                      controller: _addressController,
+                      focusNode: _addressFocusNode,
+                      enabled: !isSubmitting,
+                      errorText: errors.$3,
+                      textInputAction: TextInputAction.done,
+                      onChanged: cubit.onAddressChanged,
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildVisitSection(GuestFormCubit cubit, bool isSubmitting) {
-    return AppFormSection(
-      title: 'Tujuan & detail kunjungan',
-      subtitle:
-          'Informasi tuan rumah, tujuan, dan '
-          'destinasi kunjungan.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Tuan Rumah (teks bebas)
-          GuestFormHostField(
-            cubit: cubit,
-            controller: _hostNameController,
-            focusNode: _hostNameFocusNode,
-            nextFocusNode: _purposeFocusNode,
-          ),
-          AppSpacing.vGap200,
+/// Shown after a failed save; the typed data stays in the form.
+class _FailureBanner extends StatelessWidget {
+  const _FailureBanner({required this.cubit});
 
-          // Input Keperluan Kunjungan
-          AppTextField(
-            label: 'Keperluan kunjungan',
-            variant: AppTextFieldVariant.outlined,
-            controller: _purposeController,
-            focusNode: _purposeFocusNode,
-            enabled: !isSubmitting,
-            textInputAction: TextInputAction.next,
-            onChanged: cubit.onPurposeChanged,
-            onSubmitted: (_) => _destinationFocusNode.requestFocus(),
-          ),
-          AppSpacing.vGap200,
+  final GuestFormCubit cubit;
 
-          // Input Destinasi Tujuan
-          GuestFormDestinationField(
-            cubit: cubit,
-            controller: _destinationController,
-            focusNode: _destinationFocusNode,
+  @override
+  Widget build(BuildContext context) {
+    final tones = KawaloTones.of(context);
+    return BlocBuilder<GuestFormCubit, GuestFormState>(
+      bloc: cubit,
+      buildWhen: (a, b) =>
+          a.status != b.status || a.errorMessage != b.errorMessage,
+      builder: (context, state) {
+        final message = state.errorMessage;
+        if (!state.isFailure || message == null) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Semantics(
+            liveRegion: true,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: tones.sos.soft,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 18,
+                    color: tones.sos.color,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Gagal menyimpan. Data tidak hilang, coba lagi.\n'
+                      '$message',
+                      style: TextStyle(
+                        color: tones.sos.color,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

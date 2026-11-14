@@ -9,7 +9,6 @@ import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
@@ -149,6 +148,7 @@ void main() {
           guests: initialGuests ?? const [guest1, guest2, guest3],
         );
     Widget app = M3EMaterialApp(
+      localizationsDelegates: AppTheme.localizationsDelegates,
       data: AppTheme.m3eLight(),
       home: GuestScreen(cubit: effectiveCubit),
     );
@@ -173,8 +173,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(session: guardSession));
         await tester.pumpAndSettle();
 
-        expect(find.text('Data tamu'), findsOneWidget);
-        expect(find.byType(AppExtendedFab), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
+        expect(find.text('Catat Tamu'), findsOneWidget);
 
         // Long press owned card (Bambang)
         await tester.longPress(find.text('Bambang Sudarsono'));
@@ -200,8 +200,8 @@ void main() {
           findsNothing,
         );
 
-        // Create FAB is hidden in selection mode
-        expect(find.byType(AppExtendedFab), findsNothing);
+        // The create action is hidden in selection mode
+        expect(find.text('Catat Tamu'), findsNothing);
       },
     );
 
@@ -216,7 +216,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Selection mode should NOT activate
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
         expect(find.text('1'), findsNothing);
         expect(
           find.text('Anda hanya dapat memilih data tamu yang Anda catat.'),
@@ -394,7 +394,7 @@ void main() {
 
         // Selection cleared and success message shown
         expect(find.text('2 data tamu berhasil dihapus.'), findsOneWidget);
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
 
         await cubit.close();
       },
@@ -422,7 +422,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Selection dismissed, default header restored
-        expect(find.text('Data tamu'), findsOneWidget);
+        expect(find.text('Buku Tamu'), findsOneWidget);
         expect(find.text('1'), findsNothing);
       },
     );

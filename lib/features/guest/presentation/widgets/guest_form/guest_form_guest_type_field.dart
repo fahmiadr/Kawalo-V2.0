@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
+import 'package:kawalo_mobile/core/widgets/app_form_chip_group.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_field_slot.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/master_guest_type_entity.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_cubit.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_form_state.dart';
-import 'package:kawalo_mobile/features/guest/presentation/widgets/app_dropdown_menu.dart';
 import 'package:kawalo_mobile/features/guest/presentation/widgets/guest_form/guest_form_master_field_states.dart';
 
 class GuestFormGuestTypeField extends StatelessWidget {
@@ -59,32 +58,23 @@ class GuestFormGuestTypeField extends StatelessWidget {
             onRetry: cubit.loadMasterGuestTypes,
           );
         } else {
-          inputChild = AppDropdownMenu<String>(
-            items: typeState.masterTypes
-                .map(
-                  (type) => AppDropdownItem<String>(
-                    value: type.name,
-                    label: type.name,
-                    selected: typeState.guestType == type.name,
-                  ),
-                )
-                .toList(),
-            singleSelect: true,
+          return AppFormChipGroup<String>(
+            label: 'Tipe tamu',
+            isRequired: true,
+            layout: AppFormChipGroupLayout.wrap,
+            items: [
+              for (final type in typeState.masterTypes)
+                AppFormChipItem<String>(value: type.name, label: type.name),
+            ],
+            selectedValue: typeState.guestType,
             enabled: !typeState.isBusy,
-            fieldStyle: const AppDropdownFieldStyle(
-              hintText: 'Pilih tipe tamu',
-              borderRadius: AppRadius.borderMedium,
-            ),
-            onSelectionChanged: (items) {
-              cubit.onGuestTypeChanged(
-                items.isNotEmpty ? items.first.value : '',
-              );
-            },
+            onSelected: cubit.onGuestTypeChanged,
+            errorText: showError ? typeState.typeError : null,
           );
         }
 
         return AppFormFieldSlot(
-          label: 'Tipe tamu*',
+          label: 'Tipe tamu *',
           errorText: (showError && typeState.typeError != null)
               ? typeState.typeError
               : null,

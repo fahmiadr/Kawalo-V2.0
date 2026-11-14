@@ -5,15 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_actionable_error.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
 import 'package:kawalo_mobile/features/guest/domain/repositories/guest_repository.dart';
 import 'package:kawalo_mobile/features/guest/presentation/cubit/guest_qr_scan_cubit.dart';
@@ -77,36 +70,85 @@ class _GuestQrScanScreenState extends State<GuestQrScanScreen> {
   }
 
   Widget _buildFault(BuildContext context, GuestQrScannerFault fault) {
-    // Keeps the camera error (and its actions) full-screen: nothing of the scan
-    // overlay may cover it.
+    final tones = KawaloTones.of(context);
     final denied = fault == GuestQrScannerFault.permissionDenied;
-    return AppActionableError.view(
-      data: AppActionableErrorData(
-        icon: KawaloVectors.cameraOff01Filled,
-        title: denied ? 'Izin kamera dinonaktifkan' : 'Kamera tidak tersedia',
-        message: denied
-            ? 'Izin kamera diperlukan untuk memindai kode QR tamu.'
-            : 'Kamera tidak dapat dibuka. Tutup aplikasi lain yang memakai '
-                  'kamera, lalu coba lagi.',
-        troubleshootingTips: denied
-            ? const [
-                'Ketuk Buka pengaturan di bawah.',
-                'Pilih menu Izin aplikasi.',
-                'Aktifkan izin Kamera.',
-                'Kembali ke aplikasi dan ketuk Coba lagi.',
-              ]
-            : const [],
-        primaryActionLabel: denied ? 'Buka pengaturan' : 'Coba lagi',
-        onPrimaryAction: () => unawaited(
-          denied
-              ? widget.launcherService.openAppSettings()
-              : _scanner.restart(),
+    void retry() => unawaited(_scanner.restart());
+    return Scaffold(
+      backgroundColor: tones.background,
+      appBar: AppBar(
+        backgroundColor: tones.background,
+        title: const Text('Pindai QR Tamu'),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 36),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  color: tones.surface2,
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                child: Icon(
+                  Icons.no_photography_outlined,
+                  size: 40,
+                  color: tones.ink2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                denied ? 'Izin kamera dibutuhkan' : 'Kamera tidak tersedia',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: tones.ink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                denied
+                    ? 'Izinkan kamera untuk memindai QR tamu. Buka '
+                          'Pengaturan, pilih Izin aplikasi, lalu aktifkan '
+                          'Kamera.'
+                    : 'Kamera tidak dapat dibuka. Tutup aplikasi lain yang '
+                          'memakai kamera, lalu coba lagi.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: tones.ink2, fontSize: 15),
+              ),
+            ],
+          ),
         ),
-        secondaryActionLabel: denied ? 'Coba lagi' : 'Kembali',
-        onSecondaryAction: () => denied
-            ? unawaited(_scanner.restart())
-            : Navigator.of(context).maybePop(),
-        themeMode: AppActionableErrorThemeMode.dark,
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppTaskButton(
+                label: denied ? 'Buka Pengaturan' : 'Coba lagi',
+                tone: tones.gst,
+                onPressed: denied
+                    ? () => unawaited(widget.launcherService.openAppSettings())
+                    : retry,
+              ),
+              const SizedBox(height: 8),
+              AppTaskButton(
+                label: denied ? 'Coba lagi' : 'Kembali',
+                variant: AppTaskButtonVariant.secondary,
+                size: AppTaskButtonSize.medium,
+                onPressed: denied
+                    ? retry
+                    : () => Navigator.of(context).maybePop(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -120,17 +162,17 @@ class _GuestQrScanScreenState extends State<GuestQrScanScreen> {
         listener: (context, state) {
           Navigator.of(context).pop((state as GuestQrResolved).item);
         },
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          body: ListenableBuilder(
-            listenable: _scanner.changes,
-            builder: (context, _) {
-              final fault = _scanner.fault;
-              return fault == null
-                  ? _buildScanner(context)
-                  : _buildFault(context, fault);
-            },
-          ),
+        child: ListenableBuilder(
+          listenable: _scanner.changes,
+          builder: (context, _) {
+            final fault = _scanner.fault;
+            return fault == null
+                ? Scaffold(
+                    backgroundColor: _camBackground,
+                    body: _buildScanner(context),
+                  )
+                : _buildFault(context, fault);
+          },
         ),
       ),
     );
@@ -144,32 +186,43 @@ class _GuestQrScanScreenState extends State<GuestQrScanScreen> {
         const IgnorePointer(child: _Reticle()),
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.space200),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                AppIconButton(
-                  semanticLabel: 'Tutup pemindai QR',
+                IconButton(
                   onPressed: () => Navigator.of(context).maybePop(),
-                  decoration: _overlayButton(context),
-                  icon: const AppSvgIcon(
-                    KawaloVectors.cancel01,
-                    color: Colors.white,
+                  color: _camInk,
+                  iconSize: 26,
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    semanticLabel: 'Tutup pemindai QR',
                   ),
                 ),
-                const Spacer(),
-                AppIconButton(
-                  semanticLabel: _scanner.torch == GuestQrTorch.on
-                      ? 'Matikan lampu senter'
-                      : 'Nyalakan lampu senter',
+                const Expanded(
+                  child: Text(
+                    'Pindai QR Tamu',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: _camInk,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                IconButton(
                   onPressed: _scanner.torch == GuestQrTorch.unavailable
                       ? null
                       : _scanner.toggleTorch,
-                  decoration: _overlayButton(context),
-                  icon: AppSvgIcon(
+                  color: _camInk,
+                  disabledColor: _camInk.withValues(alpha: 0.38),
+                  icon: Icon(
                     _scanner.torch == GuestQrTorch.on
-                        ? KawaloVectors.flashTorchFilled
-                        : KawaloVectors.flashTorch,
-                    color: Colors.white,
+                        ? Icons.flashlight_on_rounded
+                        : Icons.flashlight_off_rounded,
+                    semanticLabel: _scanner.torch == GuestQrTorch.on
+                        ? 'Matikan lampu senter'
+                        : 'Nyalakan lampu senter',
                   ),
                 ),
               ],
@@ -183,41 +236,56 @@ class _GuestQrScanScreenState extends State<GuestQrScanScreen> {
       ],
     );
   }
-
-  M3EIconButtonDecoration _overlayButton(BuildContext context) {
-    final colorScheme = AppTheme.colorSchemeOf(context);
-    return M3EIconButtonDecoration(
-      backgroundColor: WidgetStatePropertyAll(
-        colorScheme.scrim.withValues(alpha: 0.60),
-      ),
-      foregroundColor: const WidgetStatePropertyAll(Colors.white),
-    );
-  }
 }
+
+/// Camera screen colours of the redesign (`--cam-bg`, `--cam-ink`): the
+/// viewfinder stays dark in both themes.
+const _camBackground = Color(0xFF0B0F0C);
+const _camInk = Color(0xFFF3F6F2);
 
 class _Reticle extends StatelessWidget {
   const _Reticle();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: FractionallySizedBox(
-        widthFactor: 0.65,
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.large),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.85),
-                width: 2,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    return const CustomPaint(painter: _ReticlePainter(), size: Size.infinite);
   }
+}
+
+/// Dims everything outside a centred rounded square and outlines it.
+class _ReticlePainter extends CustomPainter {
+  const _ReticlePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final side = size.shortestSide * 0.68;
+    final frame = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: size.center(Offset.zero),
+        width: side,
+        height: side,
+      ),
+      const Radius.circular(22),
+    );
+    canvas
+      ..drawPath(
+        Path()
+          ..fillType = PathFillType.evenOdd
+          ..addRect(Offset.zero & size)
+          ..addRRect(frame),
+        Paint()..color = Colors.black.withValues(alpha: 0.45),
+      )
+      ..drawRRect(
+        frame,
+        Paint()
+          ..color = _camInk
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_ReticlePainter oldDelegate) => false;
 }
 
 class _ResultPanel extends StatelessWidget {
@@ -228,9 +296,7 @@ class _ResultPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<GuestQrScanCubit>();
-    final emphasized = AppTheme.emphasizedTypeScaleOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    final colorScheme = AppTheme.colorSchemeOf(context);
+    final tones = KawaloTones.of(context);
 
     return BlocBuilder<GuestQrScanCubit, GuestQrScanState>(
       builder: (context, state) {
@@ -244,29 +310,34 @@ class _ResultPanel extends StatelessWidget {
             null,
             const <Widget>[],
           ),
-          GuestQrResolving() => ('Mencari tamu...', null, const <Widget>[]),
+          GuestQrResolving() => ('Mencari tamu…', null, const <Widget>[]),
           GuestQrInvalid() => (
             'Kode QR tidak dikenali',
             'Kode ini bukan kode QR tamu Kawalo.',
-            [_action('Pindai lagi', cubit.resumeScanning)],
+            [_action(tones, 'Pindai lagi', cubit.resumeScanning)],
           ),
           GuestQrNotFound() => (
             'Tamu tidak ditemukan',
             'Kode QR tidak terdaftar pada grup yang sedang aktif. '
                 'Pastikan Anda berada di grup yang benar.',
-            [_action('Pindai lagi', cubit.resumeScanning)],
+            [_action(tones, 'Pindai lagi', cubit.resumeScanning)],
           ),
           GuestQrForbidden(:final message) => (
             'Tidak punya akses',
             message,
-            [_action('Kembali', onClose)],
+            [_action(tones, 'Kembali', onClose)],
           ),
           GuestQrFailed(:final message) => (
             'Gagal memuat data tamu',
             message,
             [
-              _action('Coba lagi', cubit.retry),
-              _action('Pindai lagi', cubit.resumeScanning, outlined: true),
+              _action(tones, 'Coba lagi', cubit.retry),
+              _action(
+                tones,
+                'Pindai lagi',
+                cubit.resumeScanning,
+                secondary: true,
+              ),
             ],
           ),
         };
@@ -275,50 +346,70 @@ class _ResultPanel extends StatelessWidget {
           liveRegion: true,
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.space300,
-              AppSpacing.space250,
-              AppSpacing.space300,
-              AppSpacing.space300 + MediaQuery.paddingOf(context).bottom,
+            margin: EdgeInsets.fromLTRB(
+              12,
+              0,
+              12,
+              16 + MediaQuery.paddingOf(context).bottom,
             ),
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
             decoration: BoxDecoration(
-              color: colorScheme.scrim.withValues(alpha: 0.72),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.large),
-              ),
+              color: Colors.black.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(22),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (state is GuestQrResolving) ...[
-                  const AppLoadingIndicator(
-                    size: AppLoadingIndicatorSize.small,
-                  ),
-                  AppSpacing.vGap100,
-                ],
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: emphasized.titleMedium.copyWith(color: Colors.white),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (state is GuestQrResolving) ...[
+                      const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          color: _camInk,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ] else if (message != null) ...[
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 20,
+                        color: tones.sos.color,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: _camInk,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 if (message != null) ...[
-                  AppSpacing.vGap50,
+                  const SizedBox(height: 6),
                   Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: typeScale.bodyMedium.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
+                    style: TextStyle(
+                      color: _camInk.withValues(alpha: 0.85),
+                      fontSize: 14,
                     ),
                   ),
                 ],
                 if (actions.isNotEmpty) ...[
-                  AppSpacing.vGap200,
-                  Wrap(
-                    spacing: AppSpacing.space100,
-                    runSpacing: AppSpacing.space100,
-                    alignment: WrapAlignment.center,
-                    children: actions,
-                  ),
+                  const SizedBox(height: 14),
+                  for (var i = 0; i < actions.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 8),
+                    actions[i],
+                  ],
                 ],
               ],
             ),
@@ -328,25 +419,20 @@ class _ResultPanel extends StatelessWidget {
     );
   }
 
-  // The themed outlined button is primary green, which disappears against the
-  // near-black scrim panel, so the secondary action is drawn in white.
-  static final _outlinedOnDark = AppButtonDecoration(
-    foregroundColor: const WidgetStatePropertyAll(Colors.white),
-    side: WidgetStatePropertyAll(
-      BorderSide(color: Colors.white.withValues(alpha: 0.72)),
-    ),
-  );
-
   Widget _action(
+    KawaloTones tones,
     String label,
     VoidCallback onPressed, {
-    bool outlined = false,
+    bool secondary = false,
   }) {
-    return AppButton(
-      style: outlined ? AppButtonColor.outlined : AppButtonColor.filled,
-      decoration: outlined ? _outlinedOnDark : null,
+    return AppTaskButton(
+      label: label,
+      tone: tones.gst,
+      size: AppTaskButtonSize.medium,
+      variant: secondary
+          ? AppTaskButtonVariant.secondary
+          : AppTaskButtonVariant.primary,
       onPressed: onPressed,
-      child: Text(label),
     );
   }
 }

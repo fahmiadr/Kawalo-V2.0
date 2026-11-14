@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/storage/sync_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/features/guest/domain/entities/guest_item_entity.dart';
@@ -70,20 +71,21 @@ void main() {
   }) {
     final effectiveCubit = cubit ?? createMockGuestCubit(guests: initialGuests);
     return M3EMaterialApp(
+      localizationsDelegates: AppTheme.localizationsDelegates,
       data: AppTheme.m3eLight(),
       home: GuestScreen(cubit: effectiveCubit),
     );
   }
 
   group('GuestScreen Filter & Empty State Tests', () {
-    testWidgets('renders "Belum ada data tamu" empty state when active group '
-        'has no data', (tester) async {
+    testWidgets('renders "Belum ada tamu hari ini" empty state when active '
+        'group has no data', (tester) async {
       await tester.pumpWidget(buildTestWidget(initialGuests: const []));
       await tester.pumpAndSettle();
 
-      expect(find.text('Belum ada data tamu'), findsOneWidget);
+      expect(find.text('Belum ada tamu hari ini'), findsOneWidget);
       expect(
-        find.text('Belum ada kunjungan tamu pada hari ini.'),
+        find.text('Tamu yang Anda catat atau pindai QR-nya tampil di sini.'),
         findsOneWidget,
       );
       expect(find.text('Atur Ulang Filter'), findsNothing);
@@ -151,56 +153,46 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('tapping Tanggal filter chip opens bottom sheet and updates '
-        'filter chip label when active', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
+    testWidgets('scope chips send is_active and the date range to the API', (
+      tester,
+    ) async {
       registerFallbackValue(const GetGuestsParams());
-      final mockGuestRepository = MockGuestRepository();
-      when(() => mockGuestRepository.getGuests(any())).thenAnswer(
-        (_) async =>
-            const Right(GuestResult(items: GuestFixtures.defaultGuestEntities)),
-      );
-
+      final repo = MockGuestRepository();
+      final calls = <GetGuestsParams>[];
+      when(() => repo.getGuests(any())).thenAnswer((invocation) async {
+        calls.add(invocation.positionalArguments.first as GetGuestsParams);
+        return const Right(
+          GuestResult(items: GuestFixtures.defaultGuestEntities),
+        );
+      });
       final cubit = GuestCubit(
         syncStorageService: SyncStorageService(),
-        guestRepository: mockGuestRepository,
+        guestRepository: repo,
         deleteGuestUseCase: MockDeleteGuestUseCase(),
         deleteBatchGuestUseCase: MockDeleteBatchGuestUseCase(),
       );
 
       await tester.pumpWidget(buildTestWidget(cubit: cubit));
       await tester.pumpAndSettle();
+      expect(cubit.state.scope, GuestListScope.today);
 
-      // Buka filter bottom sheet melalui filter chip Tanggal
-      final filterChip = find.text('Tanggal');
-      expect(filterChip, findsOneWidget);
-      await tester.tap(filterChip);
+      await tester.tap(find.widgetWithText(AppChip, 'Di lokasi'));
       await tester.pumpAndSettle();
+      expect(cubit.state.scope, GuestListScope.onSite);
+      expect(calls.last.isActive, isTrue);
+      expect(calls.last.startDate, startsWith('2000-01-01'));
 
-      // Bottom sheet muncul
-      expect(
-        find.descendant(
-          of: find.byType(AppDateFilterBottomSheet),
-          matching: find.text('Tanggal'),
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Rentang waktu'), findsOneWidget);
-
-      // Pilih filter Bulan ini lalu terapkan
-      await tester.tap(find.text('Bulan ini'));
+      await tester.tap(find.widgetWithText(AppChip, 'Semua'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Terapkan'));
-      await tester.pumpAndSettle();
+      expect(cubit.state.scope, GuestListScope.all);
+      expect(calls.last.isActive, isNull);
+      expect(calls.last.startDate, startsWith('2000-01-01'));
 
-      // Chip tanggal sekarang aktif dan menampilkan "Bulan ini"
-      expect(find.text('Bulan ini'), findsOneWidget);
+      await tester.tap(find.widgetWithText(AppChip, 'Hari ini'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.scope, GuestListScope.today);
+      expect(calls.last.isActive, isNull);
+      expect(calls.last.startDate, isNot(startsWith('2000-01-01')));
 
       await cubit.close();
     });
