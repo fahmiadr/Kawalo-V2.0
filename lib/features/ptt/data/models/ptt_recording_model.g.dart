@@ -13,6 +13,7 @@ PttRecordingSpeakerModel _$PttRecordingSpeakerModelFromJson(
   name: json['name'] as String? ?? '',
   role: json['role'] as String? ?? '',
   email: json['email'] as String?,
+  avatarUrl: json['avatar_url'] as String?,
 );
 
 PttRecordingModel _$PttRecordingModelFromJson(Map<String, dynamic> json) =>

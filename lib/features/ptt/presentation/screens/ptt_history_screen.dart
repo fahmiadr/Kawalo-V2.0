@@ -27,8 +27,8 @@ import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_channel_head
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_skeleton.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_tile.dart';
 
-/// "Riwayat PTT": recorded walkie-talkie turns of the active group, newest
-/// first, grouped by day.
+/// "Riwayat PTT": recorded walkie-talkie turns of the active group as a chat,
+/// oldest at the top and newest at the bottom, grouped by day.
 class PttHistoryScreen extends StatefulWidget {
   const PttHistoryScreen({super.key});
 
@@ -165,7 +165,10 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
     final rows = _rowsFor(state.items);
     final canDelete = session?.isAdminRole ?? false;
 
+    // `reverse` anchors the list at the newest turn without a jump-to-bottom
+    // and turns the scroll-extent end into the top edge, where older pages load.
     return ListView.builder(
+      reverse: true,
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
@@ -179,7 +182,7 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
         }
         final row = rows[index];
         if (row.date != null) {
-          return _DateLabel(date: row.date!, isFirst: index == 0);
+          return _DateLabel(date: row.date!);
         }
 
         final recording = row.recording!;
@@ -208,18 +211,21 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
     );
   }
 
-  /// [items] are newest first, shown top-down with a label before each day.
+  static DateTime _dayOf(PttRecordingEntity item) {
+    final t = item.startedAt;
+    return DateTime(t.year, t.month, t.day);
+  }
+
+  /// [items] are newest first, which is bottom-up in the reversed list, so a
+  /// day's label goes after its oldest turn to render above the whole group.
   static List<_Row> _rowsFor(List<PttRecordingEntity> items) {
     final rows = <_Row>[];
-    DateTime? day;
-    for (final item in items) {
-      final t = item.startedAt;
-      final itemDay = DateTime(t.year, t.month, t.day);
-      if (itemDay != day) {
-        rows.add(_Row.date(itemDay));
-        day = itemDay;
+    for (var i = 0; i < items.length; i++) {
+      rows.add(_Row.recording(items[i]));
+      final day = _dayOf(items[i]);
+      if (i + 1 == items.length || _dayOf(items[i + 1]) != day) {
+        rows.add(_Row.date(day));
       }
-      rows.add(_Row.recording(item));
     }
     return rows;
   }
@@ -234,10 +240,9 @@ class _Row {
 }
 
 class _DateLabel extends StatelessWidget {
-  const _DateLabel({required this.date, required this.isFirst});
+  const _DateLabel({required this.date});
 
   final DateTime date;
-  final bool isFirst;
 
   String _label() {
     final now = DateTime.now();
@@ -251,19 +256,31 @@ class _DateLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = _label();
+    final tones = KawaloTones.of(context);
     return Padding(
-      padding: EdgeInsets.only(top: isFirst ? 4 : 10, bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Semantics(
         header: true,
         label: label,
         excludeSemantics: true,
-        child: Text(
-          label.toUpperCase(),
-          style: TextStyle(
-            color: KawaloTones.of(context).ink2,
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.84,
+        child: Center(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: tones.ptt.soft,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  color: tones.ptt.color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.84,
+                ),
+              ),
+            ),
           ),
         ),
       ),

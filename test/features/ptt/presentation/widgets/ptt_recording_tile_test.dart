@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_playback_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_tile.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_waveform.dart';
@@ -24,6 +25,7 @@ void main() {
     double textScale = 1,
     Duration duration = const Duration(seconds: 65),
     Uint8List? waveform,
+    String? avatarUrl,
   }) {
     return MaterialApp(
       theme: theme ?? AppTheme.lightThemeData(),
@@ -42,6 +44,7 @@ void main() {
               transcript: transcript,
               transcriptStatus: transcriptStatus,
               waveform: waveform,
+              avatarUrl: avatarUrl,
             ),
             isMe: isMe,
             playback: playback,
@@ -56,6 +59,15 @@ void main() {
     );
   }
 
+  testWidgets('hands the speaker photo to the avatar', (tester) async {
+    await tester.pumpWidget(host(avatarUrl: 'https://h/uploads/budi.webp'));
+
+    expect(
+      tester.widget<AppUserAvatar>(find.byType(AppUserAvatar)).imageUrl,
+      'https://h/uploads/budi.webp',
+    );
+  });
+
   testWidgets('shows speaker, initial, length and clock time', (tester) async {
     await tester.pumpWidget(host());
 
@@ -64,6 +76,20 @@ void main() {
     expect(find.text('1:05'), findsOneWidget);
     expect(find.text('09.30'), findsOneWidget);
     expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+  });
+
+  testWidgets('own turns have no avatar and fill the right edge', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(isMe: true));
+
+    expect(find.byType(AppUserAvatar), findsNothing);
+    final screen = tester.getRect(find.byType(Scaffold));
+    expect(tester.getRect(find.byType(PttRecordingTile)).right, screen.right);
+    expect(
+      tester.getTopLeft(find.byType(PttWaveform)).dx,
+      greaterThan(screen.width * 0.1),
+    );
   });
 
   testWidgets('own turns are labelled Anda', (tester) async {

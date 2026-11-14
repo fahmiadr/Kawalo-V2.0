@@ -8,6 +8,7 @@ abstract final class PttMemberMapper {
     userId: model.userId,
     name: model.name,
     role: model.role,
+    avatarUrl: model.avatarUrl,
     speaking: model.speaking,
   );
 }

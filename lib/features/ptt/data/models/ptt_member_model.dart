@@ -8,6 +8,7 @@ class PttMemberModel {
     required this.userId,
     required this.name,
     required this.role,
+    this.avatarUrl,
     this.speaking = false,
   });
 
@@ -22,6 +23,9 @@ class PttMemberModel {
 
   @JsonKey(defaultValue: '')
   final String role;
+
+  /// Absent on servers that predate profile photos.
+  final String? avatarUrl;
 
   @JsonKey(defaultValue: false)
   final bool speaking;

@@ -32,6 +32,7 @@ void main() {
                 'user_id': 'usr_1',
                 'name': 'Budi',
                 'role': 'GUARD',
+                'avatar_url': 'https://h/uploads/budi.webp',
                 'speaking': true,
               },
               {'user_id': 'usr_2', 'name': 'Sari', 'role': 'ADMIN'},
@@ -44,6 +45,8 @@ void main() {
 
       expect(members.map((m) => m.userId), ['usr_1', 'usr_2']);
       expect(members.first.speaking, isTrue);
+      expect(members.first.avatarUrl, 'https://h/uploads/budi.webp');
+      expect(members.last.avatarUrl, isNull);
       expect(members.last.speaking, isFalse);
     });
 
@@ -68,14 +71,24 @@ void main() {
     test('maps models to entities', () async {
       when(() => remote.getMembers()).thenAnswer(
         (_) async => [
-          const PttMemberModel(userId: 'usr_1', name: 'Budi', role: 'GUARD'),
+          const PttMemberModel(
+            userId: 'usr_1',
+            name: 'Budi',
+            role: 'GUARD',
+            avatarUrl: 'https://h/uploads/budi.webp',
+          ),
         ],
       );
 
       final result = await repository.getMembers();
 
       expect(result.getOrElse((_) => throw StateError('left')), const [
-        PttMemberEntity(userId: 'usr_1', name: 'Budi', role: 'GUARD'),
+        PttMemberEntity(
+          userId: 'usr_1',
+          name: 'Budi',
+          role: 'GUARD',
+          avatarUrl: 'https://h/uploads/budi.webp',
+        ),
       ]);
     });
 

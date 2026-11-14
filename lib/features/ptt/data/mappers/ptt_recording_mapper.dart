@@ -15,6 +15,7 @@ abstract final class PttRecordingMapper {
       speakerName: model.speaker.name,
       speakerRole: model.speaker.role,
       speakerEmail: model.speaker.email,
+      speakerAvatarUrl: model.speaker.avatarUrl,
       startedAt: (DateTime.tryParse(model.startedAt) ?? DateTime.now())
           .toLocal(),
       duration: Duration(milliseconds: model.durationMs),

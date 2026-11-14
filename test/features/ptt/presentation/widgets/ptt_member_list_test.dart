@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_members_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_members_state.dart';
@@ -65,6 +66,24 @@ void main() {
       member('usr_a', name: 'Agus'),
     ],
   );
+
+  testWidgets('hands each member photo to the avatar', (tester) async {
+    await pump(
+      tester,
+      PttMembersState(
+        isLoading: false,
+        members: [
+          member('usr_a', name: 'Agus', avatarUrl: 'https://h/uploads/a.webp'),
+          member('usr_b', name: 'Budi'),
+        ],
+      ),
+    );
+
+    final urls = tester
+        .widgetList<AppUserAvatar>(find.byType(AppUserAvatar))
+        .map((a) => a.imageUrl);
+    expect(urls, ['https://h/uploads/a.webp', null]);
+  });
 
   testWidgets('counts colleagues, not the current user', (tester) async {
     await pump(tester, roster);

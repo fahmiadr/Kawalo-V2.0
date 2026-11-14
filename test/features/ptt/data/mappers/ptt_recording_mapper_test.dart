@@ -16,6 +16,7 @@ void main() {
             'name': 'Budi',
             'role': 'GUARD',
             'email': 'Budi@Kawalo.id',
+            'avatar_url': 'https://h/uploads/budi.webp',
           },
           'started_at': '2026-11-11T02:30:00.000Z',
           'duration_ms': 7400,
@@ -32,6 +33,7 @@ void main() {
     final item = page.items.single;
     expect(item.id, 'rec_1');
     expect(item.speakerName, 'Budi');
+    expect(item.speakerAvatarUrl, 'https://h/uploads/budi.webp');
     expect(item.duration, const Duration(milliseconds: 7400));
     expect(item.startedAt.toUtc(), DateTime.utc(2026, 11, 11, 2, 30));
     expect(item.isSpokenBy(' budi@kawalo.id '), isTrue);
@@ -56,6 +58,7 @@ void main() {
     );
 
     expect(page.nextBefore, isNull);
+    expect(page.items.single.speakerAvatarUrl, isNull);
     expect(page.items.single.isSpokenBy('x@kawalo.id'), isFalse);
     expect(page.items.single.isSpokenBy(''), isFalse);
   });

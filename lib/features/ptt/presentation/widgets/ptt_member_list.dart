@@ -120,7 +120,13 @@ class _MemberRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          AppUserAvatar(name: name, size: 34, maxInitials: 2, circle: true),
+          AppUserAvatar(
+            name: name,
+            imageUrl: member.avatarUrl,
+            size: 34,
+            maxInitials: 2,
+            circle: true,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

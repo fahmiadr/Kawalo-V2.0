@@ -8,10 +8,12 @@ PttMemberEntity member(
   String? name,
   String role = 'GUARD',
   bool speaking = false,
+  String? avatarUrl,
 }) => PttMemberEntity(
   userId: id,
   name: name ?? 'Nama $id',
   role: role,
+  avatarUrl: avatarUrl,
   speaking: speaking,
 );
 

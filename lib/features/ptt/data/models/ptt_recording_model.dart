@@ -9,6 +9,7 @@ class PttRecordingSpeakerModel {
     required this.name,
     required this.role,
     this.email,
+    this.avatarUrl,
   });
 
   factory PttRecordingSpeakerModel.fromJson(Map<String, dynamic> json) =>
@@ -24,6 +25,7 @@ class PttRecordingSpeakerModel {
   final String role;
 
   final String? email;
+  final String? avatarUrl;
 }
 
 /// `RecordingItem` of `GET /v1/ptt/recordings`. The `audio_path` field is

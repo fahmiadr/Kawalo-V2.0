@@ -12,9 +12,10 @@ String formatPttClock(DateTime t) =>
     '${t.hour.toString().padLeft(2, '0')}.'
     '${t.minute.toString().padLeft(2, '0')}';
 
-/// One recorded PTT turn in "Riwayat PTT" (redesign 2026): avatar, speaker and
-/// clock time, a voice bar (play/pause, seekable waveform, length) and the
-/// transcript below it.
+/// One recorded PTT turn in "Riwayat PTT", laid out as a chat message: others
+/// on the left with an avatar, the signed-in user's own on the right without
+/// one, in a soft brand tone. Speaker and clock time, a voice bar (play/pause,
+/// seekable waveform, length) and the transcript below it.
 ///
 /// Purely presentational; the screen feeds it the playback state of this
 /// recording only, so a ticking position rebuilds one row, not the list.
@@ -32,6 +33,9 @@ class PttRecordingTile extends StatefulWidget {
   });
 
   static const double avatarSize = 34;
+
+  /// Share of the row a message may take, so the two sides stay distinct.
+  static const double widthFactor = 0.88;
 
   final PttRecordingEntity recording;
   final bool isMe;
@@ -123,7 +127,7 @@ class _PttRecordingTileState extends State<PttRecordingTile> {
       margin: const EdgeInsets.only(top: 6, bottom: 4),
       padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
       decoration: BoxDecoration(
-        color: tones.surface2,
+        color: widget.isMe ? tones.ptt.soft : tones.surface2,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -169,73 +173,93 @@ class _PttRecordingTileState extends State<PttRecordingTile> {
       ),
     );
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 7),
-          child: AppUserAvatar(
-            name: recording.speakerName,
-            size: PttRecordingTile.avatarSize,
-            maxInitials: 2,
-            circle: true,
-          ),
+    final isMe = widget.isMe;
+    final options = widget.canDelete
+        ? _OptionsButton(
+            isDeleting: widget.isDeleting,
+            onDelete: widget.onDelete,
+          )
+        // Keeps every row as tall as an admin's, so the list does not jump
+        // between roles.
+        : const SizedBox(height: AppStateLayer.minTouchTarget);
+    final nameText = Flexible(
+      child: Text(
+        name.isEmpty ? 'Anggota' : name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: tones.ink,
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      name.isEmpty ? 'Anggota' : name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: tones.ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    formatPttClock(recording.startedAt),
-                    style: AppTheme.monoFigures.copyWith(
-                      color: tones.ink2,
-                      fontSize: 13,
-                    ),
-                  ),
+      ),
+    );
+    final clockText = Text(
+      formatPttClock(recording.startedAt),
+      style: AppTheme.monoFigures.copyWith(color: tones.ink2, fontSize: 13),
+    );
+
+    final message = Column(
+      crossAxisAlignment: isMe
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: isMe
+              ? [
+                  options,
                   const Spacer(),
-                  if (widget.canDelete)
-                    _OptionsButton(
-                      isDeleting: widget.isDeleting,
-                      onDelete: widget.onDelete,
-                    )
-                  else
-                    // Keeps every row as tall as an admin's, so the list
-                    // does not jump between roles.
-                    const SizedBox(height: AppStateLayer.minTouchTarget),
+                  nameText,
+                  const SizedBox(width: 8),
+                  clockText,
+                ]
+              : [
+                  nameText,
+                  const SizedBox(width: 8),
+                  clockText,
+                  const Spacer(),
+                  options,
+                ],
+        ),
+        voiceBar,
+        if (transcript != null)
+          _TranscriptBlock(text: transcript, alignEnd: isMe)
+        else if (!_noTranscriptExpected)
+          Text(
+            'Transkrip belum tersedia',
+            style: TextStyle(
+              color: tones.ink2,
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+      ],
+    );
+
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: FractionallySizedBox(
+        widthFactor: PttRecordingTile.widthFactor,
+        child: isMe
+            ? message
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 7),
+                    child: AppUserAvatar(
+                      name: recording.speakerName,
+                      imageUrl: recording.speakerAvatarUrl,
+                      size: PttRecordingTile.avatarSize,
+                      maxInitials: 2,
+                      circle: true,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: message),
                 ],
               ),
-              voiceBar,
-              if (transcript != null)
-                _TranscriptBlock(text: transcript)
-              else if (!_noTranscriptExpected)
-                Text(
-                  'Transkrip belum tersedia',
-                  style: TextStyle(
-                    color: tones.ink2,
-                    fontSize: 13,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -288,11 +312,12 @@ class _OptionsButton extends StatelessWidget {
 /// Quoted transcript, collapsed to [collapsedLines] with a toggle only when
 /// the text is longer.
 class _TranscriptBlock extends StatefulWidget {
-  const _TranscriptBlock({required this.text});
+  const _TranscriptBlock({required this.text, required this.alignEnd});
 
   static const collapsedLines = 3;
 
   final String text;
+  final bool alignEnd;
 
   @override
   State<_TranscriptBlock> createState() => _TranscriptBlockState();
@@ -320,10 +345,13 @@ class _TranscriptBlockState extends State<_TranscriptBlock> {
 
         return Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: widget.alignEnd
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Text(
               quoted,
+              textAlign: widget.alignEnd ? TextAlign.end : TextAlign.start,
               maxLines: _expanded || !isLong
                   ? null
                   : _TranscriptBlock.collapsedLines,
@@ -348,7 +376,9 @@ class _TranscriptBlockState extends State<_TranscriptBlock> {
                       minWidth: AppStateLayer.minTouchTarget,
                     ),
                     child: Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: widget.alignEnd
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       widthFactor: 1,
                       child: Text(
                         _expanded ? 'Ringkas' : 'Selengkapnya',

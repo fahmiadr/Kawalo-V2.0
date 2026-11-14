@@ -11,5 +11,6 @@ PttMemberModel _$PttMemberModelFromJson(Map<String, dynamic> json) =>
       userId: json['user_id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       role: json['role'] as String? ?? '',
+      avatarUrl: json['avatar_url'] as String?,
       speaking: json['speaking'] as bool? ?? false,
     );

@@ -25,6 +25,7 @@ class PttRecordingEntity extends Equatable {
     required this.duration,
     required this.sizeBytes,
     this.speakerEmail,
+    this.speakerAvatarUrl,
     this.transcript,
     this.transcriptLocale,
     this.transcriptSource,
@@ -40,6 +41,7 @@ class PttRecordingEntity extends Equatable {
   /// The API identifies people by email elsewhere (incident `senderId`), so
   /// this is what "is it me" is compared against, not [speakerId].
   final String? speakerEmail;
+  final String? speakerAvatarUrl;
   final DateTime startedAt;
   final Duration duration;
   final int sizeBytes;
@@ -74,6 +76,7 @@ class PttRecordingEntity extends Equatable {
     speakerName,
     speakerRole,
     speakerEmail,
+    speakerAvatarUrl,
     startedAt,
     duration,
     sizeBytes,

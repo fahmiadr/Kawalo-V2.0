@@ -6,12 +6,14 @@ class PttMemberEntity extends Equatable {
     required this.userId,
     required this.name,
     required this.role,
+    this.avatarUrl,
     this.speaking = false,
   });
 
   final String userId;
   final String name;
   final String role;
+  final String? avatarUrl;
 
   /// Floor holder at the moment the list was fetched. The UI derives the live
   /// speaker from the floor state instead, so this only seeds a fresh fetch.
@@ -25,5 +27,5 @@ class PttMemberEntity extends Equatable {
   };
 
   @override
-  List<Object?> get props => [userId, name, role, speaking];
+  List<Object?> get props => [userId, name, role, avatarUrl, speaking];
 }
