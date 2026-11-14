@@ -9,14 +9,13 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
-import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
 import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/incident_module.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_detail_cubit.dart';
@@ -142,11 +141,10 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
   ) async {
     final confirmed = await showAppConfirmationDialog(
       context: context,
-      title: 'Selesaikan Insiden?',
+      title: 'Tandai selesai?',
       message:
-          'Setelah ditandai selesai, thread diskusi ini akan dikunci dan '
-          'beralih ke mode baca saja.',
-      confirmText: 'Ya, Selesaikan',
+          'Insiden ditutup untuk semua anggota dan tidak bisa dibalas lagi.',
+      confirmText: 'Selesaikan',
       isDestructive: false,
     );
 
@@ -186,8 +184,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final session = _resolveSession(context, listen: true);
     final isOffline = _resolveIsOffline(context, listen: true);
 
@@ -231,16 +228,14 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
         final canDelete =
             incident != null && incident.canBeDeletedBySession(session);
 
-        final greeting = AppDateFormat.formatGreeting(DateTime.now());
-
-        Widget? trailingWidget;
-        if (canResolve) {
-          trailingWidget = IncidentDetailResolveButton(
-            isResolving: state.isResolving,
-            isOffline: isOffline,
-            onPressed: () => _confirmResolve(context, incident, session),
-          );
-        }
+        final actions = <Widget>[
+          if (canResolve)
+            IncidentDetailResolveButton(
+              isResolving: state.isResolving,
+              isOffline: isOffline,
+              onPressed: () => _confirmResolve(context, incident, session),
+            ),
+        ];
 
         return AppLoadingOverlay(
           isLoading: state.isResolving || state.isDeleting,
@@ -251,21 +246,17 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
               ? 'Menyelesaikan insiden...'
               : 'Menghapus laporan insiden...',
           child: Scaffold(
-            backgroundColor: colorScheme.surface,
-            appBar: AppHomeAppBar(
-              title: incident != null ? incident.title : 'Detail insiden',
-              greeting: greeting,
-              showBackButton: true,
-              reserveGreetingSpace: true,
-              onBackPressed: () => Navigator.of(context).pop(incident),
-              trailing: trailingWidget,
+            backgroundColor: tones.background,
+            appBar: AppTopBar(
+              title: incident?.title ?? 'Insiden',
+              onLeadingPressed: () => Navigator.of(context).pop(incident),
+              actions: actions,
             ),
             // Scaffold strips the bottom padding from the body whenever a
-            // bottomNavigationBar exists, so the composer's own SafeArea sees 0.
-            // The banner must therefore keep reserving the system nav inset,
-            // tinted like the bar above it.
-            // With the delete bar the bar's own SafeArea covers the inset, so the
-            // banner must not reserve it a second time.
+            // bottomNavigationBar exists, so the composer's own SafeArea sees
+            // 0; the banner keeps reserving the system nav inset. With the
+            // delete bar, that bar's own SafeArea covers the inset instead.
+            // Delete stays at the bottom, never in the top bar.
             bottomNavigationBar: canDelete
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
@@ -290,9 +281,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen>
                 : AppBottomOfflineBanner(
                     isOffline: isOffline,
                     keepSafeAreaWhenHidden: true,
-                    safeAreaColor: state.isReadOnly
-                        ? colorScheme.surfaceContainerHigh
-                        : colorScheme.surfaceContainer,
+                    safeAreaColor: tones.background,
                   ),
             body: SafeArea(
               top: false,

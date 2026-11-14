@@ -11,7 +11,6 @@ import 'package:kawalo_mobile/core/upload/upload_repository.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/create_incident/create_incident_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/create_incident/create_incident_usecase.dart';
-import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_category.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_state.dart';
@@ -69,59 +68,66 @@ void main() {
   );
 
   group('IncidentFormCubit Tests', () {
-    test('initial state has general category and empty fields', () {
-      expect(cubit.state.category, equals(IncidentCategory.general));
-      expect(cubit.state.title, isEmpty);
+    test('initial state has empty fields', () {
+      expect(cubit.state.text, isEmpty);
       expect(cubit.state.photos, isEmpty);
     });
 
-    test('validateTitle checks required and max length', () {
-      expect(
-        IncidentFormCubit.validateTitle(''),
-        equals('Judul laporan wajib diisi'),
-      );
-      expect(
-        IncidentFormCubit.validateTitle('   '),
-        equals('Judul laporan wajib diisi'),
-      );
-      expect(
-        IncidentFormCubit.validateTitle('a' * 129),
-        equals('Judul laporan maksimal 128 karakter.'),
-      );
-      expect(IncidentFormCubit.validateTitle('Pagar Rusak'), isNull);
+    test('validateText requires at least 5 characters', () {
+      const err = 'Tulis apa yang terjadi, minimal 5 karakter.';
+      expect(IncidentFormCubit.validateText(''), err);
+      expect(IncidentFormCubit.validateText('  abc  '), err);
+      expect(IncidentFormCubit.validateText('Pagar'), isNull);
+      expect(IncidentFormCubit.validateText('a' * 1001), isNotNull);
     });
 
-    test('validateDescription checks max length', () {
-      expect(
-        IncidentFormCubit.validateDescription('a' * 1001),
-        equals('Deskripsi kejadian maksimal 1000 karakter.'),
-      );
-      expect(IncidentFormCubit.validateDescription(''), isNull);
-      expect(
-        IncidentFormCubit.validateDescription('Deskripsi insiden'),
-        isNull,
-      );
+    group('splitReport', () {
+      test('first sentence is the title, the rest the description', () {
+        final r = IncidentFormCubit.splitReport(
+          ' Pagar sisi timur rusak, ada bekas dicongkel. Gembok hilang. ',
+        );
+        expect(r.title, 'Pagar sisi timur rusak, ada bekas dicongkel');
+        expect(r.description, 'Gembok hilang.');
+      });
+
+      test('splits at ! ? and newline too', () {
+        expect(IncidentFormCubit.splitReport('Api! Di dapur').title, 'Api');
+        expect(IncidentFormCubit.splitReport('Siapa? Tamu').title, 'Siapa');
+        final r = IncidentFormCubit.splitReport('Lampu mati\nBlok B');
+        expect(r.title, 'Lampu mati');
+        expect(r.description, 'Blok B');
+      });
+
+      test('one sentence has no description', () {
+        final r = IncidentFormCubit.splitReport('Lampu parkir mati.');
+        expect(r.title, 'Lampu parkir mati');
+        expect(r.description, isNull);
+        expect(
+          IncidentFormCubit.splitReport('Lampu parkir mati...').description,
+          isNull,
+        );
+      });
+
+      test('a long first sentence is clamped and kept whole in the '
+          'description', () {
+        final text = 'a' * 200;
+        final r = IncidentFormCubit.splitReport(text);
+        expect(r.title.length, IncidentFormCubit.titleMaxLength);
+        expect(r.title, endsWith('…'));
+        expect(r.description, text);
+      });
     });
 
-    test('updateTitle updates title, sets error, and clears errorMessage', () {
-      cubit.updateTitle('Pagar Rusak');
-      expect(cubit.state.title, equals('Pagar Rusak'));
-      expect(cubit.state.titleError, isNull);
+    test('updateText shows the error only after a submit attempt', () async {
+      cubit.updateText('abc');
+      expect(cubit.state.text, 'abc');
+      expect(cubit.state.textError, isNull);
 
-      cubit.updateTitle('');
-      expect(cubit.state.titleError, equals('Judul laporan wajib diisi'));
-    });
+      await cubit.submit(session: tSession);
+      expect(cubit.state.textError, isNotNull);
 
-    test('updateDescription updates description and sets error', () {
-      cubit.updateDescription('Kejadian di area timur');
-      expect(cubit.state.description, equals('Kejadian di area timur'));
-      expect(cubit.state.descriptionError, isNull);
-
-      cubit.updateDescription('b' * 1005);
-      expect(
-        cubit.state.descriptionError,
-        equals('Deskripsi kejadian maksimal 1000 karakter.'),
-      );
+      cubit.updateText('Pagar rusak');
+      expect(cubit.state.textError, isNull);
     });
 
     test('addPhoto enforces maximum of 4 photos', () {
@@ -159,7 +165,7 @@ void main() {
       expect: () => [
         predicate<IncidentFormState>(
           (s) =>
-              s.titleError == 'Judul laporan wajib diisi' &&
+              s.textError == 'Tulis apa yang terjadi, minimal 5 karakter.' &&
               s.validationAttempt == 1 &&
               s.status == IncidentFormStatus.initial,
         ),
@@ -169,7 +175,7 @@ void main() {
     blocTest<IncidentFormCubit, IncidentFormState>(
       'submit rejects session without groupUid',
       build: () => cubit,
-      seed: () => const IncidentFormState(title: 'Lampu Padam'),
+      seed: () => const IncidentFormState(text: 'Lampu Padam'),
       act: (c) => c.submit(session: tSessionNoGroup),
       expect: () => [
         predicate<IncidentFormState>(
@@ -189,7 +195,7 @@ void main() {
         ).thenAnswer((_) async => const Left(RequestCancelledFailure()));
         return cubit;
       },
-      seed: () => const IncidentFormState(title: 'Lampu Padam'),
+      seed: () => const IncidentFormState(text: 'Lampu Padam'),
       act: (c) => c.submit(session: tSession),
       expect: () => [
         predicate<IncidentFormState>(
@@ -209,7 +215,7 @@ void main() {
         ).thenAnswer((_) async => const Left(NoInternetFailure()));
         return cubit;
       },
-      seed: () => const IncidentFormState(title: 'Lampu Padam'),
+      seed: () => const IncidentFormState(text: 'Lampu Padam'),
       act: (c) => c.submit(session: tSession),
       expect: () => [
         predicate<IncidentFormState>(
@@ -243,7 +249,8 @@ void main() {
         ).thenAnswer((_) async => Right(tCreated));
         return cubit;
       },
-      seed: () => const IncidentFormState(title: 'Pagar Rusak'),
+      seed: () =>
+          const IncidentFormState(text: 'Pagar Rusak. Ada bekas dicongkel'),
       act: (c) => c.submit(session: tSession),
       expect: () => [
         predicate<IncidentFormState>((s) => s.isUploading),
@@ -253,6 +260,16 @@ void main() {
               s.createdIncident?.id == 'inc_new';
         }),
       ],
+      verify: (_) {
+        final params =
+            verify(
+                  () => mockCreateIncidentUseCase(captureAny()),
+                ).captured.single
+                as CreateIncidentParams;
+        expect(params.title, 'Pagar Rusak');
+        expect(params.description, 'Ada bekas dicongkel');
+        expect(params.category, isNull);
+      },
     );
   });
 
@@ -297,7 +314,7 @@ void main() {
       stubUpload((f) async => okUrl(f));
       stubCreateOk();
       cubit
-        ..updateTitle('Pagar Rusak')
+        ..updateText('Pagar Rusak')
         ..addPhotos([photo(1), photo(2)]);
 
       await cubit.submit(session: tSession);
@@ -320,14 +337,17 @@ void main() {
               : okUrl(f),
         );
         cubit
-          ..updateTitle('Pagar Rusak')
+          ..updateText('Pagar Rusak')
           ..addPhotos([photo(1), photo(2)]);
 
         await cubit.submit(session: tSession);
 
         verifyNever(() => mockCreateIncidentUseCase(any()));
         expect(cubit.state.status, IncidentFormStatus.failure);
-        expect(cubit.state.errorMessage, contains('1 foto gagal diunggah'));
+        expect(
+          cubit.state.errorMessage,
+          'Foto ke-2 gagal diunggah. Laporan belum terkirim.',
+        );
         expect(cubit.state.photos[0].uploadStatus, IncidentUploadStatus.done);
         expect(cubit.state.photos[1].uploadStatus, IncidentUploadStatus.failed);
         expect(cubit.state.photos[1].uploadError, 'Koneksi terputus.');
@@ -345,7 +365,7 @@ void main() {
       });
       stubCreateOk();
       cubit
-        ..updateTitle('Pagar Rusak')
+        ..updateText('Pagar Rusak')
         ..addPhotos([photo(1), photo(2)]);
       await cubit.submit(session: tSession);
 
@@ -379,7 +399,7 @@ void main() {
       });
       stubCreateOk();
       cubit
-        ..updateTitle('Pagar Rusak')
+        ..updateText('Pagar Rusak')
         ..addPhoto(photo(1));
 
       final first = cubit.submit(session: tSession);
@@ -414,7 +434,7 @@ void main() {
       });
       stubCreateOk();
       cubit
-        ..updateTitle('Pagar Rusak')
+        ..updateText('Pagar Rusak')
         ..addPhotos([for (var i = 1; i <= 4; i++) photo(i)]);
 
       await cubit.submit(session: tSession);
@@ -497,7 +517,7 @@ void main() {
         await cubit.resolveLocation(
           fetchPosition: () async => const LocationResult.permissionDenied(),
         );
-        cubit.updateTitle('Pagar Rusak');
+        cubit.updateText('Pagar Rusak');
 
         await cubit.submit(session: tSession);
 
@@ -516,7 +536,7 @@ void main() {
         fetchPosition: () async =>
             LocationResult.success(position(-6.2, 106.8)),
       );
-      cubit.updateTitle('Pagar Rusak');
+      cubit.updateText('Pagar Rusak');
 
       await cubit.submit(session: tSession);
 

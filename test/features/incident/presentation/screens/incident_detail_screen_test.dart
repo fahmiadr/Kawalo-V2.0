@@ -5,8 +5,8 @@ import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_reply_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
@@ -133,14 +133,14 @@ void main() {
       );
       expect(
         find.descendant(
-          of: find.byType(AppHomeAppBar),
+          of: find.byType(AppTopBar),
           matching: find.textContaining('Hapus'),
         ),
         findsNothing,
       );
       expect(
         find.descendant(
-          of: find.byType(AppHomeAppBar),
+          of: find.byType(AppTopBar),
           matching: find.text('Selesaikan'),
         ),
         findsOneWidget,
@@ -340,6 +340,63 @@ void main() {
       await tester.pump();
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Selesaikan asks for confirmation, then resolves', (
+      tester,
+    ) async {
+      when(
+        () => mockCubit.resolveIncident(session: any(named: 'session')),
+      ).thenAnswer((_) async {});
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: IncidentDetailState(
+            status: IncidentDetailStatus.success,
+            incident: tIncident,
+          ),
+          session: guardSession,
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Selesaikan'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tandai selesai?'), findsOneWidget);
+      expect(
+        find.text(
+          'Insiden ditutup untuk semua anggota dan tidak bisa dibalas lagi.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Selesaikan').last);
+      await tester.pumpAndSettle();
+      verify(
+        () => mockCubit.resolveIncident(session: any(named: 'session')),
+      ).called(1);
+    });
+
+    testWidgets('shows status, location with Peta and reconnecting banner', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createWidgetUnderTest(
+          state: IncidentDetailState(
+            status: IncidentDetailStatus.success,
+            incident: tIncident.copyWith(glat: -6.2088, glong: 106.8456),
+            isReconnecting: true,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Terbuka'), findsOneWidget);
+      expect(find.text('-6.20880, 106.84560'), findsOneWidget);
+      expect(find.text('Peta'), findsOneWidget);
+      expect(
+        find.text('Menyambung ulang… balasan baru belum tampil.'),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_detail_cubit.dart';
@@ -59,21 +58,13 @@ class IncidentDetailBody extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: AppLayout.contentMaxWidth),
         child: ListView.builder(
           controller: scrollController,
-          padding: const EdgeInsets.only(
-            left: AppSpacing.space200,
-            right: AppSpacing.space200,
-            top: AppSpacing.space150,
-            bottom: AppSpacing.space200,
-          ),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
           itemCount: state.replies.length + 1, // 0 = Header Card Insiden
           itemBuilder: (context, index) {
             if (index == 0) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.space150),
-                child: IncidentDetailHeaderCard(
-                  incident: incident,
-                  repliesCount: state.replies.length,
-                ),
+              return IncidentDetailHeaderCard(
+                incident: incident,
+                repliesCount: state.replies.length,
               );
             }
 

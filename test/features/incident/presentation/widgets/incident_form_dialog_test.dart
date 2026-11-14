@@ -1,605 +1,346 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/services/media_picker_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_chip.dart';
-import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
-import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
-import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_category.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
+import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_state.dart';
+import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_form_dialog.dart';
-import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_photo_action_bottom_sheet.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockIncidentFormCubit extends Mock implements IncidentFormCubit {}
 
 class MockUserSessionCubit extends Mock implements UserSessionCubit {}
 
+class MockConnectivityCubit extends Mock implements ConnectivityCubit {}
+
+class MockIncidentListCubit extends Mock implements IncidentListCubit {}
+
+class MockMediaPickerService extends Mock implements MediaPickerService {}
+
+class FakeBuildContext extends Fake implements BuildContext {}
+
 void main() {
-  late MockIncidentFormCubit mockFormCubit;
-  late MockUserSessionCubit mockSessionCubit;
-
-  setUpAll(() {
-    registerFallbackValue(IncidentCategory.general);
-  });
-
-  setUp(() {
-    mockFormCubit = MockIncidentFormCubit();
-    mockSessionCubit = MockUserSessionCubit();
-  });
+  late MockIncidentFormCubit formCubit;
+  late MockUserSessionCubit sessionCubit;
+  late MockMediaPickerService picker;
+  late StreamController<IncidentFormState> states;
 
   const tSession = AuthSessionEntity(
     userId: 'usr_1',
-    role: 'ADMIN',
-    email: 'admin@kawalo.id',
-    name: 'Admin Kawalo',
+    role: 'GUARD',
+    email: 'guard@kawalo.id',
+    name: 'Budi',
     groupUid: 'grp_1',
-    allowAdmin: true,
+    allowAdmin: false,
     allowPatrol: true,
-    allowMonPatrol: true,
+    allowMonPatrol: false,
   );
 
-  Widget createWidgetUnderTest({required IncidentFormState state}) {
-    when(() => mockFormCubit.state).thenReturn(state);
-    when(() => mockFormCubit.stream).thenAnswer((_) => Stream.value(state));
-    when(() => mockFormCubit.updateCategory(any())).thenReturn(null);
-    when(() => mockFormCubit.updateTitle(any())).thenReturn(null);
-    when(() => mockFormCubit.updateDescription(any())).thenReturn(null);
-    when(() => mockFormCubit.removePhoto(any())).thenReturn(null);
-    when(() => mockFormCubit.clearPhotos()).thenReturn(null);
-    when(() => mockFormCubit.resolveLocation()).thenAnswer((_) async {});
-    when(() => mockFormCubit.clearLocation()).thenReturn(null);
-    when(() => mockFormCubit.retryPhotoUpload(any())).thenAnswer((_) async {});
-    when(() => mockFormCubit.reorderPhotos(any(), any())).thenReturn(null);
+  const photoFile = AppMediaFile(name: 'a.jpg', path: 'missing_a.jpg');
+
+  setUpAll(() {
+    registerFallbackValue(FakeBuildContext());
+    registerFallbackValue(<IncidentMediaItem>[]);
+  });
+
+  setUp(() {
+    formCubit = MockIncidentFormCubit();
+    sessionCubit = MockUserSessionCubit();
+    picker = MockMediaPickerService();
+    states = StreamController<IncidentFormState>.broadcast();
+    addTearDown(states.close);
+
+    when(() => formCubit.stream).thenAnswer((_) => states.stream);
+    when(() => formCubit.updateText(any())).thenReturn(null);
+    when(() => formCubit.addPhotos(any())).thenReturn(null);
+    when(() => formCubit.removePhoto(any())).thenReturn(null);
+    when(() => formCubit.resolveLocation()).thenAnswer((_) async {});
+    when(() => formCubit.clearLocation()).thenReturn(null);
+    when(() => formCubit.retryPhotoUpload(any())).thenAnswer((_) async {});
     when(
-      () => mockFormCubit.submit(session: any(named: 'session')),
+      () => formCubit.submit(session: any(named: 'session')),
     ).thenAnswer((_) async {});
-    when(() => mockFormCubit.close()).thenAnswer((_) async {});
 
-    when(() => mockSessionCubit.state).thenReturn(tSession);
+    when(() => sessionCubit.state).thenReturn(tSession);
     when(
-      () => mockSessionCubit.stream,
-    ).thenAnswer((_) => Stream.value(tSession));
-    when(() => mockSessionCubit.close()).thenAnswer((_) async {});
+      () => sessionCubit.stream,
+    ).thenAnswer((_) => const Stream<AuthSessionEntity?>.empty());
+    when(() => sessionCubit.close()).thenAnswer((_) async {});
 
-    return MaterialApp(
-      theme: AppTheme.lightThemeData(),
-      home: MultiBlocProvider(
+    when(
+      () => picker.captureMultiImagesFromCamera(
+        any(),
+        alreadyAttachedCount: any(named: 'alreadyAttachedCount'),
+        allowSkip: true,
+      ),
+    ).thenAnswer((_) async => const []);
+  });
+
+  void setState(IncidentFormState state) =>
+      when(() => formCubit.state).thenReturn(state);
+
+  Future<void> open(
+    WidgetTester tester, {
+    IncidentFormState state = const IncidentFormState(),
+    ConnectivityCubit? connectivity,
+    IncidentListCubit? listCubit,
+    bool settle = true,
+  }) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    setState(state);
+
+    // Above MaterialApp like in the app: the form is a pushed route.
+    await tester.pumpWidget(
+      MultiBlocProvider(
         providers: [
-          BlocProvider<UserSessionCubit>.value(value: mockSessionCubit),
-          BlocProvider<IncidentFormCubit>.value(value: mockFormCubit),
+          BlocProvider<UserSessionCubit>.value(value: sessionCubit),
+          if (connectivity != null)
+            BlocProvider<ConnectivityCubit>.value(value: connectivity),
         ],
-        child: Builder(
-          builder: (context) {
-            return Scaffold(
+        child: MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          home: Builder(
+            builder: (context) => Scaffold(
               body: Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    IncidentFormDialog.showCreate(
-                      context,
-                      formCubit: mockFormCubit,
-                    );
-                  },
-                  child: const Text('Buka Dialog'),
+                  onPressed: () => IncidentFormDialog.showCreate(
+                    context,
+                    formCubit: formCubit,
+                    incidentListCubit: listCubit,
+                    mediaPickerService: picker,
+                  ),
+                  child: const Text('Laporkan'),
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
+    await tester.tap(find.text('Laporkan'));
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+    }
   }
 
-  group('IncidentFormDialog UI & Interaction Tests', () {
-    testWidgets('renders form with non-redundant photo placeholder matching '
-        'Information pattern', (tester) async {
-      const state = IncidentFormState();
+  AppTaskButton taskButton(WidgetTester tester, String label) =>
+      tester.widget<AppTaskButton>(find.widgetWithText(AppTaskButton, label));
 
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
+  testWidgets('opens the camera first, then the one-field form', (
+    tester,
+  ) async {
+    when(
+      () => picker.captureMultiImagesFromCamera(
+        any(),
+        alreadyAttachedCount: any(named: 'alreadyAttachedCount'),
+        allowSkip: true,
+      ),
+    ).thenAnswer((_) async => const [photoFile]);
 
-      // Buka dialog
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
+    await open(tester);
 
-      // Title dialog di AppBar
-      expect(find.text('Laporkan insiden'), findsOneWidget);
+    final added =
+        verify(() => formCubit.addPhotos(captureAny())).captured.single
+            as List<IncidentMediaItem>;
+    expect(added.single.path, 'missing_a.jpg');
+    verify(() => formCubit.resolveLocation()).called(greaterThan(0));
+    expect(find.text('Laporan Kejadian'), findsOneWidget);
+    expect(find.text('Apa yang terjadi?*'), findsOneWidget);
+    expect(find.text('Kalimat pertama menjadi judul laporan.'), findsOneWidget);
+    expect(find.text('Kirim Laporan'), findsOneWidget);
+  });
 
-      // Action button "Kirim"
-      expect(find.text('Kirim'), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(AppPageActions),
-          matching: find.text('Kirim'),
-        ),
-        findsOneWidget,
-      );
+  testWidgets('closing the camera still opens the form without photos', (
+    tester,
+  ) async {
+    await open(tester);
 
-      // Section titles & subtitles
-      expect(find.text('Kategori insiden'), findsOneWidget);
-      expect(find.text('Detail laporan'), findsOneWidget);
-      expect(find.text('Dokumentasi foto (0/4)'), findsOneWidget);
+    final added =
+        verify(() => formCubit.addPhotos(captureAny())).captured.single
+            as List<IncidentMediaItem>;
+    expect(added, isEmpty);
+    expect(find.text('Laporan Kejadian'), findsOneWidget);
+  });
 
-      // Category chips (Facility, Security, Hazard, General)
-      expect(
-        find.byType(AppChip),
-        findsNWidgets(IncidentCategory.values.length),
-      );
-      expect(find.text('Fasilitas'), findsOneWidget);
-      expect(find.text('Keamanan'), findsOneWidget);
-      expect(find.text('Bahaya'), findsOneWidget);
-      expect(find.text('Umum'), findsOneWidget);
+  testWidgets('typing updates the text and Kirim Laporan submits', (
+    tester,
+  ) async {
+    await open(tester);
 
-      // Text fields
-      expect(find.byType(AppTextField), findsNWidgets(2));
-      expect(find.textContaining('Judul laporan'), findsOneWidget);
-      expect(find.text('Deskripsi kejadian'), findsOneWidget);
+    await tester.enterText(
+      find.byType(EditableText),
+      'Pagar rusak. Gembok hilang',
+    );
+    verify(() => formCubit.updateText('Pagar rusak. Gembok hilang')).called(1);
 
-      // Memastikan tidak ada tombol redundan "Ambil foto" di header section
-      expect(find.text('Ambil foto'), findsNothing);
+    await tester.tap(find.text('Kirim Laporan'));
+    verify(() => formCubit.submit(session: tSession)).called(1);
+  });
 
-      // Area placeholder foto standar serasi dengan modul Information
-      expect(find.text('Belum ada foto terlampir'), findsOneWidget);
-      expect(
-        find.text('Ketuk untuk memilih foto dari kamera atau galeri'),
-        findsOneWidget,
-      );
-    });
+  testWidgets('shows the validation error', (tester) async {
+    await open(
+      tester,
+      state: const IncidentFormState(
+        textError: 'Tulis apa yang terjadi, minimal 5 karakter.',
+        validationAttempt: 1,
+      ),
+    );
 
-    testWidgets('renders photo thumbnails, Hapus semua button, and outlined '
-        'Add Photo button when photos exist', (tester) async {
-      tester.view.physicalSize = const Size(800, 1200);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    expect(
+      find.text('Tulis apa yang terjadi, minimal 5 karakter.'),
+      findsOneWidget,
+    );
+  });
 
-      const state = IncidentFormState(
+  testWidgets('uploading shows progress and locks the button', (tester) async {
+    await open(
+      tester,
+      settle: false,
+      state: const IncidentFormState(
+        status: IncidentFormStatus.uploading,
+        text: 'Pagar rusak',
         photos: [
           IncidentMediaItem(
-            id: 'photo_1',
-            name: 'foto1.jpg',
-            path: 'non_existent_dummy_path.jpg',
+            id: 'a',
+            name: 'a.jpg',
+            path: 'missing_a.jpg',
+            uploadStatus: IncidentUploadStatus.done,
+            remoteUrl: 'https://cdn.kawalo.id/a.webp',
           ),
-        ],
-      );
-
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
-
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      // Placeholder kosong tidak muncul lagi saat foto ada
-      expect(find.text('Belum ada foto terlampir'), findsNothing);
-
-      // Header menampilkan jumlah foto (1/4) dan tombol Hapus semua
-      expect(find.text('Dokumentasi foto (1/4)'), findsOneWidget);
-      expect(find.text('Hapus semua'), findsOneWidget);
-
-      // Tombol hapus foto dengan semantic label yang jelas
-      expect(find.bySemanticsLabel('Hapus foto insiden ke-1'), findsOneWidget);
-
-      // Tombol outlined untuk menambah foto
-      expect(find.widgetWithText(AppButton, 'Tambah foto'), findsOneWidget);
-
-      // Ketuk tombol hapus silang memicu removePhoto pada cubit
-      await tester.tap(find.bySemanticsLabel('Hapus foto insiden ke-1'));
-      await tester.pump();
-      verify(() => mockFormCubit.removePhoto('photo_1')).called(1);
-    });
-
-    testWidgets(
-      'tapping Hapus semua shows confirmation dialog and clears photos',
-      (tester) async {
-        tester.view.physicalSize = const Size(800, 1200);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
-
-        const state = IncidentFormState(
-          photos: [
-            IncidentMediaItem(
-              id: 'photo_1',
-              name: 'foto1.jpg',
-              path: 'non_existent_dummy_path.jpg',
-            ),
-          ],
-        );
-
-        await tester.pumpWidget(createWidgetUnderTest(state: state));
-        await tester.pump();
-
-        await tester.tap(find.text('Buka Dialog'));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Hapus semua'));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppConfirmationDialog), findsOneWidget);
-        expect(find.text('Hapus semua foto?'), findsOneWidget);
-
-        final confirmBtn = find.descendant(
-          of: find.byType(AppConfirmationDialog),
-          matching: find.text('Hapus semua'),
-        );
-        await tester.tap(confirmBtn);
-        await tester.pumpAndSettle();
-
-        verify(() => mockFormCubit.clearPhotos()).called(1);
-      },
-    );
-
-    testWidgets('tapping more options on photo opens action bottom sheet and '
-        'deletes on request', (tester) async {
-      tester.view.physicalSize = const Size(800, 1200);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      const state = IncidentFormState(
-        photos: [
           IncidentMediaItem(
-            id: 'photo_1',
-            name: 'foto1.jpg',
-            path: 'non_existent_dummy_path.jpg',
+            id: 'b',
+            name: 'b.jpg',
+            path: 'missing_b.jpg',
+            uploadStatus: IncidentUploadStatus.uploading,
+            uploadProgress: 0.4,
           ),
         ],
-      );
-
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
-
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.bySemanticsLabel('Opsi foto insiden ke-1'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(IncidentPhotoActionBottomSheet), findsOneWidget);
-      expect(find.text('foto1.jpg'), findsOneWidget);
-      expect(find.text('Foto 1 dari 1'), findsOneWidget);
-      expect(find.text('Buka foto'), findsOneWidget);
-      expect(find.text('Hapus foto ini'), findsOneWidget);
-
-      await tester.tap(find.text('Hapus foto ini'));
-      await tester.pumpAndSettle();
-
-      verify(() => mockFormCubit.removePhoto('photo_1')).called(1);
-    });
-
-    testWidgets(
-      'tapping more options with multiple photos shows reorder options and '
-      'calls reorder',
-      (tester) async {
-        tester.view.physicalSize = const Size(800, 1200);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
-
-        const state = IncidentFormState(
-          photos: [
-            IncidentMediaItem(id: 'photo_1', name: 'foto1.jpg'),
-            IncidentMediaItem(id: 'photo_2', name: 'foto2.jpg'),
-          ],
-        );
-
-        await tester.pumpWidget(createWidgetUnderTest(state: state));
-        await tester.pump();
-
-        await tester.tap(find.text('Buka Dialog'));
-        await tester.pumpAndSettle();
-
-        // Tap more options on photo 2 (index 1)
-        await tester.tap(find.bySemanticsLabel('Opsi foto insiden ke-2'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('foto2.jpg'), findsOneWidget);
-        expect(find.text('Foto 2 dari 2'), findsOneWidget);
-        expect(find.text('Jadikan foto utama'), findsOneWidget);
-        expect(find.text('Geser ke kiri'), findsOneWidget);
-
-        await tester.tap(find.text('Jadikan foto utama'));
-        await tester.pumpAndSettle();
-
-        verify(() => mockFormCubit.reorderPhotos(1, 0)).called(1);
-      },
+      ),
     );
 
-    testWidgets('calls updateCategory when category chip tapped', (
+    expect(find.text('Mengunggah foto 2 dari 2…'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(taskButton(tester, 'Mengunggah foto 2 dari 2…').isLoading, isTrue);
+  });
+
+  testWidgets('failure shows the reason and Coba Kirim Lagi', (tester) async {
+    await open(
       tester,
-    ) async {
-      const state = IncidentFormState();
-
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
-
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Keamanan'));
-      await tester.pump();
-
-      verify(
-        () => mockFormCubit.updateCategory(IncidentCategory.security),
-      ).called(1);
-    });
-
-    testWidgets('enables Kirim button and invokes submit when valid', (
-      tester,
-    ) async {
-      const state = IncidentFormState(
-        category: IncidentCategory.security,
-        title: 'Gerbang utama rusak',
-        description: 'Pintu gerbang macet tidak bisa ditutup',
-      );
-
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
-
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      final submitBtn = find.widgetWithText(AppButton, 'Kirim');
-      expect(submitBtn, findsOneWidget);
-
-      await tester.tap(submitBtn);
-      await tester.pump();
-
-      verify(
-        () => mockFormCubit.submit(session: any(named: 'session')),
-      ).called(1);
-    });
-
-    testWidgets(
-      'shows confirmation dialog when trying to discard non-empty form',
-      (tester) async {
-        const state = IncidentFormState(title: 'Ada genangan air');
-
-        await tester.pumpWidget(createWidgetUnderTest(state: state));
-        await tester.pump();
-
-        await tester.tap(find.text('Buka Dialog'));
-        await tester.pumpAndSettle();
-
-        // Tap close button di AppBar fullscreen dialog
-        final closeButton = find.bySemanticsLabel('Tutup');
-        expect(closeButton, findsOneWidget);
-        await tester.tap(closeButton);
-        await tester.pumpAndSettle();
-
-        // Konfirmasi dialog muncul
-        expect(find.byType(AppConfirmationDialog), findsOneWidget);
-        expect(find.text('Buang laporan?'), findsOneWidget);
-        expect(find.text('Buang'), findsOneWidget);
-        expect(find.text('Lanjut mengisi'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'displays title errorText when validationAttempt > 0 and error exists',
-      (tester) async {
-        const state = IncidentFormState(
-          titleError: 'Judul laporan wajib diisi',
-          validationAttempt: 1,
-        );
-
-        await tester.pumpWidget(createWidgetUnderTest(state: state));
-        await tester.pump();
-
-        await tester.tap(find.text('Buka Dialog'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Judul laporan wajib diisi'), findsOneWidget);
-      },
-    );
-
-    testWidgets('displays AppSnackbar when failure status has error message', (
-      tester,
-    ) async {
-      const state = IncidentFormState(
+      state: const IncidentFormState(
         status: IncidentFormStatus.failure,
-        errorMessage: 'Tidak ada koneksi internet. Periksa koneksi Anda.',
-      );
-
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
-
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Tidak ada koneksi internet. Periksa koneksi Anda.'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('renders without overflow under 200% dynamic text scaling', (
-      tester,
-    ) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
-      addTearDown(
-        () => tester.platformDispatcher.clearTextScaleFactorTestValue(),
-      );
-
-      const state = IncidentFormState(
-        category: IncidentCategory.facility,
-        title: 'Pipa air bocor di lantai dua',
-        description: 'Air menggenang dan merembes ke lantai dasar.',
-      );
-
-      await tester.pumpWidget(createWidgetUnderTest(state: state));
-      await tester.pump();
-
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('requests the GPS location when the form opens', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(
-        createWidgetUnderTest(state: const IncidentFormState()),
-      );
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
-
-      verify(() => mockFormCubit.resolveLocation()).called(1);
-      expect(find.text('Lokasi kejadian'), findsOneWidget);
-      expect(find.text('Tanpa lokasi'), findsOneWidget);
-    });
-
-    testWidgets('shows the Indonesian reason when location is unavailable', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          state: const IncidentFormState(
-            locationError: 'Izin akses lokasi belum diberikan.',
+        text: 'Pagar rusak',
+        errorMessage: 'Foto ke-1 gagal diunggah. Laporan belum terkirim.',
+        photos: [
+          IncidentMediaItem(
+            id: 'a',
+            name: 'a.jpg',
+            path: 'missing_a.jpg',
+            uploadStatus: IncidentUploadStatus.failed,
+            uploadError: 'Koneksi terputus.',
           ),
-        ),
-      );
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
+        ],
+      ),
+    );
 
-      expect(find.text('Lokasi tidak tersedia'), findsOneWidget);
-      expect(
-        find.textContaining('Izin akses lokasi belum diberikan.'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Ketuk untuk mencoba lagi.'), findsOneWidget);
-    });
+    expect(
+      find.text('Foto ke-1 gagal diunggah. Laporan belum terkirim.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Coba Kirim Lagi'));
+    verify(() => formCubit.submit(session: tSession)).called(1);
 
-    testWidgets('shows searching indicator while resolving location', (
+    await tester.tap(find.widgetWithText(AppButton, 'Coba lagi'));
+    verify(() => formCubit.retryPhotoUpload('a')).called(1);
+  });
+
+  testWidgets('offline disables sending and says why', (tester) async {
+    final connectivity = MockConnectivityCubit();
+    when(() => connectivity.state).thenReturn(ConnectivityStatus.offline);
+    when(
+      () => connectivity.stream,
+    ).thenAnswer((_) => const Stream<ConnectivityStatus>.empty());
+    when(connectivity.close).thenAnswer((_) async {});
+
+    await open(
       tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+      connectivity: connectivity,
+      state: const IncidentFormState(text: 'Pagar rusak'),
+    );
 
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          state: const IncidentFormState(isResolvingLocation: true),
-        ),
-      );
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 2));
+    expect(
+      find.text('Anda offline. Laporan bisa dikirim saat tersambung.'),
+      findsOneWidget,
+    );
+    expect(taskButton(tester, 'Kirim Laporan').onPressed, isNull);
+  });
 
-      expect(find.text('Mencari lokasi...'), findsOneWidget);
-    });
-
-    testWidgets('shows per-photo upload status and disables Kirim while '
-        'uploading', (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          state: const IncidentFormState(
-            status: IncidentFormStatus.uploading,
-            title: 'Pagar rusak',
-            photos: [
-              IncidentMediaItem(
-                id: 'a',
-                name: 'a.jpg',
-                path: 'missing_a.jpg',
-                uploadStatus: IncidentUploadStatus.uploading,
-                uploadProgress: 0.4,
-              ),
-              IncidentMediaItem(id: 'b', name: 'b.jpg', path: 'missing_b.jpg'),
-              IncidentMediaItem(
-                id: 'c',
-                name: 'c.jpg',
-                path: 'missing_c.jpg',
-                uploadStatus: IncidentUploadStatus.done,
-                remoteUrl: 'https://cdn.kawalo.id/c.webp',
-              ),
-            ],
-          ),
-        ),
-      );
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 2));
-
-      expect(find.text('40%'), findsOneWidget);
-      expect(find.text('Menunggu...'), findsOneWidget);
-      final kirim = tester.widget<AppButton>(
-        find.widgetWithText(AppButton, 'Kirim'),
-      );
-      expect(kirim.enabled, isFalse);
-    });
-
-    testWidgets('failed photo shows the error and retries on Coba lagi', (
+  testWidgets('location chip: coordinates, and retry when unavailable', (
+    tester,
+  ) async {
+    await open(
       tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+      state: const IncidentFormState(glat: -6.2088, glong: 106.8456),
+    );
+    expect(find.text('-6.20880, 106.84560'), findsOneWidget);
 
-      await tester.pumpWidget(
-        createWidgetUnderTest(
-          state: const IncidentFormState(
-            title: 'Pagar rusak',
-            photos: [
-              IncidentMediaItem(
-                id: 'a',
-                name: 'a.jpg',
-                path: 'missing_a.jpg',
-                uploadStatus: IncidentUploadStatus.failed,
-                uploadError: 'Koneksi terputus.',
-              ),
-            ],
-          ),
-        ),
-      );
-      await tester.tap(find.text('Buka Dialog'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Hapus lokasi'));
+    verify(() => formCubit.clearLocation()).called(1);
+  });
 
-      expect(find.text('Koneksi terputus.'), findsOneWidget);
-      await tester.tap(find.widgetWithText(AppButton, 'Coba lagi'));
-      await tester.pump();
-      verify(() => mockFormCubit.retryPhotoUpload('a')).called(1);
-    });
+  testWidgets('unavailable location can be retried', (tester) async {
+    await open(
+      tester,
+      state: const IncidentFormState(
+        locationError: 'Izin akses lokasi belum diberikan.',
+      ),
+    );
+    clearInteractions(formCubit);
+
+    await tester.tap(find.text('Lokasi tidak tersedia · Coba lagi'));
+    verify(() => formCubit.resolveLocation()).called(1);
+  });
+
+  testWidgets('success pops, adds to the list and confirms', (tester) async {
+    final listCubit = MockIncidentListCubit();
+    final created = IncidentEntity(
+      id: 'inc_1',
+      groupId: 'grp_1',
+      title: 'Pagar rusak',
+      status: IncidentStatus.open,
+      createdBy: 'guard@kawalo.id',
+      createdAt: DateTime(2026, 11, 13, 9, 41),
+    );
+    when(() => listCubit.onIncidentCreated(created)).thenReturn(null);
+
+    await open(tester, listCubit: listCubit);
+
+    final success = IncidentFormState(
+      status: IncidentFormStatus.success,
+      createdIncident: created,
+    );
+    setState(success);
+    states.add(success);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Laporan Kejadian'), findsNothing);
+    expect(find.text('Laporan terkirim ke grup.'), findsOneWidget);
+    verify(() => listCubit.onIncidentCreated(created)).called(1);
   });
 }

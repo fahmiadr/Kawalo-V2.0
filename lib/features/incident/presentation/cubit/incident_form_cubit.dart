@@ -5,10 +5,8 @@ import 'package:kawalo_mobile/core/network/dio_cancellation_token.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
-import 'package:kawalo_mobile/core/utils/app_validator.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/create_incident/create_incident_params.dart';
 import 'package:kawalo_mobile/features/incident/domain/usecases/create_incident/create_incident_usecase.dart';
-import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_category.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_form_state.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_photo_uploader.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
@@ -46,57 +44,59 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
         : state.status;
   }
 
-  /// Validasi aturan judul insiden (wajib, max 128 karakter).
-  static String? validateTitle(String value) {
+  /// The API caps `title` at 128 characters.
+  static const titleMaxLength = 128;
+
+  /// Caps the whole text so it always fits the API `description` (1024).
+  static const textMaxLength = 1000;
+
+  static const textMinLength = 5;
+
+  static String? validateText(String value) {
     final trimmed = value.trim();
-    if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(trimmed, fieldName: 'Judul laporan');
+    if (trimmed.length < textMinLength) {
+      return 'Tulis apa yang terjadi, minimal $textMinLength karakter.';
     }
-    if (value.length > 128) {
-      return 'Judul laporan maksimal 128 karakter.';
-    }
-    return null;
-  }
-
-  /// Validasi aturan deskripsi insiden (opsional, max 1000 karakter).
-  static String? validateDescription(String value) {
-    if (value.length > 1000) {
-      return 'Deskripsi kejadian maksimal 1000 karakter.';
+    if (trimmed.length > textMaxLength) {
+      return 'Maksimal $textMaxLength karakter.';
     }
     return null;
   }
 
-  /// Memperbarui judul insiden.
-  void updateTitle(String title) {
-    final error = validateTitle(title);
-    emit(
-      state.copyWith(
-        title: title,
-        titleError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
+  /// Splits the report into the API's `title` and `description`: the first
+  /// sentence (up to the first `.`, `!`, `?` or newline) is the title and the
+  /// rest the description, null when empty. A first sentence longer than
+  /// [titleMaxLength] is cut, and then the whole text goes to the
+  /// description so nothing the guard wrote is lost.
+  static ({String title, String? description}) splitReport(String text) {
+    final trimmed = text.trim();
+    final end = trimmed.indexOf(RegExp(r'[.!?\n]'));
+    var title = (end < 0 ? trimmed : trimmed.substring(0, end)).trim();
+    // "Rusak..." or "Rusak?!" must not leave "..", "!" as the description.
+    var rest = end < 0
+        ? ''
+        : trimmed.substring(end + 1).replaceFirst(RegExp(r'^[.!?\s]+'), '');
+    rest = rest.trim();
+    if (title.isEmpty) {
+      // Text starting with punctuation: fall back to the whole text.
+      title = trimmed;
+      rest = '';
+    }
+    if (title.length > titleMaxLength) {
+      return (
+        title: '${title.substring(0, titleMaxLength - 1).trimRight()}…',
+        description: trimmed,
+      );
+    }
+    return (title: title, description: rest.isEmpty ? null : rest);
   }
 
-  /// Memperbarui deskripsi insiden.
-  void updateDescription(String description) {
-    final error = validateDescription(description);
+  void updateText(String text) {
     emit(
       state.copyWith(
-        description: description,
-        descriptionError: () => error,
-        errorMessage: () => null,
-        status: _statusOnInput(),
-      ),
-    );
-  }
-
-  /// Memperbarui kategori insiden.
-  void updateCategory(IncidentCategory category) {
-    emit(
-      state.copyWith(
-        category: category,
+        text: text,
+        textError: () =>
+            state.validationAttempt > 0 ? validateText(text) : null,
         errorMessage: () => null,
         status: _statusOnInput(),
       ),
@@ -263,17 +263,11 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
   Future<void> submit({required AuthSessionEntity? session}) async {
     if (state.isBusy) return;
 
-    final trimmedTitle = state.title.trim();
-    final titleErr = validateTitle(trimmedTitle);
-    final descErr = validateDescription(state.description);
-
-    final hasErrors = titleErr != null || descErr != null;
-
-    if (hasErrors) {
+    final textErr = validateText(state.text);
+    if (textErr != null) {
       emit(
         state.copyWith(
-          titleError: () => titleErr,
-          descriptionError: () => descErr,
+          textError: () => textErr,
           validationAttempt: state.validationAttempt + 1,
         ),
       );
@@ -305,14 +299,19 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
     if (isClosed) return;
 
     // Only uploaded URLs may reach the payload; a local file must never leak.
-    final failedCount = state.photos.where((p) => !p.isUploaded).length;
-    if (failedCount > 0) {
+    final failed = [
+      for (var i = 0; i < state.photos.length; i++)
+        if (!state.photos[i].isUploaded) i + 1,
+    ];
+    if (failed.isNotEmpty) {
       emit(
         state.copyWith(
           status: IncidentFormStatus.failure,
-          errorMessage: () =>
-              '$failedCount foto gagal diunggah. Ketuk "Coba lagi" pada foto '
-              'yang gagal, lalu kirim ulang.',
+          errorMessage: () => failed.length == 1
+              ? 'Foto ke-${failed.single} gagal diunggah. Laporan belum '
+                    'terkirim.'
+              : '${failed.length} foto gagal diunggah. Laporan belum '
+                    'terkirim.',
         ),
       );
       return;
@@ -326,13 +325,13 @@ class IncidentFormCubit extends Cubit<IncidentFormState> {
 
     final photoUrls = state.photos.map((p) => p.remoteUrl!).toList();
 
+    final report = splitReport(state.text);
+    // No category: the field is no longer shown and the API applies its own
+    // default.
     final params = CreateIncidentParams(
-      title: trimmedTitle,
+      title: report.title,
       groupId: groupId,
-      description: state.description.trim().isNotEmpty
-          ? state.description.trim()
-          : null,
-      category: state.category,
+      description: report.description,
       glat: state.hasLocation ? state.glat : null,
       glong: state.hasLocation ? state.glong : null,
       photos: photoUrls,

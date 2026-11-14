@@ -9,8 +9,9 @@ import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/incident/domain/entities/incident_entity.dart';
 import 'package:kawalo_mobile/features/incident/domain/value_objects/incident_status.dart';
 import 'package:kawalo_mobile/features/incident/presentation/cubit/incident_list_cubit.dart';
@@ -125,7 +126,7 @@ void main() {
 
   group('IncidentScreen UI & Accessibility Tests', () {
     testWidgets(
-      'renders AppHomeAppBar with title "Insiden", filter chips including '
+      'renders AppTopBar with title "Insiden", filter chips including '
       'Tanggal, and skeleton on loading',
       (tester) async {
         const state = IncidentLoading();
@@ -133,10 +134,10 @@ void main() {
         await tester.pumpWidget(createWidgetUnderTest(state: state));
         await tester.pump();
 
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
+        expect(find.byType(AppTopBar), findsOneWidget);
         expect(
           find.descendant(
-            of: find.byType(AppHomeAppBar),
+            of: find.byType(AppTopBar),
             matching: find.text('Insiden'),
           ),
           findsOneWidget,
@@ -201,7 +202,7 @@ void main() {
       expect(find.byType(AppSearchBar), findsOneWidget);
       expect(
         find.descendant(
-          of: find.byType(AppHomeAppBar),
+          of: find.byType(AppTopBar),
           matching: find.text('Insiden'),
         ),
         findsNothing,
@@ -219,7 +220,7 @@ void main() {
       // Judul "Insiden" muncul kembali
       expect(
         find.descendant(
-          of: find.byType(AppHomeAppBar),
+          of: find.byType(AppTopBar),
           matching: find.text('Insiden'),
         ),
         findsOneWidget,
@@ -240,7 +241,7 @@ void main() {
 
       expect(find.byType(IncidentCard), findsOneWidget);
       expect(find.text('Lampu Koridor Mati'), findsOneWidget);
-      expect(find.text('Lampu koridor blok B padam total'), findsOneWidget);
+      expect(find.text('Terbuka'), findsWidgets);
       expect(find.textContaining('Ahmad Dahlan'), findsWidgets);
     });
 
@@ -266,20 +267,40 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('renders AppExtendedFab when user has active group session', (
+    testWidgets('status filter alone shows the group empty state', (
       tester,
     ) async {
-      final state = IncidentLoaded(
-        incidents: [tIncident],
+      const state = IncidentLoaded(
+        incidents: [],
         lastSync: 'Diperbarui Hari ini, 10.00',
+        selectedFilter: IncidentStatus.open,
       );
 
       await tester.pumpWidget(createWidgetUnderTest(state: state));
       await tester.pump();
 
-      expect(find.byType(AppExtendedFab), findsOneWidget);
-      expect(find.text('Insiden'), findsWidgets);
+      expect(find.text('Tidak ada insiden terbuka'), findsOneWidget);
+      expect(find.text('Reset filter & pencarian'), findsNothing);
     });
+
+    testWidgets(
+      'renders Laporkan Kejadian when user has active group session',
+      (tester) async {
+        final state = IncidentLoaded(
+          incidents: [tIncident],
+          lastSync: 'Diperbarui Hari ini, 10.00',
+        );
+
+        await tester.pumpWidget(createWidgetUnderTest(state: state));
+        await tester.pump();
+
+        expect(find.byType(AppExtendedFab), findsNothing);
+        expect(
+          find.widgetWithText(AppTaskButton, 'Laporkan Kejadian'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('renders without overflow under 200% dynamic text scaling', (
       tester,

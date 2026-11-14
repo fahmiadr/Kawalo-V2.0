@@ -8,14 +8,16 @@ import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
@@ -271,7 +273,7 @@ class _IncidentScreenState extends State<IncidentScreen> {
           title: 'Insiden',
           searchLabel: 'Cari insiden',
           refreshLabel: 'Memuat ulang laporan insiden',
-          greeting: state.lastSync,
+          lastSync: state.lastSync,
           isInitialLoading: isInitialLoading,
           isOffline: isOffline,
           isSearchExpanded: _isSearchExpanded,
@@ -281,13 +283,20 @@ class _IncidentScreenState extends State<IncidentScreen> {
           onCloseSearch: _onCloseSearch,
           onRefresh: () => _handleRefresh(cubit),
           canRefresh: !_isRefreshing,
-          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
+          bottomNavigationBar: IncidentEntity.canBeCreatedBySession(session)
+              ? AppTaskFooter(
+                  children: [
+                    AppTaskButton(
+                      label: 'Laporkan Kejadian',
+                      icon: Icons.photo_camera_outlined,
+                      tone: KawaloTones.of(context).inc,
+                      onPressed: _onOpenCreateForm,
+                    ),
+                  ],
+                )
+              : null,
           filterBar: _buildFilterBar(state: state, isLoading: isInitialLoading),
           body: _buildBody(context, state, cubit),
-          createLabel: 'Insiden',
-          onCreate: IncidentEntity.canBeCreatedBySession(session)
-              ? _onOpenCreateForm
-              : null,
           canPop: !_isSearchExpanded,
           onPopBlocked: _onCloseSearch,
         );
@@ -323,13 +332,16 @@ class _IncidentScreenState extends State<IncidentScreen> {
       );
     } else if (state is IncidentLoaded) {
       if (state.displayedIncidents.isEmpty) {
-        if (state.hasActiveFilter) {
+        final searchOrDate =
+            (state.searchQuery?.isNotEmpty ?? false) ||
+            state.hasActiveDateFilter;
+        if (searchOrDate) {
           return ListEmptySearchResult(
             noun: 'laporan insiden',
             onReset: _resetAllFilters,
           );
         } else {
-          return _buildEmptyGroupState();
+          return _buildEmptyGroupState(state.selectedFilter);
         }
       } else {
         return _buildIncidentListView(
@@ -376,13 +388,6 @@ class _IncidentScreenState extends State<IncidentScreen> {
       onDatePressed: _onFilterPressed,
       onDateReset: _onResetDateFilter,
       chips: [
-        // Filter Status Insiden
-        AppChip(
-          type: AppChipType.filter,
-          label: 'Semua',
-          selected: state.selectedFilter == null,
-          onPressed: isLoading ? null : () => _onStatusFilterSelected(null),
-        ),
         AppChip(
           type: AppChipType.filter,
           label: 'Terbuka',
@@ -398,6 +403,12 @@ class _IncidentScreenState extends State<IncidentScreen> {
           onPressed: isLoading
               ? null
               : () => _onStatusFilterSelected(IncidentStatus.resolved),
+        ),
+        AppChip(
+          type: AppChipType.filter,
+          label: 'Semua',
+          selected: state.selectedFilter == null,
+          onPressed: isLoading ? null : () => _onStatusFilterSelected(null),
         ),
       ],
     );
@@ -421,13 +432,15 @@ class _IncidentScreenState extends State<IncidentScreen> {
     );
   }
 
-  Widget _buildEmptyGroupState() {
-    return const AppEmptyState(
-      icon: AppSvgIcon.color(KawaloColorVectors.incident1),
-      title: 'Belum ada laporan insiden',
-      description:
-          'Belum ada laporan insiden '
-          'pada hari ini.',
+  Widget _buildEmptyGroupState(IncidentStatus? filter) {
+    return AppEmptyState(
+      icon: const AppSvgIcon.color(KawaloColorVectors.incident1),
+      title: switch (filter) {
+        IncidentStatus.open => 'Tidak ada insiden terbuka',
+        IncidentStatus.resolved => 'Belum ada insiden selesai',
+        null => 'Belum ada laporan insiden',
+      },
+      description: 'Laporan kejadian dari semua anggota grup tampil di sini.',
     );
   }
 }

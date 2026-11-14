@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/camera/app_multi_shot_camera_screen.dart';
 import 'package:kawalo_mobile/features/incident/presentation/models/incident_media_item.dart';
 import 'package:kawalo_mobile/features/incident/presentation/widgets/incident_attachment_preview.dart';
@@ -98,31 +92,24 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final typeScale = theme.typeScale;
-
+    final tones = KawaloTones.of(context);
     final canSend =
         !widget.isPosting &&
         !widget.draftPhotos.any((p) => p.isUploading) &&
         (widget.draftMessage.trim().isNotEmpty ||
             widget.draftPhotos.isNotEmpty);
+    final canAddPhoto = widget.draftPhotos.length < 2 && !widget.isPosting;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        border: Border(
-          top: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-        ),
+        color: tones.background,
+        border: Border(top: BorderSide(color: tones.line)),
       ),
       child: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Pratinjau foto lampiran sebelum dikirimkan
             if (widget.draftPhotos.isNotEmpty)
               IncidentAttachmentPreview(
                 photos: widget.draftPhotos,
@@ -130,57 +117,36 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
                 onRetry: widget.onRetryPhoto,
                 showWaiting: widget.isPosting,
               ),
-
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.space200,
-                vertical: AppSpacing.space100,
-              ),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Tombol Kamera Lampiran
-                  Semantics(
-                    button: true,
-                    label:
-                        'Ambil foto lampiran untuk balasan (maksimal 2 foto)',
-                    child: SizedBox(
-                      width: AppStateLayer.minTouchTarget,
-                      height: AppStateLayer.minTouchTarget,
-                      child: Center(
-                        child: IconButton(
-                          icon: AppSvgIcon(
-                            KawaloVectors.camera01,
-                            size: 24,
-                            color: widget.draftPhotos.length >= 2
-                                ? colorScheme.onSurface.withValues(
-                                    alpha: AppStateLayer.disabledOpacity,
-                                  )
-                                : colorScheme.primary,
-                          ),
-                          tooltip: 'Ambil Foto',
-                          onPressed:
-                              widget.draftPhotos.length >= 2 || widget.isPosting
-                              ? null
-                              : _openCamera,
-                        ),
-                      ),
+                  IconButton(
+                    iconSize: 24,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 48,
+                      height: 48,
                     ),
+                    tooltip: 'Ambil foto lampiran (maksimal 2 foto)',
+                    icon: Icon(
+                      Icons.photo_camera_outlined,
+                      color: canAddPhoto ? tones.ink : tones.ink3,
+                    ),
+                    onPressed: canAddPhoto ? _openCamera : null,
                   ),
-                  AppSpacing.hGapXs,
-
-                  // Bidang Input Teks
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Container(
-                      constraints: const BoxConstraints(maxHeight: 120),
+                      constraints: const BoxConstraints(
+                        minHeight: 48,
+                        maxHeight: 120,
+                      ),
+                      alignment: Alignment.centerLeft,
                       decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: AppRadius.borderMedium,
-                        border: Border.all(
-                          color: colorScheme.outlineVariant.withValues(
-                            alpha: 0.6,
-                          ),
-                        ),
+                        color: tones.surface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: tones.line, width: 1.5),
                       ),
                       child: TextField(
                         controller: _textController,
@@ -188,17 +154,14 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
                         minLines: 1,
                         maxLines: 4,
                         textInputAction: TextInputAction.newline,
-                        style: typeScale.bodyMedium.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+                        textCapitalization: TextCapitalization.sentences,
+                        style: TextStyle(color: tones.ink, fontSize: 16),
                         decoration: InputDecoration(
-                          hintText: 'Tulis tanggapan atau koordinasi...',
-                          hintStyle: typeScale.bodyMedium.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          hintText: 'Tulis balasan…',
+                          hintStyle: TextStyle(color: tones.ink3, fontSize: 16),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.space150,
-                            vertical: AppSpacing.space100,
+                            horizontal: 16,
+                            vertical: 12,
                           ),
                           border: InputBorder.none,
                           isDense: true,
@@ -207,48 +170,36 @@ class _IncidentComposerBarState extends State<IncidentComposerBar> {
                       ),
                     ),
                   ),
-                  AppSpacing.hGapXs,
-
-                  // Tombol Kirim Pesan
+                  const SizedBox(width: 8),
                   Semantics(
                     button: true,
+                    enabled: canSend,
                     label: 'Kirim pesan balasan',
-                    child: SizedBox(
-                      width: AppStateLayer.minTouchTarget,
-                      height: AppStateLayer.minTouchTarget,
-                      child: Center(
-                        child: widget.isPosting
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: AppLoadingIndicator(),
-                              )
-                            : Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: canSend
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurface.withValues(
-                                          alpha: AppStateLayer
-                                              .disabledContainerOpacity,
-                                        ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  icon: AppSvgIcon(
-                                    KawaloVectors.arrowUp01Filled,
-                                    size: 20,
-                                    color: canSend
-                                        ? colorScheme.onPrimary
-                                        : colorScheme.onSurface.withValues(
-                                            alpha:
-                                                AppStateLayer.disabledOpacity,
-                                          ),
+                    excludeSemantics: true,
+                    child: Material(
+                      color: canSend ? tones.inc.color : tones.surface2,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: canSend ? widget.onSend : null,
+                        child: SizedBox.square(
+                          dimension: 48,
+                          child: Center(
+                            child: widget.isPosting
+                                ? SizedBox.square(
+                                    dimension: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: tones.ink3,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.send_rounded,
+                                    size: 22,
+                                    color: canSend ? tones.inc.on : tones.ink3,
                                   ),
-                                  onPressed: canSend ? widget.onSend : null,
-                                ),
-                              ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

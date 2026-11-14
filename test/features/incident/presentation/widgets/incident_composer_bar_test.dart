@@ -30,10 +30,12 @@ void main() {
     );
   }
 
-  IconButton sendButton(WidgetTester tester) => tester.widget<IconButton>(
+  InkWell sendButton(WidgetTester tester) => tester.widget<InkWell>(
     find.descendant(
-      of: find.bySemanticsLabel('Kirim pesan balasan'),
-      matching: find.byType(IconButton),
+      of: find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.label == 'Kirim pesan balasan',
+      ),
+      matching: find.byType(InkWell),
     ),
   );
 
@@ -58,14 +60,14 @@ void main() {
   ) async {
     await pump(tester, photos: [uploading]);
 
-    expect(sendButton(tester).onPressed, isNull);
+    expect(sendButton(tester).onTap, isNull);
     expect(find.text('50%'), findsOneWidget);
   });
 
   testWidgets('send is enabled with an idle draft', (tester) async {
     await pump(tester, photos: const []);
 
-    expect(sendButton(tester).onPressed, isNotNull);
+    expect(sendButton(tester).onTap, isNotNull);
   });
 
   testWidgets('tapping a failed draft photo retries its upload', (
