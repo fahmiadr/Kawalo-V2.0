@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 
 class PersonnelCardSkeleton extends StatelessWidget {
   const PersonnelCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final color = AppTheme.of(context).colorScheme.surfaceContainerHigh;
+    final tones = KawaloTones.of(context);
 
-    Widget bar(double width, double height, BorderRadius radius) => Container(
+    Widget bar(double width, double height, double radius) => Container(
       width: width,
       height: height,
-      decoration: BoxDecoration(color: color, borderRadius: radius),
+      decoration: BoxDecoration(
+        color: tones.surface2,
+        borderRadius: BorderRadius.circular(radius),
+      ),
     );
 
     return ExcludeSemantics(
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space200,
-          vertical: AppSpacing.space150,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: tones.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: tones.line),
         ),
         child: Row(
           children: [
-            bar(40, 40, AppRadius.borderMedium),
-            AppSpacing.hGapSm,
+            bar(34, 34, 17),
+            const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                bar(140, 16, AppRadius.borderSmall),
-                AppSpacing.vGap50,
-                bar(180, 12, AppRadius.borderSmall),
+                bar(140, 14, 6),
+                const SizedBox(height: 8),
+                bar(96, 12, 6),
               ],
             ),
           ],

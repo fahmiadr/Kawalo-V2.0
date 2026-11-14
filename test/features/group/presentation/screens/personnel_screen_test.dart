@@ -152,7 +152,11 @@ void main() {
     await search(tester, 'zzz');
 
     expect(find.byType(PersonnelCard), findsNothing);
-    expect(find.text('Personil tidak ditemukan'), findsOneWidget);
+    expect(find.text('Tidak ditemukan'), findsOneWidget);
+    expect(
+      find.text('Tidak ada anggota yang cocok dengan "zzz".'),
+      findsOneWidget,
+    );
 
     await search(tester, '');
     expect(find.byType(PersonnelCard), findsNWidgets(3));
@@ -180,5 +184,21 @@ void main() {
 
     expect(find.byType(AppUserAvatar), findsOneWidget);
     expect(find.text('B'), findsOneWidget);
+  });
+
+  testWidgets('title counts members and rows show the role', (tester) async {
+    await pump(
+      tester,
+      const PersonnelLoaded([
+        GroupMemberEntity(email: 'r@test.id', name: 'Rina W', role: 'ADMIN'),
+        GroupMemberEntity(email: 'b@test.id', name: 'Budi', role: 'GUARD'),
+        GroupMemberEntity(email: 'x@test.id', name: 'Tanpa Peran'),
+      ]),
+    );
+
+    expect(find.text('3 anggota'), findsOneWidget);
+    expect(find.text('ADMIN'), findsOneWidget);
+    expect(find.text('GUARD'), findsOneWidget);
+    expect(find.text('RW'), findsOneWidget);
   });
 }
