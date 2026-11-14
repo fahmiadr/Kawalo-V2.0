@@ -5,16 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/config/env_config.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
-import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_motion.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/splash/presentation/cubit/splash_cubit.dart';
-import 'package:kawalo_mobile/features/splash/presentation/widgets/background_glow_widget.dart';
-import 'package:kawalo_mobile/features/splash/presentation/widgets/brand_logo_widget.dart';
-import 'package:kawalo_mobile/features/splash/presentation/widgets/subtitle_widget.dart';
 
 /// Screen utama Splash yang ditampilkan saat aplikasi pertama kali dimuat.
 class SplashScreen extends StatefulWidget {
@@ -56,9 +51,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _brandOpacityAnimation;
-  late final Animation<double> _subtitleOpacityAnimation;
-  late final Animation<Color?> _glowColorAnimation;
+  late final Animation<double> _fade;
 
   Timer? _slowLoadingTimer;
   Timer? _splashMinDurationTimer;
@@ -79,49 +72,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 1200),
     );
-
-    // Keyframe 0ms -> 2000ms, Opacity 0% -> 100% (0 -> 1)
-    _brandOpacityAnimation = CurvedAnimation(
+    _fade = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(
-        0,
-        2000 / 3000,
-        curve: AppMotion.emphasizedDecelerate,
-      ),
+      curve: AppMotion.emphasizedDecelerate,
     );
-
-    // Keyframe 300ms -> 2000ms, Opacity 0% -> 100% (0 -> 1)
-    _subtitleOpacityAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(
-        300 / 3000,
-        2000 / 3000,
-        curve: AppMotion.emphasizedDecelerate,
-      ),
-    );
-
-    // Keyframe 300ms -> 3000ms, Warna light inversePrimary Opacity 0% -> 32%
-    final glowBaseColor = AppTheme.lightThemeData().colorScheme.inversePrimary;
-    _glowColorAnimation =
-        ColorTween(
-          begin: glowBaseColor.withValues(alpha: 0),
-          end: glowBaseColor.withValues(alpha: 0.32),
-        ).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Interval(
-              300 / 3000,
-              1,
-              curve: AppMotion.emphasizedDecelerate,
-            ),
-          ),
-        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (!AppMotion.isReducedMotion(context)) {
+      if (AppMotion.isReducedMotion(context)) {
+        _controller.value = 1;
+      } else {
         _controller.forward();
       }
 
@@ -187,105 +149,85 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = AppLayout.horizontalMargin(screenWidth);
-    final isReducedMotion = AppMotion.isReducedMotion(context);
-    final m3eTheme = AppTheme.m3eLight();
-    final lightTheme = AppTheme.lightThemeData();
-
-    final brandChild = isReducedMotion
-        ? const BrandLogoWidget()
-        : FadeTransition(
-            opacity: _brandOpacityAnimation,
-            child: const BrandLogoWidget(),
-          );
-
-    final subtitleChild = isReducedMotion
-        ? const SubtitleWidget()
-        : FadeTransition(
-            opacity: _subtitleOpacityAnimation,
-            child: const SubtitleWidget(),
-          );
-
-    final loadingIndicatorChild = AnimatedOpacity(
-      duration: isReducedMotion
-          ? Duration.zero
-          : const Duration(milliseconds: 300),
-      curve: AppMotion.emphasizedDecelerate,
-      opacity: _showSlowLoadingIndicator ? 1.0 : 0.0,
-      child: AppLoadingIndicator(
-        color: lightTheme.colorScheme.primary,
-        semanticLabel: 'Memuat aplikasi...',
-      ),
-    );
+    final tones = KawaloTones.of(context);
 
     return BlocListener<SplashCubit, SplashState>(
       bloc: _splashCubit,
       listenWhen: (_, current) => current.isReady,
       listener: (_, _) => _checkAndNavigate(),
-      child: M3ETheme(
-        data: m3eTheme,
-        child: Theme(
-          data: lightTheme,
-          child: Scaffold(
-            backgroundColor: lightTheme.colorScheme.surface,
-            body: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding,
-                    vertical: AppSpacing.space300,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: AppLayout.contentMaxWidth,
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Background Glow
-                        // Layer Blur 170, Warna Opacity 0% -> 32%
-                        if (isReducedMotion)
-                          const BackgroundGlowWidget()
-                        else
-                          AnimatedBuilder(
-                            animation: _glowColorAnimation,
-                            builder: (context, child) {
-                              return BackgroundGlowWidget(
-                                color: _glowColorAnimation.value,
-                              );
-                            },
-                          ),
-
-                        // Foreground Content Column
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Brand Logo
-                            brandChild,
-
-                            AppSpacing.vGap200,
-
-                            // Subtitle
-                            subtitleChild,
-
-                            AppSpacing.vGap400,
-
-                            // Indikator visual loading resmi dengan slot tinggi
-                            // stabil
-                            SizedBox(
-                              height: AppSpacing.space600,
-                              child: Center(child: loadingIndicatorChild),
+      child: Scaffold(
+        backgroundColor: tones.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fade,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 104,
+                            height: 104,
+                            decoration: BoxDecoration(
+                              color: tones.ptt.soft,
+                              borderRadius: BorderRadius.circular(32),
                             ),
-                          ],
-                        ),
-                      ],
+                            child: Icon(
+                              Icons.shield_outlined,
+                              size: 52,
+                              color: tones.ptt.color,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Kawalo',
+                            style: TextStyle(
+                              color: tones.ink,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Operasional keamanan dalam satu genggaman',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: tones.ink2, fontSize: 15),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Fixed-height slot so the caption does not jump when the
+                    // slow-load spinner appears.
+                    SizedBox(
+                      height: 40,
+                      child: _showSlowLoadingIndicator
+                          ? AppLoadingIndicator(
+                              color: tones.ptt.color,
+                              semanticLabel: 'Memuat aplikasi...',
+                            )
+                          : null,
+                    ),
+                    Text(
+                      'Memuat…',
+                      style: TextStyle(color: tones.ink2, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

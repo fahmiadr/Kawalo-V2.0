@@ -38,7 +38,7 @@ void main() {
         await tester.pump();
         expect(find.byType(SplashScreen), findsOneWidget);
         expect(
-          find.text('Keamanan Terpadu. Efisiensi Maksimal.'),
+          find.text('Operasional keamanan dalam satu genggaman'),
           findsOneWidget,
         );
 
@@ -46,26 +46,25 @@ void main() {
       },
     );
 
-    testWidgets(
-      'SplashScreen enforces light mode theme even under dark mode parent',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.dark(),
-            home: SplashScreen(onInitializationComplete: () {}),
-          ),
-        );
+    testWidgets('SplashScreen follows the dark theme of its parent', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: SplashScreen(onInitializationComplete: () {}),
+        ),
+      );
 
-        await tester.pump();
-        final scaffoldFinder = find.byType(Scaffold);
-        expect(scaffoldFinder, findsOneWidget);
+      await tester.pump();
+      final scaffoldFinder = find.byType(Scaffold);
+      expect(scaffoldFinder, findsOneWidget);
 
-        final theme = Theme.of(tester.element(scaffoldFinder));
-        expect(theme.brightness, equals(Brightness.light));
+      final theme = Theme.of(tester.element(scaffoldFinder));
+      expect(theme.brightness, equals(Brightness.dark));
 
-        await tester.pump(const Duration(milliseconds: 3100));
-      },
-    );
+      await tester.pump(const Duration(milliseconds: 3100));
+    });
 
     testWidgets(
       'SplashScreen renders AppLoadingIndicator when loading takes longer',
@@ -108,7 +107,7 @@ void main() {
       await tester.pump();
       expect(find.byType(SplashScreen), findsOneWidget);
       expect(
-        find.text('Keamanan Terpadu. Efisiensi Maksimal.'),
+        find.text('Operasional keamanan dalam satu genggaman'),
         findsOneWidget,
       );
 
