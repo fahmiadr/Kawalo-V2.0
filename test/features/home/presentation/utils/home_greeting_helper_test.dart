@@ -74,35 +74,35 @@ void main() {
       );
     });
 
-    test('formatGreeting formats user with role and name', () {
-      final greeting = HomeGreetingHelper.formatGreeting(
-        name: 'AHMAD ZAKI FAUZAN',
-        role: 'admin',
-        dateTime: DateTime(2026, 9, 2, 12),
+    test('formatShort uses the time word and the first name', () {
+      expect(
+        HomeGreetingHelper.formatShort(
+          name: 'BUDI SANTOSO',
+          dateTime: DateTime(2026, 9, 2, 8),
+        ),
+        'Pagi, Budi',
       );
-
-      expect(greeting, equals('Selamat siang, admin AHMAD ZAKI FAUZAN!'));
-    });
-
-    test('formatGreeting formats user without role properly', () {
-      final greeting = HomeGreetingHelper.formatGreeting(
-        name: 'Budi Santoso',
-        role: '',
-        dateTime: DateTime(2026, 9, 2, 8),
-      );
-
-      expect(greeting, equals('Selamat pagi, BUDI SANTOSO!'));
-    });
-
-    test(
-      'formatGreeting falls back to Personil when name is null or empty',
-      () {
-        final greeting = HomeGreetingHelper.formatGreeting(
+      expect(
+        HomeGreetingHelper.formatShort(
+          name: '  rina wati ',
           dateTime: DateTime(2026, 9, 2, 19),
-        );
+        ),
+        'Malam, Rina',
+      );
+    });
 
-        expect(greeting, equals('Selamat malam, Personil!'));
-      },
-    );
+    test('formatShort without a name keeps the full greeting', () {
+      expect(
+        HomeGreetingHelper.formatShort(dateTime: DateTime(2026, 9, 2, 12)),
+        'Selamat siang',
+      );
+      expect(
+        HomeGreetingHelper.formatShort(
+          name: ' ',
+          dateTime: DateTime(2026, 9, 2, 16),
+        ),
+        'Selamat sore',
+      );
+    });
   });
 }

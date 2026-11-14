@@ -23,26 +23,15 @@ abstract final class HomeGreetingHelper {
     }
   }
 
-  /// Memformat teks salam lengkap untuk header Beranda:
-  /// Contoh: `"Selamat siang, admin AHMAD ZAKI FAUZAN!"`
-  ///
-  /// Jika data nama/role belum tersedia, menghasilkan fallback ramah:
-  /// Contoh: `"Selamat siang, Personil!"`
-  static String formatGreeting({
-    String? name,
-    String? role,
-    DateTime? dateTime,
-  }) {
-    final timeGreeting = getTimeOfDayGreeting(dateTime);
-    final cleanRole = role?.trim() ?? '';
-    final cleanName = name?.trim().toUpperCase() ?? '';
-
-    if (cleanRole.isNotEmpty && cleanName.isNotEmpty) {
-      return '$timeGreeting, $cleanRole $cleanName!';
-    } else if (cleanName.isNotEmpty) {
-      return '$timeGreeting, $cleanName!';
-    }
-
-    return '$timeGreeting, Personil!';
+  /// Short Beranda header greeting: time word plus first name in title case,
+  /// e.g. `"Pagi, Budi"` for "BUDI SANTOSO". Without a name: `"Selamat pagi"`.
+  static String formatShort({String? name, DateTime? dateTime}) {
+    final full = getTimeOfDayGreeting(dateTime);
+    final first = name?.trim().split(RegExp(r'\s+')).first ?? '';
+    if (first.isEmpty) return full;
+    final word = full.substring('Selamat '.length);
+    final time = word[0].toUpperCase() + word.substring(1);
+    final who = first[0].toUpperCase() + first.substring(1).toLowerCase();
+    return '$time, $who';
   }
 }
