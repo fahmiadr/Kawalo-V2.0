@@ -1,42 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 
 class ShiftCardSkeleton extends StatelessWidget {
   const ShiftCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final color = AppTheme.of(context).colorScheme.surfaceContainerHigh;
-
-    Widget bar(double width, double height, BorderRadius radius) => Container(
+    final tones = KawaloTones.of(context);
+    Widget bar(double width, double height) => Container(
       width: width,
       height: height,
-      decoration: BoxDecoration(color: color, borderRadius: radius),
+      decoration: BoxDecoration(
+        color: tones.surface2,
+        borderRadius: BorderRadius.circular(7),
+      ),
     );
-
     return ExcludeSemantics(
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space200,
-          vertical: AppSpacing.space150,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: tones.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: tones.line),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                bar(40, 40, AppRadius.borderMedium),
-                AppSpacing.hGapSm,
-                bar(140, 16, AppRadius.borderSmall),
-              ],
+            bar(14, 40),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [bar(140, 14), const SizedBox(height: 8), bar(180, 12)],
             ),
-            AppSpacing.vGap150,
-            bar(180, 12, AppRadius.borderSmall),
-            AppSpacing.vGapSm,
-            bar(220, 12, AppRadius.borderSmall),
           ],
         ),
       ),

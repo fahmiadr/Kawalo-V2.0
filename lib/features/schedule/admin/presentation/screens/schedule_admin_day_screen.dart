@@ -10,14 +10,12 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/schedule/admin/domain/entities/managed_schedule_entity.dart';
 import 'package:kawalo_mobile/features/schedule/admin/presentation/cubit/schedule_admin_cubit.dart';
 import 'package:kawalo_mobile/features/schedule/admin/presentation/cubit/schedule_admin_state.dart';
@@ -143,23 +141,18 @@ class _ScheduleAdminDayScreenState extends State<ScheduleAdminDayScreen> {
     );
   }
 
-  PreferredSizeWidget _appBar(int total, List<ManagedScheduleEntity> items) {
+  PreferredSizeWidget _appBar(int total) {
     if (_selecting) {
-      return AppHomeAppBar(
+      return AppTopBar(
         title: '${_selected.length} dipilih',
-        leading: AppIconButton(
-          semanticLabel: 'Batal memilih',
-          onPressed: () => setState(_selected.clear),
-          icon: const AppSvgIcon(KawaloVectors.cancel01, size: 24),
-        ),
+        leading: AppTopBarLeading.close,
+        onLeadingPressed: () => setState(_selected.clear),
       );
     }
     final relative = relativeDayLabel(widget.day, widget.cubit.today);
-    return AppHomeAppBar(
-      greeting: '${relative == null ? '' : '$relative · '}$total jadwal',
+    return AppTopBar(
       title: AppDateFormat.formatWeekdayDate(widget.day),
-      showBackButton: true,
-      showTrailing: false,
+      subtitle: '${relative == null ? '' : '$relative · '}$total jadwal',
     );
   }
 
@@ -167,6 +160,7 @@ class _ScheduleAdminDayScreenState extends State<ScheduleAdminDayScreen> {
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
     final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     return BlocBuilder<ScheduleAdminCubit, ScheduleAdminState>(
       bloc: widget.cubit,
       builder: (context, state) {
@@ -179,24 +173,33 @@ class _ScheduleAdminDayScreenState extends State<ScheduleAdminDayScreen> {
             if (!didPop) setState(_selected.clear);
           },
           child: Scaffold(
-            backgroundColor: colorScheme.surface,
-            appBar: _appBar(items.length, items),
-            floatingActionButton: widget.canManage && !isPast && !_selecting
-                ? AppExtendedFab(
-                    onPressed: _add,
-                    icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
-                    label:
-                        'Tambah ke ${AppDateFormat.formatDayMonth(widget.day)}',
-                  )
-                : null,
+            backgroundColor: tones.background,
+            appBar: _appBar(items.length),
             bottomNavigationBar: _selecting
-                ? AppPageActions(
+                ? AppTaskFooter(
                     children: [
-                      AppDestructiveButton(
+                      AppTaskButton(
                         label: 'Hapus (${_selected.length})',
                         semanticLabel: 'Hapus jadwal terpilih',
-                        enabled: !_deleting,
-                        onPressed: () => _deleteSelected(items),
+                        icon: Icons.delete_outline_rounded,
+                        tone: tones.sos,
+                        isLoading: _deleting,
+                        onPressed: _deleting
+                            ? null
+                            : () => unawaited(_deleteSelected(items)),
+                      ),
+                    ],
+                  )
+                : widget.canManage && !isPast
+                ? AppTaskFooter(
+                    children: [
+                      AppTaskButton(
+                        label:
+                            'Tambah ke '
+                            '${AppDateFormat.formatDayMonth(widget.day)}',
+                        icon: Icons.add_rounded,
+                        tone: tones.adm,
+                        onPressed: () => unawaited(_add()),
                       ),
                     ],
                   )
@@ -217,7 +220,7 @@ class _ScheduleAdminDayScreenState extends State<ScheduleAdminDayScreen> {
                         AppSpacing.space200,
                         0,
                         AppSpacing.space200,
-                        AppLayout.fabScrollClearance,
+                        AppSpacing.space200,
                       ),
                       children: [
                         Center(

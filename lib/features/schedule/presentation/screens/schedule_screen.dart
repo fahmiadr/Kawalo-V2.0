@@ -5,15 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/utils/app_date_format.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/schedule/domain/entities/schedule_entity.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/cubit/schedule_cubit.dart';
@@ -22,7 +18,8 @@ import 'package:kawalo_mobile/features/schedule/presentation/extensions/schedule
 import 'package:kawalo_mobile/features/schedule/presentation/widgets/schedule_card.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/widgets/schedule_card_skeleton.dart';
 
-/// Work schedule of the signed-in user for the next 30 days, grouped by day.
+/// "Jadwal Saya": the signed-in user's shifts for the next 30 days under a
+/// strip of the current week.
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key, this.cubit, this.clock = DateTime.now});
 
@@ -61,47 +58,161 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     final cubit = _cubit;
+    final tones = KawaloTones.of(context);
+    final now = widget.clock();
     return Scaffold(
-      backgroundColor: AppTheme.of(context).colorScheme.surface,
-      appBar: const AppHomeAppBar(
-        title: 'Jadwal Kerja',
-        showBackButton: true,
-        showTrailing: false,
+      backgroundColor: tones.background,
+      appBar: AppTopBar(
+        title: 'Jadwal Saya',
+        subtitle: scheduleMonthLabel(now),
       ),
       body: SafeArea(
         top: false,
         child: AppRefreshIndicator.contained(
-          semanticsLabel: 'Memuat ulang jadwal kerja',
+          semanticsLabel: 'Memuat ulang jadwal saya',
           onRefresh: _refresh,
           child: BlocBuilder<ScheduleCubit, ScheduleState>(
             bloc: cubit,
             builder: (context, state) => switch (state) {
               ScheduleInitial() || ScheduleLoading() => ListScreenSkeleton(
-                bottomPadding: AppSpacing.space300,
+                bottomPadding: 24,
                 itemBuilder: (_, _) => const ScheduleCardSkeleton(),
               ),
               ScheduleError(:final message) => ListErrorState(
-                noun: 'jadwal kerja',
+                noun: 'jadwal',
                 message: message,
                 onRetry: () => unawaited(cubit.fetch()),
               ),
-              ScheduleLoaded(:final schedules) when schedules.isEmpty =>
-                const AppEmptyState(
-                  icon: AppSvgIcon.color(
-                    KawaloColorVectors.calendar2,
-                    size: 64,
+              ScheduleLoaded(:final schedules) when schedules.isEmpty => Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                    child: _WeekStrip(now: now, schedules: schedules),
                   ),
-                  title: 'Belum ada jadwal',
-                  description:
-                      'Belum ada jadwal kerja untuk Anda dalam 30 hari ke '
-                      'depan.',
-                ),
+                  Expanded(
+                    child: AppEmptyState(
+                      icon: Icon(
+                        Icons.calendar_month_outlined,
+                        size: 64,
+                        color: tones.pat.color,
+                      ),
+                      title: 'Belum ada jadwal',
+                      description:
+                          'Jadwal 30 hari ke depan dari admin tampil di '
+                          'sini.',
+                    ),
+                  ),
+                ],
+              ),
               ScheduleLoaded(:final schedules) => _ScheduleList(
                 schedules: schedules,
-                now: widget.clock(),
+                now: now,
               ),
             },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Monday to Sunday of the week containing [now]; a dot marks days with a
+/// loaded shift.
+class _WeekStrip extends StatelessWidget {
+  const _WeekStrip({required this.now, required this.schedules});
+
+  final DateTime now;
+  final List<ScheduleEntity> schedules;
+
+  @override
+  Widget build(BuildContext context) {
+    final tones = KawaloTones.of(context);
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    final days = [
+      for (var i = 0; i < 7; i++)
+        DateTime(monday.year, monday.month, monday.day + i),
+    ];
+    final scheduled = {for (final s in schedules) s.date};
+
+    return Row(
+      children: [
+        for (final day in days)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: _WeekDay(
+                day: day,
+                isToday: relativeDayLabel(day, now) == 'Hari ini',
+                hasShift: scheduled.contains(day),
+                tones: tones,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _WeekDay extends StatelessWidget {
+  const _WeekDay({
+    required this.day,
+    required this.isToday,
+    required this.hasShift,
+    required this.tones,
+  });
+
+  final DateTime day;
+  final bool isToday;
+  final bool hasShift;
+  final KawaloTones tones;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = scheduleWeekdayShort[day.weekday - 1];
+    final fg = isToday ? tones.pat.on : tones.ink2;
+    return Semantics(
+      container: true,
+      label:
+          '$name ${day.day}${isToday ? ', hari ini' : ''}'
+          '${hasShift ? ', ada jadwal' : ''}',
+      excludeSemantics: true,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 58),
+        decoration: BoxDecoration(
+          color: isToday ? tones.pat.color : tones.surface,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              name,
+              style: TextStyle(
+                color: fg,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              '${day.day}',
+              style: TextStyle(
+                color: isToday ? tones.pat.on : tones.ink,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: hasShift
+                    ? (isToday ? tones.pat.on : tones.pat.color)
+                    : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -116,42 +227,9 @@ class _ScheduleList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final children = <Widget>[];
-    DateTime? currentDay;
-    for (final schedule in schedules) {
-      if (currentDay != schedule.date) {
-        currentDay = schedule.date;
-        final relative = relativeDayLabel(schedule.date, now);
-        final date = AppDateFormat.formatWeekdayDate(schedule.date);
-        children
-          ..add(children.isEmpty ? AppSpacing.vGapSm : AppSpacing.vGap200)
-          ..add(
-            Semantics(
-              header: true,
-              child: Text(
-                relative == null ? date : '$relative · $date',
-                style: theme.typography.emphasized.titleSmall.copyWith(
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-            ),
-          )
-          ..add(AppSpacing.vGapSm);
-      } else {
-        children.add(AppSpacing.vGapSm);
-      }
-      children.add(ScheduleCard(schedule: schedule));
-    }
-
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.space200,
-        AppSpacing.space100,
-        AppSpacing.space200,
-        AppSpacing.space300,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
       children: [
         Center(
           child: ConstrainedBox(
@@ -160,7 +238,13 @@ class _ScheduleList extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: children,
+              children: [
+                _WeekStrip(now: now, schedules: schedules),
+                for (final schedule in schedules) ...[
+                  const SizedBox(height: 8),
+                  ScheduleCard(schedule: schedule, now: now),
+                ],
+              ],
             ),
           ),
         ),

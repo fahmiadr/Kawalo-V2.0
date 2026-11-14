@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
 import 'package:kawalo_mobile/features/schedule/admin/domain/entities/managed_schedule_entity.dart';
 import 'package:kawalo_mobile/features/schedule/admin/domain/entities/schedule_entry.dart';
@@ -101,26 +102,29 @@ void main() {
   ) async {
     await pump(tester);
 
-    expect(find.text('Tambah jadwal'), findsOneWidget);
+    expect(find.text('Tambah Jadwal'), findsOneWidget);
     expect(
       find.descendant(
-        of: find.byType(AppPageActions),
-        matching: find.text('Simpan'),
+        of: find.byType(AppTaskFooter),
+        matching: find.text('Simpan Jadwal'),
       ),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: find.byType(AppBar), matching: find.text('Simpan')),
+      find.descendant(
+        of: find.byType(AppTopBar),
+        matching: find.text('Simpan Jadwal'),
+      ),
       findsNothing,
     );
     expect(
       find.descendant(
-        of: find.byType(AppBar),
+        of: find.byType(AppTopBar),
         matching: find.textContaining('Hapus'),
       ),
       findsNothing,
     );
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Simpan Jadwal'));
     await tester.pump();
 
     expect(find.text('Pilih personil.'), findsOneWidget);
@@ -141,7 +145,7 @@ void main() {
     await fillCreateForm(tester);
 
     expect(find.text('Akan dibuat 1 jadwal'), findsOneWidget);
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Simpan Jadwal'));
     await tester.pump();
 
     final entries =
@@ -189,12 +193,12 @@ void main() {
     );
     await pump(tester, entry: entry);
 
-    expect(find.text('Ubah jadwal'), findsOneWidget);
+    expect(find.text('Ubah Jadwal'), findsOneWidget);
     expect(find.text('Budi Santoso'), findsOneWidget);
     expect(find.text('Shift Pagi'), findsOneWidget);
     expect(find.text('Ulangi jadwal'), findsNothing);
 
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Simpan Jadwal'));
     await tester.pump();
 
     verify(
@@ -223,13 +227,16 @@ void main() {
     );
     await pump(tester, entry: entry);
 
-    expect(find.text('Detail jadwal'), findsOneWidget);
+    expect(find.text('Detail Jadwal'), findsOneWidget);
     expect(
-      find.descendant(of: find.byType(AppBar), matching: find.text('Terkunci')),
+      find.descendant(
+        of: find.byType(AppTopBar),
+        matching: find.text('Terkunci'),
+      ),
       findsOneWidget,
     );
-    expect(find.text('Simpan'), findsNothing);
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.text('Simpan Jadwal'), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
     expect(find.text('07:04'), findsOneWidget);
     expect(find.text('Terlambat 4 menit'), findsOneWidget);
     expect(find.text('Belum absen keluar'), findsOneWidget);
@@ -241,7 +248,7 @@ void main() {
     (tester) async {
       await pump(tester);
       await fillCreateForm(tester);
-      await tester.tap(find.text('Simpan'));
+      await tester.tap(find.text('Simpan Jadwal'));
       await tester.pump();
 
       states.add(
@@ -344,7 +351,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Tambah jadwal'), findsNothing);
+    expect(find.text('Tambah Jadwal'), findsNothing);
     expect(result, _day);
   });
 }

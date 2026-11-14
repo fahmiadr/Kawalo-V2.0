@@ -10,16 +10,17 @@ import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/group/presentation/group_member_filter_options.dart';
@@ -143,43 +144,45 @@ class _ScheduleAdminScreenState extends State<ScheduleAdminScreen> {
     final session = context.watch<UserSessionCubit>().state;
     final canManage = session?.isAdminRole ?? false;
 
+    final tones = KawaloTones.of(context);
+
     return Scaffold(
-      backgroundColor: AppTheme.of(context).colorScheme.surface,
-      appBar: AppHomeAppBar(
-        title: 'Manajemen Jadwal',
-        showBackButton: true,
-        trailing: BlocBuilder<ScheduleAdminCubit, ScheduleAdminState>(
-          bloc: cubit,
-          buildWhen: (a, b) => a.filterEmail != b.filterEmail,
-          builder: (context, state) => AppIconButton(
-            semanticLabel: state.filterEmail == null
-                ? 'Filter personil'
-                : 'Filter personil aktif: ${state.filterName}',
-            isSelected: state.filterEmail != null,
-            onPressed: _pickPerson,
-            icon: const AppSvgIcon(KawaloVectors.listFilter, size: 24),
+      backgroundColor: tones.background,
+      appBar: AppTopBar(
+        title: 'Jadwal Tim',
+        actions: [
+          BlocBuilder<ScheduleAdminCubit, ScheduleAdminState>(
+            bloc: cubit,
+            buildWhen: (a, b) => a.filterEmail != b.filterEmail,
+            builder: (context, state) => AppIconButton(
+              semanticLabel: state.filterEmail == null
+                  ? 'Filter personil'
+                  : 'Filter personil aktif: ${state.filterName}',
+              isSelected: state.filterEmail != null,
+              onPressed: _pickPerson,
+              icon: const AppSvgIcon(KawaloVectors.listFilter, size: 24),
+            ),
           ),
-        ),
+          const SizedBox(width: 8),
+        ],
       ),
-      floatingActionButton: canManage
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+      bottomNavigationBar: canManage
+          ? AppTaskFooter(
               children: [
-                if (widget.onForecast != null) ...[
-                  AppExtendedFab(
-                    color: AppFabColor.secondary,
-                    onPressed: _openForecast,
-                    icon: const AppSvgIcon(KawaloVectors.flashAuto, size: 24),
-                    label: 'Forecast',
-                  ),
-                  AppSpacing.vGapSm,
-                ],
-                AppExtendedFab(
-                  onPressed: _openForm,
-                  icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
-                  label: 'Tambah',
+                AppTaskButton(
+                  label: 'Tambah Jadwal',
+                  icon: Icons.add_rounded,
+                  tone: tones.adm,
+                  onPressed: () => unawaited(_openForm()),
                 ),
+                if (widget.onForecast != null)
+                  AppTaskButton(
+                    label: 'Forecast Otomatis',
+                    icon: Icons.auto_fix_high_rounded,
+                    variant: AppTaskButtonVariant.secondary,
+                    size: AppTaskButtonSize.medium,
+                    onPressed: () => unawaited(_openForecast()),
+                  ),
               ],
             )
           : null,
@@ -208,8 +211,7 @@ class _ScheduleAdminScreenState extends State<ScheduleAdminScreen> {
               onSelectDay: (d) => unawaited(cubit.selectDay(d)),
               onClearFilter: () => unawaited(cubit.setPersonFilter()),
               onRetry: () => unawaited(cubit.load()),
-              onAdd: _openForm,
-              onForecast: widget.onForecast == null ? null : _openForecast,
+              hasForecast: widget.onForecast != null,
               onOpenDay: () => _openDay(canManage),
             ),
           ),
@@ -234,8 +236,7 @@ class _Body extends StatelessWidget {
     required this.onSelectDay,
     required this.onClearFilter,
     required this.onRetry,
-    required this.onAdd,
-    required this.onForecast,
+    required this.hasForecast,
     required this.onOpenDay,
   });
 
@@ -248,8 +249,7 @@ class _Body extends StatelessWidget {
   final ValueChanged<DateTime> onSelectDay;
   final VoidCallback onClearFilter;
   final VoidCallback onRetry;
-  final VoidCallback onAdd;
-  final VoidCallback? onForecast;
+  final bool hasForecast;
   final VoidCallback onOpenDay;
 
   @override
@@ -290,7 +290,7 @@ class _Body extends StatelessWidget {
         AppSpacing.space200,
         AppSpacing.space100,
         AppSpacing.space200,
-        AppLayout.fabScrollClearance * 1.6,
+        AppSpacing.space200,
       ),
       children: [
         Center(
@@ -390,10 +390,8 @@ class _Body extends StatelessWidget {
             title: 'Belum ada jadwal di bulan ini',
             description: canManage
                 ? 'Tambah jadwal satu per satu'
-                      '${onForecast == null ? '' : ', atau buat otomatis untuk beberapa hari sekaligus dengan Forecast'}.'
+                      '${hasForecast ? ', atau buat otomatis untuk beberapa hari sekaligus dengan Forecast' : ''}.'
                 : 'Jadwal grup belum dibuat.',
-            actionLabel: canManage ? 'Tambah Jadwal' : null,
-            onActionPressed: canManage ? onAdd : null,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.space300),
           ),
         ),
@@ -405,7 +403,34 @@ class _Body extends StatelessWidget {
     final day = state.selectedDay;
     final items = state.itemsOn(day);
     final relative = relativeDayLabel(day, today);
+    final tones = KawaloTones.of(context);
     return [
+      if (day.isBefore(today)) ...[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: tones.surface2,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.lock_outline_rounded, size: 18, color: tones.ink2),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Hari lampau terkunci dan tidak bisa diubah.',
+                  style: TextStyle(
+                    color: tones.ink2,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        AppSpacing.vGapSm,
+      ],
       Row(
         children: [
           Expanded(
@@ -452,75 +477,103 @@ class _Body extends StatelessWidget {
   }
 }
 
+/// One shift of the selected day: marker, name and time, then the avatars of
+/// the people on it (`.box` in the redesign). Opens the day screen.
 class _ShiftSummaryCard extends StatelessWidget {
   const _ShiftSummaryCard({required this.group, required this.onTap});
+
+  /// Avatars beyond this collapse into the "N orang" count.
+  static const _maxAvatars = 5;
 
   final ShiftGroup group;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final first = group.first;
     final names = group.rows.map((e) => e.displayName).join(', ');
-    return AppCard(
-      onPressed: onTap,
-      semanticLabel: '${first.shiftLabel}, ${group.rows.length} orang: $names',
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space150,
-      ),
-      child: Row(
-        children: [
-          ShiftMarker(color: first.shiftAccentColor),
-          AppSpacing.hGap150,
-          Expanded(
+    final timeRange = first.timeRange;
+    return Semantics(
+      button: true,
+      label: '${first.shiftLabel}, ${group.rows.length} orang: $names',
+      excludeSemantics: true,
+      child: Material(
+        color: tones.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: tones.line),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text.rich(
-                  TextSpan(
-                    text: first.shiftLabel,
-                    style: theme.typography.emphasized.titleSmall.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    children: [
-                      if (first.timeRange != null)
-                        TextSpan(
-                          text: '  ${first.timeRange}',
-                          style: theme.typeScale.bodyMedium.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                Row(
+                  children: [
+                    ShiftMarker(color: first.shiftAccentColor),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        first.shiftLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: tones.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                    if (timeRange != null)
+                      Text(
+                        timeRange,
+                        style: AppTheme.monoFigures.copyWith(
+                          color: tones.ink2,
+                          fontSize: 13,
+                        ),
+                      ),
+                  ],
                 ),
-                AppSpacing.vGap25,
-                Text(
-                  names,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.typeScale.bodySmall.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    for (final e in group.rows.take(_maxAvatars)) ...[
+                      AppUserAvatar(
+                        name: e.displayName,
+                        imageUrl: e.avatarUrl,
+                        size: 32,
+                        maxInitials: 2,
+                        circle: true,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    const SizedBox(width: 2),
+                    Expanded(
+                      child: Text(
+                        names,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: tones.ink2, fontSize: 13),
+                      ),
+                    ),
+                    Text(
+                      '${group.rows.length} orang',
+                      style: TextStyle(
+                        color: tones.ink2,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          AppSpacing.hGapSm,
-          AppTag(
-            label: '${group.rows.length} orang',
-            variant: AppTagVariant.secondary,
-            size: AppTagSize.small,
-          ),
-          AppSpacing.hGap50,
-          AppSvgIcon(
-            KawaloVectors.arrowRight01,
-            size: 20,
-            color: colorScheme.outline,
-          ),
-        ],
+        ),
       ),
     );
   }

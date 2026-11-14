@@ -1,104 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/features/schedule/domain/entities/schedule_entity.dart';
 import 'package:kawalo_mobile/features/schedule/presentation/extensions/schedule_ui_extension.dart';
 
+/// One shift row of "Jadwal Saya": day label, shift line and time range.
 class ScheduleCard extends StatelessWidget {
-  const ScheduleCard({required this.schedule, super.key});
+  const ScheduleCard({required this.schedule, required this.now, super.key});
 
   final ScheduleEntity schedule;
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final accent = schedule.shiftAccentColor;
-    final location = schedule.locationName;
+    final day = scheduleDayLabel(schedule.date, now);
 
-    return AppCard(
-      semanticLabel:
-          '${schedule.shiftName}, ${schedule.displayTimeRange}'
-          '${location == null ? '' : ', $location'}',
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space150,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  schedule.shiftName,
-                  style: theme.typography.emphasized.titleMedium.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+    return Semantics(
+      container: true,
+      label: '$day, ${schedule.displayShiftLine}, ${schedule.displayTimeRange}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: tones.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: tones.line),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: tones.pat.soft,
+                borderRadius: BorderRadius.circular(13),
               ),
-              if (accent != null) ...[
-                AppSpacing.hGapSm,
-                ExcludeSemantics(
-                  child: Container(
-                    key: const ValueKey('schedule_shift_marker'),
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: colorScheme.outline),
+              child: Icon(
+                Icons.calendar_month_outlined,
+                size: 20,
+                color: tones.pat.color,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    day,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: tones.ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-              ],
-            ],
-          ),
-          AppSpacing.vGap50,
-          _DetailRow(
-            iconPath: KawaloColorVectors.timeRotation,
-            text: schedule.displayTimeRange,
-          ),
-          if (location != null) ...[
-            AppSpacing.vGap50,
-            _DetailRow(iconPath: KawaloColorVectors.location1, text: location),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.iconPath, required this.text});
-
-  final String iconPath;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    return Row(
-      children: [
-        AppSvgIcon.color(iconPath, size: 20),
-        AppSpacing.hGapSm,
-        Expanded(
-          child: Text(
-            text,
-            style: theme.typeScale.labelMedium.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+                  Text(
+                    schedule.displayShiftLine,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: tones.ink2, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+            const SizedBox(width: 8),
+            if (accent != null) ...[
+              Container(
+                key: const ValueKey('schedule_shift_marker'),
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: accent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: tones.line),
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              schedule.displayTimeRange,
+              style: AppTheme.monoFigures.copyWith(
+                color: tones.ink2,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

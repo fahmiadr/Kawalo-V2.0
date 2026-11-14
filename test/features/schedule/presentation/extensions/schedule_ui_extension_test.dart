@@ -83,4 +83,22 @@ void main() {
       isNull,
     );
   });
+
+  test('day label and shift line', () {
+    expect(scheduleDayLabel(today, now), 'Hari ini · Sel 30');
+    expect(scheduleDayLabel(DateTime(2026, 7, 6), now), 'Sen 6');
+    expect(scheduleMonthLabel(today), 'Juni 2026');
+    expect(
+      ScheduleEntity(
+        id: '1',
+        date: today,
+        shiftName: 'Shift Malam',
+        startTime: '23:00',
+        endTime: '07:00',
+        locationName: 'Pos Utama',
+      ).displayShiftLine,
+      'Shift Malam · Pos Utama · berakhir besok',
+    );
+    expect(_shift(today).displayShiftLine, 'Shift');
+  });
 }

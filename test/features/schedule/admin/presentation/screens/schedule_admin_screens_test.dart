@@ -6,7 +6,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/schedule/admin/domain/entities/managed_schedule_entity.dart';
 import 'package:kawalo_mobile/features/schedule/admin/domain/entities/schedule_entry.dart';
 import 'package:kawalo_mobile/features/schedule/admin/presentation/cubit/schedule_admin_cubit.dart';
@@ -172,8 +172,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Tambah'), findsOneWidget);
-      expect(find.text('Forecast'), findsOneWidget);
+      expect(find.text('Tambah Jadwal'), findsOneWidget);
+      expect(find.text('Forecast Otomatis'), findsOneWidget);
       expect(find.text('Shift Pagi'), findsWidgets);
       expect(find.text('Budi, Siti'), findsOneWidget);
       expect(find.text('3 jadwal'), findsOneWidget);
@@ -188,8 +188,8 @@ void main() {
         role: 'GUARD',
       );
 
-      expect(find.text('Tambah'), findsNothing);
-      expect(find.text('Forecast'), findsNothing);
+      expect(find.text('Tambah Jadwal'), findsNothing);
+      expect(find.text('Forecast Otomatis'), findsNothing);
       expect(find.text('Budi'), findsOneWidget);
     });
 
@@ -198,8 +198,21 @@ void main() {
     ) async {
       await pump(tester, ScheduleAdminScreen(cubit: cubit), state());
 
-      expect(find.text('Tambah'), findsOneWidget);
-      expect(find.text('Forecast'), findsNothing);
+      expect(find.text('Tambah Jadwal'), findsOneWidget);
+      expect(find.text('Forecast Otomatis'), findsNothing);
+    });
+
+    testWidgets('a past day says it is locked', (tester) async {
+      await pump(
+        tester,
+        ScheduleAdminScreen(cubit: cubit),
+        state(items: [_row('1', 'Budi')], day: DateTime(2026, 11, 9)),
+      );
+
+      expect(
+        find.text('Hari lampau terkunci dan tidak bisa diubah.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('an empty month explains how to start', (tester) async {
@@ -261,7 +274,7 @@ void main() {
       expect(find.text('Hapus (1)'), findsOneWidget);
       expect(
         find.descendant(
-          of: find.byType(AppHomeAppBar),
+          of: find.byType(AppTopBar),
           matching: find.textContaining('Hapus'),
         ),
         findsNothing,
@@ -276,7 +289,7 @@ void main() {
       await tester.tap(find.text('Budi'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Detail jadwal'), findsOneWidget);
+      expect(find.text('Detail Jadwal'), findsOneWidget);
       expect(find.text('Jadwal ini terkunci'), findsOneWidget);
       expect(find.text('Simpan'), findsNothing);
       expect(find.text('Masuk'), findsOneWidget);
@@ -320,7 +333,7 @@ void main() {
       await tester.tap(find.text('Siti'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Detail jadwal'), findsOneWidget);
+      expect(find.text('Detail Jadwal'), findsOneWidget);
       expect(
         find.text('Hanya admin yang dapat mengubah jadwal.'),
         findsOneWidget,

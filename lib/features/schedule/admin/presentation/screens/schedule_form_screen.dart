@@ -18,12 +18,13 @@ import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_picker.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/group/domain/entities/group_member_entity.dart';
@@ -297,13 +298,11 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
     final title = _readOnly
-        ? 'Detail jadwal'
+        ? 'Detail Jadwal'
         : _entry == null
-        ? 'Tambah jadwal'
-        : 'Ubah jadwal';
+        ? 'Tambah Jadwal'
+        : 'Ubah Jadwal';
 
     return BlocConsumer<ScheduleFormCubit, ScheduleFormState>(
       listener: _onState,
@@ -313,17 +312,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
             state.status == ScheduleFormStatus.ready ||
             state.status == ScheduleFormStatus.saving ||
             state.status == ScheduleFormStatus.failed;
+        final tones = KawaloTones.of(context);
         return Scaffold(
-          backgroundColor: colorScheme.surface,
-          appBar: AppBar(
-            backgroundColor: colorScheme.surface,
-            automaticallyImplyLeading: false,
-            leading: AppIconButton(
-              semanticLabel: 'Tutup',
-              onPressed: saving ? null : () => Navigator.of(context).pop(),
-              icon: const AppSvgIcon(KawaloVectors.cancel01, size: 24),
-            ),
-            title: Text(title),
+          backgroundColor: tones.background,
+          appBar: AppTopBar(
+            title: title,
+            leading: AppTopBarLeading.close,
+            onLeadingPressed: () => Navigator.of(context).pop(),
+            leadingEnabled: !saving,
             actions: [
               if (_readOnly && _entry!.locked)
                 const Padding(
@@ -338,13 +334,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           ),
           bottomNavigationBar: _readOnly
               ? null
-              : AppPageActions(
+              : AppTaskFooter(
                   children: [
-                    AppButton(
-                      size: AppButtonSize.md,
-                      enabled: ready && !saving,
-                      onPressed: _save,
-                      child: const Text('Simpan'),
+                    AppTaskButton(
+                      label: 'Simpan Jadwal',
+                      icon: Icons.check_rounded,
+                      tone: tones.adm,
+                      isLoading: saving,
+                      onPressed: ready && !saving ? _save : null,
                     ),
                   ],
                 ),

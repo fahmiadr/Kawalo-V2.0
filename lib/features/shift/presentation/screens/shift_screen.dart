@@ -6,15 +6,15 @@ import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/shift/domain/entities/shift_entity.dart';
 import 'package:kawalo_mobile/features/shift/presentation/cubit/shift_list_cubit.dart';
@@ -79,80 +79,75 @@ class _ShiftScreenState extends State<ShiftScreen> {
           (c) => c.state?.isAdminRole ?? false,
         );
 
+    final tones = KawaloTones.of(context);
+
     return BlocBuilder<ShiftListCubit, ShiftListState>(
       bloc: cubit,
       builder: (context, state) => Scaffold(
-        backgroundColor: AppTheme.of(context).colorScheme.surface,
-        appBar: AppHomeAppBar(
-          greeting: switch (state) {
+        backgroundColor: tones.background,
+        appBar: AppTopBar(
+          title: 'Shift',
+          subtitle: switch (state) {
             ShiftListLoaded(:final shifts) when shifts.isNotEmpty =>
               '${shifts.length} shift aktif',
             _ => null,
           },
-          title: canManage ? 'Manajemen Shift' : 'Daftar Shift',
-          showBackButton: true,
-          showTrailing: false,
         ),
-        floatingActionButtonLocation: const AppStationaryEndFloatFabLocation(),
-        floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-        floatingActionButton: canManage
-            ? AppExtendedFab(
-                onPressed: () => unawaited(_openForm()),
-                icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
-                label: 'Tambah Shift',
+        bottomNavigationBar: canManage
+            ? AppTaskFooter(
+                children: [
+                  AppTaskButton(
+                    label: 'Tambah Shift',
+                    icon: Icons.add_rounded,
+                    tone: tones.adm,
+                    onPressed: () => unawaited(_openForm()),
+                  ),
+                ],
               )
             : null,
-        body: SafeArea(
-          top: false,
-          child: AppRefreshIndicator.contained(
-            semanticsLabel: 'Memuat ulang daftar shift',
-            onRefresh: _refresh,
-            child: switch (state) {
-              ShiftListInitial() || ShiftListLoading() => ListScreenSkeleton(
-                itemBuilder: (_, _) => const ShiftCardSkeleton(),
+        body: AppRefreshIndicator.contained(
+          semanticsLabel: 'Memuat ulang daftar shift',
+          onRefresh: _refresh,
+          child: switch (state) {
+            ShiftListInitial() || ShiftListLoading() => ListScreenSkeleton(
+              itemBuilder: (_, _) => const ShiftCardSkeleton(),
+            ),
+            ShiftListError(:final message) => ListErrorState(
+              noun: 'daftar shift',
+              message: message,
+              onRetry: () => unawaited(cubit.fetch()),
+            ),
+            ShiftListLoaded(:final shifts) when shifts.isEmpty => AppEmptyState(
+              icon: const AppSvgIcon.color(
+                KawaloColorVectors.calendar2,
+                size: 64,
               ),
-              ShiftListError(:final message) => ListErrorState(
-                noun: 'daftar shift',
-                message: message,
-                onRetry: () => unawaited(cubit.fetch()),
-              ),
-              ShiftListLoaded(:final shifts) when shifts.isEmpty =>
-                AppEmptyState(
-                  icon: const AppSvgIcon.color(
-                    KawaloColorVectors.calendar2,
-                    size: 64,
+              title: 'Belum ada shift',
+              description: canManage
+                  ? 'Buat shift dulu, misalnya Pagi 07:00–15:00, sebelum '
+                        'menyusun jadwal.'
+                  : 'Grup ini belum memiliki shift.',
+            ),
+            ShiftListLoaded(:final shifts) => ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+              itemCount: shifts.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (_, index) => Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppLayout.contentMaxWidth,
                   ),
-                  title: 'Belum ada shift',
-                  description: canManage
-                      ? 'Tambahkan shift untuk mulai menyusun jadwal.'
-                      : 'Grup ini belum memiliki shift.',
-                ),
-              ShiftListLoaded(:final shifts) => ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.space200,
-                  AppSpacing.space150,
-                  AppSpacing.space200,
-                  AppLayout.fabScrollClearance,
-                ),
-                itemCount: shifts.length,
-                separatorBuilder: (_, _) => AppSpacing.vGapSm,
-                itemBuilder: (_, index) => Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: AppLayout.contentMaxWidth,
-                    ),
-                    child: ShiftCard(
-                      shift: shifts[index],
-                      onTap: canManage
-                          ? () => unawaited(_openForm(shift: shifts[index]))
-                          : null,
-                    ),
+                  child: ShiftCard(
+                    shift: shifts[index],
+                    onTap: canManage
+                        ? () => unawaited(_openForm(shift: shifts[index]))
+                        : null,
                   ),
                 ),
               ),
-            },
-          ),
+            ),
+          },
         ),
       ),
     );

@@ -11,6 +11,7 @@ import 'package:kawalo_mobile/core/widgets/app_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/shift/domain/entities/shift_entity.dart';
 import 'package:kawalo_mobile/features/shift/domain/value_objects/shift_clock.dart';
@@ -230,28 +231,25 @@ class _Note extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.space150),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(12),
+        color: tones.surface2,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppSvgIcon(
-            KawaloVectors.info,
-            size: 20,
-            color: colorScheme.onSecondaryContainer,
-          ),
-          AppSpacing.hGapSm,
+          AppSvgIcon(KawaloVectors.info, size: 18, color: tones.ink2),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: theme.typeScale.bodySmall.copyWith(
-                color: colorScheme.onSecondaryContainer,
+              style: TextStyle(
+                color: tones.ink2,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -281,12 +279,13 @@ class _SaveButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ShiftFormCubit, ShiftFormState>(
       bloc: cubit,
-      buildWhen: (a, b) => a.isBusy != b.isBusy,
-      builder: (context, state) => AppButton(
-        size: AppButtonSize.md,
-        enabled: !state.isBusy,
-        onPressed: () => unawaited(_save(context)),
-        child: const Text('Simpan'),
+      buildWhen: (a, b) => a.status != b.status,
+      builder: (context, state) => AppTaskButton(
+        label: 'Simpan Shift',
+        icon: Icons.check_rounded,
+        tone: KawaloTones.of(context).adm,
+        isLoading: state.status == ShiftFormStatus.saving,
+        onPressed: state.isBusy ? null : () => unawaited(_save(context)),
       ),
     );
   }
@@ -323,7 +322,7 @@ class _DeleteButton extends StatelessWidget {
       AppDialog.show<void>(
         context,
         dialog: AppDialog(
-          title: 'Shift tidak bisa dihapus',
+          title: 'Shift masih dipakai',
           content: Text(message),
           actions: [
             AppButton(
@@ -337,19 +336,16 @@ class _DeleteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.of(context).colorScheme;
     return BlocBuilder<ShiftFormCubit, ShiftFormState>(
       bloc: cubit,
-      buildWhen: (a, b) => a.isBusy != b.isBusy,
-      builder: (context, state) => AppButton(
-        size: AppButtonSize.md,
-        enabled: !state.isBusy,
-        decoration: AppButtonDecoration(
-          backgroundColor: WidgetStatePropertyAll(colors.error),
-          foregroundColor: WidgetStatePropertyAll(colors.onError),
-        ),
-        onPressed: () => unawaited(_delete(context)),
-        child: const Text('Hapus Shift'),
+      buildWhen: (a, b) => a.status != b.status,
+      builder: (context, state) => AppTaskButton(
+        label: 'Hapus Shift',
+        icon: Icons.delete_outline_rounded,
+        tone: KawaloTones.of(context).sos,
+        size: AppTaskButtonSize.medium,
+        isLoading: state.status == ShiftFormStatus.deleting,
+        onPressed: state.isBusy ? null : () => unawaited(_delete(context)),
       ),
     );
   }

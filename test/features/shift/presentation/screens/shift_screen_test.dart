@@ -8,6 +8,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/shift/domain/entities/shift_entity.dart';
 import 'package:kawalo_mobile/features/shift/domain/repositories/shift_repository.dart';
 import 'package:kawalo_mobile/features/shift/domain/value_objects/shift_clock.dart';
@@ -89,7 +90,10 @@ void main() {
 
       expect(find.text('Belum ada shift'), findsOneWidget);
       expect(
-        find.text('Tambahkan shift untuk mulai menyusun jadwal.'),
+        find.text(
+          'Buat shift dulu, misalnya Pagi 07:00–15:00, sebelum '
+          'menyusun jadwal.',
+        ),
         findsOneWidget,
       );
     });
@@ -106,9 +110,9 @@ void main() {
       await pump(tester, const ShiftListLoaded([_pagi, _malam]));
 
       expect(find.text('2 shift aktif'), findsOneWidget);
-      expect(find.text('Manajemen Shift'), findsOneWidget);
+      expect(find.text('Shift'), findsOneWidget);
       expect(find.text('07:00–15:00 · 8 jam'), findsOneWidget);
-      expect(find.text('Berakhir besok'), findsOneWidget);
+      expect(find.text('23:00–07:00 · berakhir besok'), findsOneWidget);
       expect(find.textContaining('Radius'), findsNothing);
       expect(find.textContaining('lokasi'), findsNothing);
       expect(find.text('Tambah Shift'), findsOneWidget);
@@ -120,7 +124,7 @@ void main() {
       await pump(tester, const ShiftListLoaded([_pagi]), canManage: false);
 
       expect(find.byType(ShiftCard), findsOneWidget);
-      expect(find.text('Daftar Shift'), findsOneWidget);
+      expect(find.text('Shift'), findsOneWidget);
       expect(find.text('Tambah Shift'), findsNothing);
       expect(tester.widget<ShiftCard>(find.byType(ShiftCard)).onTap, isNull);
     });
@@ -270,12 +274,14 @@ void main() {
       matching: find.text(text),
     );
 
-    testWidgets('a new shift has one Simpan and no Hapus', (tester) async {
+    testWidgets('a new shift has one Simpan Shift and no Hapus', (
+      tester,
+    ) async {
       await open(tester);
 
       expect(find.text('Tambah Shift'), findsOneWidget);
-      expect(inBottom('Simpan'), findsOneWidget);
-      expect(find.text('Simpan'), findsOneWidget);
+      expect(inBottom('Simpan Shift'), findsOneWidget);
+      expect(find.text('Simpan Shift'), findsOneWidget);
       expect(find.textContaining('Hapus'), findsNothing);
     });
 
@@ -284,12 +290,12 @@ void main() {
     ) async {
       await open(tester, initial: _pagi);
 
-      expect(inBottom('Simpan'), findsOneWidget);
+      expect(inBottom('Simpan Shift'), findsOneWidget);
       expect(inBottom('Hapus Shift'), findsOneWidget);
-      expect(find.text('Simpan'), findsOneWidget);
+      expect(find.text('Simpan Shift'), findsOneWidget);
       expect(find.text('Hapus Shift'), findsOneWidget);
       expect(
-        tester.getTopLeft(find.text('Simpan')).dy,
+        tester.getTopLeft(find.text('Simpan Shift')).dy,
         lessThan(tester.getTopLeft(find.text('Hapus Shift')).dy),
       );
       expect(
@@ -329,7 +335,7 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(() => repository.deleteShift('a')).called(1);
-      expect(find.text('Shift tidak bisa dihapus'), findsOneWidget);
+      expect(find.text('Shift masih dipakai'), findsOneWidget);
       expect(
         find.text('Shift masih dipakai di jadwal mendatang.'),
         findsOneWidget,
@@ -343,15 +349,15 @@ void main() {
       ).thenAnswer((_) => completer.future);
       await open(tester, initial: _pagi);
 
-      await tester.tap(find.text('Simpan'));
+      await tester.tap(find.text('Simpan Shift'));
       await tester.pump();
 
-      for (final label in ['Simpan', 'Hapus Shift']) {
+      for (final label in ['Simpan Shift', 'Hapus Shift']) {
         expect(
           tester
-              .widget<AppButton>(find.widgetWithText(AppButton, label))
-              .enabled,
-          isFalse,
+              .widget<AppTaskButton>(find.widgetWithText(AppTaskButton, label))
+              .onPressed,
+          isNull,
           reason: label,
         );
       }

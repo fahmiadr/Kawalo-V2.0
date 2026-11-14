@@ -69,33 +69,67 @@ void main() {
   testWidgets('error state retries', (tester) async {
     await pump(tester, const ScheduleError('Tidak ada koneksi.'));
 
-    expect(find.text('Gagal memuat jadwal kerja'), findsOneWidget);
+    expect(find.text('Gagal memuat jadwal'), findsOneWidget);
     expect(find.text('Tidak ada koneksi.'), findsOneWidget);
     await tester.tap(find.text('Coba lagi'));
     // One call on open, one for the retry.
     verify(() => cubit.fetch()).called(2);
   });
 
-  testWidgets('groups shifts under a day header with details', (tester) async {
+  testWidgets('lists each shift with its day, shift line and time', (
+    tester,
+  ) async {
     await pump(
       tester,
       ScheduleLoaded([
         _shift('1', DateTime(2026, 6, 30), location: 'Pos 1'),
-        _shift('2', DateTime(2026, 6, 30), name: 'Shift Siang'),
+        _shift('2', DateTime(2026, 7), name: 'Shift Siang'),
         _shift('3', DateTime(2026, 7, 2)),
       ]),
     );
 
-    expect(find.text('Hari ini · Selasa, 30 Jun 2026'), findsOneWidget);
-    expect(find.text('Kamis, 2 Jul 2026'), findsOneWidget);
+    expect(find.text('Jadwal Saya'), findsOneWidget);
+    expect(find.text('Juni 2026'), findsOneWidget);
+    expect(find.text('Hari ini · Sel 30'), findsOneWidget);
+    expect(find.text('Besok · Rab 1'), findsOneWidget);
+    expect(find.text('Kam 2'), findsOneWidget);
     expect(find.byType(ScheduleCard), findsNWidgets(3));
-    expect(find.text('Pos 1'), findsOneWidget);
+    expect(find.text('Shift Pagi · Pos 1'), findsOneWidget);
     expect(find.text('Shift Siang'), findsOneWidget);
     expect(find.text('08:00-16:00'), findsNWidgets(3));
     expect(
       find.byKey(const ValueKey('schedule_shift_marker')),
       findsNWidgets(3),
     );
+  });
+
+  testWidgets('week strip marks today and the days with a shift', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pump(tester, ScheduleLoaded([_shift('1', DateTime(2026, 7, 2))]));
+
+    expect(find.bySemanticsLabel('Sel 30, hari ini'), findsOneWidget);
+    expect(find.bySemanticsLabel('Kam 2, ada jadwal'), findsOneWidget);
+    expect(find.bySemanticsLabel('Sen 29'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('overnight shift says it ends tomorrow', (tester) async {
+    await pump(
+      tester,
+      ScheduleLoaded([
+        ScheduleEntity(
+          id: 'n',
+          date: DateTime(2026, 6, 30),
+          shiftName: 'Shift Malam',
+          startTime: '23:00',
+          endTime: '07:00',
+        ),
+      ]),
+    );
+
+    expect(find.text('Shift Malam · berakhir besok'), findsOneWidget);
   });
 
   testWidgets('pull-to-refresh refreshes silently through the cubit', (
