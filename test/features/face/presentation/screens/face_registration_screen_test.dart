@@ -34,24 +34,21 @@ void main() {
       ),
     );
 
-    expect(
-      find.text('Izinkan Kawalo memakai data wajah Anda?'),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Setuju dan Lanjutkan'));
+    expect(find.text('Izinkan Kawalo memakai wajah Anda?'), findsOneWidget);
+    await tester.tap(find.text('Setuju dan Daftarkan'));
     await tester.pump();
     expect(find.text('Siapkan diri Anda'), findsNothing);
 
     await tester.scrollUntilVisible(find.byType(Checkbox), 200);
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
-    await tester.tap(find.text('Setuju dan Lanjutkan'));
+    await tester.tap(find.text('Setuju dan Daftarkan'));
     await tester.pumpAndSettle();
     expect(find.text('Siapkan diri Anda'), findsOneWidget);
 
     await tester.tap(find.text('Mulai'));
     await tester.pumpAndSettle();
-    expect(find.text('Posisikan wajah di dalam oval'), findsOneWidget);
+    expect(find.text('Foto 1 dari 5'), findsOneWidget);
     expect(find.text('Lihat lurus ke kamera'), findsOneWidget);
     verify(camera.start).called(1);
   });

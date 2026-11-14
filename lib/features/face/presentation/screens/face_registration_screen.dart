@@ -5,14 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/face/domain/face_quality.dart';
 import 'package:kawalo_mobile/features/face/domain/repositories/face_repository.dart';
 import 'package:kawalo_mobile/features/face/presentation/camera/face_camera.dart';
@@ -22,6 +18,7 @@ import 'package:kawalo_mobile/features/face/presentation/cubit/face_registration
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_camera_view.dart';
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_errors.dart';
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_result_layout.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
 /// Consent, guide, capture, upload and outcome of the face registration.
 /// Pops with `true` once the face is registered.
@@ -94,20 +91,24 @@ class FaceRegistrationScreen extends StatelessWidget {
               FaceCameraView(
                 camera: cubit.camera,
                 title: 'Daftarkan Wajah',
-                hint: issue?.message ?? 'Lihat lurus ke kamera',
+                hint: switch (issue) {
+                  null => 'Lihat lurus ke kamera',
+                  FaceIssue.noFace => 'Posisikan wajah di dalam oval',
+                  _ => issue.message,
+                },
                 hintOk: issue == null,
-                heading: 'Posisikan wajah di dalam oval',
-                message: issue == FaceIssue.multipleFaces
-                    ? 'Foto ${captured + 1} dari $total. Pastikan hanya Anda '
-                          'di depan kamera.'
-                    : 'Foto ${captured + 1} dari $total. Foto diambil '
-                          'otomatis saat posisi sudah pas.',
+                hintBad: issue != null && issue != FaceIssue.noFace,
+                pill: 'Foto ${captured + 1} dari $total',
+                pillKind: issue != null && issue != FaceIssue.noFace
+                    ? FaceCameraPillKind.bad
+                    : FaceCameraPillKind.neutral,
                 progress: (captured, total),
                 cancelLabel: 'Batalkan Pendaftaran',
                 onCancel: close,
               ),
             FaceRegistrationCameraFault(:final fault) => faceCameraFaultView(
               fault: fault,
+              title: 'Daftarkan Wajah',
               onRetry: () => unawaited(cubit.begin()),
               onOpenSettings: () =>
                   unawaited(launcherService.openAppSettings()),
@@ -119,39 +120,29 @@ class FaceRegistrationScreen extends StatelessWidget {
             FaceRegistrationSuccess(:final accepted, :final submitted) =>
               FaceResultLayout(
                 tone: FaceResultTone.success,
-                icon: KawaloVectors.checkmarkCircle01Filled,
+                icon: KawaloVectors.check,
                 title: accepted == null
                     ? 'Wajah sudah terdaftar'
-                    : 'Wajah berhasil didaftarkan',
-                message:
-                    'Mulai sekarang check-in dan check-out memakai '
-                    'verifikasi wajah.',
-                content: [
-                  if (accepted != null)
-                    FaceInfoCard(
-                      children: [
-                        FaceInfoRow(
-                          icon: KawaloVectors.userShield01,
-                          label: 'Kualitas pendaftaran',
-                          value: '$accepted dari $submitted foto lolos',
-                        ),
-                      ],
-                    ),
-                ],
+                    : 'Wajah terdaftar',
+                message: accepted == null
+                    ? 'Mulai sekarang check-in dan check-out memakai '
+                          'verifikasi wajah.'
+                    : '$accepted dari $submitted foto lolos dan tersimpan '
+                          'terenkripsi. Sekarang Anda bisa check-in.',
                 actions: [
                   FaceResultAction(
-                    fromAttendance ? 'Lanjut ke Absensi' : 'Selesai',
+                    fromAttendance ? 'Lanjut Check-in' : 'Selesai',
                     () => finish(registered: true),
                   ),
                 ],
               ),
             FaceRegistrationFailed(:final message) => FaceResultLayout(
               tone: FaceResultTone.error,
-              icon: KawaloVectors.cancelCircleFilled,
+              icon: KawaloVectors.cancel01,
               title: 'Pendaftaran wajah gagal',
               message:
-                  'Wajah belum bisa diproses. Coba lagi di tempat yang lebih '
-                  'terang dan lepas aksesori.',
+                  'Coba lagi di tempat yang lebih terang dan lepas aksesori. '
+                  'Masih gagal? Hubungi admin grup Anda.',
               content: [
                 FaceInfoCard(
                   children: [
@@ -160,14 +151,10 @@ class FaceRegistrationScreen extends StatelessWidget {
                       label: 'Penyebab',
                       value: message,
                     ),
-                    const FaceInfoRow(
-                      icon: KawaloVectors.helpCircle,
-                      label: 'Masih gagal?',
-                      value: 'Hubungi admin grup Anda',
-                    ),
                   ],
                 ),
               ],
+              onClose: close,
               actions: [
                 FaceResultAction('Coba Lagi', () => unawaited(cubit.retry())),
                 FaceResultAction('Nanti', close, style: AppButtonColor.tonal),
@@ -175,6 +162,7 @@ class FaceRegistrationScreen extends StatelessWidget {
             ),
             FaceRegistrationServiceUnavailable() => faceServiceUnavailableView(
               onBack: close,
+              title: 'Data Wajah',
             ),
           };
         },
@@ -195,6 +183,21 @@ class _ConsentView extends StatefulWidget {
 
 class _ConsentViewState extends State<_ConsentView> {
   bool _agreed = false;
+
+  static const List<(IconData, String, String)> _summary = [
+    (
+      Icons.lock_outline_rounded,
+      'Yang disimpan',
+      'Pola wajah dan foto, terenkripsi',
+    ),
+    (Icons.shield_outlined, 'Tujuan', 'Memastikan Anda sendiri yang absen'),
+    (Icons.visibility_outlined, 'Siapa yang melihat', 'Admin grup Anda'),
+    (
+      Icons.delete_outline_rounded,
+      'Bisa dihapus',
+      'Kapan saja dari Data Wajah',
+    ),
+  ];
 
   // DRAFT consent text (user decision 12 Nov 2026). The retention periods
   // (registration photos while active in the group, check-in/out photos for
@@ -233,102 +236,110 @@ class _ConsentViewState extends State<_ConsentView> {
     ),
   ];
 
+  Future<void> _readMore() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    backgroundColor: KawaloTones.of(context).surface,
+    builder: (context) => SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Persetujuan biometrik',
+              style: TextStyle(
+                color: KawaloTones.of(context).ink,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            FaceInfoCard(
+              children: [
+                for (final (icon, label, value) in _items)
+                  FaceInfoRow(icon: icon, label: label, value: value),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    final emphasized = AppTheme.emphasizedTypeScaleOf(context);
-    return Scaffold(
-      appBar: AppBar(
-        leading: AppIconButton(
-          semanticLabel: 'Tutup',
-          onPressed: widget.onDecline,
-          icon: const AppSvgIcon(KawaloVectors.cancel01),
-        ),
-        title: const Text('Data Wajah'),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.space200),
+    final tones = KawaloTones.of(context);
+    return TaskScaffold(
+      title: 'Data Wajah',
+      onClose: widget.onDecline,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Izinkan Kawalo memakai wajah Anda?',
+            style: TextStyle(
+              color: tones.ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 14),
+          for (final (icon, title, value) in _summary) ...[
+            TaskListItem(
+              title: title,
+              subtitle: value,
+              leading: TaskIconTile(icon, tone: tones.abs),
+            ),
+            const SizedBox(height: 8),
+          ],
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppTaskButton(
+              label: 'Baca selengkapnya',
+              variant: AppTaskButtonVariant.secondary,
+              size: AppTaskButtonSize.small,
+              onPressed: () => unawaited(_readMore()),
+            ),
+          ),
+          const SizedBox(height: 8),
+          InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => setState(() => _agreed = !_agreed),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Row(
                 children: [
-                  Text(
-                    'Persetujuan biometrik',
-                    style: typeScale.labelLarge.copyWith(color: colors.primary),
+                  Checkbox(
+                    value: _agreed,
+                    activeColor: tones.abs.color,
+                    checkColor: tones.abs.on,
+                    onChanged: (v) => setState(() => _agreed = v ?? false),
                   ),
-                  AppSpacing.vGap100,
-                  Text(
-                    'Izinkan Kawalo memakai data wajah Anda?',
-                    style: emphasized.headlineSmall,
-                  ),
-                  AppSpacing.vGap200,
-                  FaceInfoCard(
-                    children: [
-                      for (final (icon, label, value) in _items)
-                        FaceInfoRow(icon: icon, label: label, value: value),
-                    ],
-                  ),
-                  AppSpacing.vGap200,
-                  InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.medium),
-                    onTap: () => setState(() => _agreed = !_agreed),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.space100,
-                      ),
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: _agreed,
-                            onChanged: (v) =>
-                                setState(() => _agreed = v ?? false),
-                          ),
-                          AppSpacing.hGap100,
-                          Expanded(
-                            child: Text(
-                              'Saya mengerti dan menyetujui data wajah saya '
-                              'diproses untuk verifikasi absensi.',
-                              style: typeScale.bodyMedium,
-                            ),
-                          ),
-                        ],
-                      ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'Saya mengerti dan menyetujui data wajah saya diproses '
+                      'untuk verifikasi absensi.',
+                      style: TextStyle(color: tones.ink, fontSize: 14),
                     ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.space200,
-                AppSpacing.space150,
-                AppSpacing.space200,
-                AppSpacing.space300,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppButton(
-                    size: AppButtonSize.md,
-                    enabled: _agreed,
-                    onPressed: widget.onAccept,
-                    child: const Text('Setuju dan Lanjutkan'),
-                  ),
-                  AppSpacing.vGap100,
-                  AppButton(
-                    style: AppButtonColor.tonal,
-                    size: AppButtonSize.md,
-                    onPressed: widget.onDecline,
-                    child: const Text('Tolak'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      footer: [
+        taskPrimary(
+          'Setuju dan Daftarkan',
+          _agreed ? widget.onAccept : null,
+          tone: tones.abs,
+        ),
+        taskSecondary('Tidak Sekarang', widget.onDecline),
+      ],
     );
   }
 }
@@ -353,75 +364,41 @@ class _IntroView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    final emphasized = AppTheme.emphasizedTypeScaleOf(context);
-    return Scaffold(
-      appBar: AppBar(
-        leading: AppIconButton(
-          semanticLabel: 'Tutup',
-          onPressed: onLater,
-          icon: const AppSvgIcon(KawaloVectors.cancel01),
-        ),
-        title: const Text('Daftarkan Wajah'),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.space200),
-                children: [
-                  Text('Siapkan diri Anda', style: emphasized.headlineSmall),
-                  AppSpacing.vGap100,
-                  Text(
-                    '$photoCount foto · sekitar 30 detik',
-                    style: typeScale.bodyMedium.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  AppSpacing.vGap200,
-                  FaceInfoCard(
-                    children: [
-                      for (final (title, body) in _tips)
-                        FaceInfoRow(
-                          icon: KawaloVectors.checkmarkCircle01Filled,
-                          label: title,
-                          value: body,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
+    final tones = KawaloTones.of(context);
+    return TaskScaffold(
+      title: 'Daftarkan Wajah',
+      subtitle: '$photoCount foto · sekitar 30 detik',
+      onClose: onLater,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Siapkan diri Anda',
+            style: TextStyle(
+              color: tones.ink,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.space200,
-                AppSpacing.space150,
-                AppSpacing.space200,
-                AppSpacing.space300,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppButton(
-                    size: AppButtonSize.md,
-                    onPressed: onStart,
-                    child: const Text('Mulai'),
-                  ),
-                  AppSpacing.vGap100,
-                  AppButton(
-                    style: AppButtonColor.tonal,
-                    size: AppButtonSize.md,
-                    onPressed: onLater,
-                    child: const Text('Nanti'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 14),
+          FaceInfoCard(
+            children: [
+              for (final (title, body) in _tips)
+                FaceInfoRow(
+                  icon: KawaloVectors.check,
+                  label: title,
+                  value: body,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Foto diambil otomatis saat wajah sudah pas di dalam oval.',
+            style: TextStyle(color: tones.ink2, fontSize: 14),
+          ),
+        ],
       ),
+      footer: [taskPrimary('Mulai', onStart, tone: tones.abs)],
     );
   }
 }
@@ -433,46 +410,25 @@ class _UploadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    final emphasized = AppTheme.emphasizedTypeScaleOf(context);
+    final tones = KawaloTones.of(context);
     return PopScope(
       canPop: false,
       child: Scaffold(
+        backgroundColor: tones.background,
         body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.space300),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const AppLoadingIndicator(),
-                  AppSpacing.vGap300,
-                  Text(
-                    'Memproses wajah Anda',
-                    textAlign: TextAlign.center,
-                    style: emphasized.headlineSmall,
-                  ),
-                  AppSpacing.vGap100,
-                  Text(
-                    'Mengunggah $count foto dan membuat template wajah. '
-                    'Jangan tutup aplikasi.',
-                    textAlign: TextAlign.center,
-                    style: typeScale.bodyMedium.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  AppSpacing.vGap200,
-                  Text(
-                    'Foto dan template wajah disimpan terenkripsi',
-                    textAlign: TextAlign.center,
-                    style: typeScale.bodySmall.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+          child: TaskMessage(
+            round: true,
+            icon: SizedBox.square(
+              dimension: 44,
+              child: CircularProgressIndicator(
+                strokeWidth: 4,
+                color: tones.abs.color,
               ),
             ),
+            title: 'Memproses wajah Anda',
+            message:
+                'Mengunggah $count foto dan membuat template wajah. Jangan '
+                'tutup aplikasi. Foto dan template wajah disimpan terenkripsi.',
           ),
         ),
       ),

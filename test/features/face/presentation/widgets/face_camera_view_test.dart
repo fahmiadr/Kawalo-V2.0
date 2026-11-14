@@ -15,8 +15,8 @@ void main() {
         title: 'Verifikasi Wajah',
         hint: 'Wajah terdeteksi',
         hintOk: true,
-        heading: 'Hadapkan wajah ke kamera',
-        message: 'Posisikan wajah di dalam oval.',
+        pill: 'Shift Pagi',
+        caption: 'Foto tidak disimpan bila gagal',
         cancelLabel: 'Batal',
         onCancel: () {},
         extraActionLabel: extraLabel,
@@ -25,12 +25,12 @@ void main() {
     ),
   );
 
-  testWidgets('shows the extra action next to Batal and taps it', (
+  testWidgets('shows the extra action next to the close button and taps it', (
     tester,
   ) async {
     var taps = 0;
     await pump(tester, extraLabel: 'Lapor ke Admin', onExtra: () => taps++);
-    expect(find.text('Batal'), findsOneWidget);
+    expect(find.byTooltip('Batal'), findsOneWidget);
     await tester.tap(find.text('Lapor ke Admin'));
     expect(taps, 1);
   });
@@ -38,6 +38,8 @@ void main() {
   testWidgets('hides the extra action by default', (tester) async {
     await pump(tester);
     expect(find.text('Lapor ke Admin'), findsNothing);
-    expect(find.text('Batal'), findsOneWidget);
+    expect(find.byTooltip('Batal'), findsOneWidget);
+    expect(find.text('Shift Pagi'), findsOneWidget);
+    expect(find.text('Foto tidak disimpan bila gagal'), findsOneWidget);
   });
 }

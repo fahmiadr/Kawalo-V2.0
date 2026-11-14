@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
-/// Colour of the result badge. Green is the brand primary; red is the theme
-/// error role.
+/// Colour of the result badge: the Absensi tone, red, or grey.
 enum FaceResultTone { success, error, neutral }
 
+/// [style] `filled` is the one primary (64 px, Absensi tone) action; any other
+/// style is drawn as a grey secondary button.
 class FaceResultAction {
   const FaceResultAction(
     this.label,
@@ -23,8 +22,9 @@ class FaceResultAction {
   final AppButtonColor style;
 }
 
-/// Full-screen outcome of the face and attendance flows (`fx-res` artboards):
-/// a round badge, a title, a message, optional content and a button dock.
+/// Outcome of the face and attendance flows. Without [screenTitle] it is a
+/// result page (`.done`: round badge, no top bar); with it, an explanation
+/// inside a task screen (`.es`: top bar with back, rounded-square icon).
 class FaceResultLayout extends StatelessWidget {
   const FaceResultLayout({
     required this.tone,
@@ -34,34 +34,61 @@ class FaceResultLayout extends StatelessWidget {
     required this.actions,
     super.key,
     this.content = const [],
+    this.highlights = const [],
     this.onClose,
+    this.screenTitle,
   });
 
   final FaceResultTone tone;
   final String icon;
   final String title;
   final String message;
+
+  /// Below the message (details).
   final List<Widget> content;
+
+  /// Between the title and the message (big time, status pill).
+  final List<Widget> highlights;
   final List<FaceResultAction> actions;
   final VoidCallback? onClose;
+  final String? screenTitle;
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    final (background, foreground) = switch (tone) {
-      FaceResultTone.success => (
-        colors.primaryContainer,
-        colors.onPrimaryContainer,
-      ),
-      FaceResultTone.error => (colors.errorContainer, colors.onErrorContainer),
-      FaceResultTone.neutral => (
-        colors.surfaceContainerHigh,
-        colors.onSurfaceVariant,
-      ),
-    };
+    final tones = KawaloTones.of(context);
+    final screenTitle = this.screenTitle;
+    final footer = [
+      for (final action in actions)
+        if (action.style == AppButtonColor.filled)
+          taskPrimary(action.label, action.onPressed, tone: tones.abs)
+        else
+          taskSecondary(action.label, action.onPressed),
+    ];
+    final body = TaskMessage(
+      icon: AppSvgIcon(icon),
+      title: title,
+      message: message,
+      round: screenTitle == null,
+      kind: switch (tone) {
+        FaceResultTone.success => TaskMessageKind.tone,
+        FaceResultTone.error => TaskMessageKind.bad,
+        FaceResultTone.neutral => TaskMessageKind.neutral,
+      },
+      below: content,
+      children: highlights,
+    );
 
+    if (screenTitle != null) {
+      return TaskScaffold(
+        title: screenTitle,
+        onClose: onClose,
+        scrollable: false,
+        body: body,
+        footer: footer,
+      );
+    }
     return Scaffold(
+      backgroundColor: tones.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -69,83 +96,16 @@ class FaceResultLayout extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.space100),
-                  child: AppIconButton(
-                    semanticLabel: 'Tutup',
+                  padding: const EdgeInsets.all(6),
+                  child: IconButton(
+                    tooltip: 'Tutup',
                     onPressed: onClose,
-                    icon: const AppSvgIcon(KawaloVectors.cancel01),
+                    icon: Icon(Icons.close_rounded, color: tones.ink),
                   ),
                 ),
               ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.space300,
-                  AppSpacing.space300,
-                  AppSpacing.space300,
-                  AppSpacing.space200,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 96,
-                        height: 96,
-                        decoration: BoxDecoration(
-                          color: background,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: AppSvgIcon(icon, size: 56, color: foreground),
-                      ),
-                    ),
-                    AppSpacing.vGap300,
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: typeScale.headlineSmall.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    AppSpacing.vGap100,
-                    Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: typeScale.bodyMedium.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                    if (content.isNotEmpty) ...[AppSpacing.vGap300, ...content],
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.space200,
-                AppSpacing.space150,
-                AppSpacing.space200,
-                AppSpacing.space300,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, action) in actions.indexed) ...[
-                    if (i > 0) AppSpacing.vGap100,
-                    AppButton(
-                      style: action.style,
-                      size: AppButtonSize.md,
-                      onPressed: action.onPressed,
-                      child: Text(action.label),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+            Expanded(child: body),
+            AppTaskFooter(children: footer),
           ],
         ),
       ),
@@ -153,39 +113,17 @@ class FaceResultLayout extends StatelessWidget {
   }
 }
 
-/// Rounded `fx-card` panel holding [FaceInfoRow]s or text.
+/// `.box` panel holding [FaceInfoRow]s or text.
 class FaceInfoCard extends StatelessWidget {
   const FaceInfoCard({required this.children, super.key});
 
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.large),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space200,
-          vertical: AppSpacing.space50,
-        ),
-        child: Column(
-          children: [
-            for (final (i, child) in children.indexed) ...[
-              if (i > 0) Divider(height: 1, color: colors.outlineVariant),
-              child,
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => TaskBox(children: children);
 }
 
-/// Label above a bold value, with a leading icon (`fx-kv`).
+/// Label above a bold value, with a leading icon.
 class FaceInfoRow extends StatelessWidget {
   const FaceInfoRow({
     required this.icon,
@@ -200,35 +138,28 @@ class FaceInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.space150),
-      child: Row(
-        children: [
-          AppSvgIcon(icon, size: 24, color: colors.primary),
-          AppSpacing.hGap150,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: typeScale.bodySmall.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+    final tones = KawaloTones.of(context);
+    return Row(
+      children: [
+        AppSvgIcon(icon, size: 22, color: tones.abs.color),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(color: tones.ink2, fontSize: 13)),
+              Text(
+                value,
+                style: TextStyle(
+                  color: tones.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                 ),
-                Text(
-                  value,
-                  style: typeScale.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

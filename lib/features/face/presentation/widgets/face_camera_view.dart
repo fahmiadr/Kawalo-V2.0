@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/face/presentation/camera/face_camera.dart';
 
-/// Front-camera screen with the face oval (`fx-cam` artboards): preview, a
-/// hint pill under the oval and a bottom panel.
+/// Colours of the dark camera screens (`--cam-*` in `rd.css`); the same in
+/// light and dark mode.
+const Color _camBg = Color(0xFF0B0F0C);
+const Color _camInk = Color(0xFFF3F6F2);
+const Color _ovalOk = Color(0xFF8FD694);
+const Color _ovalBad = Color(0xFFFFB4AB);
+
+enum FaceCameraPillKind { neutral, ok, bad }
+
+/// Front-camera screen (`RdAbsenWajah*`, `RdWajahDaftar*`): close + title,
+/// a rounded viewfinder with the face oval, a status pill on top, the hint
+/// under the oval and a small footer. There is no shutter: the cubit takes
+/// the photo once the face has been steady.
 class FaceCameraView extends StatelessWidget {
   const FaceCameraView({
     required this.title,
     required this.hint,
     required this.hintOk,
-    required this.heading,
-    required this.message,
     required this.cancelLabel,
     super.key,
+    this.hintBad = false,
+    this.pill,
+    this.pillIcon,
+    this.pillKind = FaceCameraPillKind.neutral,
+    this.caption,
     this.onCancel,
     this.extraActionLabel,
     this.onExtraAction,
@@ -32,209 +39,261 @@ class FaceCameraView extends StatelessWidget {
   final String title;
   final String hint;
 
-  /// Green oval and check icon when the face passes the gate.
+  /// Green oval: the face passes the gate.
   final bool hintOk;
-  final String heading;
-  final String message;
+
+  /// Red oval: the last attempt failed.
+  final bool hintBad;
+
+  final String? pill;
+  final IconData? pillIcon;
+  final FaceCameraPillKind pillKind;
+
+  /// Small text in the footer, e.g. "Foto tidak disimpan bila gagal".
+  final String? caption;
+
+  /// Semantic label of the close button.
   final String cancelLabel;
 
   /// Null while a request is in flight: leaving would not undo it.
   final VoidCallback? onCancel;
 
-  /// Optional second choice stacked above the cancel button.
+  /// Optional extra choice in the footer ("Lapor ke Admin").
   final String? extraActionLabel;
   final VoidCallback? onExtraAction;
 
-  /// `(done, total)` segments, e.g. photos taken.
+  /// `(done, total)`, e.g. photos taken; drawn as a progress bar.
   final (int, int)? progress;
 
-  /// Shows a spinner in the panel (sending to the server).
+  /// Spinner before the hint (sending to the server).
   final bool busy;
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.colorSchemeOf(context);
-    final typeScale = AppTheme.typeScaleOf(context);
-    final emphasized = AppTheme.emphasizedTypeScaleOf(context);
-    final ovalColor = hintOk ? colors.primary : Colors.white;
+    final oval = hintBad
+        ? _ovalBad
+        : hintOk
+        ? _ovalOk
+        : _camInk;
+    final pill = this.pill;
+    final caption = this.caption;
+    final extra = extraActionLabel != null && onExtraAction != null;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (camera != null) camera!.buildPreview(context),
-                IgnorePointer(
-                  child: CustomPaint(painter: _OvalMask(ovalColor)),
-                ),
-                SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.space100),
-                    child: Row(
-                      children: [
-                        if (onCancel == null)
-                          const SizedBox(width: 48)
-                        else
-                          AppIconButton(
-                            semanticLabel: cancelLabel,
-                            onPressed: onCancel,
-                            decoration: M3EIconButtonDecoration(
-                              backgroundColor: WidgetStatePropertyAll(
-                                colors.scrim.withValues(alpha: 0.6),
-                              ),
-                            ),
-                            icon: const AppSvgIcon(
-                              KawaloVectors.cancel01,
-                              color: Colors.white,
-                            ),
-                          ),
-                        Expanded(
-                          child: Text(
-                            title,
-                            textAlign: TextAlign.center,
-                            style: emphasized.titleMedium.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 48),
-                      ],
+      backgroundColor: _camBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 60,
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  if (onCancel == null)
+                    const SizedBox(width: 48)
+                  else
+                    IconButton(
+                      tooltip: cancelLabel,
+                      onPressed: onCancel,
+                      icon: const Icon(Icons.close_rounded, color: _camInk),
                     ),
-                  ),
-                ),
-                Align(
-                  alignment: const Alignment(0, 0.62),
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.space200,
-                        vertical: AppSpacing.space100,
-                      ),
-                      decoration: BoxDecoration(
-                        color: hintOk
-                            ? colors.primaryContainer
-                            : colors.scrim.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (hintOk) ...[
-                            AppSvgIcon(
-                              KawaloVectors.check,
-                              size: 18,
-                              color: colors.onPrimaryContainer,
-                            ),
-                            AppSpacing.hGap50,
-                          ],
-                          Flexible(
-                            child: Text(
-                              hint,
-                              textAlign: TextAlign.center,
-                              style: typeScale.labelLarge.copyWith(
-                                color: hintOk
-                                    ? colors.onPrimaryContainer
-                                    : Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: _camInk,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.space200,
-              AppSpacing.space300,
-              AppSpacing.space200,
-              AppSpacing.space300 + MediaQuery.paddingOf(context).bottom,
-            ),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.extraLarge),
+                ],
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  heading,
-                  textAlign: TextAlign.center,
-                  style: emphasized.titleLarge,
-                ),
-                AppSpacing.vGap50,
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: typeScale.bodyMedium.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-                if (busy) ...[
-                  AppSpacing.vGap200,
-                  const Center(
-                    child: AppLoadingIndicator(
-                      size: AppLoadingIndicatorSize.small,
-                    ),
-                  ),
-                ],
-                if (progress case (final done, final total)) ...[
-                  AppSpacing.vGap200,
-                  Row(
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26),
+                  child: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      for (var i = 0; i < total; i++) ...[
-                        if (i > 0) AppSpacing.hGap50,
-                        Expanded(
-                          child: Container(
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: i < done
-                                  ? colors.primary
-                                  : colors.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.full,
-                              ),
-                            ),
-                          ),
+                      const ColoredBox(color: Color(0xFF1B231D)),
+                      if (camera != null) camera!.buildPreview(context),
+                      IgnorePointer(
+                        child: CustomPaint(
+                          painter: _OvalMask(oval, thick: hintOk || hintBad),
                         ),
-                      ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            if (pill != null)
+                              _Pill(
+                                label: pill,
+                                icon: pillIcon,
+                                kind: pillKind,
+                              ),
+                            const Spacer(),
+                            Semantics(
+                              liveRegion: true,
+                              child: _Hint(text: hint, busy: busy),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 18, 28, 26),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (progress case (final done, final total))
+                    Semantics(
+                      label: 'Foto $done dari $total',
+                      child: SizedBox(
+                        width: 200,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: LinearProgressIndicator(
+                            value: total == 0 ? 0 : done / total,
+                            minHeight: 6,
+                            color: _ovalOk,
+                            backgroundColor: _camInk.withValues(alpha: 0.2),
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (caption != null)
+                    Text(
+                      caption,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: _camInk.withValues(alpha: 0.8),
+                        fontSize: 13,
+                      ),
+                    ),
+                  if (extra) ...[
+                    const SizedBox(height: 12),
+                    Theme(
+                      data: ThemeData.dark(),
+                      child: AppTaskButton(
+                        label: extraActionLabel!,
+                        onPressed: onExtraAction,
+                        variant: AppTaskButtonVariant.secondary,
+                        size: AppTaskButtonSize.medium,
+                      ),
+                    ),
+                  ],
                 ],
-                if (extraActionLabel != null && onExtraAction != null) ...[
-                  AppSpacing.vGap200,
-                  AppButton(
-                    style: AppButtonColor.tonal,
-                    size: AppButtonSize.md,
-                    onPressed: onExtraAction,
-                    child: Text(extraActionLabel!),
-                  ),
-                ],
-                if (onCancel case final cancel?) ...[
-                  if (extraActionLabel != null && onExtraAction != null)
-                    AppSpacing.vGap100
-                  else
-                    AppSpacing.vGap200,
-                  AppButton(
-                    style: AppButtonColor.tonal,
-                    size: AppButtonSize.md,
-                    onPressed: cancel,
-                    child: Text(cancelLabel),
-                  ),
-                ],
-              ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({required this.label, required this.kind, this.icon});
+
+  final String label;
+  final IconData? icon;
+  final FaceCameraPillKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = switch (kind) {
+      FaceCameraPillKind.ok => (
+        const Color(0xFF1D3B20),
+        const Color(0xFFB9F0BD),
+      ),
+      FaceCameraPillKind.bad => (
+        const Color(0xFF5A1A15),
+        const Color(0xFFFFDAD6),
+      ),
+      FaceCameraPillKind.neutral => (
+        Colors.black.withValues(alpha: 0.55),
+        _camInk,
+      ),
+    };
+    return Container(
+      constraints: const BoxConstraints(minHeight: 34),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(17),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 16, color: fg),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: fg,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Hint extends StatelessWidget {
+  const _Hint({required this.text, required this.busy});
+
+  final String text;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (busy) ...[
+            const SizedBox.square(
+              dimension: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: _camInk,
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Flexible(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: _camInk,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -245,34 +304,35 @@ class FaceCameraView extends StatelessWidget {
 
 /// Darkens everything outside a centred portrait oval.
 class _OvalMask extends CustomPainter {
-  const _OvalMask(this.borderColor);
+  const _OvalMask(this.borderColor, {required this.thick});
 
   final Color borderColor;
+  final bool thick;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final width = size.width * 0.68;
+    final width = size.width * 0.62;
     final oval = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height * 0.44),
+      center: Offset(size.width / 2, size.height / 2),
       width: width,
-      height: width * 1.3,
+      height: width * 1.31,
     );
     final mask = Path()
       ..fillType = PathFillType.evenOdd
       ..addRect(Offset.zero & size)
       ..addOval(oval);
     canvas
-      ..drawPath(mask, Paint()..color = Colors.black.withValues(alpha: 0.55))
+      ..drawPath(mask, Paint()..color = Colors.black.withValues(alpha: 0.5))
       ..drawOval(
         oval,
         Paint()
           ..color = borderColor
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
+          ..strokeWidth = thick ? 5 : 3,
       );
   }
 
   @override
   bool shouldRepaint(_OvalMask oldDelegate) =>
-      oldDelegate.borderColor != borderColor;
+      oldDelegate.borderColor != borderColor || oldDelegate.thick != thick;
 }
