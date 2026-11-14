@@ -54,36 +54,53 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows each item state and requests on Izinkan', (tester) async {
+  const title = 'Agar walkie-talkie tetap aktif';
+
+  testWidgets('shows each item state; row Izinkan asks that item only', (
+    tester,
+  ) async {
     when(() => service.status()).thenAnswer((_) async => _askable);
     await pumpHost(tester);
 
-    expect(find.text('Agar Kawalo tetap aktif'), findsOneWidget);
-    expect(find.text('Belum diizinkan'), findsOneWidget);
-    expect(find.text('Sudah diizinkan'), findsOneWidget);
+    expect(find.text(title), findsOneWidget);
+    expect(find.text('Izinkan'), findsOneWidget);
+    expect(find.text('Diizinkan'), findsOneWidget);
     expect(find.text('Ditolak'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Izinkan'));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Izinkan'));
     await tester.pumpAndSettle();
 
     verify(() => service.request(BackgroundAccessItem.notifications)).called(1);
-    expect(find.text('Agar Kawalo tetap aktif'), findsNothing);
+    expect(find.text(title), findsOneWidget);
   });
 
-  testWidgets('Lewati remembers the choice and closes', (tester) async {
+  testWidgets('Lanjutkan requests the askable items and closes', (
+    tester,
+  ) async {
     when(() => service.status()).thenAnswer((_) async => _askable);
     await pumpHost(tester);
 
-    await tester.ensureVisible(find.text('Lewati'));
+    await tester.ensureVisible(find.text('Lanjutkan'));
+    await tester.tap(find.text('Lanjutkan'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Lewati'));
+
+    verify(() => service.request(BackgroundAccessItem.notifications)).called(1);
+    verifyNever(() => service.request(BackgroundAccessItem.battery));
+    expect(find.text(title), findsNothing);
+  });
+
+  testWidgets('Nanti saja remembers the choice and closes', (tester) async {
+    when(() => service.status()).thenAnswer((_) async => _askable);
+    await pumpHost(tester);
+
+    await tester.ensureVisible(find.text('Nanti saja'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nanti saja'));
     await tester.pumpAndSettle();
 
     verify(() => service.skip()).called(1);
     verifyNever(() => service.request(any()));
-    expect(find.text('Agar Kawalo tetap aktif'), findsNothing);
+    expect(find.text(title), findsNothing);
   });
 
   testWidgets('stays hidden when nothing is askable', (tester) async {
@@ -98,6 +115,6 @@ void main() {
     );
     await pumpHost(tester);
 
-    expect(find.text('Agar Kawalo tetap aktif'), findsNothing);
+    expect(find.text(title), findsNothing);
   });
 }

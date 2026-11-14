@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_action_tile.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_sheet.dart';
-import 'package:kawalo_mobile/core/widgets/app_divider.dart';
-import 'package:kawalo_mobile/core/widgets/app_option_tile.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/account_menu_row.dart';
 
 enum ProfileAvatarAction { camera, gallery, remove }
 
@@ -26,60 +23,54 @@ class ProfileAvatarSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
+    final tones = KawaloTones.of(context);
+    void pop(ProfileAvatarAction action) => Navigator.of(context).pop(action);
     return SafeArea(
       top: false,
       maintainBottomViewPadding: true,
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: AppSpacing.space300,
-            right: AppSpacing.space300,
-            top: AppSpacing.space100,
-            bottom: AppSpacing.space300,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Foto profil',
-                style: theme.typography.emphasized.titleMedium.copyWith(
-                  color: theme.colorScheme.onSurface,
-                ),
+        padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Foto profil',
+              style: TextStyle(
+                color: tones.ink,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
               ),
-              AppSpacing.vGap300,
-              AppOptionTile(
-                vectorIcon: KawaloVectors.camera01,
-                title: 'Ambil foto',
-                subtitle: 'Gunakan kamera depan atau belakang',
-                onTap: () =>
-                    Navigator.of(context).pop(ProfileAvatarAction.camera),
-              ),
-              AppSpacing.vGap150,
-              AppOptionTile(
-                vectorIcon: KawaloVectors.images,
-                title: 'Pilih dari galeri',
-                subtitle: 'Pilih foto yang sudah ada',
-                onTap: () =>
-                    Navigator.of(context).pop(ProfileAvatarAction.gallery),
-              ),
-              if (hasPhoto) ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.space50),
-                  child: AppDivider(),
+            ),
+            const SizedBox(height: 12),
+            AccountMenuRow(
+              icon: Icons.photo_camera_outlined,
+              title: 'Ambil foto',
+              subtitle: 'Gunakan kamera depan atau belakang',
+              onTap: () => pop(ProfileAvatarAction.camera),
+            ),
+            const SizedBox(height: 8),
+            AccountMenuRow(
+              icon: Icons.photo_library_outlined,
+              title: 'Pilih dari galeri',
+              subtitle: 'Pilih foto yang sudah ada',
+              onTap: () => pop(ProfileAvatarAction.gallery),
+            ),
+            if (hasPhoto) ...[
+              const SizedBox(height: 12),
+              AppTaskButton(
+                label: 'Hapus foto',
+                icon: Icons.delete_outline_rounded,
+                size: AppTaskButtonSize.medium,
+                tone: KawaloTone(
+                  color: tones.sos.soft,
+                  on: tones.sos.color,
+                  soft: tones.sos.soft,
                 ),
-                AppActionTile(
-                  vectorIcon: KawaloVectors.delete01,
-                  title: 'Hapus foto',
-                  isDestructive: true,
-                  closeOnTap: false,
-                  onTap: () =>
-                      Navigator.of(context).pop(ProfileAvatarAction.remove),
-                ),
-              ],
+                onPressed: () => pop(ProfileAvatarAction.remove),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

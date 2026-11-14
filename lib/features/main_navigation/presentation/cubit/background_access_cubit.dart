@@ -47,6 +47,17 @@ class BackgroundAccessCubit extends Cubit<BackgroundAccessState> {
     await load();
   }
 
+  /// Shows the system dialog of one item (the per-row "Izinkan").
+  Future<void> request(BackgroundAccessItem item) async {
+    final status = state.status;
+    if (status == null || state.requesting) return;
+    emit(BackgroundAccessState(status: status, requesting: true));
+    try {
+      await _service.request(item);
+    } on Object catch (_) {}
+    await load();
+  }
+
   Future<void> skip() async {
     try {
       await _service.skip();

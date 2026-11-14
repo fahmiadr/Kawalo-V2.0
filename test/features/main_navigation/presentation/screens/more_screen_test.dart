@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
+import 'package:kawalo_mobile/core/services/background_access_service.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
-import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
-import 'package:kawalo_mobile/core/widgets/app_action_tile.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
@@ -16,14 +16,16 @@ import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/auth/presentation/screens/change_password_screen.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/cubit/background_access_cubit.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/more_screen.dart';
 import 'package:mocktail/mocktail.dart';
-
-import '../../../attendance_admin/fixtures.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
 class _MockUploadRepository extends Mock implements UploadRepository {}
+
+class _MockBackgroundAccessService extends Mock
+    implements BackgroundAccessService {}
 
 class _MockAuthBloc extends MockBloc<AuthEvent, AuthState>
     implements AuthBloc {}
@@ -42,6 +44,7 @@ class _FakePicker implements MediaPickerService {
     BuildContext context, {
     int maxPhotos = 4,
     int alreadyAttachedCount = 0,
+    bool allowSkip = false,
   }) async => const [];
 
   @override
@@ -76,6 +79,7 @@ void main() {
     WidgetTester tester, {
     UserEntity user = withoutPhoto,
     MediaPickerService? picker,
+    BackgroundAccessCubit Function()? createAccessCubit,
   }) async {
     when(() => authBloc.state).thenReturn(Authenticated(user: user));
     await tester.pumpWidget(
@@ -88,31 +92,15 @@ void main() {
           value: authBloc,
           child: MaterialApp(
             theme: AppTheme.lightThemeData(),
-            home: Scaffold(body: MoreScreen(mediaPicker: picker)),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> pumpWithSession(WidgetTester tester, String role) async {
-    when(
-      () => authBloc.state,
-    ).thenReturn(const Authenticated(user: withoutPhoto));
-    await tester.pumpWidget(
-      MultiRepositoryProvider(
-        providers: [
-          RepositoryProvider<AuthRepository>.value(value: authRepository),
-          RepositoryProvider<UploadRepository>.value(value: uploadRepository),
-        ],
-        child: BlocProvider<AuthBloc>.value(
-          value: authBloc,
-          child: BlocProvider<UserSessionCubit>.value(
-            value: UserSessionCubit(session(role)),
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: const Scaffold(body: MoreScreen()),
+            home: Scaffold(
+              body: MoreScreen(
+                mediaPicker: picker,
+                createBackgroundAccessCubit:
+                    createAccessCubit ??
+                    () => BackgroundAccessCubit(
+                      service: _MockBackgroundAccessService(),
+                    ),
+              ),
             ),
           ),
         ),
@@ -232,51 +220,67 @@ void main() {
     verifyNever(() => uploadRepository.uploadImage(any()));
   });
 
-  testWidgets('Ganti Password tile opens the change-password screen', (
+  testWidgets('Ganti password row opens the change-password screen', (
     tester,
   ) async {
     await pump(tester);
 
-    await tester.scrollUntilVisible(find.text('Ganti Password'), 100);
-    await tester.tap(find.text('Ganti Password'));
+    await tester.tap(find.text('Ganti password'));
     await tester.pumpAndSettle();
 
     expect(find.byType(ChangePasswordScreen), findsOneWidget);
   });
 
-  testWidgets('admins get Pengaturan Absensi in the menu', (tester) async {
-    await pumpWithSession(tester, 'ADMIN');
-    expect(find.text('Pengaturan Absensi'), findsOneWidget);
-  });
+  testWidgets('menu lists personal settings only, Keluar at the bottom', (
+    tester,
+  ) async {
+    await pump(tester);
 
-  testWidgets('guards do not see Pengaturan Absensi', (tester) async {
-    await pumpWithSession(tester, 'GUARD');
+    expect(find.text('Foto profil'), findsOneWidget);
+    expect(find.text('Ganti password'), findsOneWidget);
     expect(find.text('Pengaturan Absensi'), findsNothing);
-  });
-
-  testWidgets('admins get Tentukan Titik Absen in the menu', (tester) async {
-    await pumpWithSession(tester, 'ADMIN');
-    expect(find.text('Tentukan Titik Absen'), findsOneWidget);
-  });
-
-  testWidgets('guards do not see Tentukan Titik Absen', (tester) async {
-    await pumpWithSession(tester, 'GUARD');
     expect(find.text('Tentukan Titik Absen'), findsNothing);
+    expect(find.widgetWithText(AppTaskButton, 'Keluar'), findsOneWidget);
   });
 
-  testWidgets('menu tiles do not touch each other', (tester) async {
-    await pumpWithSession(tester, 'ADMIN');
-    await tester.scrollUntilVisible(find.text('Keluar'), 100);
+  testWidgets('Keluar asks for confirmation before logging out', (
+    tester,
+  ) async {
+    await pump(tester);
 
-    Rect tile(String title) => tester.getRect(
-      find
-          .ancestor(of: find.text(title), matching: find.byType(AppActionTile))
-          .first,
+    await tester.tap(find.widgetWithText(AppTaskButton, 'Keluar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Keluar dari Kawalo?'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+    verifyNever(() => authBloc.add(const LogoutRequested()));
+
+    await tester.tap(find.widgetWithText(AppTaskButton, 'Keluar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Keluar').last);
+    await tester.pumpAndSettle();
+    verify(() => authBloc.add(const LogoutRequested())).called(1);
+  });
+
+  testWidgets('background access row summarises what is still missing', (
+    tester,
+  ) async {
+    final service = _MockBackgroundAccessService();
+    when(service.status).thenAnswer(
+      (_) async => const BackgroundAccessStatus(
+        grants: {
+          BackgroundAccessItem.notifications: BackgroundAccessGrant.granted,
+          BackgroundAccessItem.microphone: BackgroundAccessGrant.granted,
+          BackgroundAccessItem.battery: BackgroundAccessGrant.askable,
+        },
+      ),
     );
-    final upper = tile('Pengaturan Absensi');
-    final lower = tile('Ganti Password');
-    expect(lower.top - upper.bottom, greaterThan(0));
-    final point = tile('Tentukan Titik Absen');
-    expect(upper.top - point.bottom, greaterThan(0));
+    await pump(
+      tester,
+      createAccessCubit: () => BackgroundAccessCubit(service: service),
+    );
+
+    expect(find.text('Izin latar belakang'), findsOneWidget);
+    expect(find.text('Baterai belum diizinkan'), findsOneWidget);
   });
 }

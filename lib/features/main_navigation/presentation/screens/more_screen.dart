@@ -4,23 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/cubit/theme_mode_cubit.dart';
+import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
+import 'package:kawalo_mobile/core/services/background_access_service.dart';
 import 'package:kawalo_mobile/core/services/media_picker_service.dart';
-import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/upload/upload_repository.dart';
-import 'package:kawalo_mobile/core/widgets/app_action_tile.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_divider.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
-import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/attendance_location_screen.dart';
-import 'package:kawalo_mobile/features/attendance_admin/presentation/screens/attendance_setting_screen.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
@@ -31,18 +25,47 @@ import 'package:kawalo_mobile/features/auth/presentation/screens/change_password
 import 'package:kawalo_mobile/features/face/face_module.dart';
 import 'package:kawalo_mobile/features/face/presentation/screens/face_data_screen.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/cubit/app_version_cubit.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/cubit/background_access_cubit.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/screens/theme_mode_screen.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/account_menu_row.dart';
+import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/background_access_sheet.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/profile_avatar_sheet.dart';
 
-/// "Pengaturan" tab: profile of the signed-in user (with photo change),
-/// theme, group switch, password change and logout.
+/// "Akun" (opened from the Beranda "Lainnya" card): profile of the signed-in
+/// user and personal settings (photo, password, theme, face data, group,
+/// background access), with "Keluar" pinned at the bottom. Admin settings
+/// live in "Kelola".
 ///
 /// Reads [AuthBloc] only for [Authenticated]; transient states (loading during
 /// logout/switch) keep showing the last profile instead of flashing empty.
 class MoreScreen extends StatelessWidget {
-  const MoreScreen({super.key, this.mediaPicker});
+  const MoreScreen({
+    super.key,
+    this.mediaPicker,
+    this.createBackgroundAccessCubit,
+  });
 
   /// Test injection; defaults to the device camera and gallery.
   final MediaPickerService? mediaPicker;
+
+  /// Test injection; defaults to the native background-access channel.
+  final BackgroundAccessCubit Function()? createBackgroundAccessCubit;
+
+  static Route<void> route() => AppPageRoute.slideFade<void>(
+    settings: const RouteSettings(name: AppRouteNames.account),
+    builder: (context) {
+      final tones = KawaloTones.of(context);
+      return Scaffold(
+        backgroundColor: tones.background,
+        appBar: AppBar(
+          backgroundColor: tones.background,
+          scrolledUnderElevation: 0,
+          title: const Text('Akun'),
+        ),
+        body: const MoreScreen(),
+      );
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +74,16 @@ class MoreScreen extends StatelessWidget {
     if (context.read<AuthBloc?>() == null) return const SizedBox.shrink();
     final authRepository = context.read<AuthRepository?>();
     final uploadRepository = context.read<UploadRepository?>();
-    final body = BlocProvider(
-      create: (_) => AppVersionCubit()..load(),
+    final body = MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => AppVersionCubit()..load()),
+        if (BackgroundAccessSheet.isSupported)
+          BlocProvider(
+            create: (_) =>
+                (createBackgroundAccessCubit ?? BackgroundAccessCubit.new)()
+                  ..load(),
+          ),
+      ],
       child: BlocBuilder<AuthBloc, AuthState>(
         buildWhen: (_, current) => current is Authenticated,
         builder: (context, state) {
@@ -163,10 +194,9 @@ class _MoreBody extends StatelessWidget {
   Future<void> _confirmLogout(BuildContext context) async {
     final confirmed = await showAppConfirmationDialog(
       context: context,
-      title: 'Keluar dari akun?',
+      title: 'Keluar dari Kawalo?',
       message:
-          'Sesi Anda akan berakhir. Anda perlu masuk kembali '
-          'untuk mengakses aplikasi.',
+          'Walkie-talkie berhenti dan data yang tersimpan di HP ini dihapus.',
       confirmText: 'Keluar',
     );
     if ((confirmed ?? false) && context.mounted) {
@@ -174,240 +204,178 @@ class _MoreBody extends StatelessWidget {
     }
   }
 
-  /// Gap between menu tiles so they do not touch.
-  static List<Widget> _spaced(List<Widget> tiles) => [
-    for (var i = 0; i < tiles.length; i++) ...[
-      if (i > 0) AppSpacing.vGap100,
-      tiles[i],
-    ],
-  ];
+  Future<void> _openBackgroundAccess(BuildContext context) async {
+    await BackgroundAccessSheet.show(context);
+    if (context.mounted) {
+      unawaited(context.read<BackgroundAccessCubit>().load());
+    }
+  }
+
+  static String? _accessSummary(BackgroundAccessState state) {
+    final grants = state.status?.grants;
+    if (grants == null) return null;
+    const names = {
+      BackgroundAccessItem.notifications: 'Notifikasi',
+      BackgroundAccessItem.microphone: 'Mikrofon',
+      BackgroundAccessItem.battery: 'Baterai',
+    };
+    final missing = [
+      for (final item in BackgroundAccessItem.values)
+        if (grants[item] != BackgroundAccessGrant.granted) names[item]!,
+    ];
+    if (missing.isEmpty) return 'Semua diizinkan';
+    return '${missing.join(', ')} belum diizinkan';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final typeScale = theme.typeScale;
-
+    final tones = KawaloTones.of(context);
     final user = this.user;
-    final groupName = user?.activeGroup?.groupName?.trim();
+    final groupName = user?.activeGroup?.groupName?.trim() ?? '';
     final roleLabel = _roleLabel(role ?? user?.activeGroup?.category);
-    final canSwitchGroup = user != null && user.groups.length > 1;
+    final caption = [
+      ?roleLabel,
+      if (groupName.isNotEmpty) groupName,
+    ].join(' · ');
+    final canChangePhoto =
+        user != null && context.read<ProfileAvatarCubit?>() != null;
+    final hasAccessCubit = context.read<BackgroundAccessCubit?>() != null;
+
+    final rows = <Widget>[
+      if (canChangePhoto)
+        AccountMenuRow(
+          icon: Icons.person_outline_rounded,
+          title: 'Foto profil',
+          onTap: () => unawaited(_changeAvatar(context, user)),
+        ),
+      if (context.read<AuthRepository?>() != null)
+        AccountMenuRow(
+          icon: Icons.key_outlined,
+          title: 'Ganti password',
+          onTap: () => Navigator.of(context).push(
+            ChangePasswordScreen.route(
+              repository: context.read<AuthRepository>(),
+              authBloc: context.read<AuthBloc>(),
+            ),
+          ),
+        ),
+      if (context.read<ThemeModeCubit?>() != null)
+        BlocBuilder<ThemeModeCubit, ThemeMode>(
+          builder: (context, mode) => AccountMenuRow(
+            icon: Icons.dark_mode_outlined,
+            title: 'Tampilan',
+            subtitle: ThemeModeScreen.label(mode),
+            onTap: () => Navigator.of(context).push(ThemeModeScreen.route()),
+          ),
+        ),
+      if (context.read<FaceModule?>() != null)
+        AccountMenuRow(
+          icon: Icons.face_outlined,
+          title: 'Data wajah',
+          subtitle: 'Status dan daftar ulang wajah',
+          onTap: () => Navigator.of(context).push(
+            FaceDataScreen.route(
+              repository: context.read<FaceModule>().repository,
+            ),
+          ),
+        ),
+      if (user != null && user.groups.length > 1)
+        AccountMenuRow(
+          icon: Icons.swap_horiz_rounded,
+          title: 'Ganti grup',
+          subtitle: '${user.groups.length} grup',
+          onTap: () =>
+              unawaited(AppRouter.of(context).pushGroupSelection(user)),
+        ),
+      if (hasAccessCubit)
+        BlocBuilder<BackgroundAccessCubit, BackgroundAccessState>(
+          builder: (context, state) => AccountMenuRow(
+            icon: Icons.battery_std_outlined,
+            title: 'Izin latar belakang',
+            subtitle: _accessSummary(state),
+            onTap: () => unawaited(_openBackgroundAccess(context)),
+          ),
+        ),
+    ];
 
     return SafeArea(
-      bottom: false,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppLayout.marginCompact,
-          vertical: AppSpacing.space200,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (user != null) ...[
-              Row(
-                children: [
-                  _Avatar(
-                    name: user.name,
-                    imageUrl: user.avatarUrl,
-                    onTap: context.read<ProfileAvatarCubit?>() == null
-                        ? null
-                        : () => unawaited(_changeAvatar(context, user)),
-                  ),
-                  AppSpacing.hGap200,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.name,
-                          style: typeScale.titleMedium.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+      top: false,
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+              children: [
+                if (user != null) ...[
+                  Row(
+                    children: [
+                      _Avatar(
+                        name: user.name,
+                        imageUrl: user.avatarUrl,
+                        onTap: canChangePhoto
+                            ? () => unawaited(_changeAvatar(context, user))
+                            : null,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: tones.ink,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              caption.isEmpty ? user.email : caption,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: tones.ink2, fontSize: 14),
+                            ),
+                          ],
                         ),
-                        AppSpacing.vGap25,
-                        Text(
-                          user.email,
-                          style: typeScale.bodyMedium.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (roleLabel != null) ...[
-                          AppSpacing.vGapSm,
-                          AppTag(
-                            label: roleLabel,
-                            size: AppTagSize.small,
-                            semanticLabel: 'Peran $roleLabel',
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 14),
                 ],
-              ),
-              if (groupName != null && groupName.isNotEmpty) ...[
-                AppSpacing.vGap200,
-                Text(
-                  'Grup aktif',
-                  style: typeScale.labelMedium.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                AppSpacing.vGap25,
-                Text(
-                  groupName,
-                  style: typeScale.bodyLarge.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
+                for (final row in rows) ...[row, const SizedBox(height: 8)],
+                BlocBuilder<AppVersionCubit, String?>(
+                  builder: (context, version) => version == null
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            'Versi $version',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: tones.ink3, fontSize: 12),
+                          ),
+                        ),
                 ),
               ],
-              AppSpacing.vGap200,
-              const AppDivider(),
-              AppSpacing.vGapSm,
-            ],
-            if (context.read<ThemeModeCubit?>() != null) ...[
-              AppSpacing.vGapSm,
-              Text(
-                'Tampilan',
-                style: typeScale.labelMedium.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              AppSpacing.vGapSm,
-              const _ThemeModeSelector(),
-              AppSpacing.vGap200,
-              const AppDivider(),
-              AppSpacing.vGapSm,
-            ],
-            ..._spaced([
-              if (canSwitchGroup)
-                AppActionTile(
-                  title: 'Ganti Grup',
-                  subtitle: 'Pindah ke grup lain',
-                  vectorIcon: KawaloVectors.refreshCcwDot,
-                  closeOnTap: false,
-                  trailing: const AppSvgIcon(
-                    KawaloVectors.arrowRight01,
-                    size: 20,
-                  ),
-                  onTap: () =>
-                      unawaited(AppRouter.of(context).pushGroupSelection(user)),
-                ),
-              if (context.read<UserSessionCubit?>()?.state?.isAdminRole ??
-                  false) ...[
-                AppActionTile(
-                  title: 'Tentukan Titik Absen',
-                  subtitle: 'Satu titik dan radius untuk semua shift',
-                  vectorIcon: KawaloVectors.location01,
-                  closeOnTap: false,
-                  trailing: const AppSvgIcon(
-                    KawaloVectors.arrowRight01,
-                    size: 20,
-                  ),
-                  onTap: () => Navigator.of(
-                    context,
-                  ).push(AttendanceLocationScreen.route()),
-                ),
-                AppActionTile(
-                  title: 'Pengaturan Absensi',
-                  subtitle: 'Batas kemiripan wajah untuk absen',
-                  vectorIcon: KawaloVectors.userShield01,
-                  closeOnTap: false,
-                  trailing: const AppSvgIcon(
-                    KawaloVectors.arrowRight01,
-                    size: 20,
-                  ),
-                  onTap: () => Navigator.of(
-                    context,
-                  ).push(AttendanceSettingScreen.route()),
-                ),
-              ],
-              if (context.read<FaceModule?>() != null)
-                AppActionTile(
-                  title: 'Data Wajah',
-                  subtitle: 'Status dan daftar ulang wajah',
-                  vectorIcon: KawaloVectors.arrowRight01,
-                  closeOnTap: false,
-                  trailing: const AppSvgIcon(
-                    KawaloVectors.arrowRight01,
-                    size: 20,
-                  ),
-                  onTap: () => Navigator.of(context).push(
-                    FaceDataScreen.route(
-                      repository: context.read<FaceModule>().repository,
-                    ),
-                  ),
-                ),
-              if (context.read<AuthRepository?>() != null)
-                AppActionTile(
-                  title: 'Ganti Password',
-                  subtitle: 'Ubah password akun Anda',
-                  vectorIcon: KawaloVectors.lockPassword,
-                  closeOnTap: false,
-                  trailing: const AppSvgIcon(
-                    KawaloVectors.arrowRight01,
-                    size: 20,
-                  ),
-                  onTap: () => Navigator.of(context).push(
-                    ChangePasswordScreen.route(
-                      repository: context.read<AuthRepository>(),
-                      authBloc: context.read<AuthBloc>(),
-                    ),
-                  ),
-                ),
-              AppActionTile(
-                title: 'Keluar',
-                vectorIcon: KawaloVectors.logout03,
-                isDestructive: true,
-                closeOnTap: false,
-                onTap: () => unawaited(_confirmLogout(context)),
-              ),
-            ]),
-            BlocBuilder<AppVersionCubit, String?>(
-              builder: (context, version) {
-                if (version == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.space300),
-                  child: Text(
-                    'Versi $version',
-                    textAlign: TextAlign.center,
-                    style: typeScale.bodySmall.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                );
-              },
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeModeSelector extends StatelessWidget {
-  const _ThemeModeSelector();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ThemeModeCubit, ThemeMode>(
-      builder: (context, mode) => SizedBox(
-        width: double.infinity,
-        child: SegmentedButton<ThemeMode>(
-          showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: ThemeMode.system, label: Text('Otomatis')),
-            ButtonSegment(value: ThemeMode.light, label: Text('Terang')),
-            ButtonSegment(value: ThemeMode.dark, label: Text('Gelap')),
-          ],
-          selected: {mode},
-          onSelectionChanged: (selection) =>
-              unawaited(context.read<ThemeModeCubit>().select(selection.first)),
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+            child: AppTaskButton(
+              label: 'Keluar',
+              icon: Icons.logout_rounded,
+              // Destructive but recoverable (sign in again), so the soft SOS
+              // fill of `.btn.dan` instead of the solid one.
+              tone: KawaloTone(
+                color: tones.sos.soft,
+                on: tones.sos.color,
+                soft: tones.sos.soft,
+              ),
+              onPressed: () => unawaited(_confirmLogout(context)),
+            ),
+          ),
+        ],
       ),
     );
   }

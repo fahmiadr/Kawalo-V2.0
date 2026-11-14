@@ -3,40 +3,57 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
+import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/usecases/usecase.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/kawalo_logo.dart';
+import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
+import 'package:kawalo_mobile/features/home/home_module.dart';
 import 'package:kawalo_mobile/features/home/presentation/utils/home_greeting_helper.dart';
-import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
-import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
-import 'package:kawalo_mobile/features/main_navigation/presentation/widgets/app_navigation_bar.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockConnectivityCubit extends MockCubit<ConnectivityStatus>
     implements ConnectivityCubit {}
-
-class MockInformationCubit extends MockCubit<InformationState>
-    implements InformationCubit {}
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
+
+class MockApiClient extends Mock implements ApiClient {}
+
+class MockStorage extends Mock implements SecureStorageService {}
+
+const _session = AuthSessionEntity(
+  userId: 'usr_1',
+  email: 'admin@kawalo.co.id',
+  name: 'AHMAD ZAKI FAUZAN',
+  role: 'ADMIN',
+  groupUid: 'grp_1',
+  allowAdmin: true,
+  allowPatrol: false,
+  allowMonPatrol: false,
+);
+
+/// The bar item (not the card title) whose label is [label] is selected.
+Finder _selectedBarItem(String label) => find.byWidgetPredicate(
+  (w) =>
+      w is Semantics &&
+      w.properties.selected == true &&
+      w.properties.label == label,
+);
 
 void main() {
   setUpAll(() {
@@ -59,283 +76,232 @@ void main() {
   );
 
   Widget buildTestWidget({
-    int initialIndex = 0,
-    UserEntity? user = testUser,
     ConnectivityCubit? connectivityCubit,
-    List<BlocProvider<dynamic>> extraProviders = const [],
+    HomeModule? homeModule,
+    AuthSessionEntity? session,
   }) {
-    final mockLogin = MockLoginUseCase();
     final mockAuthRepository = MockAuthRepository();
-    final mockLogout = MockLogoutUseCase();
-
     when(
       mockAuthRepository.getCurrentUser,
-    ).thenAnswer((_) async => Right(user));
+    ).thenAnswer((_) async => const Right(testUser));
     when(
       mockAuthRepository.getActiveSession,
     ).thenAnswer((_) async => const Right(null));
-
-    final mockInformationCubit = MockInformationCubit();
-    when(() => mockInformationCubit.state).thenReturn(
-      const InformationLoaded(information: [], lastSync: 'Baru saja'),
-    );
-    when(
-      mockInformationCubit.fetchInformation,
-    ).thenAnswer((_) async => AppFetchResult.success);
 
     Widget child = MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
           create: (_) => AuthBloc(
-            loginUseCase: mockLogin,
+            loginUseCase: MockLoginUseCase(),
             authRepository: mockAuthRepository,
-            logoutUseCase: mockLogout,
+            logoutUseCase: MockLogoutUseCase(),
           )..add(const AuthCheckRequested()),
         ),
-        BlocProvider<InformationCubit>.value(value: mockInformationCubit),
-        ...extraProviders,
+        if (session != null)
+          BlocProvider<UserSessionCubit>(
+            create: (_) => UserSessionCubit(session),
+          ),
+        if (connectivityCubit != null)
+          BlocProvider<ConnectivityCubit>.value(value: connectivityCubit),
       ],
-      child: MainNavigationScreen(initialIndex: initialIndex),
+      child: const MainNavigationScreen(),
     );
-
-    if (connectivityCubit != null) {
-      child = BlocProvider<ConnectivityCubit>.value(
-        value: connectivityCubit,
+    if (homeModule != null) {
+      child = RepositoryProvider<HomeModule>.value(
+        value: homeModule,
         child: child,
       );
     }
-
     return MaterialApp(theme: AppTheme.lightThemeData(), home: child);
   }
 
-  group('MainNavigationScreen Tests', () {
-    testWidgets('renders custom AppHomeAppBar on home destination', (
+  group('MainNavigationScreen', () {
+    // Same snackbar text in two tests would be swallowed by the debounce.
+    setUp(AppSnackbar.hideCurrent);
+
+    testWidgets('header greets with the short greeting and first name', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      final expectedGreeting = HomeGreetingHelper.formatGreeting(
-        name: testUser.name,
-        role: testUser.activeGroup?.category,
-      );
-
-      expect(find.byType(AppHomeAppBar), findsOneWidget);
-      expect(find.text(expectedGreeting), findsOneWidget);
-      expect(find.byType(KawaloLogoText), findsOneWidget);
-    });
-
-    testWidgets(
-      'pull-to-refresh on dashboard content area triggers refresh indicator',
-      (tester) async {
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
-
-        // Fling down pada area konten dashboard
-        await tester.fling(
-          find.text('Tamu Terakhir'),
-          const Offset(0, 300),
-          1000,
-        );
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
-        await tester.pumpAndSettle();
-
-        // Memastikan AppRefreshIndicator terpasang
-        expect(find.byType(AppRefreshIndicator), findsWidgets);
-      },
-    );
-
-    testWidgets('renders the 3 navigation destinations correctly', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      // Memastikan AppNavigationBar (M3ENavigationBar) terpasang
-      expect(find.byType(AppNavigationBar), findsOneWidget);
-
-      // Memastikan 3 label destinasi ada
-      expect(find.text('Beranda'), findsAtLeastNWidgets(1));
-      expect(find.text('Informasi'), findsAtLeastNWidgets(1));
-      expect(find.text('Laporan'), findsNothing);
-      expect(find.text('Pengaturan'), findsOneWidget);
-      expect(find.text('Lainnya'), findsNothing);
       expect(
-        tester
-            .widget<AppNavigationBar>(find.byType(AppNavigationBar))
-            .destinations,
-        hasLength(3),
-      );
-
-      // Memastikan konten awal default adalah Beranda (HomeDashboardView)
-      expect(find.text('Tamu Terakhir'), findsOneWidget);
-      expect(find.text('Absensi'), findsOneWidget);
-      expect(find.text('Pintasan'), findsOneWidget);
-    });
-
-    testWidgets('switches content when tapping different navigation items', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      // Tap tab "Informasi"
-      await tester.tap(find.text('Informasi').last);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Pusat informasi'), findsOneWidget);
-      expect(find.bySemanticsLabel('Cari informasi'), findsOneWidget);
-      expect(find.text('Belum ada informasi'), findsOneWidget);
-
-      // Tap tab "Pengaturan"
-      await tester.tap(find.text('Pengaturan'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('AHMAD ZAKI FAUZAN'), findsOneWidget);
-      expect(find.text('Keluar'), findsOneWidget);
-
-      // Tap kembali ke tab "Beranda"
-      await tester.tap(find.text('Beranda').last);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Tamu Terakhir'), findsOneWidget);
-      expect(find.text('Pintasan'), findsOneWidget);
-    });
-
-    testWidgets('supports initialIndex parameter', (tester) async {
-      await tester.pumpWidget(buildTestWidget(initialIndex: 2));
-      await tester.pumpAndSettle();
-
-      // Index 2 is the last tab, Pengaturan.
-      expect(find.text('AHMAD ZAKI FAUZAN'), findsOneWidget);
-      expect(find.text('Keluar'), findsOneWidget);
-    });
-
-    testWidgets('contains designated Kawalo vectors for all destinations', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      // Verifikasi AppSvgIcon dengan path vektor Kawalo
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is AppSvgIcon &&
-              widget.assetPath == KawaloVectors.home01Filled,
-        ),
-        findsAtLeastNWidgets(1),
-      );
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is AppSvgIcon && widget.assetPath == KawaloVectors.kanban,
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is AppSvgIcon &&
-              widget.assetPath == KawaloVectors.documentValidation,
-        ),
-        findsNothing,
-      );
-      expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is AppSvgIcon &&
-              widget.assetPath == KawaloVectors.moreHorizontalCircle01,
-        ),
+        find.text(HomeGreetingHelper.formatShort(name: testUser.name)),
         findsOneWidget,
       );
     });
 
-    testWidgets('does not render Extended FAB SOS', (tester) async {
+    testWidgets('default deck: SOS, Insiden, Patroli, Lainnya (no PTT cubit '
+        'means no PTT card)', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('SOS'), findsNothing);
+      for (final label in ['SOS', 'Insiden', 'Patroli', 'Lainnya']) {
+        expect(find.bySemanticsLabel(label), findsWidgets, reason: label);
+      }
+      expect(find.bySemanticsLabel('PTT'), findsNothing);
+      expect(_selectedBarItem('SOS'), findsOneWidget);
+      expect(find.text('Darurat'), findsOneWidget);
     });
 
-    testWidgets(
-      'renders AppBottomOfflineBanner below AppNavigationBar when offline',
-      (tester) async {
-        final mockConnectivity = MockConnectivityCubit();
-        when(
-          () => mockConnectivity.state,
-        ).thenReturn(ConnectivityStatus.offline);
+    testWidgets('tapping a bar item moves the deck to that card', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-        await tester.pumpWidget(
-          buildTestWidget(connectivityCubit: mockConnectivity),
-        );
-        await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Lainnya').last);
+      await tester.pumpAndSettle();
 
-        expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
-        expect(find.byType(AppNavigationBar), findsOneWidget);
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(_selectedBarItem('Lainnya'), findsOneWidget);
+      expect(find.text('FITUR LAIN'), findsOneWidget);
+      expect(find.text('Akun'), findsOneWidget);
+      expect(find.text('Atur Beranda'), findsOneWidget);
+      // No arrow past the last card.
+      expect(find.bySemanticsLabel(RegExp('^Kartu berikutnya')), findsNothing);
+    });
 
-    testWidgets(
-      'notification bell has no fake badge and says it is unavailable',
-      (tester) async {
-        await tester.pumpWidget(buildTestWidget());
-        await tester.pumpAndSettle();
+    testWidgets('swiping moves the deck and the bar follows', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-        expect(
-          tester
-              .widget<AppHomeAppBar>(find.byType(AppHomeAppBar))
-              .unreadNotificationsCount,
-          0,
-        );
+      await tester.fling(find.byType(PageView), const Offset(-500, 0), 1500);
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.bySemanticsLabel('Notifikasi'));
-        await tester.pump();
+      expect(_selectedBarItem('Insiden'), findsOneWidget);
+      expect(_selectedBarItem('SOS'), findsNothing);
+    });
 
-        expect(find.text('Notifikasi belum tersedia.'), findsOneWidget);
-        expect(find.textContaining('belum dibaca'), findsNothing);
-        await tester.pumpAndSettle(const Duration(seconds: 6));
-      },
-    );
+    testWidgets('arrows and a tap on the peeking card move the deck', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-    testWidgets(
-      'hides offline banner content and keeps safe area spacer when online',
-      (tester) async {
-        final mockConnectivity = MockConnectivityCubit();
-        when(
-          () => mockConnectivity.state,
-        ).thenReturn(ConnectivityStatus.online);
+      expect(find.bySemanticsLabel(RegExp('^Kartu sebelumnya')), findsNothing);
+      await tester.tap(find.bySemanticsLabel('Kartu berikutnya: Insiden'));
+      await tester.pumpAndSettle();
+      expect(_selectedBarItem('Insiden'), findsOneWidget);
 
-        await tester.pumpWidget(
-          buildTestWidget(connectivityCubit: mockConnectivity),
-        );
-        await tester.pumpAndSettle();
+      final deck = tester.getRect(find.byType(PageView));
+      await tester.tapAt(Offset(deck.right - 8, deck.top + 40));
+      await tester.pumpAndSettle();
+      expect(_selectedBarItem('Patroli'), findsOneWidget);
 
-        expect(
-          find.text('Mode offline — Menampilkan data tersimpan'),
-          findsNothing,
-        );
-        expect(find.text('Kembali online'), findsNothing);
-        expect(find.byType(AppNavigationBar), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Kartu sebelumnya: Insiden'));
+      await tester.pumpAndSettle();
+      expect(_selectedBarItem('Insiden'), findsOneWidget);
+    });
 
-        final navBar = tester.widget<AppNavigationBar>(
-          find.byType(AppNavigationBar),
-        );
-        expect(navBar.safeArea, isFalse);
+    testWidgets('SOS looks normal and says Fitur dalam pengerjaan', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-        final banner = tester.widget<AppBottomOfflineBanner>(
-          find.byType(AppBottomOfflineBanner),
-        );
-        expect(banner.keepSafeAreaWhenHidden, isTrue);
-        expect(banner.isOffline, isFalse);
-      },
-    );
+      expect(find.text('SEGERA HADIR'), findsNothing);
+      await tester.tap(find.text('Tahan 3 detik'));
+      await tester.pump();
+      expect(find.text('Fitur dalam pengerjaan'), findsOneWidget);
+      await tester.pumpAndSettle(const Duration(seconds: 6));
+    });
+
+    testWidgets('admins get Kelola instead of Personil in Lainnya', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget(session: _session));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Lainnya').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kelola'), findsOneWidget);
+      expect(find.text('Personil'), findsNothing);
+    });
+
+    testWidgets('guards get Personil', (tester) async {
+      await tester.pumpWidget(
+        buildTestWidget(
+          session: const AuthSessionEntity(
+            userId: 'usr_2',
+            email: 'guard@kawalo.co.id',
+            name: 'Budi',
+            role: 'GUARD',
+            groupUid: 'grp_1',
+            allowAdmin: false,
+            allowPatrol: false,
+            allowMonPatrol: false,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Lainnya').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Personil'), findsOneWidget);
+      expect(find.text('Kelola'), findsNothing);
+    });
+
+    testWidgets('the saved layout orders the deck', (tester) async {
+      final api = MockApiClient();
+      final storage = MockStorage();
+      when(() => storage.getHomeLayout(any())).thenAnswer((_) async => null);
+      when(() => storage.saveHomeLayout(any(), any())).thenAnswer((_) async {});
+      when(() => api.get('/v1/me/home-layout')).thenAnswer(
+        (_) async => {
+          'success': true,
+          'data': {
+            'order': ['inc', 'sos', 'gst', 'pat'],
+            'hidden': ['pat'],
+            'is_default': false,
+          },
+        },
+      );
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          session: _session,
+          homeModule: HomeModule(apiClient: api, storage: storage),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(_selectedBarItem('Insiden'), findsOneWidget);
+      expect(find.bySemanticsLabel('Buku Tamu'), findsWidgets);
+      expect(find.bySemanticsLabel('Patroli'), findsNothing);
+      final x = [
+        for (final label in ['Insiden', 'SOS', 'Buku Tamu', 'Lainnya'])
+          tester.getCenter(find.bySemanticsLabel(label).last).dx,
+      ];
+      expect(x, orderedEquals([...x]..sort()));
+    });
+
+    testWidgets('renders the offline banner when offline', (tester) async {
+      final mockConnectivity = MockConnectivityCubit();
+      when(() => mockConnectivity.state).thenReturn(ConnectivityStatus.offline);
+
+      await tester.pumpWidget(
+        buildTestWidget(connectivityCubit: mockConnectivity),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
+      expect(
+        find.text('Mode offline — Menampilkan data tersimpan'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('notification bell says the feature is in progress', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Notifikasi'));
+      await tester.pump();
+
+      expect(find.text('Fitur dalam pengerjaan'), findsOneWidget);
+      await tester.pumpAndSettle(const Duration(seconds: 6));
+    });
   });
 }

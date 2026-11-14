@@ -97,4 +97,28 @@ void main() {
     verify(() => service.skip()).called(1);
     await cubit.close();
   });
+
+  blocTest<BackgroundAccessCubit, BackgroundAccessState>(
+    'request asks only the given item and reloads',
+    setUp: () {
+      var reads = 0;
+      when(
+        () => service.status(),
+      ).thenAnswer((_) async => reads++ == 0 ? _missing : _afterRequest);
+    },
+    build: () => BackgroundAccessCubit(service: service),
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.request(BackgroundAccessItem.battery);
+    },
+    expect: () => [
+      const BackgroundAccessState(status: _missing),
+      const BackgroundAccessState(status: _missing, requesting: true),
+      const BackgroundAccessState(status: _afterRequest),
+    ],
+    verify: (_) {
+      verify(() => service.request(BackgroundAccessItem.battery)).called(1);
+      verifyNever(() => service.request(BackgroundAccessItem.notifications));
+    },
+  );
 }
