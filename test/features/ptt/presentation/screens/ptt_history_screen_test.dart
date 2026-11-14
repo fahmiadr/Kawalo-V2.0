@@ -77,6 +77,10 @@ void main() {
     );
 
     expect(find.text('Belum ada rekaman'), findsOneWidget);
+    expect(
+      find.text('Setiap giliran bicara di kanal ini tersimpan di sini.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('error state offers a retry that reloads', (tester) async {
@@ -94,61 +98,49 @@ void main() {
     verify(() => recordings.load()).called(1);
   });
 
-  testWidgets('non-admins see bubbles and date separators but no delete', (
+  testWidgets('non-admins see rows under day labels but no delete', (
     tester,
   ) async {
     await pump(tester, loaded(), user: session());
 
     expect(find.text('Budi'), findsOneWidget);
-    expect(find.text('Hapus'), findsNothing);
-    expect(find.text('Hari ini'), findsOneWidget);
-    expect(find.text('Kemarin'), findsOneWidget);
+    // The signed-in user's own turn.
+    expect(find.text('Anda'), findsOneWidget);
+    expect(find.byTooltip('Opsi rekaman'), findsNothing);
+    expect(find.text('HARI INI'), findsOneWidget);
+    expect(find.text('KEMARIN'), findsOneWidget);
   });
 
-  testWidgets('turns of one speaker minutes apart share one name', (
-    tester,
-  ) async {
-    final now = DateTime.now();
-    final at = DateTime(now.year, now.month, now.day, 9);
-    await pump(
-      tester,
-      PttRecordingsState(
-        status: PttRecordingsStatus.loaded,
-        items: [
-          recording(
-            'c',
-            speakerId: 'usr_budi',
-            startedAt: at.add(const Duration(minutes: 30)),
-          ),
-          recording(
-            'b',
-            speakerId: 'usr_budi',
-            startedAt: at.add(const Duration(minutes: 2)),
-          ),
-          recording('a', speakerId: 'usr_budi', startedAt: at),
-        ],
-      ),
-      user: session(),
-    );
+  testWidgets('newest turn is on top, under its day label', (tester) async {
+    await pump(tester, loaded(), user: session());
 
-    // a and b form one group; c, half an hour later, starts another.
-    expect(find.text('Budi'), findsNWidgets(2));
-    expect(find.byType(CircleAvatar), findsNWidgets(2));
+    final today = tester.getRect(find.text('HARI INI')).top;
+    final mine = tester.getRect(find.text('Anda')).top;
+    final yesterday = tester.getRect(find.text('KEMARIN')).top;
+    final older = tester.getRect(find.text('Budi')).top;
+    expect(today, lessThan(mine));
+    expect(mine, lessThan(yesterday));
+    expect(yesterday, lessThan(older));
   });
 
-  testWidgets('a GUARD with allowAdmin still sees no delete button', (
-    tester,
-  ) async {
+  testWidgets('a GUARD with allowAdmin still cannot delete', (tester) async {
     await pump(tester, loaded(), user: session(allowAdmin: true));
 
-    expect(find.text('Hapus'), findsNothing);
+    expect(find.byTooltip('Opsi rekaman'), findsNothing);
   });
 
-  testWidgets('admins see a delete button per recording', (tester) async {
+  testWidgets('admins get an options menu per recording', (tester) async {
     await pump(tester, loaded(), user: session(admin: true));
 
-    expect(find.text('Hapus'), findsNWidgets(2));
+    expect(find.byTooltip('Opsi rekaman'), findsNWidgets(2));
   });
+
+  Future<void> openDelete(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Opsi rekaman').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus rekaman'));
+    await tester.pumpAndSettle();
+  }
 
   testWidgets('confirming names the effect and then deletes', (tester) async {
     when(() => playback.stopIfActive(any())).thenAnswer((_) async {});
@@ -157,15 +149,26 @@ void main() {
     ).thenAnswer((_) async => true);
     await pump(tester, loaded(), user: session(admin: true));
 
-    await tester.tap(find.text('Hapus').first);
+    await openDelete(tester);
+
+    expect(find.text('Hapus rekaman ini?'), findsOneWidget);
+    expect(
+      find.textContaining('Rekaman Saya pukul'),
+      findsOneWidget,
+      reason: 'names who, when and how long',
+    );
+    expect(
+      find.textContaining(
+        'dihapus untuk semua anggota. Tidak bisa '
+        'dibatalkan.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Hapus'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Hapus Rekaman?'), findsOneWidget);
-    expect(find.textContaining('semua anggota grup'), findsOneWidget);
-
-    await tester.tap(find.text('Hapus Rekaman'));
-    await tester.pumpAndSettle();
-
+    verify(() => playback.stopIfActive('a')).called(1);
     verify(
       () => recordings.delete('a', session: any(named: 'session')),
     ).called(1);
@@ -174,8 +177,7 @@ void main() {
   testWidgets('cancelling the dialog deletes nothing', (tester) async {
     await pump(tester, loaded(), user: session(admin: true));
 
-    await tester.tap(find.text('Hapus').first);
-    await tester.pumpAndSettle();
+    await openDelete(tester);
     await tester.tap(find.text('Batal'));
     await tester.pumpAndSettle();
 

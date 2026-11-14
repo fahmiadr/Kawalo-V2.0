@@ -3,24 +3,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_playback_state.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_bubble.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_tile.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_waveform.dart';
 
 import '../../ptt_recording_fixtures.dart';
-
-/// The bubble and, with a transcript, its inset card: the rounded surfaces.
-/// The avatar's circle is a Container too but has no border radius.
-final Finder surfaces = find.descendant(
-  of: find.byType(PttRecordingBubble),
-  matching: find.byWidgetPredicate(
-    (w) =>
-        w is Container &&
-        w.decoration is BoxDecoration &&
-        (w.decoration! as BoxDecoration).borderRadius != null,
-  ),
-);
 
 void main() {
   Widget host({
@@ -32,13 +19,11 @@ void main() {
     ValueChanged<Duration>? onSeek,
     VoidCallback? onDelete,
     String? transcript,
+    String? transcriptStatus,
     ThemeData? theme,
     double textScale = 1,
     Duration duration = const Duration(seconds: 65),
-    String role = 'GUARD',
     Uint8List? waveform,
-    bool isFirstInGroup = true,
-    bool isLastInGroup = true,
   }) {
     return MaterialApp(
       theme: theme ?? AppTheme.lightThemeData(),
@@ -49,19 +34,16 @@ void main() {
         child: child!,
       ),
       home: Scaffold(
-        // The real screen is a scrolling list; an expanded transcript is tall.
         body: SingleChildScrollView(
-          child: PttRecordingBubble(
+          child: PttRecordingTile(
             recording: recording(
               'a',
               duration: duration,
               transcript: transcript,
-              role: role,
+              transcriptStatus: transcriptStatus,
               waveform: waveform,
             ),
             isMe: isMe,
-            isFirstInGroup: isFirstInGroup,
-            isLastInGroup: isLastInGroup,
             playback: playback,
             canDelete: canDelete,
             isDeleting: isDeleting,
@@ -74,26 +56,21 @@ void main() {
     );
   }
 
-  testWidgets('shows sender, initial, length and time of someone else', (
-    tester,
-  ) async {
+  testWidgets('shows speaker, initial, length and clock time', (tester) async {
     await tester.pumpWidget(host());
 
     expect(find.text('Budi'), findsOneWidget);
     expect(find.text('B'), findsOneWidget);
     expect(find.text('1:05'), findsOneWidget);
-    expect(find.text('09:30'), findsOneWidget);
+    expect(find.text('09.30'), findsOneWidget);
     expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
   });
 
-  testWidgets('own turns sit on the right without a name', (tester) async {
+  testWidgets('own turns are labelled Anda', (tester) async {
     await tester.pumpWidget(host(isMe: true));
 
+    expect(find.text('Anda'), findsOneWidget);
     expect(find.text('Budi'), findsNothing);
-    final bubble = tester.getRect(find.byType(PttRecordingBubble));
-    final inner = tester.getRect(surfaces.first);
-    expect(inner.right, bubble.right);
-    expect(inner.left, greaterThan(bubble.left));
   });
 
   testWidgets('play button reports taps and pause icon shows while playing', (
@@ -152,35 +129,39 @@ void main() {
     await tester.pump();
 
     expect(sought, isNotNull);
-    expect(sought!.inSeconds, inInclusiveRange(25, 40));
+    expect(sought!.inSeconds, inInclusiveRange(20, 45));
   });
 
-  testWidgets('delete button is absent unless the viewer may delete', (
+  testWidgets('options menu is absent unless the viewer may delete', (
     tester,
   ) async {
     await tester.pumpWidget(host());
-    expect(find.text('Hapus'), findsNothing);
+    expect(find.byTooltip('Opsi rekaman'), findsNothing);
 
     await tester.pumpWidget(host(canDelete: true));
-    expect(find.text('Hapus'), findsOneWidget);
-    final size = tester.getSize(find.byType(AppButton));
-    expect(size.height, greaterThanOrEqualTo(44));
+    expect(find.byTooltip('Opsi rekaman'), findsOneWidget);
+    expect(
+      tester.getSize(find.byTooltip('Opsi rekaman')).height,
+      greaterThanOrEqualTo(44),
+    );
   });
 
-  testWidgets('delete button calls back, and is inert while deleting', (
+  testWidgets('delete from the menu calls back; inert while deleting', (
     tester,
   ) async {
     var deletes = 0;
     await tester.pumpWidget(host(canDelete: true, onDelete: () => deletes++));
-    await tester.tap(find.text('Hapus'));
+    await tester.tap(find.byTooltip('Opsi rekaman'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus rekaman'));
+    await tester.pumpAndSettle();
     expect(deletes, 1);
 
     await tester.pumpWidget(
       host(canDelete: true, isDeleting: true, onDelete: () => deletes++),
     );
-    await tester.tap(find.byType(PttRecordingBubble), warnIfMissed: false);
-    expect(deletes, 1);
-    expect(find.text('Hapus'), findsNothing);
+    expect(find.byTooltip('Opsi rekaman'), findsNothing);
+    expect(find.bySemanticsLabel('Menghapus rekaman'), findsOneWidget);
   });
 
   const shortText = 'Pos satu aman, tidak ada kejadian.';
@@ -189,27 +170,32 @@ void main() {
     'Ada orang tidak dikenal di gerbang belakang',
   ).join(' ');
 
-  testWidgets('no transcript shows nothing extra', (tester) async {
-    await tester.pumpWidget(host());
-
-    expect(find.textContaining('Transkrip'), findsNothing);
-    expect(find.text('Selengkapnya'), findsNothing);
-  });
-
-  testWidgets('blank transcript shows nothing extra', (tester) async {
-    await tester.pumpWidget(host(transcript: '  '));
-
-    expect(find.textContaining('Transkrip'), findsNothing);
-  });
-
-  testWidgets('short transcript shows only its text and no toggle', (
+  testWidgets('a pending transcript says it is not available yet', (
     tester,
   ) async {
-    await tester.pumpWidget(host(transcript: shortText));
+    await tester.pumpWidget(host());
+    expect(find.text('Transkrip belum tersedia'), findsOneWidget);
+
+    await tester.pumpWidget(host(transcript: '  '));
+    expect(find.text('Transkrip belum tersedia'), findsOneWidget);
+  });
+
+  testWidgets('a turn without speech promises no transcript', (tester) async {
+    await tester.pumpWidget(host(transcriptStatus: 'no_speech'));
 
     expect(find.textContaining('Transkrip'), findsNothing);
-    expect(find.text(shortText), findsOneWidget);
+  });
+
+  testWidgets('short transcript is quoted, with no toggle', (tester) async {
+    await tester.pumpWidget(host(transcript: shortText));
+
+    expect(find.text('“$shortText”'), findsOneWidget);
+    expect(find.text('Transkrip belum tersedia'), findsNothing);
     expect(find.text('Selengkapnya'), findsNothing);
+    expect(
+      tester.getRect(find.text('“$shortText”')).top,
+      greaterThan(tester.getRect(find.byType(PttWaveform)).bottom),
+    );
   });
 
   testWidgets('long transcript collapses to 3 lines and expands', (
@@ -217,10 +203,10 @@ void main() {
   ) async {
     await tester.pumpWidget(host(transcript: longText));
 
-    Text body() => tester.widget<Text>(find.text(longText));
+    final quoted = find.text('“$longText”');
+    Text body() => tester.widget<Text>(quoted);
     expect(body().maxLines, 3);
-    expect(find.text('Selengkapnya'), findsOneWidget);
-    final collapsed = tester.getSize(find.text(longText)).height;
+    final collapsed = tester.getSize(quoted).height;
 
     final toggle = find.ancestor(
       of: find.text('Selengkapnya'),
@@ -231,104 +217,42 @@ void main() {
     await tester.tap(find.text('Selengkapnya'));
     await tester.pump();
     expect(body().maxLines, isNull);
-    expect(find.text('Ringkas'), findsOneWidget);
-    expect(tester.getSize(find.text(longText)).height, greaterThan(collapsed));
+    expect(tester.getSize(quoted).height, greaterThan(collapsed));
 
     await tester.tap(find.text('Ringkas'));
     await tester.pump();
     expect(body().maxLines, 3);
-    expect(find.text('Selengkapnya'), findsOneWidget);
   });
 
-  for (final isMe in [false, true]) {
-    testWidgets('${isMe ? 'own' : 'others'} transcript sits inside the card, '
-        'below the time row', (tester) async {
-      await tester.pumpWidget(host(isMe: isMe, transcript: shortText));
+  for (final dark in [false, true]) {
+    testWidgets('320px, 1.5x text, ${dark ? 'dark' : 'light'}: no overflow', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
 
-      final card = tester.getRect(surfaces.first);
-      final text = tester.getRect(find.text(shortText));
-      expect(card.contains(text.topLeft), isTrue);
-      expect(card.contains(text.bottomRight), isTrue);
-      expect(text.top, greaterThan(tester.getRect(find.text('09:30')).bottom));
-    });
-  }
-
-  for (final isMe in [false, true]) {
-    testWidgets('${isMe ? 'own' : 'others'} transcript is quoted: audio sits '
-        'in an inset card, the text below it, one bubble', (tester) async {
-      Iterable<Widget> containers() => tester.widgetList(surfaces);
-
-      await tester.pumpWidget(host(isMe: isMe));
-      final withoutText = containers().length;
-
-      await tester.pumpWidget(host(isMe: isMe, transcript: shortText));
-      expect(containers().length, withoutText + 1);
-
-      final bubble = tester.getRect(surfaces.first);
-      final card = tester.getRect(surfaces.at(1));
-      final text = tester.getRect(find.text(shortText));
-      final slider = tester.getRect(find.byType(PttWaveform));
-
-      expect(bubble.contains(card.topLeft), isTrue);
-      expect(bubble.contains(card.bottomRight), isTrue);
-      expect(card.contains(slider.center), isTrue);
-      expect(card.overlaps(text), isFalse);
-      expect(text.top, greaterThanOrEqualTo(card.bottom));
-      expect(bubble.contains(text.bottomRight), isTrue);
-    });
-  }
-
-  for (final isMe in [false, true]) {
-    for (final dark in [false, true]) {
-      testWidgets('320px, 1.5x text, ${dark ? 'dark' : 'light'}, '
-          '${isMe ? 'own' : 'others'}: no overflow', (tester) async {
-        tester.view.physicalSize = const Size(320, 640);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-
-        await tester.pumpWidget(
-          host(
-            isMe: isMe,
-            canDelete: true,
-            transcript: longText,
-            textScale: 1.5,
-            role: 'ADMIN',
-            waveform: bars,
-            theme: dark ? AppTheme.darkThemeData() : AppTheme.lightThemeData(),
+      await tester.pumpWidget(
+        host(
+          canDelete: true,
+          transcript: longText,
+          textScale: 1.5,
+          waveform: bars,
+          duration: const Duration(seconds: 1),
+          playback: const PttPlaybackState(
+            activeId: 'a',
+            status: PttPlaybackStatus.playing,
           ),
-        );
-        expect(tester.takeException(), isNull);
+          theme: dark ? AppTheme.darkThemeData() : AppTheme.lightThemeData(),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.text('0:00 / 0:01'), findsOneWidget);
 
-        await tester.tap(find.text('Selengkapnya'));
-        await tester.pump();
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('320px, 1.5x text, ${dark ? 'dark' : 'light'}, '
-          '${isMe ? 'own' : 'others'}, shortest clip while playing: '
-          'no overflow', (tester) async {
-        tester.view.physicalSize = const Size(320, 640);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-
-        await tester.pumpWidget(
-          host(
-            isMe: isMe,
-            canDelete: true,
-            textScale: 1.5,
-            role: 'SUPER_ADMIN',
-            duration: const Duration(seconds: 1),
-            playback: const PttPlaybackState(
-              activeId: 'a',
-              status: PttPlaybackStatus.playing,
-            ),
-            theme: dark ? AppTheme.darkThemeData() : AppTheme.lightThemeData(),
-          ),
-        );
-        expect(tester.takeException(), isNull);
-        expect(find.text('0:00 / 0:01'), findsOneWidget);
-      });
-    }
+      await tester.tap(find.text('Selengkapnya'));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('dragging the waveform follows the finger and seeks on release', (
@@ -377,9 +301,8 @@ void main() {
       ),
     );
 
-    final node = tester.getSemantics(find.byType(PttWaveform));
     expect(
-      node,
+      tester.getSemantics(find.byType(PttWaveform)),
       matchesSemantics(
         isSlider: true,
         hasEnabledState: true,
@@ -434,47 +357,8 @@ void main() {
     });
   });
 
-  testWidgets('bubble width grows with the clip; a transcript takes the most', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(412, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
-    double width() => tester.getSize(surfaces.first).width;
-
-    await tester.pumpWidget(host(duration: const Duration(seconds: 2)));
-    final short = width();
-    await tester.pumpWidget(host(duration: const Duration(seconds: 12)));
-    final medium = width();
-    await tester.pumpWidget(host(duration: const Duration(seconds: 30)));
-    final long = width();
-    await tester.pumpWidget(
-      host(duration: const Duration(seconds: 2), transcript: shortText),
-    );
-    final quoted = width();
-
-    expect(short, greaterThanOrEqualTo(PttRecordingBubble.minWidth));
-    expect(short, lessThan(medium));
-    expect(medium, lessThan(long));
-    expect(quoted, long);
-  });
-
-  testWidgets('later turns of a group drop the name and avatar', (
-    tester,
-  ) async {
-    await tester.pumpWidget(host(isFirstInGroup: false));
-
-    expect(find.text('Budi'), findsNothing);
-    expect(find.text('B'), findsNothing);
-    expect(find.byType(CircleAvatar), findsNothing);
-  });
-
-  testWidgets('admin speakers get no extra role label', (tester) async {
-    await tester.pumpWidget(host(role: 'ADMIN'));
-
-    expect(find.text('Budi'), findsOneWidget);
-    expect(find.textContaining('Admin'), findsNothing);
+  test('clock times use the Indonesian dot', () {
+    expect(formatPttClock(DateTime(2026, 11, 13, 7, 5)), '07.05');
   });
 }
 

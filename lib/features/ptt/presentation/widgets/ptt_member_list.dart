@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_member_entity.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_members_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_members_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 
-/// "Anggota Online (N)": one row per member of the channel. Rows are plain
+/// "N rekan online": one row per member of the channel. Rows are plain
 /// children (no nested scrollable); the screen scrolls as a whole.
 class PttMemberList extends StatelessWidget {
   const PttMemberList({super.key});
@@ -40,8 +40,7 @@ class PttMemberList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final selfId = context.watch<UserSessionCubit?>()?.state?.userId;
     final speakingId = speakingUserId(
       context.select<PttCubit, PttState>((c) => c.state),
@@ -51,58 +50,45 @@ class PttMemberList extends StatelessWidget {
     return BlocBuilder<PttMembersCubit, PttMembersState>(
       builder: (context, state) {
         final members = sorted(state.members, speakingId);
-        final title = state.members.isEmpty
-            ? 'Anggota Online'
-            : 'Anggota Online (${state.members.length})';
+        // Same wording as the Beranda card: colleagues, not counting oneself.
+        final others = members.where((m) => m.userId != selfId).length;
+        final title = members.isEmpty ? 'Rekan online' : '$others rekan online';
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.bold,
-                ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: tones.ink,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
               ),
-              if (state.failed) ...[
-                const SizedBox(height: AppSpacing.sm),
-                _LoadFailed(
-                  onRetry: () => context.read<PttMembersCubit>().retry(),
-                ),
-              ],
-              if (members.isEmpty && !state.failed) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  state.isLoading
-                      ? 'Memuat daftar anggota...'
-                      : 'Belum ada anggota online.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              for (final member in members)
-                _MemberRow(
+            ),
+            const SizedBox(height: 10),
+            if (state.failed) ...[
+              _LoadFailed(
+                onRetry: () => context.read<PttMembersCubit>().retry(),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (members.isEmpty && !state.failed && state.isLoading)
+              const _MemberSkeleton()
+            else if (members.isEmpty && !state.failed)
+              Text(
+                'Belum ada rekan online.',
+                style: TextStyle(color: tones.ink2, fontSize: 15),
+              ),
+            for (final member in members)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _MemberRow(
                   member: member,
                   isSpeaking: member.userId == speakingId,
                   isSelf: member.userId == selfId,
                 ),
-            ],
-          ),
+              ),
+          ],
         );
       },
     );
@@ -122,73 +108,79 @@ class _MemberRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final name = member.name.trim().isEmpty ? 'Anggota' : member.name.trim();
 
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.sm),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: tones.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: tones.line),
+      ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: isSpeaking
-                ? colorScheme.primaryContainer
-                : colorScheme.surfaceContainerHighest,
-            foregroundColor: isSpeaking
-                ? colorScheme.onPrimaryContainer
-                : colorScheme.onSurfaceVariant,
-            child: Text(name.characters.first.toUpperCase()),
-          ),
-          const SizedBox(width: AppSpacing.sm),
+          AppUserAvatar(name: name, size: 34, maxInitials: 2, circle: true),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    if (isSelf) ...[
-                      const SizedBox(width: AppSpacing.xs),
-                      const AppTag(
-                        label: 'Anda',
-                        variant: AppTagVariant.neutral,
-                        size: AppTagSize.small,
-                      ),
-                    ],
-                  ],
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: tones.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
-                  member.roleLabel,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  isSpeaking ? 'Sedang bicara' : member.roleLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: tones.ink2, fontSize: 13),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          if (isSpeaking)
-            const AppTag(
+          if (isSelf) ...[
+            const SizedBox(width: 8),
+            const AppStatusPill(label: 'Anda'),
+          ],
+          if (isSpeaking) ...[
+            const SizedBox(width: 8),
+            const AppStatusPill(
               label: 'Bicara',
-              size: AppTagSize.small,
-              leading: Icon(Icons.graphic_eq_rounded),
-            )
-          else
-            const AppTag(
-              label: 'Siaga',
-              variant: AppTagVariant.neutral,
-              size: AppTagSize.small,
+              kind: AppStatusKind.ok,
+              icon: Icons.graphic_eq_rounded,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MemberSkeleton extends StatelessWidget {
+  const _MemberSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final tones = KawaloTones.of(context);
+    return Semantics(
+      label: 'Memuat daftar rekan',
+      child: Column(
+        children: [
+          for (var i = 0; i < 4; i++)
+            Container(
+              height: 64,
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: tones.surface2,
+                borderRadius: BorderRadius.circular(18),
+              ),
             ),
         ],
       ),
@@ -203,25 +195,21 @@ class _LoadFailed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final tones = KawaloTones.of(context);
     return Row(
       children: [
         Expanded(
           child: Text(
-            'Gagal memuat daftar',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.error,
-            ),
+            'Gagal memuat daftar rekan',
+            style: TextStyle(color: tones.sos.color, fontSize: 15),
           ),
         ),
-        AppButton(
-          style: AppButtonColor.tonal,
-          size: AppButtonSize.custom(
-            height: AppStateLayer.minTouchTarget,
-            hPadding: AppSpacing.space200,
-          ),
+        AppTaskButton(
+          label: 'Coba lagi',
+          icon: Icons.refresh_rounded,
+          variant: AppTaskButtonVariant.secondary,
+          size: AppTaskButtonSize.small,
           onPressed: onRetry,
-          child: const Text('Coba lagi'),
         ),
       ],
     );

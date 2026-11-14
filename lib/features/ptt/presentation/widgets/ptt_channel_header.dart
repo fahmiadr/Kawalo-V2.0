@@ -1,134 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/ptt/domain/entities/ptt_channel_entity.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
 
-class PttChannelHeader extends StatelessWidget {
-  const PttChannelHeader({super.key});
+/// App-bar title with a one-line subtitle (redesign 2026 top bar).
+class PttAppBarTitle extends StatelessWidget {
+  const PttAppBarTitle({required this.title, super.key, this.subtitle});
 
-  static const _fallbackTitle = 'SALURAN TAKTIS PATROLI';
+  final String title;
+  final String? subtitle;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+  /// The channel is the active group, so its name names the channel.
+  static String channelName(BuildContext context) {
     final authState = context.watch<AuthBloc?>()?.state;
     final groupName = authState is Authenticated
         ? authState.user.activeGroup?.groupName?.trim()
         : null;
-    final channelTitle = (groupName == null || groupName.isEmpty)
-        ? _fallbackTitle
-        : groupName.toUpperCase();
+    return (groupName == null || groupName.isEmpty) ? 'Kanal grup' : groupName;
+  }
 
-    return BlocBuilder<PttCubit, PttState>(
-      builder: (context, state) {
-        final memberCount = state.channel.memberCount;
-        final connectionStatus = state.channel.connectionStatus;
-
-        Color statusColor;
-        String statusLabel;
-        if (connectionStatus == PttConnectionStatus.connected) {
-          statusColor = colorScheme.primary;
-          statusLabel = 'Terhubung';
-        } else if (connectionStatus == PttConnectionStatus.connecting ||
-            connectionStatus == PttConnectionStatus.reconnecting) {
-          statusColor = colorScheme.tertiary;
-          statusLabel = 'Menyambung...';
-        } else {
-          statusColor = colorScheme.outline;
-          statusLabel = 'Terputus';
-        }
-
-        return Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
+  @override
+  Widget build(BuildContext context) {
+    final tones = KawaloTones.of(context);
+    final subtitle = this.subtitle;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: tones.ink,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            height: 1.2,
           ),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+        if (subtitle != null)
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: tones.ink2,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: statusColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.5),
-                      blurRadius: 6,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      channelTitle,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      statusLabel,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (memberCount != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.people_alt_rounded,
-                        size: 16,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$memberCount Online',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
+      ],
+    );
+  }
+}
+
+/// Title of the walkie-talkie screen: "Walkie-talkie" over the channel name
+/// and the live connection status.
+class PttChannelHeader extends StatelessWidget {
+  const PttChannelHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final channel = PttAppBarTitle.channelName(context);
+    return BlocBuilder<PttCubit, PttState>(
+      buildWhen: (a, b) =>
+          a.channel.connectionStatus != b.channel.connectionStatus,
+      builder: (context, state) {
+        final status = switch (state.channel.connectionStatus) {
+          PttConnectionStatus.connected => 'Terhubung',
+          PttConnectionStatus.connecting ||
+          PttConnectionStatus.reconnecting => 'Menyambung…',
+          _ => 'Terputus',
+        };
+        return PttAppBarTitle(
+          title: 'Walkie-talkie',
+          subtitle: '$channel · $status',
         );
       },
     );

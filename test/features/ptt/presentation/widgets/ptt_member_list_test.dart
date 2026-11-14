@@ -66,21 +66,21 @@ void main() {
     ],
   );
 
-  testWidgets('titles the section with the member count', (tester) async {
+  testWidgets('counts colleagues, not the current user', (tester) async {
     await pump(tester, roster);
 
-    expect(find.text('Anggota Online (4)'), findsOneWidget);
+    expect(find.text('3 rekan online'), findsOneWidget);
     expect(find.text('Admin'), findsOneWidget);
     expect(find.text('Petugas'), findsNWidgets(3));
   });
 
-  testWidgets('everyone is Siaga, and the current user is marked Anda', (
+  testWidgets('nobody speaks, and the current user is marked Anda', (
     tester,
   ) async {
     await pump(tester, roster);
 
-    expect(find.text('Siaga'), findsNWidgets(4));
     expect(find.text('Bicara'), findsNothing);
+    expect(find.text('Sedang bicara'), findsNothing);
     expect(find.text('Anda'), findsOneWidget);
   });
 
@@ -90,7 +90,7 @@ void main() {
     await pump(tester, roster, pttState: listeningState(speakerId: 'usr_z'));
 
     expect(find.text('Bicara'), findsOneWidget);
-    expect(find.text('Siaga'), findsNWidgets(3));
+    expect(find.text('Sedang bicara'), findsOneWidget);
     final order = [
       'Zainal',
       'Agus',
@@ -152,16 +152,17 @@ void main() {
     expect(saya, lessThan(tester.getTopLeft(find.text('Agus')).dy));
   });
 
-  testWidgets('shows a loading hint before the first answer', (tester) async {
+  testWidgets('shows a skeleton before the first answer', (tester) async {
     await pump(tester, const PttMembersState());
 
-    expect(find.text('Memuat daftar anggota...'), findsOneWidget);
+    expect(find.text('Rekan online'), findsOneWidget);
+    expect(find.bySemanticsLabel('Memuat daftar rekan'), findsOneWidget);
   });
 
   testWidgets('shows an empty state when nobody is online', (tester) async {
     await pump(tester, const PttMembersState(isLoading: false));
 
-    expect(find.text('Belum ada anggota online.'), findsOneWidget);
+    expect(find.text('Belum ada rekan online.'), findsOneWidget);
   });
 
   testWidgets('a failure keeps the list and offers a retry', (tester) async {
@@ -176,7 +177,7 @@ void main() {
     );
 
     expect(find.text('Agus'), findsOneWidget);
-    expect(find.text('Gagal memuat daftar'), findsOneWidget);
+    expect(find.text('Gagal memuat daftar rekan'), findsOneWidget);
 
     await tester.tap(find.text('Coba lagi'));
     verify(() => members.retry()).called(1);

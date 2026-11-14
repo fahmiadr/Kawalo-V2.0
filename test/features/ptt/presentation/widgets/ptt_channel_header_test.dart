@@ -25,14 +25,13 @@ void main() {
     pttCubit = MockPttCubit();
   });
 
-  Widget build({AuthBloc? authBloc, int? memberCount}) {
+  Widget build({
+    AuthBloc? authBloc,
+    PttConnectionStatus status = PttConnectionStatus.connected,
+  }) {
     when(() => pttCubit.state).thenReturn(
       PttIdle(
-        channel: PttChannelEntity(
-          groupUid: 'grp_1',
-          connectionStatus: PttConnectionStatus.connected,
-          memberCount: memberCount,
-        ),
+        channel: PttChannelEntity(groupUid: 'grp_1', connectionStatus: status),
         floorState: const PttFloorStateEntity.idle(),
       ),
     );
@@ -46,17 +45,16 @@ void main() {
     return MaterialApp(theme: AppTheme.lightThemeData(), home: child);
   }
 
-  testWidgets('falls back to the generic title without a session', (
+  testWidgets('falls back to a generic channel name without a session', (
     tester,
   ) async {
     await tester.pumpWidget(build());
 
-    expect(find.text('SALURAN TAKTIS PATROLI'), findsOneWidget);
+    expect(find.text('Walkie-talkie'), findsOneWidget);
+    expect(find.text('Kanal grup · Terhubung'), findsOneWidget);
   });
 
-  testWidgets('shows the active group name as the channel title', (
-    tester,
-  ) async {
+  testWidgets('names the channel after the active group', (tester) async {
     final authBloc = MockAuthBloc();
     when(() => authBloc.state).thenReturn(
       const Authenticated(
@@ -79,21 +77,17 @@ void main() {
 
     await tester.pumpWidget(build(authBloc: authBloc));
 
-    expect(find.text('KAWASAN VERANDA'), findsOneWidget);
-    expect(find.text('SALURAN TAKTIS PATROLI'), findsNothing);
+    expect(find.text('Kawasan Veranda · Terhubung'), findsOneWidget);
   });
 
-  testWidgets('hides the online count until the server sends it', (
-    tester,
-  ) async {
-    await tester.pumpWidget(build());
+  testWidgets('reports a dropped connection', (tester) async {
+    await tester.pumpWidget(build(status: PttConnectionStatus.reconnecting));
+    expect(find.text('Kanal grup · Menyambung…'), findsOneWidget);
 
-    expect(find.textContaining('Online'), findsNothing);
-  });
+    // A fresh tree: a mocked cubit does not stream the new state.
+    await tester.pumpWidget(const SizedBox());
 
-  testWidgets('shows the online count once known', (tester) async {
-    await tester.pumpWidget(build(memberCount: 5));
-
-    expect(find.text('5 Online'), findsOneWidget);
+    await tester.pumpWidget(build(status: PttConnectionStatus.disconnected));
+    expect(find.text('Kanal grup · Terputus'), findsOneWidget);
   });
 }

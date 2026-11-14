@@ -3,9 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/api_client.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_members_cubit.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_state.dart';
@@ -54,15 +53,14 @@ class _PttChannelScreenState extends State<PttChannelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: tones.background,
       appBar: AppBar(
-        title: const Text('Walkie-Talkie Taktis'),
-        centerTitle: true,
-        backgroundColor: colorScheme.surface,
+        title: const PttChannelHeader(),
+        backgroundColor: tones.background,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
       body: SafeArea(
@@ -72,149 +70,38 @@ class _PttChannelScreenState extends State<PttChannelScreen> {
             // reachable however long the member list gets on a small phone.
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const PttChannelHeader(),
-                    const SizedBox(height: AppSpacing.md),
-                    SizedBox(
-                      width: double.infinity,
-                      child: AppButton.icon(
-                        style: AppButtonColor.tonal,
-                        size: AppButtonSize.custom(
-                          height: AppStateLayer.minTouchTarget,
-                          hPadding: AppSpacing.space200,
-                        ),
-                        icon: const Icon(Icons.history_rounded),
-                        label: const Text('Riwayat Rekaman'),
-                        onPressed: () => Navigator.of(context).push(
-                          PttHistoryScreen.route(
-                            PttModule.createRecordingRepository(
-                              apiClient: context.read<ApiClient>(),
-                            ),
+                    BlocBuilder<PttCubit, PttState>(
+                      builder: (context, state) =>
+                          _FloorBanner(state: state, tones: tones),
+                    ),
+                    const SizedBox(height: 20),
+                    const PttMemberList(),
+                    const SizedBox(height: 12),
+                    AppTaskButton(
+                      label: 'Riwayat PTT',
+                      icon: Icons.history_rounded,
+                      variant: AppTaskButtonVariant.secondary,
+                      size: AppTaskButtonSize.medium,
+                      onPressed: () => Navigator.of(context).push(
+                        PttHistoryScreen.route(
+                          PttModule.createRecordingRepository(
+                            apiClient: context.read<ApiClient>(),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    BlocBuilder<PttCubit, PttState>(
-                      builder: (context, state) {
-                        String bannerTitle;
-                        String bannerSubtitle;
-                        Color bannerColor;
-                        IconData bannerIcon;
-
-                        if (state is PttTransmitting) {
-                          bannerTitle = 'TRANSMISI AKTIF';
-                          bannerSubtitle =
-                              'Mikrofon terbuka. Suara Anda terdengar di '
-                              'seluruh regu.';
-                          bannerColor = colorScheme.error;
-                          bannerIcon = Icons.graphic_eq_rounded;
-                        } else if (state is PttListening) {
-                          final speaker = state.floorState.speaker;
-                          final speakerName = speaker?.name ?? 'Petugas';
-                          bannerTitle = speakerName.toUpperCase();
-                          bannerSubtitle = speaker == null
-                              ? 'Sedang berbicara'
-                              : 'Sedang berbicara (${speaker.roleLabel})';
-                          bannerColor = colorScheme.tertiary;
-                          bannerIcon = Icons.volume_up_rounded;
-                        } else if (state is PttRequestingFloor) {
-                          bannerTitle = 'MEMINTA JALUR...';
-                          bannerSubtitle =
-                              'Menunggu balasan arbitrase dari server...';
-                          bannerColor = colorScheme.primary;
-                          bannerIcon = Icons.hourglass_top_rounded;
-                        } else if (state is PttFloorDenied) {
-                          final isPermDenied =
-                              state.reason == 'PERMISSION_DENIED' ||
-                              state.reason == 'MICROPHONE_PERMISSION_REQUIRED';
-                          if (isPermDenied) {
-                            bannerTitle = 'IZIN MIKROFON DIPERLUKAN';
-                            bannerSubtitle =
-                                'Akses mikrofon dibutuhkan untuk berbicara di '
-                                'saluran Walkie-Talkie.';
-                            bannerIcon = Icons.mic_off_rounded;
-                          } else {
-                            bannerTitle = 'PERMINTAAN DITOLAK';
-                            bannerSubtitle =
-                                'Jalur sedang digunakan oleh personil lain. '
-                                'Lepas tombol dan coba lagi.';
-                            bannerIcon = Icons.block_rounded;
-                          }
-                          bannerColor = colorScheme.error;
-                        } else if (state is PttReconnecting) {
-                          bannerTitle = 'MENYAMBUNG ULANG';
-                          bannerSubtitle =
-                              'Koneksi seluler terputus. '
-                              'Menginisiasi sambungan cadangan...';
-                          bannerColor = colorScheme.outline;
-                          bannerIcon = Icons.sync_rounded;
-                        } else {
-                          // PttIdle
-                          bannerTitle = 'SALURAN SIAP';
-                          bannerSubtitle =
-                              'Tekan dan tahan tombol PTT di bawah '
-                              'untuk berbicara.';
-                          bannerColor = colorScheme.primary;
-                          bannerIcon = Icons.check_circle_outline_rounded;
-                        }
-
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.md,
-                          ),
-                          decoration: BoxDecoration(
-                            color: bannerColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: bannerColor.withValues(alpha: 0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(bannerIcon, size: 44, color: bannerColor),
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(
-                                bannerTitle,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: bannerColor,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                bannerSubtitle,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    const PttMemberList(),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: 12),
                     Text(
-                      'Anda juga dapat menggunakan tombol headset fisik atau '
-                      'tombol samping pada ponsel rugged saat layar mati di '
-                      'dalam saku.',
+                      'Tombol headset atau tombol samping HP juga bisa '
+                      'dipakai untuk bicara saat layar mati.',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.outline,
+                      style: TextStyle(
+                        color: tones.ink2,
+                        fontSize: 13,
                         height: 1.4,
                       ),
                     ),
@@ -223,8 +110,121 @@ class _PttChannelScreenState extends State<PttChannelScreen> {
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+              padding: EdgeInsets.symmetric(vertical: 12),
               child: TacticalPttButton(size: 130),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One line of floor status above the member list.
+class _FloorBanner extends StatelessWidget {
+  const _FloorBanner({required this.state, required this.tones});
+
+  final PttState state;
+  final KawaloTones tones;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = this.state;
+    final (
+      IconData icon,
+      String title,
+      String subtitle,
+      Color fg,
+      Color bg,
+    ) = switch (state) {
+      PttTransmitting() => (
+        Icons.graphic_eq_rounded,
+        'Anda sedang bicara',
+        'Suara Anda terdengar di seluruh regu.',
+        tones.ptt.on,
+        tones.ptt.color,
+      ),
+      PttListening() => (
+        Icons.volume_up_rounded,
+        '${state.floorState.speaker?.name ?? 'Rekan'} sedang bicara',
+        state.floorState.speaker?.roleLabel ?? 'Tunggu sampai selesai.',
+        tones.ptt.color,
+        tones.ptt.soft,
+      ),
+      PttRequestingFloor() => (
+        Icons.hourglass_top_rounded,
+        'Meminta giliran…',
+        'Menunggu jawaban server.',
+        tones.ink,
+        tones.surface2,
+      ),
+      PttFloorDenied(:final reason)
+          when reason == 'PERMISSION_DENIED' ||
+              reason == 'MICROPHONE_PERMISSION_REQUIRED' =>
+        (
+          Icons.mic_off_rounded,
+          'Izin mikrofon diperlukan',
+          'Izinkan mikrofon agar bisa bicara di walkie-talkie.',
+          tones.sos.color,
+          tones.sos.soft,
+        ),
+      PttFloorDenied() => (
+        Icons.block_rounded,
+        'Giliran sedang dipakai',
+        'Rekan lain sedang bicara. Lepas tombol dan coba lagi.',
+        tones.sos.color,
+        tones.sos.soft,
+      ),
+      PttReconnecting() => (
+        Icons.sync_rounded,
+        'Menyambung ulang…',
+        'Otomatis tersambung saat sinyal kembali.',
+        tones.warn,
+        tones.warnSoft,
+      ),
+      _ => (
+        Icons.check_circle_outline_rounded,
+        'Kanal siap',
+        'Tahan tombol di bawah untuk bicara.',
+        tones.ink,
+        tones.surface,
+      ),
+    };
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: tones.line),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 28, color: fg),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: fg,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: fg.withValues(alpha: 0.85),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -7,7 +7,7 @@ import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
@@ -23,11 +23,12 @@ import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_recordings_cub
 import 'package:kawalo_mobile/features/ptt/presentation/cubit/ptt_recordings_state.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/services/ptt_audio_player.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/utils/ptt_duration_format.dart';
-import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_bubble.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_channel_header.dart';
 import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_skeleton.dart';
+import 'package:kawalo_mobile/features/ptt/presentation/widgets/ptt_recording_tile.dart';
 
-/// "Riwayat PTT": recorded walkie-talkie turns of the active group as
-/// voice-note bubbles, newest at the bottom.
+/// "Riwayat PTT": recorded walkie-talkie turns of the active group, newest
+/// first, grouped by day.
 class PttHistoryScreen extends StatefulWidget {
   const PttHistoryScreen({super.key});
 
@@ -82,12 +83,12 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
     final playback = context.read<PttPlaybackCubit>();
     final confirmed = await showAppConfirmationDialog(
       context: context,
-      title: 'Hapus Rekaman?',
+      title: 'Hapus rekaman ini?',
       message:
-          'Rekaman ${recording.speakerName} '
-          '(${formatPttDuration(recording.duration)}) akan dihapus untuk '
-          'semua anggota grup dan tidak dapat dipulihkan.',
-      confirmText: 'Hapus Rekaman',
+          'Rekaman ${recording.speakerName} pukul '
+          '${formatPttClock(recording.startedAt)} '
+          '(${formatPttDuration(recording.duration)}) dan transkripnya '
+          'dihapus untuk semua anggota. Tidak bisa dibatalkan.',
     );
     if (confirmed != true) return;
     await playback.stopIfActive(recording.id);
@@ -96,15 +97,18 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
     final session = context.watch<UserSessionCubit>().state;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: tones.background,
       appBar: AppBar(
-        title: const Text('Riwayat PTT'),
-        centerTitle: true,
-        backgroundColor: colorScheme.surface,
+        title: PttAppBarTitle(
+          title: 'Riwayat PTT',
+          subtitle: PttAppBarTitle.channelName(context),
+        ),
+        backgroundColor: tones.background,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
       body: MultiBlocListener(
@@ -142,14 +146,11 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
                 ),
                 PttRecordingsStatus.loaded when state.items.isEmpty =>
                   AppEmptyState(
-                    icon: Icon(
-                      Icons.mic_none_rounded,
-                      color: colorScheme.outline,
-                    ),
+                    icon: Icon(Icons.mic_none_rounded, color: tones.ptt.color),
                     title: 'Belum ada rekaman',
                     description:
-                        'Percakapan Walkie-Talkie yang direkam akan muncul '
-                        'di sini.',
+                        'Setiap giliran bicara di kanal ini tersimpan di '
+                        'sini.',
                   ),
                 PttRecordingsStatus.loaded => _buildList(state, session),
               },
@@ -164,18 +165,10 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
     final rows = _rowsFor(state.items);
     final canDelete = session?.isAdminRole ?? false;
 
-    // Reversed so the newest turn sits at the bottom and "older" is reached by
-    // scrolling up; index 0 is the newest.
     return ListView.builder(
       controller: _scrollController,
-      reverse: true,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.space200,
-        AppSpacing.space100,
-        AppSpacing.space200,
-        AppSpacing.space300,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       itemCount: rows.length + (state.isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == rows.length) {
@@ -185,26 +178,29 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
           );
         }
         final row = rows[index];
-        if (row.date != null) return _DateSeparator(date: row.date!);
+        if (row.date != null) {
+          return _DateLabel(date: row.date!, isFirst: index == 0);
+        }
 
         final recording = row.recording!;
-        return BlocBuilder<PttPlaybackCubit, PttPlaybackState>(
-          buildWhen: (a, b) =>
-              a.isActive(recording.id) || b.isActive(recording.id),
-          builder: (context, playback) => PttRecordingBubble(
-            key: ValueKey(recording.id),
-            recording: recording,
-            isMe: recording.isSpokenBy(session?.email),
-            isFirstInGroup: row.isFirstInGroup,
-            isLastInGroup: row.isLastInGroup,
-            playback: playback,
-            canDelete: canDelete,
-            isDeleting: state.deletingIds.contains(recording.id),
-            onDelete: () => unawaited(_confirmDelete(recording, session)),
-            onTogglePlay: () =>
-                unawaited(context.read<PttPlaybackCubit>().toggle(recording)),
-            onSeek: (position) => unawaited(
-              context.read<PttPlaybackCubit>().seek(recording.id, position),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: BlocBuilder<PttPlaybackCubit, PttPlaybackState>(
+            buildWhen: (a, b) =>
+                a.isActive(recording.id) || b.isActive(recording.id),
+            builder: (context, playback) => PttRecordingTile(
+              key: ValueKey(recording.id),
+              recording: recording,
+              isMe: recording.isSpokenBy(session?.email),
+              playback: playback,
+              canDelete: canDelete,
+              isDeleting: state.deletingIds.contains(recording.id),
+              onDelete: () => unawaited(_confirmDelete(recording, session)),
+              onTogglePlay: () =>
+                  unawaited(context.read<PttPlaybackCubit>().toggle(recording)),
+              onSeek: (position) => unawaited(
+                context.read<PttPlaybackCubit>().seek(recording.id, position),
+              ),
             ),
           ),
         );
@@ -212,69 +208,41 @@ class _PttHistoryScreenState extends State<PttHistoryScreen> {
     );
   }
 
-  /// Turns of one speaker this close together share one avatar and name.
-  static const _groupGap = Duration(minutes: 5);
-
-  /// [items] are newest first. In the reversed list a day's separator must come
-  /// after (above) its oldest turn, so it is inserted when the day changes.
-  /// On screen `items[i + 1]` sits directly above `items[i]`.
+  /// [items] are newest first, shown top-down with a label before each day.
   static List<_Row> _rowsFor(List<PttRecordingEntity> items) {
     final rows = <_Row>[];
-    for (var i = 0; i < items.length; i++) {
-      final above = i == items.length - 1 ? null : items[i + 1];
-      final below = i == 0 ? null : items[i - 1];
-      rows.add(
-        _Row.recording(
-          items[i],
-          isFirstInGroup: !_sameGroup(above, items[i]),
-          isLastInGroup: !_sameGroup(items[i], below),
-        ),
-      );
-      final isLastOfDay =
-          above == null || !_sameDay(items[i].startedAt, above.startedAt);
-      if (isLastOfDay) rows.add(_Row.date(items[i].startedAt));
+    DateTime? day;
+    for (final item in items) {
+      final t = item.startedAt;
+      final itemDay = DateTime(t.year, t.month, t.day);
+      if (itemDay != day) {
+        rows.add(_Row.date(itemDay));
+        day = itemDay;
+      }
+      rows.add(_Row.recording(item));
     }
     return rows;
   }
-
-  static bool _sameGroup(PttRecordingEntity? older, PttRecordingEntity? newer) {
-    if (older == null || newer == null) return false;
-    return older.speakerId == newer.speakerId &&
-        _sameDay(older.startedAt, newer.startedAt) &&
-        newer.startedAt.difference(older.startedAt).abs() <= _groupGap;
-  }
-
-  static bool _sameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 class _Row {
-  const _Row.recording(
-    PttRecordingEntity this.recording, {
-    required this.isFirstInGroup,
-    required this.isLastInGroup,
-  }) : date = null;
-  const _Row.date(DateTime this.date)
-    : recording = null,
-      isFirstInGroup = false,
-      isLastInGroup = false;
+  const _Row.recording(PttRecordingEntity this.recording) : date = null;
+  const _Row.date(DateTime this.date) : recording = null;
 
   final PttRecordingEntity? recording;
   final DateTime? date;
-  final bool isFirstInGroup;
-  final bool isLastInGroup;
 }
 
-class _DateSeparator extends StatelessWidget {
-  const _DateSeparator({required this.date});
+class _DateLabel extends StatelessWidget {
+  const _DateLabel({required this.date, required this.isFirst});
 
   final DateTime date;
+  final bool isFirst;
 
   String _label() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final day = DateTime(date.year, date.month, date.day);
-    final diff = today.difference(day).inDays;
+    final diff = today.difference(date).inDays;
     if (diff == 0) return 'Hari ini';
     if (diff == 1) return 'Kemarin';
     return AppDateFormat.formatWeekdayDate(date);
@@ -282,24 +250,20 @@ class _DateSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    // The turn below always starts a group and brings its own top gap.
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.only(top: AppSpacing.space300),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space200,
-          vertical: AppSpacing.space75,
-        ),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: const BorderRadius.all(Radius.circular(999)),
-        ),
+    final label = _label();
+    return Padding(
+      padding: EdgeInsets.only(top: isFirst ? 4 : 10, bottom: 10),
+      child: Semantics(
+        header: true,
+        label: label,
+        excludeSemantics: true,
         child: Text(
-          _label(),
-          style: theme.typeScale.labelMedium.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          label.toUpperCase(),
+          style: TextStyle(
+            color: KawaloTones.of(context).ink2,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.84,
           ),
         ),
       ),

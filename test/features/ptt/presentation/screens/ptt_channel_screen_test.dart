@@ -68,7 +68,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Anggota Online (20)'), findsOneWidget);
+    expect(find.text('20 rekan online'), findsOneWidget);
     expect(tester.takeException(), isNull);
     expect(tester.getRect(find.byType(TacticalPttButton)), button);
   });
