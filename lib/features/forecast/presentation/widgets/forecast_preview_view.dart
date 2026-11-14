@@ -10,6 +10,7 @@ import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
 import 'package:kawalo_mobile/core/widgets/app_section_header.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/forecast/domain/entities/forecast_preview.dart';
 import 'package:kawalo_mobile/features/forecast/domain/value_objects/forecast_config.dart';
@@ -63,7 +64,7 @@ class _ForecastPreviewViewState extends State<ForecastPreviewView> {
           '${preview.stats.totalCreated} jadwal baru.'
           '${locked > 0 ? ' $locked jadwal terkunci tidak diubah.' : ''} '
           'Tindakan ini tidak bisa dibatalkan.',
-      confirmText: 'Timpa dan Simpan',
+      confirmText: 'Timpa',
       width: 320,
     );
     if (confirmed ?? false) await cubit.apply(overwriteConfirmed: true);
@@ -118,30 +119,32 @@ class _ForecastPreviewViewState extends State<ForecastPreviewView> {
         ForecastBottomBar(
           message: state.error ?? (canSave ? null : _emptyPlanMessage),
           buttons: [
-            if (_tab == 0)
-              AppButton.icon(
-                style: AppButtonColor.tonal,
-                size: AppButtonSize.md,
-                onPressed: state.applying
-                    ? null
-                    : () => unawaited(widget.cubit.reshuffle()),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Acak Ulang'),
-              )
-            else
-              AppButton(
-                style: AppButtonColor.tonal,
-                size: AppButtonSize.md,
-                onPressed: state.applying ? null : widget.cubit.backToConfig,
-                child: const Text('Ubah Pengaturan'),
-              ),
-            AppButton(
-              size: AppButtonSize.md,
+            AppTaskButton(
+              label: 'Terapkan ${_preview.stats.totalCreated} Jadwal',
+              icon: Icons.check_rounded,
+              tone: KawaloTones.of(context).adm,
+              isLoading: state.applying,
               onPressed: state.applying || !canSave
                   ? null
                   : () => unawaited(_save()),
-              child: const Text('Simpan Jadwal'),
             ),
+            if (_tab == 0)
+              AppTaskButton(
+                label: 'Acak Ulang',
+                icon: Icons.refresh_rounded,
+                variant: AppTaskButtonVariant.secondary,
+                size: AppTaskButtonSize.medium,
+                onPressed: state.applying
+                    ? null
+                    : () => unawaited(widget.cubit.reshuffle()),
+              )
+            else
+              AppTaskButton(
+                label: 'Ubah Pengaturan',
+                variant: AppTaskButtonVariant.secondary,
+                size: AppTaskButtonSize.medium,
+                onPressed: state.applying ? null : widget.cubit.backToConfig,
+              ),
           ],
         ),
       ],

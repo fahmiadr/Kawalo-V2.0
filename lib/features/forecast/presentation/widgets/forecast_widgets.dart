@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/utils/shift_color.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
@@ -56,7 +55,8 @@ class ForecastContent extends StatelessWidget {
   );
 }
 
-/// Pinned action row of a step: [message] (a failed request) above the buttons.
+/// Pinned actions of a step: [message] (a failed request) above the
+/// buttons, which stack full width with the primary one first.
 class ForecastBottomBar extends StatelessWidget {
   const ForecastBottomBar({required this.buttons, this.message, super.key});
 
@@ -65,45 +65,34 @@ class ForecastBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Material(
-      color: colorScheme.surface,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: ForecastContent(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.space200),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (message != null) ...[
-                    Semantics(
-                      liveRegion: true,
-                      child: Text(
-                        message!,
-                        style: theme.typeScale.bodySmall.copyWith(
-                          color: colorScheme.error,
-                        ),
-                      ),
+    final tones = KawaloTones.of(context);
+    final message = this.message;
+    return ColoredBox(
+      color: tones.background,
+      child: SafeArea(
+        top: false,
+        child: ForecastContent(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (message != null) ...[
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      message,
+                      style: TextStyle(color: tones.sos.color, fontSize: 13),
                     ),
-                    AppSpacing.vGapSm,
-                  ],
-                  Row(
-                    children: [
-                      for (var i = 0; i < buttons.length; i++) ...[
-                        if (i > 0) AppSpacing.hGapSm,
-                        Expanded(child: buttons[i]),
-                      ],
-                    ],
                   ),
+                  const SizedBox(height: 8),
                 ],
-              ),
+                for (var i = 0; i < buttons.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 8),
+                  buttons[i],
+                ],
+              ],
             ),
           ),
         ),

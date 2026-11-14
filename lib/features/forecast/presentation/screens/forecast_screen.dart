@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
+import 'package:kawalo_mobile/core/routes/app_route_observer.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/forecast/forecast_module.dart';
 import 'package:kawalo_mobile/features/forecast/presentation/cubit/forecast_cubit.dart';
@@ -17,6 +17,7 @@ import 'package:kawalo_mobile/features/forecast/presentation/cubit/forecast_stat
 import 'package:kawalo_mobile/features/forecast/presentation/widgets/forecast_config_view.dart';
 import 'package:kawalo_mobile/features/forecast/presentation/widgets/forecast_preview_view.dart';
 import 'package:kawalo_mobile/features/forecast/presentation/widgets/forecast_status_views.dart';
+import 'package:kawalo_mobile/features/schedule/admin/presentation/screens/schedule_admin_screen.dart';
 
 /// Admin tool that generates a schedule for a date range: configure, preview,
 /// save. Only the ADMIN and SUPER_ADMIN roles may use it; the API enforces the
@@ -60,12 +61,8 @@ class _ForecastScreenState extends State<ForecastScreen> {
   Widget build(BuildContext context) {
     if (!_isAdmin) {
       return Scaffold(
-        backgroundColor: AppTheme.of(context).colorScheme.surface,
-        appBar: const AppHomeAppBar(
-          title: 'Forecast Jadwal',
-          showBackButton: true,
-          showTrailing: false,
-        ),
+        backgroundColor: KawaloTones.of(context).background,
+        appBar: const AppTopBar(title: 'Forecast Jadwal'),
         body: const AppEmptyState(
           icon: Icon(Icons.lock_outline, size: 64),
           title: 'Khusus admin',
@@ -90,18 +87,15 @@ class _ForecastScreenState extends State<ForecastScreen> {
             if (!didPop) cubit.backToConfig();
           },
           child: Scaffold(
-            backgroundColor: AppTheme.of(context).colorScheme.surface,
-            appBar: AppHomeAppBar(
-              greeting: _caption(state),
-              reserveGreetingSpace: true,
+            backgroundColor: KawaloTones.of(context).background,
+            appBar: AppTopBar(
+              subtitle: _caption(state),
               title:
                   state is ForecastPreviewLoading ||
                       state is ForecastPreviewReady ||
                       state is ForecastStale
-                  ? 'Pratinjau Forecast'
+                  ? 'Pratinjau'
                   : 'Forecast Jadwal',
-              showBackButton: true,
-              showTrailing: false,
             ),
             body: SafeArea(top: false, child: _body(state, cubit)),
           ),
@@ -110,11 +104,29 @@ class _ForecastScreenState extends State<ForecastScreen> {
     );
   }
 
+  /// Returns to "Jadwal Tim" when the forecast was opened from it (it reloads
+  /// on return); from elsewhere (Kelola) it replaces this screen with it.
+  void _openTeamSchedule() {
+    final navigator = Navigator.of(context);
+    final fromTeamSchedule = navigator.widget.observers
+        .whereType<AppRouteObserver>()
+        .any((o) => o.isOpen(AppRouteNames.scheduleAdmin));
+    if (fromTeamSchedule) {
+      navigator.popUntil(ModalRoute.withName(AppRouteNames.scheduleAdmin));
+      return;
+    }
+    navigator.pushReplacement(
+      ScheduleAdminScreen.route(
+        onForecast: (ctx) => Navigator.of(ctx).push(ForecastScreen.route()),
+      ),
+    );
+  }
+
   static String? _caption(ForecastState state) => switch (state) {
-    ForecastConfiguring() => 'Langkah 1 dari 2 · Pengaturan',
-    ForecastPreviewLoading() => 'Langkah 2 dari 2 · Membuat pratinjau',
-    ForecastPreviewReady() => 'Langkah 2 dari 2 · Periksa hasil',
-    ForecastStale() => 'Langkah 2 dari 2 · Gagal menyimpan',
+    ForecastConfiguring() => 'Langkah 1 dari 2',
+    ForecastPreviewLoading() ||
+    ForecastPreviewReady() ||
+    ForecastStale() => 'Langkah 2 dari 2',
     ForecastApplied() => 'Selesai',
     ForecastLoading() || ForecastLoadError() => null,
   };
@@ -130,16 +142,9 @@ class _ForecastScreenState extends State<ForecastScreen> {
     ),
     final ForecastConfiguring s => ForecastConfigView(state: s, cubit: cubit),
     final ForecastPreviewLoading s => ForecastPreviewLoadingView(state: s),
-    final ForecastPreviewReady s => Stack(
-      children: [
-        ForecastPreviewView(state: s, cubit: cubit),
-        if (s.applying)
-          AppLoadingOverlay(
-            message: 'Menyimpan ${s.preview.stats.totalCreated} jadwal',
-            semanticLabel: 'Menyimpan jadwal',
-          ),
-      ],
-    ),
+    // Applying shows a spinner on the primary button, which (with the
+    // secondary one) is disabled until the save ends.
+    final ForecastPreviewReady s => ForecastPreviewView(state: s, cubit: cubit),
     final ForecastStale s => ForecastStaleView(
       state: s,
       onRetry: () => unawaited(cubit.retryPreview()),
@@ -147,7 +152,7 @@ class _ForecastScreenState extends State<ForecastScreen> {
     ),
     final ForecastApplied s => ForecastSuccessView(
       state: s,
-      onDone: () => Navigator.of(context).maybePop(),
+      onDone: _openTeamSchedule,
     ),
   };
 }

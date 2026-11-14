@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/forecast/domain/value_objects/forecast_config.dart';
 import 'package:kawalo_mobile/features/forecast/presentation/cubit/forecast_state.dart';
 import 'package:kawalo_mobile/features/forecast/presentation/widgets/forecast_widgets.dart';
@@ -89,17 +88,18 @@ class ForecastStaleView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppButton(
-            size: AppButtonSize.md,
+          AppTaskButton(
+            label: 'Buat Pratinjau Ulang',
+            icon: Icons.refresh_rounded,
+            tone: KawaloTones.of(context).adm,
             onPressed: onRetry,
-            child: const Text('Buat Pratinjau Ulang'),
           ),
           AppSpacing.vGapSm,
-          AppButton(
-            style: AppButtonColor.tonal,
-            size: AppButtonSize.md,
+          AppTaskButton(
+            label: 'Ubah Pengaturan',
+            variant: AppTaskButtonVariant.secondary,
+            size: AppTaskButtonSize.medium,
             onPressed: onEdit,
-            child: const Text('Ubah Pengaturan'),
           ),
         ],
       ),
@@ -117,12 +117,13 @@ class ForecastSuccessView extends StatelessWidget {
   });
 
   final ForecastApplied state;
+
+  /// "Lihat Jadwal Tim".
   final VoidCallback onDone;
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final overwrite = state.config.fillMode == ForecastFillMode.overwrite;
     final missing = state.preview.stats.underStaffedTotal;
     return Column(
@@ -130,84 +131,86 @@ class ForecastSuccessView extends StatelessWidget {
         Expanded(
           child: ForecastContent(
             child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.space200),
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
               children: [
-                AppSpacing.vGapXl,
                 Center(
                   child: ExcludeSemantics(
                     child: Container(
-                      width: 72,
-                      height: 72,
+                      width: 104,
+                      height: 104,
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
+                        color: tones.adm.soft,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.check,
-                        size: 40,
-                        color: colorScheme.onPrimaryContainer,
+                        Icons.check_rounded,
+                        size: 52,
+                        color: tones.adm.color,
                       ),
                     ),
                   ),
                 ),
-                AppSpacing.vGapMd,
+                const SizedBox(height: 16),
                 Semantics(
                   liveRegion: true,
                   child: Text(
-                    'Jadwal berhasil dibuat',
+                    '${state.result.created} jadwal dibuat',
                     textAlign: TextAlign.center,
-                    style: theme.typography.emphasized.titleLarge.copyWith(
-                      color: colorScheme.onSurface,
+                    style: TextStyle(
+                      color: tones.ink,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
                     ),
                   ),
                 ),
-                AppSpacing.vGap50,
+                const SizedBox(height: 8),
                 Text(
-                  'Forecast ${forecastRangeLabel(state.config)} tersimpan. '
-                  'Petugas bisa melihatnya di menu Jadwal Kerja.',
+                  '${forecastRangeLabel(state.config)}. '
+                  'Petugas melihatnya di Jadwal Saya.',
                   textAlign: TextAlign.center,
-                  style: theme.typeScale.bodyMedium.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(color: tones.ink2, fontSize: 15),
                 ),
-                AppSpacing.vGapLg,
-                ClipRRect(
-                  borderRadius: AppRadius.borderMedium,
-                  child: ColoredBox(
-                    color: colorScheme.surfaceContainerHigh,
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.space150),
-                      child: Column(
-                        children: [
-                          _ResultRow(
-                            label: 'Dibuat',
-                            value: '${state.result.created} jadwal',
-                            variant: AppTagVariant.primary,
-                          ),
-                          _ResultRow(
-                            label: 'Dihapus',
-                            value: '${state.result.deleted} jadwal',
-                            variant: AppTagVariant.neutral,
-                          ),
-                          _ResultRow(
-                            label: overwrite
-                                ? 'Terkunci, tidak diubah'
-                                : 'Dilewati (slot sudah terisi)',
-                            value:
-                                '${overwrite ? state.preview.lockedCount : state.preview.existingCount} '
-                                'jadwal',
-                            variant: AppTagVariant.neutral,
-                          ),
-                          _ResultRow(
-                            label: 'Slot belum terisi',
-                            value: '$missing slot',
-                            variant: missing > 0
-                                ? AppTagVariant.error
-                                : AppTagVariant.neutral,
-                          ),
-                        ],
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tones.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: tones.line),
+                  ),
+                  child: Column(
+                    children: [
+                      _ResultRow(
+                        label: 'Dibuat',
+                        value: '${state.result.created} jadwal',
+                        variant: AppTagVariant.primary,
                       ),
-                    ),
+                      _ResultRow(
+                        label: 'Dihapus',
+                        value: '${state.result.deleted} jadwal',
+                        variant: AppTagVariant.neutral,
+                      ),
+                      _ResultRow(
+                        label: overwrite
+                            ? 'Terkunci, tidak diubah'
+                            : 'Dilewati (slot sudah terisi)',
+                        value:
+                            '${overwrite ? state.preview.lockedCount : state.preview.existingCount} '
+                            'jadwal',
+                        variant: AppTagVariant.neutral,
+                      ),
+                      _ResultRow(
+                        label: 'Slot belum terisi',
+                        value: '$missing slot',
+                        variant: missing > 0
+                            ? AppTagVariant.error
+                            : AppTagVariant.neutral,
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -216,10 +219,10 @@ class ForecastSuccessView extends StatelessWidget {
         ),
         ForecastBottomBar(
           buttons: [
-            AppButton(
-              size: AppButtonSize.md,
+            AppTaskButton(
+              label: 'Lihat Jadwal Tim',
+              tone: tones.adm,
               onPressed: onDone,
-              child: const Text('Selesai'),
             ),
           ],
         ),

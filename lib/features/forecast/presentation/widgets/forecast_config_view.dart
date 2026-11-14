@@ -9,6 +9,7 @@ import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_picker.dart';
 import 'package:kawalo_mobile/core/widgets/app_section_header.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/forecast/domain/entities/forecast_options.dart';
 import 'package:kawalo_mobile/features/forecast/domain/value_objects/forecast_config.dart';
 import 'package:kawalo_mobile/features/forecast/presentation/cubit/forecast_cubit.dart';
@@ -78,12 +79,13 @@ class ForecastConfigView extends StatelessWidget {
         ForecastBottomBar(
           message: state.error,
           buttons: [
-            AppButton(
-              size: AppButtonSize.md,
+            AppTaskButton(
+              label: 'Lihat Pratinjau',
+              icon: Icons.visibility_outlined,
+              tone: KawaloTones.of(context).adm,
               onPressed: blocked
                   ? null
                   : () => unawaited(cubit.requestPreview()),
-              child: const Text('Lihat Pratinjau'),
             ),
           ],
         ),

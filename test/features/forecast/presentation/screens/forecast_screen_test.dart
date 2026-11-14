@@ -2,6 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
+import 'package:kawalo_mobile/core/routes/app_route_observer.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
@@ -122,7 +124,7 @@ void main() {
   testWidgets('step 1 shows the sections of the form', (tester) async {
     await pump(tester, ForecastConfiguring(options: _options, config: _config));
 
-    expect(find.text('Langkah 1 dari 2 · Pengaturan'), findsOneWidget);
+    expect(find.text('Langkah 1 dari 2'), findsOneWidget);
     expect(find.text('Rentang tanggal'), findsOneWidget);
     expect(find.text('Shift dan kuota'), findsOneWidget);
     expect(find.text('1 dari 1 anggota dipilih'), findsOneWidget);
@@ -156,7 +158,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Simpan Jadwal'));
+    await tester.tap(find.textContaining('Terapkan'));
     await tester.pumpAndSettle();
 
     expect(find.text('Timpa 14 jadwal?'), findsOneWidget);
@@ -164,7 +166,7 @@ void main() {
       () => cubit.apply(overwriteConfirmed: any(named: 'overwriteConfirmed')),
     );
 
-    await tester.tap(find.text('Timpa dan Simpan'));
+    await tester.tap(find.text('Timpa'));
     await tester.pumpAndSettle();
 
     verify(() => cubit.apply(overwriteConfirmed: true)).called(1);
@@ -180,7 +182,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Simpan Jadwal'));
+    await tester.tap(find.textContaining('Terapkan'));
     await tester.pump();
 
     verify(() => cubit.apply()).called(1);
@@ -217,8 +219,50 @@ void main() {
       ),
     );
 
-    expect(find.text('Jadwal berhasil dibuat'), findsOneWidget);
+    expect(find.text('22 jadwal dibuat'), findsOneWidget);
+    expect(find.text('Lihat Jadwal Tim'), findsOneWidget);
     expect(find.text('22 jadwal'), findsOneWidget);
     expect(find.text('3 jadwal'), findsWidgets);
+  });
+
+  testWidgets('Lihat Jadwal Tim returns to the Jadwal Tim it came from', (
+    tester,
+  ) async {
+    final state = ForecastApplied(
+      options: _options,
+      config: _config,
+      preview: _preview(),
+      result: const ForecastResult(created: 22, deleted: 3),
+    );
+    when(() => cubit.state).thenReturn(state);
+    whenListen(cubit, const Stream<ForecastState>.empty(), initialState: state);
+    final navigatorKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      BlocProvider<UserSessionCubit>(
+        create: (_) => UserSessionCubit(_session('ADMIN')),
+        child: MaterialApp(
+          theme: AppTheme.lightThemeData(),
+          navigatorKey: navigatorKey,
+          navigatorObservers: [AppRouteObserver()],
+          home: const Text('Kelola'),
+        ),
+      ),
+    );
+    navigatorKey.currentState!.push(
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(name: AppRouteNames.scheduleAdmin),
+        builder: (_) => const Text('Jadwal Tim lama'),
+      ),
+    );
+    navigatorKey.currentState!.push(
+      MaterialPageRoute<void>(builder: (_) => ForecastScreen(cubit: cubit)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Lihat Jadwal Tim'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Jadwal Tim lama'), findsOneWidget);
+    expect(find.byType(ForecastScreen), findsNothing);
   });
 }
