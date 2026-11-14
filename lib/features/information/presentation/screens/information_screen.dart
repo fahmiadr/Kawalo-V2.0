@@ -4,17 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
+import 'package:kawalo_mobile/core/routes/app_page_route.dart';
+import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_filter_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_batch_delete.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
@@ -30,19 +30,22 @@ import 'package:kawalo_mobile/features/information/presentation/widgets/informat
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_card_skeleton.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_form_dialog.dart';
 
-/// Halaman utama Pusat Informasi pada navigasi aplikasi Kawalo.
-///
-/// Menampilkan daftar feed informasi (`tkfeed`) secara responsif dan langsung
-/// pada layar dengan [AppSelectionAppBar] terintegrasi yang menyinkronkan
-/// tinggi dengan [AppHomeAppBar].
+/// Informasi list (redesign 2026), opened from the "Lainnya" card: cards with
+/// a category pill, title and first line; date and author filters; members
+/// who may post get one "Tulis Informasi" action at the bottom.
 class InformationScreen extends StatefulWidget {
-  /// Membuat instance [InformationScreen].
   const InformationScreen({
     super.key,
     this.cubit,
     this.isActive = true,
     this.hasBottomNavigationBar = true,
   });
+
+  /// Opened from the Beranda "Lainnya" card; no longer a tab.
+  static Route<void> route() => AppPageRoute.slideFade<void>(
+    settings: const RouteSettings(name: AppRouteNames.information),
+    builder: (_) => const InformationScreen(hasBottomNavigationBar: false),
+  );
 
   /// Cubit informasi opsional untuk pengujian.
   final InformationCubit? cubit;
@@ -208,16 +211,6 @@ class _InformationScreenState extends State<InformationScreen> {
     if (_selection.isSelectionMode) return;
     final cubit = _resolveCubit(context);
     await InformationFormDialog.showCreate(context, informationCubit: cubit);
-  }
-
-  Future<void> _onEditInformation(InformationItemEntity item) async {
-    if (_selection.isSelectionMode) return;
-    final cubit = _resolveCubit(context);
-    await InformationFormDialog.showUpdate(
-      context,
-      item: item,
-      informationCubit: cubit,
-    );
   }
 
   bool _canSelectOrDelete(
@@ -435,10 +428,10 @@ class _InformationScreenState extends State<InformationScreen> {
             state is InformationInitial || state is InformationLoading;
 
         return ListScreenScaffold(
-          title: 'Pusat informasi',
+          title: 'Informasi',
           searchLabel: 'Cari informasi',
           refreshLabel: 'Memuat ulang pusat informasi',
-          greeting: state.lastSync,
+          lastSync: state.lastSync,
           isInitialLoading: isInitialLoading,
           isOffline: isOffline,
           isSearchExpanded: _isSearchExpanded,
@@ -447,7 +440,7 @@ class _InformationScreenState extends State<InformationScreen> {
           onOpenSearch: _onOpenSearch,
           onCloseSearch: _onCloseSearch,
           onRefresh: () => _handleRefresh(cubit),
-          showBackButton: false,
+          showBackButton: !widget.hasBottomNavigationBar,
           hasBottomNavigationBar: widget.hasBottomNavigationBar,
           filterBar: _buildFilterBar(
             state: state,
@@ -478,10 +471,12 @@ class _InformationScreenState extends State<InformationScreen> {
             deletingLabel: 'Menghapus data informasi terpilih',
             deletingMessage: 'Menghapus data informasi...',
           ),
-          createLabel: 'Posting',
-          onCreate: InformationItemEntity.canBeCreatedBySession(session)
-              ? _onOpenCreateForm
-              : null,
+          bottomNavigationBar: _buildBottomBar(
+            canCreate:
+                InformationItemEntity.canBeCreatedBySession(session) &&
+                !_selection.isSelectionMode,
+            isOffline: isOffline,
+          ),
           canPop: !_selection.isSelectionMode,
           onPopBlocked: _selection.clear,
         );
@@ -594,8 +589,7 @@ class _InformationScreenState extends State<InformationScreen> {
 
   Widget _buildLoadingSkeleton() {
     return ListScreenSkeleton(
-      itemBuilder: (_, index) =>
-          InformationCardSkeleton(showMedia: index.isEven),
+      itemBuilder: (_, index) => const InformationCardSkeleton(),
     );
   }
 
@@ -622,27 +616,34 @@ class _InformationScreenState extends State<InformationScreen> {
             isSelectionMode: isSelection,
             isSelected: isSelected,
             isSelectable: isSelectable,
-            currentUserSession: session,
-            isOffline: isOffline,
             onTap: () => _onInformationCardTapped(index, item, session),
             onLongPress: () =>
                 _onInformationCardLongPressed(index, item, session),
-            onEdit: () => _onEditInformation(item),
           ),
         );
       },
     );
   }
 
+  Widget? _buildBottomBar({required bool canCreate, required bool isOffline}) {
+    if (!canCreate) return null;
+    return AppTaskFooter(
+      children: [
+        AppTaskButton(
+          label: 'Tulis Informasi',
+          icon: Icons.edit_outlined,
+          onPressed: isOffline ? null : _onOpenCreateForm,
+        ),
+      ],
+    );
+  }
+
   Widget _buildEmptyGroupState(BuildContext context) {
-    final colorScheme = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
     return AppEmptyState(
-      icon: AppSvgIcon(
-        KawaloVectors.kanbanFilled,
-        color: colorScheme.secondary,
-      ),
+      icon: Icon(Icons.campaign_outlined, size: 48, color: tones.ink2),
       title: 'Belum ada informasi',
-      description: 'Belum ada informasi pada hari ini.',
+      description: 'Pengumuman dari admin grup tampil di sini.',
     );
   }
 }

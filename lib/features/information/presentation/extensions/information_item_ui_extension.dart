@@ -101,4 +101,28 @@ extension InformationItemUiExtension on InformationItemEntity {
     }
     return startDt;
   }
+
+  /// "Rina W. · hari ini", "Rina W. · kemarin" or "Rina W. · 8 Nov".
+  String get listMeta => '$displayUserName · ${_relativeDay(feedDt)}';
+
+  /// "8 Nov 2026 16.20" for the detail header, or "-".
+  String get publishedAt {
+    final parsed = AppDateFormat.tryParse(feedDt)?.toLocal();
+    if (parsed == null) return '-';
+    final hm =
+        '${parsed.hour.toString().padLeft(2, '0')}.'
+        '${parsed.minute.toString().padLeft(2, '0')}';
+    return '${AppDateFormat.formatDayMonth(parsed)} ${parsed.year} $hm';
+  }
+}
+
+String _relativeDay(String? raw, {DateTime? now}) {
+  final parsed = AppDateFormat.tryParse(raw)?.toLocal();
+  if (parsed == null) return '-';
+  final ref = now ?? DateTime.now();
+  final day = DateTime(parsed.year, parsed.month, parsed.day);
+  final diff = DateTime(ref.year, ref.month, ref.day).difference(day).inDays;
+  if (diff == 0) return 'hari ini';
+  if (diff == 1) return 'kemarin';
+  return AppDateFormat.formatDayMonth(parsed);
 }

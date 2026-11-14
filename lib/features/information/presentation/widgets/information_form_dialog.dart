@@ -138,8 +138,8 @@ class InformationFormDialog extends StatefulWidget {
         ? (cubit, false)
         : _resolveCubitFromContext(context, initialItem: initialItem);
     final isCreate = resolvedCubit.state.isCreateMode;
-    final title = isCreate ? 'Posting informasi' : 'Edit informasi';
-    final actionLabel = isCreate ? 'Posting' : 'Simpan';
+    final title = isCreate ? 'Tulis Informasi' : 'Ubah Informasi';
+    final actionLabel = isCreate ? 'Terbitkan' : 'Simpan Perubahan';
 
     AuthSessionEntity? session;
     try {
@@ -510,18 +510,12 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
               BlocSelector<
                 InformationFormCubit,
                 InformationFormState,
-                ({
-                  bool isDirty,
-                  bool isSuccess,
-                  bool isSubmitting,
-                  bool isCreate,
-                })
+                ({bool isDirty, bool isSuccess, bool isSubmitting})
               >(
                 selector: (state) => (
                   isDirty: state.isDirty,
                   isSuccess: state.status == InformationFormStatus.success,
                   isSubmitting: state.isSubmitting,
-                  isCreate: state.isCreateMode,
                 ),
                 builder: (popContext, record) {
                   return PopScope(
@@ -542,7 +536,6 @@ class _InformationFormDialogState extends State<InformationFormDialog> {
                     },
                     child: InformationFormBody(
                       cubit: cubit,
-                      isCreate: record.isCreate,
                       scrollController: _scrollController,
                       titleController: _titleController,
                       textController: _textController,

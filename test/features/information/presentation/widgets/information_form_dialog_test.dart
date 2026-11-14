@@ -11,6 +11,7 @@ import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
 import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_params.dart';
 import 'package:kawalo_mobile/features/information/domain/usecases/create_information/create_information_usecase.dart';
@@ -20,6 +21,7 @@ import 'package:kawalo_mobile/features/information/presentation/cubit/informatio
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_form_dialog.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 import 'package:mocktail/mocktail.dart';
+
 import '../../upload_test_helpers.dart';
 
 class MockCreateInformationUseCase extends Mock
@@ -170,18 +172,18 @@ void main() {
           initialItem: item,
         );
 
-    testWidgets('create puts Posting only in the bottom actions', (
+    testWidgets('create puts Terbitkan only in the bottom actions', (
       tester,
     ) async {
       final cubit = buildCubit();
       await open(tester, cubit);
 
-      expect(find.text('Posting informasi'), findsOneWidget);
-      expect(find.text('Posting'), findsOneWidget);
+      expect(find.text('Tulis Informasi'), findsOneWidget);
+      expect(find.text('Terbitkan'), findsOneWidget);
       expect(
         find.descendant(
           of: find.byType(AppPageActions),
-          matching: find.text('Posting'),
+          matching: find.widgetWithText(AppTaskButton, 'Terbitkan'),
         ),
         findsOneWidget,
       );
@@ -189,15 +191,18 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('edit puts Simpan only in the bottom actions', (tester) async {
+    testWidgets('edit puts Simpan Perubahan only in the bottom actions', (
+      tester,
+    ) async {
       final cubit = buildCubit(item: dummyItem);
       await open(tester, cubit);
 
-      expect(find.text('Simpan'), findsOneWidget);
+      expect(find.text('Ubah Informasi'), findsOneWidget);
+      expect(find.text('Simpan Perubahan'), findsOneWidget);
       expect(
         find.descendant(
           of: find.byType(AppPageActions),
-          matching: find.text('Simpan'),
+          matching: find.widgetWithText(AppTaskButton, 'Simpan Perubahan'),
         ),
         findsOneWidget,
       );
@@ -222,8 +227,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Card titles
-      expect(find.text('Detail publikasi'), findsOneWidget);
+      expect(find.text('Kategori'), findsOneWidget);
       expect(find.text('Dokumentasi foto (0/4)'), findsOneWidget);
       expect(find.text('Dokumen lampiran (maksimal 1)'), findsOneWidget);
       expect(find.text('Lokasi kegiatan dan titik peta'), findsOneWidget);
@@ -351,17 +355,17 @@ void main() {
       // 1. Focusing and entering whitespace does NOT trigger error
       await tester.tap(titleFinder);
       await tester.pumpAndSettle();
-      expect(find.text('Judul informasi wajib diisi'), findsNothing);
+      expect(find.text('Judul wajib diisi'), findsNothing);
 
       await tester.enterText(titleFinder, '   ');
       await tester.pumpAndSettle();
-      expect(find.text('Judul informasi wajib diisi'), findsNothing);
+      expect(find.text('Judul wajib diisi'), findsNothing);
 
       // 2. Submit attempt triggers validation error & focuses title field
       await cubit.submit(session: dummySession);
       await tester.pumpAndSettle();
 
-      expect(find.text('Judul informasi wajib diisi'), findsOneWidget);
+      expect(find.text('Judul wajib diisi'), findsOneWidget);
       final titleEditable = tester.widget<EditableText>(titleFinder);
       expect(titleEditable.focusNode.hasFocus, isTrue);
 
@@ -369,7 +373,7 @@ void main() {
       await tester.enterText(titleFinder, 'Informasi Patroli');
       await tester.pumpAndSettle();
 
-      expect(find.text('Judul informasi wajib diisi'), findsNothing);
+      expect(find.text('Judul wajib diisi'), findsNothing);
       expect(cubit.state.title, 'Informasi Patroli');
       expect(cubit.state.titleError, isNull);
 

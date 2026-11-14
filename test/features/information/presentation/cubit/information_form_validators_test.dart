@@ -6,11 +6,11 @@ void main() {
     test('validateTitle requires a non-blank value up to 128 chars', () {
       expect(
         InformationFormValidators.validateTitle('  '),
-        'Judul informasi wajib diisi',
+        'Judul wajib diisi',
       );
       expect(
         InformationFormValidators.validateTitle('a' * 129),
-        'Judul informasi maksimal 128 karakter.',
+        'Judul maksimal 128 karakter.',
       );
       expect(InformationFormValidators.validateTitle('a' * 128), isNull);
     });

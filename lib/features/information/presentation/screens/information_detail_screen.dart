@@ -6,26 +6,21 @@ import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/utils/app_date_format.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
+import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/extensions/information_item_ui_extension.dart';
+import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_detail_file_card.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_detail_location_card.dart';
-import 'package:kawalo_mobile/features/information/presentation/widgets/information_detail_post_card.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_form_dialog.dart';
 
 /// Melakukan navigasi ke layar detail informasi menggunakan rute
@@ -57,10 +52,9 @@ Future<void> navigateToInformationDetailScreen(
   );
 }
 
-/// Tampilan layar penuh untuk informasi detail feed (`tkfeed`).
-///
-/// Konsisten dengan arsitektur layar detail `GuestDetailScreen` dan
-/// `OperationalDetailScreen`.
+/// One announcement (redesign 2026): category, title, author and time, the
+/// event schedule, text, photos, location and attachment. Edit and delete
+/// sit in the top bar; there is no bottom action.
 class InformationDetailScreen extends StatefulWidget {
   /// Membuat instance [InformationDetailScreen].
   const InformationDetailScreen({
@@ -128,17 +122,12 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
     } else if (cubit != null) {
       await cubit.refreshInformation();
     } else {
-      await Future<void>.delayed(const Duration(milliseconds: 600));
+      return;
     }
 
     if (mounted) {
       AppSnackbar.show(context, message: 'Data informasi berhasil diperbarui.');
     }
-  }
-
-  Future<void> _onPostPressed(BuildContext context) async {
-    final cubit = _resolveCubit(context);
-    await InformationFormDialog.showCreate(context, informationCubit: cubit);
   }
 
   Future<void> _onDeletePressed(
@@ -206,169 +195,164 @@ class _InformationDetailScreenState extends State<InformationDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
     final cubit = _resolveCubit(context);
-    final effectiveSession = _resolveSession(context, listen: true);
+    if (cubit == null) return _buildScaffold(widget.item);
+    return BlocSelector<
+      InformationCubit,
+      InformationState,
+      InformationItemEntity
+    >(
+      bloc: cubit,
+      selector: (state) => state is InformationLoaded
+          ? state.information.firstWhere(
+              (i) => i.id == widget.item.id,
+              orElse: () => widget.item,
+            )
+          : widget.item,
+      builder: (context, item) => _buildScaffold(item),
+    );
+  }
 
-    Widget buildScaffold({
-      required InformationItemEntity currentItem,
-      required String greeting,
-    }) {
-      final canPost = InformationItemEntity.canBeCreatedBySession(
-        effectiveSession,
-      );
-      final canDelete = currentItem.canBeDeletedBySession(effectiveSession);
-      final canUpdate = currentItem.canBeUpdatedBySession(effectiveSession);
-      final isOffline = _resolveIsOffline(context, listen: true);
-      final hasAnyAction = canPost || canUpdate || canDelete;
+  Widget _buildScaffold(InformationItemEntity item) {
+    final tones = KawaloTones.of(context);
+    final session = _resolveSession(context, listen: true);
+    final isOffline = _resolveIsOffline(context, listen: true);
+    final canUpdate = item.canBeUpdatedBySession(session);
+    final canDelete = item.canBeDeletedBySession(session);
+    final schedule = item.eventScheduleLabel;
+    final text = item.text?.trim() ?? '';
+    final heroPrefix = 'info_detail_${item.id}';
 
-      return AppLoadingOverlay(
-        isLoading: _isDeleting,
-        semanticLabel: 'Menghapus informasi',
-        message: 'Menghapus informasi...',
-        child: Scaffold(
-          backgroundColor: colorScheme.surface,
-          appBar: AppHomeAppBar(
-            greeting: greeting,
-            title: 'Detail informasi',
-            showBackButton: true,
-            showTrailing: false,
-          ),
-          // With the action bar its own SafeArea covers the system inset, so
-          // the banner must not reserve it a second time.
-          bottomNavigationBar: hasAnyAction
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
+    return AppLoadingOverlay(
+      isLoading: _isDeleting,
+      semanticLabel: 'Menghapus informasi',
+      message: 'Menghapus informasi...',
+      child: Scaffold(
+        backgroundColor: tones.background,
+        appBar: AppBar(
+          backgroundColor: tones.background,
+          title: const Text('Informasi'),
+          actions: [
+            if (canUpdate)
+              IconButton(
+                tooltip: 'Ubah informasi',
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: isOffline
+                    ? null
+                    : () => _onEditPressed(context, item),
+              ),
+            if (canDelete)
+              IconButton(
+                tooltip: 'Hapus informasi',
+                icon: const Icon(Icons.delete_outline_rounded),
+                onPressed: isOffline || _isDeleting
+                    ? null
+                    : () => _onDeletePressed(context, item),
+              ),
+          ],
+        ),
+        bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
+        body: AppRefreshIndicator.contained(
+          semanticsLabel: 'Memuat ulang detail data informasi',
+          onRefresh: _handleRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppLayout.contentMaxWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppPageActions(
-                      children: [
-                        if (canUpdate)
-                          AppButton(
-                            enabled: !isOffline,
-                            semanticLabel:
-                                'Ubah informasi ${currentItem.displayTitle}',
-                            onPressed: isOffline
-                                ? null
-                                : () => _onEditPressed(context, currentItem),
-                            child: const Text('Ubah'),
-                          ),
-                        if (canPost)
-                          AppButton(
-                            style: AppButtonColor.tonal,
-                            enabled: !isOffline,
-                            semanticLabel: 'Tambah informasi',
-                            onPressed: isOffline
-                                ? null
-                                : () => _onPostPressed(context),
-                            child: const Text('Tambah Informasi'),
-                          ),
-                        if (canDelete)
-                          AppDestructiveButton(
-                            label: 'Hapus Informasi',
-                            semanticLabel:
-                                'Hapus informasi ${currentItem.displayTitle}',
-                            enabled: !_isDeleting && !isOffline,
-                            onPressed: () =>
-                                _onDeletePressed(context, currentItem),
-                          ),
-                      ],
+                    AppStatusPill(label: item.typeLabel),
+                    const SizedBox(height: 10),
+                    Text(
+                      item.displayTitle,
+                      style: TextStyle(
+                        color: tones.ink,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                      ),
                     ),
-                    AppBottomOfflineBanner(
-                      isOffline: isOffline,
-                      useSafeArea: false,
+                    const SizedBox(height: 6),
+                    Text(
+                      '${item.displayUserName} · ${item.publishedAt}',
+                      style: AppTheme.monoFigures.copyWith(
+                        color: tones.ink2,
+                        fontSize: 14,
+                      ),
                     ),
-                  ],
-                )
-              : AppBottomOfflineBanner(isOffline: isOffline),
-          body: SafeArea(
-            top: false,
-            bottom: false,
-            child: AppRefreshIndicator.contained(
-              semanticsLabel: 'Memuat ulang detail data informasi',
-              onRefresh: _handleRefresh,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(
-                  AppSpacing.space200,
-                ).copyWith(top: AppSpacing.space150),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: AppLayout.contentMaxWidth,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // ── Meta Atas (Nama Grup) ───────────────────
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: AppTag(
-                            label: currentItem.displayGroupName,
-                            variant: AppTagVariant.secondary,
-                          ),
+                    if (schedule != null) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: tones.surface2,
+                          borderRadius: BorderRadius.circular(18),
                         ),
-
-                        AppSpacing.vGap200,
-
-                        // 1. Kartu Postingan Utama
-                        InformationDetailPostCard(item: currentItem),
-
-                        AppSpacing.vGap200,
-
-                        // 2. Lokasi Kejadian & Visual Peta OSM
-                        InformationDetailLocationCard(item: currentItem),
-
-                        // 3. Seksi Berkas Lampiran
-                        if (currentItem.hasFileAttachment) ...[
-                          AppSpacing.vGap200,
-                          InformationDetailFileSection(item: currentItem),
-                        ],
-                      ],
-                    ),
-                  ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Jadwal acara',
+                              style: TextStyle(color: tones.ink2, fontSize: 14),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                schedule,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: tones.ink,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if (text.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        text,
+                        style: TextStyle(
+                          color: tones.ink,
+                          fontSize: 15,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                    if (item.photos.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      AppImageCollage(
+                        imageUrls: item.photos,
+                        heroTagPrefix: heroPrefix,
+                        onImageTap: (index) => AppImageViewer.show(
+                          context,
+                          imageUrls: item.photos,
+                          initialIndex: index,
+                          heroTagPrefix: heroPrefix,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    InformationDetailLocationCard(item: item),
+                    if (item.hasFileAttachment) ...[
+                      const SizedBox(height: 14),
+                      InformationDetailFileSection(item: item),
+                    ],
+                  ],
                 ),
               ),
             ),
           ),
         ),
-      );
-    }
-
-    if (cubit != null) {
-      return BlocSelector<
-        InformationCubit,
-        InformationState,
-        (InformationItemEntity, String)
-      >(
-        bloc: cubit,
-        selector: (state) {
-          final item = state is InformationLoaded
-              ? state.information.firstWhere(
-                  (i) => i.id == widget.item.id,
-                  orElse: () => widget.item,
-                )
-              : widget.item;
-          final greeting = state.lastSync.isNotEmpty
-              ? state.lastSync
-              : (cubit.currentGreeting.isNotEmpty
-                    ? cubit.currentGreeting
-                    : AppDateFormat.formatGreeting(DateTime.now()));
-          return (item, greeting);
-        },
-        builder: (context, data) {
-          final (currentItem, effectiveGreeting) = data;
-          return buildScaffold(
-            currentItem: currentItem,
-            greeting: effectiveGreeting,
-          );
-        },
-      );
-    }
-
-    return buildScaffold(
-      currentItem: widget.item,
-      greeting: AppDateFormat.formatGreeting(DateTime.now()),
+      ),
     );
   }
 }

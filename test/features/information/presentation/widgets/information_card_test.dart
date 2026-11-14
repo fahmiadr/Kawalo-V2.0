@@ -1,546 +1,130 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
+import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_image_viewer.dart';
+import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/app_image_collage.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_card.dart';
 
-Widget _buildCardTestApp(InformationItemEntity item, {VoidCallback? onTap}) {
-  return MaterialApp(
-    builder: (context, child) =>
-        M3ETheme(data: AppTheme.m3eLight(), child: child!),
+const _item = InformationItemEntity(
+  id: 'info-1',
+  title: 'Pengumuman Penting',
+  text: 'Baris pertama.\nBaris kedua yang tidak tampil di daftar.',
+  feedType: 'EVENT',
+  feedDt: '2020-03-08 08:00:00',
+  userName: 'Ahmad Santoso',
+  photos: ['https://example.com/a.webp'],
+);
+
+Widget _app(
+  InformationItemEntity item, {
+  VoidCallback? onTap,
+  VoidCallback? onLongPress,
+  bool isSelectionMode = false,
+  bool isSelected = false,
+  bool isSelectable = true,
+}) {
+  return M3EMaterialApp(
+    data: AppTheme.m3eLight(),
     home: Scaffold(
-      body: SingleChildScrollView(
-        child: InformationCard(item: item, onTap: onTap),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: InformationCard(
+          item: item,
+          onTap: onTap,
+          onLongPress: onLongPress,
+          isSelectionMode: isSelectionMode,
+          isSelected: isSelected,
+          isSelectable: isSelectable,
+        ),
       ),
     ),
   );
 }
 
 void main() {
-  group('InformationCard Tests', () {
-    testWidgets(
-      'renders basic information metadata without collage when no photos',
-      (tester) async {
-        const item = InformationItemEntity(
-          id: 'info-1',
-          title: 'Pengumuman Penting',
-          text: 'Ini adalah deskripsi pengumuman penting.',
-          feedType: 'GENERAL',
-          feedDt: '2026-09-30 08:00:00',
-          userName: 'Ahmad Santoso',
-          photos: [],
-        );
-
-        await tester.pumpWidget(_buildCardTestApp(item));
-
-        expect(find.text('Pengumuman Penting'), findsOneWidget);
-        expect(find.text('Ahmad Santoso'), findsOneWidget);
-        expect(find.text('Informasi Umum'), findsOneWidget);
-        expect(find.byType(AppImageCollage), findsNothing);
-      },
-    );
-
-    testWidgets('renders the event schedule only for EVENT feeds', (
+  group('InformationCard', () {
+    testWidgets('shows category, author and date, title and one text line', (
       tester,
     ) async {
-      const event = InformationItemEntity(
-        id: 'info-ev',
-        title: 'Kerja Bakti',
-        feedType: 'EVENT',
-        eventStartDt: '2026-10-01 13:00',
-        eventEndDt: '2026-10-01 15:00',
-        photos: [],
-      );
-      await tester.pumpWidget(_buildCardTestApp(event));
-      expect(find.textContaining('Jadwal acara: '), findsOneWidget);
-
-      const general = InformationItemEntity(
-        id: 'info-gen',
-        title: 'Pengumuman',
-        feedType: 'GENERAL',
-        eventStartDt: '2026-10-01 13:00',
-        photos: [],
-      );
-      await tester.pumpWidget(_buildCardTestApp(general));
-      expect(find.textContaining('Jadwal acara'), findsNothing);
-    });
-
-    testWidgets('renders file attachment tag when hasFileAttachment is true', (
-      tester,
-    ) async {
-      const item = InformationItemEntity(
-        id: 'info-2',
-        title: 'Laporan Kerusakan',
-        feedType: 'INCIDENT',
-        feedFile: 'dokumen_laporan.pdf',
-        photos: [],
-      );
-
-      await tester.pumpWidget(_buildCardTestApp(item));
-
-      expect(find.text('Insiden'), findsOneWidget);
-      expect(find.text('Lampiran'), findsOneWidget);
-    });
-
-    testWidgets(
-      'renders AppImageCollage when photos exist and opens AppImageViewer',
-      (tester) async {
-        final handle = tester.ensureSemantics();
-        const item = InformationItemEntity(
-          id: 'info-3',
-          title: 'Foto Kegiatan Patroli',
-          photos: [
-            'https://example.com/p1.jpg',
-            'https://example.com/p2.jpg',
-            'https://example.com/p3.jpg',
-          ],
-        );
-
-        await tester.pumpWidget(_buildCardTestApp(item));
-
-        expect(find.byType(AppImageCollage), findsOneWidget);
-
-        // Tap on image in collage to open AppImageViewer
-        await tester.tap(find.bySemanticsLabel('Foto 1 dari 3'));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppImageViewer), findsOneWidget);
-        expect(find.text('1 / 3'), findsOneWidget);
-
-        // Tap close button in viewer
-        await tester.tap(find.byType(AppIconButton));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppImageViewer), findsNothing);
-        handle.dispose();
-      },
-    );
-
-    testWidgets(
-      'renders selected state with checkmark when isSelected is true',
-      (tester) async {
-        const item = InformationItemEntity(
-          id: 'info-4',
-          title: 'Laporan Ronda Malam',
-          feedType: 'GENERAL',
-          photos: [],
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: const Scaffold(
-              body: InformationCard(
-                item: item,
-                isSelectionMode: true,
-                isSelected: true,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AppSelectionLeading), findsOneWidget);
-        expect(
-          find.byWidgetPredicate(
-            (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.check,
-          ),
-          findsWidgets,
-        );
-      },
-    );
-
-    testWidgets('renders disabled locked state with 38% opacity '
-        'when isSelectable is false', (tester) async {
-      const item = InformationItemEntity(
-        id: 'info-5',
-        title: 'Laporan Petugas Lain',
-        feedType: 'GENERAL',
-        photos: [],
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          builder: (context, child) =>
-              M3ETheme(data: AppTheme.m3eLight(), child: child!),
-          home: const Scaffold(
-            body: InformationCard(
-              item: item,
-              isSelectionMode: true,
-              isSelectable: false,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(Opacity), findsOneWidget);
-      final opacityWidget = tester.widget<Opacity>(find.byType(Opacity));
-      expect(opacityWidget.opacity, equals(0.38));
-      expect(
-        find.byWidgetPredicate(
-          (w) =>
-              w is AppSvgIcon &&
-              w.assetPath == KawaloVectors.squareLock01 &&
-              w.size == 24,
-        ),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('triggers onLongPress callback when long pressed', (
-      tester,
-    ) async {
-      var longPressed = false;
-      const item = InformationItemEntity(
-        id: 'info-6',
-        title: 'Postingan Uji Long Press',
-        feedType: 'GENERAL',
-        photos: [],
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          builder: (context, child) =>
-              M3ETheme(data: AppTheme.m3eLight(), child: child!),
-          home: Scaffold(
-            body: InformationCard(
-              item: item,
-              onLongPress: () {
-                longPressed = true;
-              },
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.longPress(find.text('Postingan Uji Long Press'));
-      await tester.pumpAndSettle();
-
-      expect(longPressed, isTrue);
-    });
-
-    testWidgets('does NOT render arrow chevron icon on InformationCard', (
-      tester,
-    ) async {
-      const item = InformationItemEntity(
-        id: 'info-7',
-        title: 'Pengumuman Tanpa Arrow',
-        feedType: 'GENERAL',
-        userName: 'Ahmad Santoso',
-        photos: [],
-      );
-
-      await tester.pumpWidget(_buildCardTestApp(item));
-      await tester.pumpAndSettle();
+      await tester.pumpWidget(_app(_item));
 
       expect(
-        find.byWidgetPredicate(
-          (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.arrowRight01,
-        ),
-        findsNothing,
+        tester.widget<AppStatusPill>(find.byType(AppStatusPill)).label,
+        'Acara',
       );
+      expect(find.text('Ahmad Santoso · 8 Mar'), findsOneWidget);
+      expect(find.text('Pengumuman Penting'), findsOneWidget);
+      final body = tester.widget<Text>(find.textContaining('Baris pertama'));
+      expect(body.maxLines, 1);
+      // Photos and files belong to the detail screen.
+      expect(find.byType(AppImageCollage), findsNothing);
+      expect(find.byIcon(Icons.attach_file_rounded), findsOneWidget);
     });
 
-    testWidgets(
-      'renders edit button with edit03 for ADMIN on any post and triggers '
-      'onEdit',
-      (tester) async {
-        var editPressed = false;
-        const adminSession = AuthSessionEntity(
-          userId: 'admin-1',
-          email: 'admin@kawalo.com',
-          name: 'Administrator',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
+    testWidgets('unknown category falls back to "Informasi Umum"', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(const InformationItemEntity(id: '2', title: 'X', photos: [])),
+      );
 
-        const item = InformationItemEntity(
-          id: 'info-8',
-          title: 'Postingan Orang Lain',
-          userEmail: 'guard@kawalo.com',
-          userName: 'Guard One',
-          feedType: 'GENERAL',
-          photos: [],
-        );
+      expect(
+        tester.widget<AppStatusPill>(find.byType(AppStatusPill)).label,
+        'Informasi Umum',
+      );
+      expect(find.byIcon(Icons.attach_file_rounded), findsNothing);
+    });
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: Scaffold(
-              body: InformationCard(
-                item: item,
-                currentUserSession: adminSession,
-                onEdit: () {
-                  editPressed = true;
-                },
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('tap and long press reach the callbacks', (tester) async {
+      var taps = 0;
+      var longPresses = 0;
+      await tester.pumpWidget(
+        _app(_item, onTap: () => taps++, onLongPress: () => longPresses++),
+      );
 
-        expect(
-          find.byWidgetPredicate(
-            (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.edit03,
-          ),
-          findsOneWidget,
-        );
+      await tester.tap(find.text('Pengumuman Penting'));
+      await tester.longPress(find.text('Pengumuman Penting'));
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(AppIconButton));
-        await tester.pumpAndSettle();
+      expect(taps, 1);
+      expect(longPresses, 1);
+    });
 
-        expect(editPressed, isTrue);
-      },
-    );
+    testWidgets('semantic label names the post and its attachments', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(_item, isSelectionMode: true, isSelected: true),
+      );
 
-    testWidgets(
-      'renders edit button with edit03 for GUARD only on their own post',
-      (tester) async {
-        const guardSession = AuthSessionEntity(
-          userId: 'guard-1',
-          email: 'guard1@kawalo.com',
-          name: 'Guard Satuan',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
+      final card = tester.widget<AppCard>(find.byType(AppCard));
+      expect(card.semanticLabel, contains('Informasi Pengumuman Penting'));
+      expect(card.semanticLabel, contains('kategori Acara'));
+      expect(card.semanticLabel, contains('1 foto terlampir'));
+      expect(card.semanticLabel, contains('terpilih'));
+    });
 
-        const ownItem = InformationItemEntity(
-          id: 'info-9',
-          title: 'Postingan Saya Sendiri',
-          userEmail: 'guard1@kawalo.com',
-          userName: 'Guard Satuan',
-          feedType: 'GENERAL',
-          photos: [],
-        );
+    testWidgets('selection mode shows the selection leading', (tester) async {
+      await tester.pumpWidget(_app(_item, isSelectionMode: true));
 
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: const Scaffold(
-              body: InformationCard(
-                item: ownItem,
-                currentUserSession: guardSession,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      expect(find.byType(AppSelectionLeading), findsOneWidget);
+    });
 
-        expect(
-          find.byWidgetPredicate(
-            (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.edit03,
-          ),
-          findsOneWidget,
-        );
-      },
-    );
+    testWidgets('an unselectable card is locked and dimmed', (tester) async {
+      await tester.pumpWidget(
+        _app(_item, isSelectionMode: true, isSelectable: false),
+      );
 
-    testWidgets(
-      'does NOT render edit button for GUARD on another author post',
-      (tester) async {
-        const guardSession = AuthSessionEntity(
-          userId: 'guard-1',
-          email: 'guard1@kawalo.com',
-          name: 'Guard Satuan',
-          role: 'GUARD',
-          allowAdmin: false,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        const otherItem = InformationItemEntity(
-          id: 'info-10',
-          title: 'Postingan Guard Rekan',
-          userEmail: 'guard2@kawalo.com',
-          userName: 'Guard Dua',
-          feedType: 'GENERAL',
-          photos: [],
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: const Scaffold(
-              body: InformationCard(
-                item: otherItem,
-                currentUserSession: guardSession,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(
-          find.byWidgetPredicate(
-            (w) =>
-                w is AppSvgIcon &&
-                (w.assetPath == KawaloVectors.edit03 ||
-                    w.assetPath == KawaloVectors.editOff03),
-          ),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets(
-      'does NOT render edit button for non-authorized role or null session',
-      (tester) async {
-        const citizenSession = AuthSessionEntity(
-          userId: 'citizen-1',
-          email: 'citizen@kawalo.com',
-          name: 'Warga Komplek',
-          role: 'CITIZEN',
-          allowAdmin: false,
-          allowPatrol: false,
-          allowMonPatrol: false,
-        );
-
-        const item = InformationItemEntity(
-          id: 'info-11',
-          title: 'Pengumuman Satpam',
-          userEmail: 'guard1@kawalo.com',
-          userName: 'Guard Satuan',
-          feedType: 'GENERAL',
-          photos: [],
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: const Scaffold(
-              body: InformationCard(
-                item: item,
-                currentUserSession: citizenSession,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(
-          find.byWidgetPredicate(
-            (w) =>
-                w is AppSvgIcon &&
-                (w.assetPath == KawaloVectors.edit03 ||
-                    w.assetPath == KawaloVectors.editOff03),
-          ),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets(
-      'renders editOff03 with disabled onPressed when isOffline is true',
-      (tester) async {
-        const adminSession = AuthSessionEntity(
-          userId: 'admin-1',
-          email: 'admin@kawalo.com',
-          name: 'Administrator',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        const item = InformationItemEntity(
-          id: 'info-12',
-          title: 'Postingan Offline Test',
-          feedType: 'GENERAL',
-          photos: [],
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: const Scaffold(
-              body: InformationCard(
-                item: item,
-                currentUserSession: adminSession,
-                isOffline: true,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(
-          find.byWidgetPredicate(
-            (w) => w is AppSvgIcon && w.assetPath == KawaloVectors.editOff03,
-          ),
-          findsOneWidget,
-        );
-
-        final iconButton = tester.widget<AppIconButton>(
-          find.byType(AppIconButton),
-        );
-        expect(iconButton.onPressed, isNull);
-      },
-    );
-
-    testWidgets(
-      'does NOT render edit button in selection mode even if authorized',
-      (tester) async {
-        const adminSession = AuthSessionEntity(
-          userId: 'admin-1',
-          email: 'admin@kawalo.com',
-          name: 'Administrator',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-
-        const item = InformationItemEntity(
-          id: 'info-13',
-          title: 'Postingan Mode Seleksi',
-          feedType: 'GENERAL',
-          photos: [],
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) =>
-                M3ETheme(data: AppTheme.m3eLight(), child: child!),
-            home: const Scaffold(
-              body: InformationCard(
-                item: item,
-                currentUserSession: adminSession,
-                isSelectionMode: true,
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(
-          find.byWidgetPredicate(
-            (w) =>
-                w is AppSvgIcon &&
-                (w.assetPath == KawaloVectors.edit03 ||
-                    w.assetPath == KawaloVectors.editOff03),
-          ),
-          findsNothing,
-        );
-      },
-    );
+      expect(find.byType(AppSelectionLeading), findsNothing);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+      expect(
+        tester.widget<Opacity>(find.byType(Opacity)).opacity,
+        AppStateLayer.disabledOpacity,
+      );
+    });
   });
 }

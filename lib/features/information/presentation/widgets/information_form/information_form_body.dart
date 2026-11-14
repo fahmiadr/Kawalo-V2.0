@@ -4,7 +4,6 @@ import 'package:kawalo_mobile/core/services/reverse_geocode_service.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_cubit.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_form_state.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/information_document_section.dart';
@@ -18,7 +17,6 @@ class InformationFormBody extends StatelessWidget {
   /// Membuat instance [InformationFormBody].
   const InformationFormBody({
     required this.cubit,
-    required this.isCreate,
     required this.scrollController,
     required this.titleController,
     required this.textController,
@@ -35,9 +33,6 @@ class InformationFormBody extends StatelessWidget {
 
   /// Cubit formulir yang menerima perubahan input.
   final InformationFormCubit cubit;
-
-  /// Apakah formulir dalam mode posting baru (bukan edit).
-  final bool isCreate;
 
   /// Controller scroll untuk auto-scroll saat keyboard muncul.
   final ScrollController scrollController;
@@ -74,107 +69,97 @@ class InformationFormBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = AppTheme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: KawaloTones.of(context).background,
       resizeToAvoidBottomInset: false,
       body: BlocSelector<InformationFormCubit, InformationFormState, bool>(
         selector: (state) => state.isSubmitting,
         builder: (context, isSubmitting) {
-          final overlayMsg = isCreate
-              ? 'Mempublikasikan informasi...'
-              : 'Menyimpan perubahan informasi...';
-
-          return AppLoadingOverlay(
-            isLoading: isSubmitting,
-            message: overlayMsg,
-            child: AppKeyboardInsetsPadding(
-              child: SingleChildScrollView(
-                controller: scrollController,
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.space200,
-                  right: AppSpacing.space200,
-                  top: AppSpacing.space150,
-                  bottom: AppSpacing.space800 * 2,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // ── SEKSI 1: DETAIL PUBLIKASI & KATEGORI ────
-                    RepaintBoundary(
-                      child: InformationPublicationSection(
-                        titleController: titleController,
-                        textController: textController,
-                        titleFocusNode: titleFocusNode,
-                        textFocusNode: textFocusNode,
-                        isSubmitting: isSubmitting,
-                        onTitleChanged: cubit.onTitleChanged,
-                        onTextChanged: cubit.onTextChanged,
-                        onFeedTypeChanged: cubit.onFeedTypeChanged,
-                      ),
+          // The submit button shows the progress; fields are disabled.
+          return AppKeyboardInsetsPadding(
+            child: SingleChildScrollView(
+              controller: scrollController,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.only(
+                left: AppSpacing.space200,
+                right: AppSpacing.space200,
+                top: AppSpacing.space150,
+                bottom: AppSpacing.space800 * 2,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ── SEKSI 1: DETAIL PUBLIKASI & KATEGORI ────
+                  RepaintBoundary(
+                    child: InformationPublicationSection(
+                      titleController: titleController,
+                      textController: textController,
+                      titleFocusNode: titleFocusNode,
+                      textFocusNode: textFocusNode,
+                      isSubmitting: isSubmitting,
+                      onTitleChanged: cubit.onTitleChanged,
+                      onTextChanged: cubit.onTextChanged,
+                      onFeedTypeChanged: cubit.onFeedTypeChanged,
                     ),
+                  ),
 
-                    AppSpacing.vGap400,
+                  AppSpacing.vGap400,
 
-                    // ── SEKSI 2: DOKUMENTASI FOTO ────────────────
-                    RepaintBoundary(
-                      child: InformationPhotosSection(
-                        isSubmitting: isSubmitting,
-                        onPickPhoto: onPickPhoto,
-                        onClearAll: () =>
-                            clearAllInformationFormPhotos(context, cubit),
-                        onTapPhoto: (index) =>
-                            viewInformationFormPhoto(context, cubit, index),
-                        onRemovePhoto: cubit.onRemovePhoto,
-                        onMoreOptions: (index) =>
-                            showInformationFormPhotoActionMenu(
-                              context,
-                              cubit,
-                              index,
-                            ),
-                      ),
-                    ),
-
-                    AppSpacing.vGap400,
-
-                    // ── SEKSI 3: DOKUMEN LAMPIRAN ────────
-                    RepaintBoundary(
-                      child: InformationDocumentSection(
-                        isSubmitting: isSubmitting,
-                        onPickDocument: onPickDocument,
-                        onClearDocument: cubit.onClearDocumentMedia,
-                      ),
-                    ),
-
-                    AppSpacing.vGap400,
-
-                    // ── SEKSI 4: LOKASI KEJADIAN & PETA ─────────
-                    BlocSelector<
-                      InformationFormCubit,
-                      InformationFormState,
-                      bool
-                    >(
-                      selector: (state) => state.isResolvingLocation,
-                      builder: (context, isResolvingLocation) {
-                        return RepaintBoundary(
-                          child: InformationLocationSection(
-                            eventLocationController: eventLocationController,
-                            eventLocationFocusNode: eventLocationFocusNode,
-                            isSubmitting: isSubmitting,
-                            isResolvingLocation: isResolvingLocation,
-                            onLocationNameChanged: cubit.onEventLocationChanged,
-                            onPickLocation: onPickLocation,
-                            onClearLocation: cubit.onClearLocationCoordinates,
-                            reverseGeocodeService: reverseGeocodeService,
+                  // ── SEKSI 2: DOKUMENTASI FOTO ────────────────
+                  RepaintBoundary(
+                    child: InformationPhotosSection(
+                      isSubmitting: isSubmitting,
+                      onPickPhoto: onPickPhoto,
+                      onClearAll: () =>
+                          clearAllInformationFormPhotos(context, cubit),
+                      onTapPhoto: (index) =>
+                          viewInformationFormPhoto(context, cubit, index),
+                      onRemovePhoto: cubit.onRemovePhoto,
+                      onMoreOptions: (index) =>
+                          showInformationFormPhotoActionMenu(
+                            context,
+                            cubit,
+                            index,
                           ),
-                        );
-                      },
                     ),
-                  ],
-                ),
+                  ),
+
+                  AppSpacing.vGap400,
+
+                  // ── SEKSI 3: DOKUMEN LAMPIRAN ────────
+                  RepaintBoundary(
+                    child: InformationDocumentSection(
+                      isSubmitting: isSubmitting,
+                      onPickDocument: onPickDocument,
+                      onClearDocument: cubit.onClearDocumentMedia,
+                    ),
+                  ),
+
+                  AppSpacing.vGap400,
+
+                  // ── SEKSI 4: LOKASI KEJADIAN & PETA ─────────
+                  BlocSelector<
+                    InformationFormCubit,
+                    InformationFormState,
+                    bool
+                  >(
+                    selector: (state) => state.isResolvingLocation,
+                    builder: (context, isResolvingLocation) {
+                      return RepaintBoundary(
+                        child: InformationLocationSection(
+                          eventLocationController: eventLocationController,
+                          eventLocationFocusNode: eventLocationFocusNode,
+                          isSubmitting: isSubmitting,
+                          isResolvingLocation: isResolvingLocation,
+                          onLocationNameChanged: cubit.onEventLocationChanged,
+                          onPickLocation: onPickLocation,
+                          onClearLocation: cubit.onClearLocationCoordinates,
+                          reverseGeocodeService: reverseGeocodeService,
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           );

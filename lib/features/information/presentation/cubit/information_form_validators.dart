@@ -10,13 +10,10 @@ class InformationFormValidators {
   static String? validateTitle(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
-      return AppValidator.validateRequired(
-        trimmed,
-        fieldName: 'Judul informasi',
-      );
+      return AppValidator.validateRequired(trimmed, fieldName: 'Judul');
     }
     if (value.length > 128) {
-      return 'Judul informasi maksimal 128 karakter.';
+      return 'Judul maksimal 128 karakter.';
     }
     return null;
   }

@@ -13,12 +13,13 @@ import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/information/domain/entities/information_item_entity.dart';
 import 'package:kawalo_mobile/features/information/domain/value_objects/delete_batch_result.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
@@ -99,7 +100,7 @@ void main() {
     );
 
     testWidgets(
-      'renders AppHomeAppBar, AppRefreshIndicator and InformationCard',
+      'renders AppTopBar, AppRefreshIndicator and InformationCard',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -111,14 +112,14 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
-        expect(find.text('Pusat informasi'), findsOneWidget);
+        expect(find.byType(AppTopBar), findsOneWidget);
+        expect(find.text('Informasi'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari informasi'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
         expect(find.byType(AppRefreshIndicator), findsOneWidget);
         expect(find.byType(InformationCard), findsOneWidget);
         expect(find.text('Pemeriksaan Pos Jaga Utama'), findsOneWidget);
-        expect(find.text('Budi Santoso'), findsOneWidget);
+        expect(find.textContaining('Budi Santoso · '), findsOneWidget);
       },
     );
 
@@ -138,17 +139,17 @@ void main() {
 
         final searchToggleBtn = find.bySemanticsLabel('Cari informasi');
         expect(searchToggleBtn, findsOneWidget);
-        expect(find.text('Pusat informasi'), findsOneWidget);
+        expect(find.text('Informasi'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
 
         // Tap search icon button -> opens search bar
         await tester.tap(searchToggleBtn);
         await tester.pumpAndSettle();
 
-        expect(find.text('Pusat informasi'), findsNothing);
+        expect(find.text('Informasi'), findsNothing);
         expect(find.byType(AppSearchBar), findsOneWidget);
         expect(find.text('Cari informasi'), findsOneWidget);
-        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
 
         final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
         expect(cancelToggleBtn, findsOneWidget);
@@ -158,7 +159,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(AppSearchBar), findsNothing);
-        expect(find.text('Pusat informasi'), findsOneWidget);
+        expect(find.text('Informasi'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari informasi'), findsOneWidget);
       },
     );
@@ -172,8 +173,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppHomeAppBar), findsOneWidget);
-      expect(find.text('Pusat informasi'), findsOneWidget);
+      expect(find.byType(AppTopBar), findsOneWidget);
+      expect(find.text('Informasi'), findsOneWidget);
       expect(find.byType(AppEmptyState), findsOneWidget);
       expect(find.text('Belum ada informasi'), findsOneWidget);
     });
@@ -229,7 +230,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Diperbarui Hari ini, 10.00'), findsOneWidget);
+      expect(find.text('Diperbarui Hari ini, 10.00'), findsNothing);
     });
 
     testWidgets(
@@ -306,7 +307,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Pusat informasi'), findsOneWidget);
+        expect(find.text('Informasi'), findsOneWidget);
 
         // Long press card to trigger selection
         await tester.longPress(find.text('Pemeriksaan Pos Jaga Utama'));
@@ -327,7 +328,7 @@ void main() {
         await tester.tap(find.bySemanticsLabel('Clear selection'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Pusat informasi'), findsOneWidget);
+        expect(find.text('Informasi'), findsOneWidget);
       },
     );
 
@@ -434,7 +435,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Selection mode should NOT activate
-      expect(find.text('Pusat informasi'), findsOneWidget);
+      expect(find.text('Informasi'), findsOneWidget);
       expect(
         find.text('Anda hanya dapat memilih informasi yang Anda buat.'),
         findsOneWidget,
@@ -635,7 +636,7 @@ void main() {
 
         // Contextual selection app bar is dismissed and standard app bar
         // is restored.
-        expect(find.text('Pusat informasi'), findsOneWidget);
+        expect(find.text('Informasi'), findsOneWidget);
         expect(find.text('1'), findsNothing);
 
         // Only dummyFeed (satpam@kawalo.id) remains visible
@@ -1217,8 +1218,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppExtendedFab), findsOneWidget);
-        expect(find.text('Posting'), findsOneWidget);
+        expect(find.byType(AppExtendedFab), findsNothing);
+        expect(
+          find.widgetWithText(AppTaskButton, 'Tulis Informasi'),
+          findsOneWidget,
+        );
         expect(
           find.byWidgetPredicate(
             (w) => w is AppIconButton && w.semanticLabel == 'Tambah informasi',
@@ -1229,58 +1233,55 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Posting Extended FAB position remains stationary when keyboard appears',
-      (tester) async {
-        final mockCubit = createMockInformationCubit(items: [dummyFeed]);
-        const adminSession = AuthSessionEntity(
-          userId: 'user-1',
-          email: 'admin@kawalo.id',
-          name: 'Super Admin',
-          role: 'ADMIN',
-          allowAdmin: true,
-          allowPatrol: true,
-          allowMonPatrol: true,
-        );
-        final sessionCubit = UserSessionCubit(adminSession);
+    testWidgets('"Tulis Informasi" stays put when the keyboard appears', (
+      tester,
+    ) async {
+      final mockCubit = createMockInformationCubit(items: [dummyFeed]);
+      const adminSession = AuthSessionEntity(
+        userId: 'user-1',
+        email: 'admin@kawalo.id',
+        name: 'Super Admin',
+        role: 'ADMIN',
+        allowAdmin: true,
+        allowPatrol: true,
+        allowMonPatrol: true,
+      );
+      final sessionCubit = UserSessionCubit(adminSession);
 
-        Widget buildTestScreen() {
-          return BlocProvider<UserSessionCubit>.value(
-            value: sessionCubit,
-            child: MaterialApp(
-              theme: AppTheme.lightThemeData(),
-              home: Scaffold(
-                resizeToAvoidBottomInset: false,
-                body: IndexedStack(
-                  children: [InformationScreen(cubit: mockCubit)],
-                ),
-                bottomNavigationBar: const SizedBox(
-                  height: 80,
-                  child: Text('BottomNav'),
-                ),
+      Widget buildTestScreen() {
+        return BlocProvider<UserSessionCubit>.value(
+          value: sessionCubit,
+          child: MaterialApp(
+            theme: AppTheme.lightThemeData(),
+            home: Scaffold(
+              resizeToAvoidBottomInset: false,
+              body: IndexedStack(
+                children: [InformationScreen(cubit: mockCubit)],
+              ),
+              bottomNavigationBar: const SizedBox(
+                height: 80,
+                child: Text('BottomNav'),
               ),
             ),
-          );
-        }
-
-        await tester.pumpWidget(buildTestScreen());
-        await tester.pumpAndSettle();
-        final fabInitialOffset = tester.getTopLeft(find.byType(AppExtendedFab));
-
-        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-        addTearDown(tester.view.resetViewInsets);
-        await tester.pumpAndSettle();
-        final fabKeyboardOffset = tester.getTopLeft(
-          find.byType(AppExtendedFab),
+          ),
         );
+      }
 
-        expect(fabKeyboardOffset.dy, equals(fabInitialOffset.dy));
-        await sessionCubit.close();
-      },
-    );
+      await tester.pumpWidget(buildTestScreen());
+      await tester.pumpAndSettle();
+      final fabInitialOffset = tester.getTopLeft(find.byType(AppTaskButton));
+
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpAndSettle();
+      final fabKeyboardOffset = tester.getTopLeft(find.byType(AppTaskButton));
+
+      expect(fabKeyboardOffset.dy, equals(fabInitialOffset.dy));
+      await sessionCubit.close();
+    });
 
     testWidgets(
-      'renders Edit button on InformationCard when user can update item',
+      'cards carry no edit button; editing lives on the detail screen',
       (tester) async {
         final mockCubit = createMockInformationCubit(items: [dummyFeed]);
         const adminSession = AuthSessionEntity(
@@ -1312,7 +1313,7 @@ void main() {
                 w.semanticLabel != null &&
                 w.semanticLabel!.startsWith('Edit informasi'),
           ),
-          findsOneWidget,
+          findsNothing,
         );
         await sessionCubit.close();
       },
