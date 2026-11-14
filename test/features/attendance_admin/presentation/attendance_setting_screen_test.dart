@@ -6,8 +6,7 @@ import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_setting_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/repositories/attendance_admin_repository.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_setting_cubit.dart';
@@ -54,10 +53,10 @@ void main() {
   );
 
   Finder inHeader(Finder f) =>
-      find.descendant(of: find.byType(AppHomeAppBar), matching: f);
+      find.descendant(of: find.byType(AppBar), matching: f);
 
   Finder inActions(Finder f) =>
-      find.descendant(of: find.byType(AppPageActions), matching: f);
+      find.descendant(of: find.byType(AppTaskFooter), matching: f);
 
   testWidgets('shows the value, explanation and a header with only the title', (
     tester,
@@ -67,7 +66,7 @@ void main() {
     expect(value('40%'), findsOneWidget);
     expect(find.textContaining('Makin tinggi makin ketat'), findsOneWidget);
     expect(find.text('Bawaan server: 40%'), findsOneWidget);
-    expect(inHeader(find.text('Pengaturan Absensi')), findsOneWidget);
+    expect(inHeader(find.text('Batas Kemiripan Wajah')), findsOneWidget);
     expect(inHeader(find.text('Simpan')), findsNothing);
     expect(inHeader(find.byType(TextButton)), findsNothing);
   });
@@ -169,7 +168,7 @@ void main() {
       find.text('Hanya admin yang dapat mengubah pengaturan ini.'),
       findsOneWidget,
     );
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
     expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
   });
 
@@ -194,7 +193,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Coba lagi'), findsOneWidget);
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
 
     when(
       () => repository.getSetting(),

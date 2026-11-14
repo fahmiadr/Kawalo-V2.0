@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_form_empty_placeholder.dart';
 import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_location_cubit.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/attendance_radius_selector.dart';
@@ -51,7 +49,7 @@ class AttendanceLocationSection extends StatelessWidget {
           )
         else ...[
           ClipRRect(
-            borderRadius: AppRadius.borderMedium,
+            borderRadius: BorderRadius.circular(18),
             child: AppStaticMap(
               latitude: lat,
               longitude: long,
@@ -65,17 +63,12 @@ class AttendanceLocationSection extends StatelessWidget {
             AppSpacing.vGapSm,
             Align(
               alignment: Alignment.centerRight,
-              child: AppButton(
-                style: AppButtonColor.tonal,
+              child: AppTaskButton(
+                label: 'Ubah titik',
+                icon: Icons.location_on_outlined,
+                variant: AppTaskButtonVariant.secondary,
+                size: AppTaskButtonSize.small,
                 onPressed: onPickPoint,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppSvgIcon(KawaloVectors.location01, size: 18),
-                    AppSpacing.hGapXs,
-                    Text('Ubah titik'),
-                  ],
-                ),
               ),
             ),
           ],

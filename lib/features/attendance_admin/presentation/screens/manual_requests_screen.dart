@@ -5,13 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card_skeleton.dart';
 import 'package:kawalo_mobile/features/attendance_admin/attendance_admin_module.dart';
@@ -19,8 +15,10 @@ import 'package:kawalo_mobile/features/attendance_admin/domain/entities/manual_r
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/manual_requests_cubit.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/manual_request_card.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/manual_request_detail_sheet.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
-/// Admin list of manual attendance requests, one tab per status.
+/// Admin list of manual attendance requests (`RdManualDaftar`), one chip per
+/// status.
 class ManualRequestsScreen extends StatefulWidget {
   const ManualRequestsScreen({required this.module, super.key, this.cubit});
 
@@ -77,58 +75,66 @@ class _ManualRequestsScreenState extends State<ManualRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
     final isAdmin =
         context.watch<UserSessionCubit?>()?.state?.isAdminRole ?? false;
 
-    return DefaultTabController(
-      length: ManualRequestStatus.values.length,
-      child: Scaffold(
-        backgroundColor: colorScheme.surface,
-        appBar: AppBar(
-          title: const Text('Absen manual'),
-          centerTitle: true,
-          backgroundColor: colorScheme.surface,
-          elevation: 0,
-          bottom: isAdmin
-              ? TabBar(
-                  onTap: (index) => unawaited(
-                    _cubit.load(status: ManualRequestStatus.values[index]),
-                  ),
-                  tabs: [
-                    for (final status in ManualRequestStatus.values)
-                      Tab(text: status.label),
+    return Scaffold(
+      backgroundColor: tones.background,
+      appBar: AppBar(
+        backgroundColor: tones.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Absen Manual'),
+      ),
+      body: !isAdmin
+          ? const TaskMessage(
+              icon: Icon(Icons.lock_outline_rounded),
+              kind: TaskMessageKind.neutral,
+              title: 'Khusus administrator',
+              message:
+                  'Hanya administrator yang dapat meninjau permintaan absen '
+                  'manual.',
+            )
+          : BlocConsumer<ManualRequestsCubit, ManualRequestsState>(
+              bloc: _cubit,
+              listenWhen: (a, b) => a.noticeSeq != b.noticeSeq,
+              listener: (context, state) {
+                final notice = state.notice;
+                if (notice != null) {
+                  AppSnackbar.show(context, message: notice);
+                }
+              },
+              builder: (context, state) => SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TaskChoiceChips<ManualRequestStatus>(
+                          tone: tones.adm,
+                          selected: state.status,
+                          onSelected: (status) =>
+                              unawaited(_cubit.load(status: status)),
+                          options: [
+                            for (final status in ManualRequestStatus.values)
+                              (status, status.label),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: AppRefreshIndicator.contained(
+                        semanticsLabel: 'Memuat ulang permintaan absen manual',
+                        onRefresh: _cubit.refresh,
+                        child: _buildBody(state),
+                      ),
+                    ),
                   ],
-                )
-              : null,
-        ),
-        body: !isAdmin
-            ? const AppEmptyState(
-                icon: AppSvgIcon.color(KawaloColorVectors.checklist2),
-                title: 'Khusus administrator',
-                description:
-                    'Hanya administrator yang dapat meninjau permintaan absen '
-                    'manual.',
-              )
-            : BlocConsumer<ManualRequestsCubit, ManualRequestsState>(
-                bloc: _cubit,
-                listenWhen: (a, b) => a.noticeSeq != b.noticeSeq,
-                listener: (context, state) {
-                  final notice = state.notice;
-                  if (notice != null) {
-                    AppSnackbar.show(context, message: notice);
-                  }
-                },
-                builder: (context, state) => SafeArea(
-                  top: false,
-                  child: AppRefreshIndicator.contained(
-                    semanticsLabel: 'Memuat ulang permintaan absen manual',
-                    onRefresh: _cubit.refresh,
-                    child: _buildBody(state),
-                  ),
                 ),
               ),
-      ),
+            ),
     );
   }
 
@@ -136,7 +142,6 @@ class _ManualRequestsScreenState extends State<ManualRequestsScreen> {
     switch (state.phase) {
       case ManualRequestsPhase.loading:
         return ListScreenSkeleton(
-          bottomPadding: AppSpacing.space200,
           itemBuilder: (_, _) => const AttendanceCardSkeleton(),
         );
       case ManualRequestsPhase.failure:
@@ -148,12 +153,15 @@ class _ManualRequestsScreenState extends State<ManualRequestsScreen> {
         );
       case ManualRequestsPhase.loaded:
         if (state.items.isEmpty) {
-          return AppEmptyState(
-            icon: const AppSvgIcon.color(KawaloColorVectors.checklist2),
-            title: 'Tidak ada permintaan',
-            description: switch (state.status) {
+          return TaskMessage(
+            icon: const Icon(Icons.check_rounded),
+            tone: KawaloTones.of(context).adm,
+            title: state.status == ManualRequestStatus.pending
+                ? 'Tidak ada yang menunggu'
+                : 'Tidak ada permintaan',
+            message: switch (state.status) {
               ManualRequestStatus.pending =>
-                'Belum ada permintaan absen manual yang menunggu keputusan.',
+                'Laporan petugas yang gagal absen wajah muncul di sini.',
               ManualRequestStatus.approved =>
                 'Belum ada permintaan yang disetujui.',
               ManualRequestStatus.rejected =>
@@ -163,7 +171,6 @@ class _ManualRequestsScreenState extends State<ManualRequestsScreen> {
         }
         return ListScreenListView(
           controller: _scrollController,
-          bottomPadding: AppSpacing.space200,
           itemCount: state.items.length,
           isLoadingMore: state.isLoadingMore,
           itemBuilder: (context, index) {

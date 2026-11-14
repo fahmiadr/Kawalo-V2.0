@@ -5,9 +5,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_location_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/repositories/attendance_admin_repository.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_location_cubit.dart';
@@ -50,14 +49,18 @@ void main() {
   }
 
   Finder inHeader(Finder f) =>
-      find.descendant(of: find.byType(AppHomeAppBar), matching: f);
+      find.descendant(of: find.byType(AppBar), matching: f);
 
   Finder inActions(Finder f) =>
-      find.descendant(of: find.byType(AppPageActions), matching: f);
+      find.descendant(of: find.byType(AppTaskFooter), matching: f);
 
-  bool simpanEnabled(WidgetTester tester) => tester
-      .widget<AppButton>(find.widgetWithText(AppButton, 'Simpan'))
-      .enabled;
+  bool simpanEnabled(WidgetTester tester) =>
+      tester
+          .widget<AppTaskButton>(
+            find.widgetWithText(AppTaskButton, 'Simpan Titik'),
+          )
+          .onPressed !=
+      null;
 
   testWidgets('shows a skeleton while loading', (tester) async {
     when(() => repository.getLocation()).thenAnswer(
@@ -80,7 +83,7 @@ void main() {
     await tester.pump();
 
     expect(find.bySemanticsLabel('Memuat titik absen'), findsOneWidget);
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
 
     await tester.pumpAndSettle(const Duration(seconds: 2));
   });
@@ -90,8 +93,7 @@ void main() {
 
     expect(
       find.text(
-        'Belum ada titik absen. Tentukan titik agar absen hanya sah di dalam '
-        'radius.',
+        'Selama belum diatur, absen memakai lokasi lama dari shift bila ada.',
       ),
       findsOneWidget,
     );
@@ -99,16 +101,16 @@ void main() {
     expect(find.text('Radius absen'), findsOneWidget);
     expect(find.text('Nama titik'), findsOneWidget);
     expect(inHeader(find.text('Titik Absen')), findsOneWidget);
-    expect(inHeader(find.text('Simpan')), findsNothing);
+    expect(inHeader(find.text('Simpan Titik')), findsNothing);
     expect(find.text('Batasi lokasi absen'), findsNothing);
   });
 
-  testWidgets('Simpan sits at the bottom and is disabled until a point', (
+  testWidgets('Simpan Titik sits at the bottom, disabled until a point', (
     tester,
   ) async {
     final cubit = await pump(tester);
 
-    expect(inActions(find.text('Simpan')), findsOneWidget);
+    expect(inActions(find.text('Simpan Titik')), findsOneWidget);
     expect(simpanEnabled(tester), isFalse);
 
     cubit.setCoordinates(-6.2146, 106.8199);
@@ -133,7 +135,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(inActions(find.text('Simpan')));
+    await tester.tap(inActions(find.text('Simpan Titik')));
     await tester.pumpAndSettle();
 
     expect(find.text('Titik absen disimpan'), findsOneWidget);
@@ -155,7 +157,7 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('Belum ada titik absen'), findsNothing);
+    expect(find.textContaining('belum diatur'), findsNothing);
     expect(find.text('Ubah titik'), findsOneWidget);
     expect(find.text('Pos Utama'), findsOneWidget);
     expect(find.text('100 m'), findsWidgets);
@@ -183,7 +185,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    await tester.tap(inActions(find.text('Simpan')));
+    await tester.tap(inActions(find.text('Simpan Titik')));
     await tester.pumpAndSettle();
 
     expect(find.text('Koordinat tidak valid.'), findsOneWidget);
@@ -222,19 +224,16 @@ void main() {
       find.text('Hanya admin yang dapat mengubah titik absen.'),
       findsOneWidget,
     );
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
     expect(find.text('Ubah titik'), findsNothing);
   });
 
   testWidgets('non-admins of an unset point only see the note', (tester) async {
     await pump(tester, role: 'GUARD');
 
-    expect(
-      find.text('Belum ada titik absen. Admin belum menentukannya.'),
-      findsOneWidget,
-    );
+    expect(find.text('Admin belum menentukan titik absen.'), findsOneWidget);
     expect(find.text('Belum ada titik lokasi'), findsNothing);
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
   });
 
   testWidgets('a load error offers Coba lagi', (tester) async {
@@ -258,7 +257,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Coba lagi'), findsOneWidget);
-    expect(find.byType(AppPageActions), findsNothing);
+    expect(find.byType(AppTaskFooter), findsNothing);
 
     when(
       () => repository.getLocation(),

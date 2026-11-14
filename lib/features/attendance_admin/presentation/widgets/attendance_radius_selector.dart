@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_form_chip_group.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_location_cubit.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/extensions/attendance_location_ui_extension.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
 /// Preset chips (25 m .. 1 km) plus "Lainnya" for a typed radius.
 class AttendanceRadiusSelector extends StatelessWidget {
@@ -20,7 +19,7 @@ class AttendanceRadiusSelector extends StatelessWidget {
     super.key,
   });
 
-  /// Marks the "Lainnya" chip in [AppFormChipGroup].
+  /// Marks the "Lainnya" chip.
   static const _customValue = -1;
 
   final String radiusText;
@@ -33,7 +32,7 @@ class AttendanceRadiusSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
+    final tones = KawaloTones.of(context);
     final current = int.tryParse(radiusText.trim());
     final summary = isCustom
         ? 'Atur sendiri'
@@ -44,31 +43,36 @@ class AttendanceRadiusSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AppFormChipGroup<int>(
-          label: 'Radius absen',
-          layout: AppFormChipGroupLayout.wrap,
-          enabled: enabled,
-          selectedValue: isCustom ? _customValue : current,
-          trailing: Text(
-            summary,
-            style: theme.typeScale.labelMedium.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          items: [
-            for (final metres in AttendanceLocationCubit.radiusPresets)
-              AppFormChipItem(
-                value: metres,
-                label: formatAttendanceRadius(metres),
-                semanticLabel: 'Radius ${formatAttendanceRadius(metres)}',
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Radius absen',
+                style: TextStyle(
+                  color: tones.ink,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            const AppFormChipItem(value: _customValue, label: 'Lainnya'),
+            ),
+            Text(summary, style: TextStyle(color: tones.ink2, fontSize: 13)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        TaskChoiceChips<int>(
+          tone: tones.adm,
+          enabled: enabled,
+          selected: isCustom ? _customValue : current,
+          options: [
+            for (final metres in AttendanceLocationCubit.radiusPresets)
+              (metres, formatAttendanceRadius(metres)),
+            (_customValue, 'Lainnya'),
           ],
           onSelected: (value) =>
               value == _customValue ? onCustom() : onPreset(value),
         ),
         if (isCustom) ...[
-          AppSpacing.vGap150,
+          const SizedBox(height: 12),
           _CustomRadiusField(
             initialText: radiusText,
             onChanged: onTextChanged,

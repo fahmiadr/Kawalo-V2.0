@@ -7,17 +7,16 @@ import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_radius.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/attendance_admin/attendance_admin_module.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_location_cubit.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/attendance_location_section.dart';
-import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/attendance_panel.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 import 'package:kawalo_mobile/features/information/presentation/widgets/map_picker/app_map_picker_dialog.dart';
 
 /// Admin screen to set the one attendance point of the group; every shift
@@ -92,7 +91,7 @@ class _AttendanceLocationScreenState extends State<AttendanceLocationScreen> {
   Widget build(BuildContext context) {
     final isAdmin =
         context.watch<UserSessionCubit?>()?.state?.isAdminRole ?? false;
-    final colors = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
 
     return BlocConsumer<AttendanceLocationCubit, AttendanceLocationState>(
       bloc: _cubit,
@@ -105,20 +104,36 @@ class _AttendanceLocationScreenState extends State<AttendanceLocationScreen> {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: colors.surface,
-          appBar: const AppHomeAppBar(
-            title: 'Titik Absen',
-            showBackButton: true,
-            showTrailing: false,
+          backgroundColor: tones.background,
+          appBar: AppBar(
+            backgroundColor: tones.background,
+            surfaceTintColor: Colors.transparent,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Titik Absen'),
+                Text(
+                  'Berlaku untuk semua shift',
+                  style: TextStyle(
+                    color: tones.ink2,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
           bottomNavigationBar: isAdmin && state.isLoaded
-              ? AppPageActions(
+              ? AppTaskFooter(
                   children: [
-                    AppButton(
-                      size: AppButtonSize.md,
-                      enabled: state.canSave,
-                      onPressed: () => unawaited(_cubit.save()),
-                      child: Text(state.saving ? 'Menyimpan...' : 'Simpan'),
+                    AppTaskButton(
+                      label: 'Simpan Titik',
+                      icon: Icons.check_rounded,
+                      tone: tones.adm,
+                      isLoading: state.saving,
+                      onPressed: state.canSave
+                          ? () => unawaited(_cubit.save())
+                          : null,
                     ),
                   ],
                 )
@@ -163,9 +178,8 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colors = theme.colorScheme;
-    final text = theme.typeScale;
+    final tones = KawaloTones.of(context);
+    final note = TextStyle(color: tones.ink2, fontSize: 14, height: 1.4);
     final location = state.location;
     final configured = location?.configured ?? false;
     final updatedBy = location?.updatedBy;
@@ -173,42 +187,33 @@ class _Content extends StatelessWidget {
     final showForm = isAdmin || configured;
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.space200),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       children: [
-        AttendancePanel(
-          color: colors.surfaceContainerLow,
-          child: Text(
-            'Semua shift absen di titik ini. Absen hanya sah di dalam radius '
-            'titik.',
-            style: text.bodyMedium.copyWith(color: colors.onSurfaceVariant),
-          ),
-        ),
         if (!configured) ...[
-          AppSpacing.vGapSm,
-          AttendancePanel(
+          TaskBox(
             key: const ValueKey('location_unset'),
-            color: colors.surfaceContainerHigh,
-            child: Text(
-              isAdmin
-                  ? 'Belum ada titik absen. Tentukan titik agar absen hanya '
-                        'sah di dalam radius.'
-                  : 'Belum ada titik absen. Admin belum menentukannya.',
-              style: text.bodyMedium.copyWith(color: colors.onSurface),
-            ),
+            soft: true,
+            children: [
+              Text(
+                'Titik absen belum diatur',
+                style: TextStyle(
+                  color: tones.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                isAdmin
+                    ? 'Selama belum diatur, absen memakai lokasi lama dari '
+                          'shift bila ada.'
+                    : 'Admin belum menentukan titik absen.',
+                style: note,
+              ),
+            ],
           ),
+          const SizedBox(height: 14),
         ],
-        if (!isAdmin && configured) ...[
-          AppSpacing.vGapSm,
-          AttendancePanel(
-            color: colors.surfaceContainerHigh,
-            child: Text(
-              'Hanya admin yang dapat mengubah titik absen.',
-              style: text.bodyMedium.copyWith(color: colors.onSurface),
-            ),
-          ),
-        ],
-        if (showForm) ...[
-          AppSpacing.vGap300,
+        if (showForm)
           AttendanceLocationSection(
             state: state,
             locationNameController: nameController,
@@ -219,13 +224,22 @@ class _Content extends StatelessWidget {
             onRadiusCustom: cubit.selectCustomRadius,
             onRadiusText: cubit.setRadiusText,
           ),
+        const SizedBox(height: 14),
+        Text(
+          'Semua shift absen di titik ini. Absen hanya sah di dalam radius '
+          'titik.',
+          style: note,
+        ),
+        if (!isAdmin && configured) ...[
+          const SizedBox(height: 8),
+          Text('Hanya admin yang dapat mengubah titik absen.', style: note),
         ],
         if (configured && updatedBy != null) ...[
-          AppSpacing.vGap300,
+          const SizedBox(height: 8),
           Text(
             'Terakhir diubah oleh $updatedBy pada '
             '${AppDateFormat.formatRawDate(location?.updatedAt)}',
-            style: text.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+            style: note,
           ),
         ],
       ],
@@ -238,7 +252,7 @@ class _Skeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppTheme.of(context).colorScheme.surfaceContainerHigh;
+    final color = KawaloTones.of(context).surface2;
 
     Widget bar(double height, [double? width]) => Container(
       width: width,

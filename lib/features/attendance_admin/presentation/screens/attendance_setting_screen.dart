@@ -5,21 +5,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_chip.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_footer.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/attendance_admin/attendance_admin_module.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/attendance_setting_entity.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/attendance_setting_cubit.dart';
-import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/attendance_panel.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
 const _presets = [30, 40, 50, 60, 70];
 
@@ -78,7 +75,7 @@ class _AttendanceSettingScreenState extends State<AttendanceSettingScreen> {
   Widget build(BuildContext context) {
     final isAdmin =
         context.watch<UserSessionCubit?>()?.state?.isAdminRole ?? false;
-    final colors = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
 
     return BlocConsumer<AttendanceSettingCubit, AttendanceSettingState>(
       bloc: _cubit,
@@ -91,28 +88,30 @@ class _AttendanceSettingScreenState extends State<AttendanceSettingScreen> {
         final setting = state.setting;
         final showActions = isAdmin && setting != null && state.phase.isLoaded;
         return Scaffold(
-          backgroundColor: colors.surface,
-          appBar: const AppHomeAppBar(
-            title: 'Pengaturan Absensi',
-            showBackButton: true,
-            showTrailing: false,
+          backgroundColor: tones.background,
+          appBar: AppBar(
+            backgroundColor: tones.background,
+            surfaceTintColor: Colors.transparent,
+            title: const Text('Batas Kemiripan Wajah'),
           ),
           bottomNavigationBar: showActions
-              ? AppPageActions(
+              ? AppTaskFooter(
                   children: [
-                    AppButton(
-                      size: AppButtonSize.md,
-                      enabled: state.isDirty && !state.saving,
-                      onPressed: () => unawaited(_cubit.save()),
-                      child: Text(state.saving ? 'Menyimpan...' : 'Simpan'),
+                    AppTaskButton(
+                      label: 'Simpan',
+                      icon: Icons.check_rounded,
+                      tone: tones.adm,
+                      isLoading: state.saving,
+                      onPressed: state.isDirty && !state.saving
+                          ? () => unawaited(_cubit.save())
+                          : null,
                     ),
                     if (!setting.isDefault)
-                      AppButton(
-                        size: AppButtonSize.md,
-                        style: AppButtonColor.tonal,
-                        enabled: !state.saving,
-                        onPressed: () => unawaited(_confirmReset(setting)),
-                        child: const Text('Kembalikan ke Bawaan'),
+                      taskSecondary(
+                        'Kembalikan ke Bawaan',
+                        state.saving
+                            ? null
+                            : () => unawaited(_confirmReset(setting)),
                       ),
                   ],
                 )
@@ -173,9 +172,8 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colors = theme.colorScheme;
-    final text = theme.typeScale;
+    final tones = KawaloTones.of(context);
+    final note = TextStyle(color: tones.ink2, fontSize: 14, height: 1.4);
     final updatedBy = setting.updatedBy;
     final presets = [
       for (final p in _presets)
@@ -183,88 +181,91 @@ class _Content extends StatelessWidget {
     ];
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.space200),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       children: [
-        AttendancePanel(
-          color: colors.surfaceContainerLow,
-          child: Text(
-            'Persentase kemiripan minimal agar wajah dianggap cocok saat '
-            'check-in dan check-out. Makin tinggi makin ketat.',
-            style: text.bodyMedium.copyWith(color: colors.onSurfaceVariant),
-          ),
-        ),
-        if (!isAdmin) ...[
-          AppSpacing.vGapSm,
-          AttendancePanel(
-            color: colors.surfaceContainerHigh,
-            child: Text(
-              'Hanya admin yang dapat mengubah pengaturan ini.',
-              style: text.bodyMedium.copyWith(color: colors.onSurface),
-            ),
-          ),
-        ],
-        AppSpacing.vGap300,
-        Center(
-          child: Text(
-            '$draft%',
-            key: const ValueKey('setting_value'),
-            style: text.displaySmall.copyWith(
-              fontWeight: FontWeight.w800,
-              color: colors.onSurface,
-            ),
-          ),
-        ),
-        Semantics(
-          label: 'Persentase kemiripan minimal',
-          value: '$draft persen',
-          child: Slider(
-            min: setting.minPercent.toDouble(),
-            max: setting.maxPercent.toDouble(),
-            divisions: setting.maxPercent - setting.minPercent,
-            value: draft.toDouble(),
-            label: '$draft%',
-            onChanged: editable ? (v) => onChanged(v.round()) : null,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space200),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${setting.minPercent}%', style: text.labelMedium),
-              Text('${setting.maxPercent}%', style: text.labelMedium),
-            ],
-          ),
-        ),
-        AppSpacing.vGapMd,
-        Wrap(
-          spacing: AppSpacing.space100,
-          runSpacing: AppSpacing.space100,
+        TaskBox(
           children: [
-            for (final p in presets)
-              AppChip(
-                type: AppChipType.filter,
-                label: '$p%',
-                selected: draft == p,
-                onPressed: editable ? () => onChanged(p) : null,
+            Center(
+              child: Text(
+                '$draft%',
+                key: const ValueKey('setting_value'),
+                style: TextStyle(
+                  color: tones.ink,
+                  fontSize: 56,
+                  fontWeight: FontWeight.w500,
+                  height: 1,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
+            ),
+            Center(
+              child: Text(
+                'Kemiripan minimum',
+                style: TextStyle(
+                  color: tones.ink2,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Semantics(
+              label: 'Persentase kemiripan minimal',
+              value: '$draft persen',
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: tones.adm.color,
+                  thumbColor: tones.adm.color,
+                  inactiveTrackColor: tones.surface2,
+                ),
+                child: Slider(
+                  min: setting.minPercent.toDouble(),
+                  max: setting.maxPercent.toDouble(),
+                  divisions: setting.maxPercent - setting.minPercent,
+                  value: draft.toDouble(),
+                  label: '$draft%',
+                  onChanged: editable ? (v) => onChanged(v.round()) : null,
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${setting.minPercent}%', style: note),
+                Text('${setting.maxPercent}%', style: note),
+              ],
+            ),
           ],
         ),
-        AppSpacing.vGapMd,
-        _HintPanel(strictness: _strictnessOf(draft)),
-        AppSpacing.vGap300,
-        Text(
-          'Bawaan server: ${setting.defaultPercent}%',
-          style: text.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+        const SizedBox(height: 12),
+        TaskChoiceChips<int>(
+          tone: tones.adm,
+          enabled: editable,
+          selected: draft,
+          onSelected: onChanged,
+          options: [for (final p in presets) (p, '$p%')],
         ),
-        if (!setting.isDefault && updatedBy != null) ...[
-          AppSpacing.vGap50,
+        const SizedBox(height: 12),
+        _HintPanel(strictness: _strictnessOf(draft)),
+        const SizedBox(height: 12),
+        Text(
+          'Persentase kemiripan minimal agar wajah dianggap cocok saat '
+          'check-in dan check-out. Makin tinggi makin ketat: wajah orang lain '
+          'makin sulit lolos, tetapi petugas lebih sering gagal dan melapor '
+          'manual.',
+          style: note,
+        ),
+        if (!isAdmin) ...[
+          const SizedBox(height: 8),
+          Text('Hanya admin yang dapat mengubah pengaturan ini.', style: note),
+        ],
+        const SizedBox(height: 8),
+        Text('Bawaan server: ${setting.defaultPercent}%', style: note),
+        if (!setting.isDefault && updatedBy != null)
           Text(
             'Diubah oleh $updatedBy pada '
             '${AppDateFormat.formatRawDate(setting.updatedAt)}',
-            style: text.bodyMedium.copyWith(color: colors.onSurfaceVariant),
+            style: note,
           ),
-        ],
       ],
     );
   }
@@ -277,8 +278,7 @@ class _HintPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colors = theme.colorScheme;
+    final tones = KawaloTones.of(context);
     final (label, warn) = switch (strictness) {
       _Strictness.loose => ('Longgar: petugas lain lebih mudah lolos', true),
       _Strictness.balanced => ('Seimbang', false),
@@ -287,13 +287,18 @@ class _HintPanel extends StatelessWidget {
         true,
       ),
     };
-    return AttendancePanel(
-      color: warn ? colors.errorContainer : colors.surfaceContainerHigh,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: warn ? tones.warnSoft : tones.surface2,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Text(
         label,
-        style: theme.typeScale.bodyMedium.copyWith(
-          fontWeight: FontWeight.w600,
-          color: warn ? colors.onErrorContainer : colors.onSurface,
+        style: TextStyle(
+          color: warn ? tones.warn : tones.ink2,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

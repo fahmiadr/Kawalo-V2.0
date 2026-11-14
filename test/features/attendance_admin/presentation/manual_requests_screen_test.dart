@@ -51,7 +51,7 @@ void main() {
     return cubit;
   }
 
-  testWidgets('admin sees the pending requests and can switch tabs', (
+  testWidgets('admin sees the pending requests and can switch status', (
     tester,
   ) async {
     when(
@@ -77,7 +77,7 @@ void main() {
       expect(find.text(label), findsWidgets, reason: label);
     }
 
-    await tester.tap(find.widgetWithText(Tab, 'Ditolak'));
+    await tester.tap(find.text('Ditolak'));
     await tester.pumpAndSettle();
 
     expect(find.byType(ManualRequestCard), findsNothing);

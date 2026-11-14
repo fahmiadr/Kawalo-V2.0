@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_bottom_sheet.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
 import 'package:kawalo_mobile/core/widgets/app_confirmation_dialog.dart';
-import 'package:kawalo_mobile/core/widgets/app_divider.dart';
 import 'package:kawalo_mobile/core/widgets/app_static_map.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/attendance_admin/domain/entities/manual_request_entity.dart';
@@ -19,6 +15,7 @@ import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/face_
 import 'package:kawalo_mobile/features/attendance_admin/presentation/cubit/manual_requests_cubit.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/extensions/manual_request_ui_extension.dart';
 import 'package:kawalo_mobile/features/attendance_admin/presentation/widgets/face_photos_sheet.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
 /// Detail of a manual attendance request with the approve/reject decision.
 class ManualRequestDetailSheet extends StatefulWidget {
@@ -100,15 +97,14 @@ class _ManualRequestDetailSheetState extends State<ManualRequestDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final emphasized = theme.typography.emphasized;
+    final tones = KawaloTones.of(context);
+    final distance = _request.displayDistance;
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
-        left: AppSpacing.space200,
-        right: AppSpacing.space200,
-        bottom: AppSpacing.space300 + MediaQuery.viewInsetsOf(context).bottom,
+        left: 18,
+        right: 18,
+        bottom: 22 + MediaQuery.viewInsetsOf(context).bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -119,57 +115,40 @@ class _ManualRequestDetailSheetState extends State<ManualRequestDetailSheet> {
               AppUserAvatar(
                 name: _request.displayUserName,
                 imageUrl: _request.avatarUrl,
+                size: 56,
               ),
-              AppSpacing.hGapSm,
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _request.displayUserName,
-                      style: emphasized.titleMedium.copyWith(
-                        color: colorScheme.onSurface,
+                      style: TextStyle(
+                        color: tones.ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
-                      _request.userEmail,
-                      style: theme.typeScale.labelMedium.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      '${_request.displayType} · ${_request.displayShift}',
+                      style: TextStyle(color: tones.ink2, fontSize: 13),
                     ),
                   ],
                 ),
               ),
+              if (!_request.isPending)
+                AppStatusPill(
+                  label: _request.status.label,
+                  kind: _request.status == ManualRequestStatus.approved
+                      ? AppStatusKind.ok
+                      : AppStatusKind.bad,
+                ),
             ],
           ),
-          AppSpacing.vGapSm,
-          Wrap(
-            spacing: AppSpacing.space100,
-            runSpacing: AppSpacing.space100,
-            children: [
-              AppTag(
-                label: _request.displayType,
-                variant: _request.displayType == 'Masuk'
-                    ? AppTagVariant.primary
-                    : AppTagVariant.secondary,
-              ),
-              AppTag(
-                label: _request.status.label,
-                variant: _request.statusVariant,
-              ),
-            ],
-          ),
-          const Padding(
-            padding: AppSpacing.paddingVertical150,
-            child: AppDivider(),
-          ),
-          Text(
-            'Lokasi petugas saat meminta',
-            style: emphasized.titleMedium.copyWith(
-              color: colorScheme.onSurface,
-            ),
-          ),
-          AppSpacing.vGapSm,
+          const SizedBox(height: 14),
+          _buildInfoCard(),
+          const SizedBox(height: 14),
           AppStaticMap(
             latitude: _request.latitude,
             longitude: _request.longitude,
@@ -178,38 +157,37 @@ class _ManualRequestDetailSheetState extends State<ManualRequestDetailSheet> {
                 'Titik lokasi permintaan ${_request.displayUserName}',
             noGpsDescription: 'Permintaan ini tidak membawa koordinat.',
           ),
-          AppSpacing.vGap200,
-          Text(
-            'Rincian permintaan',
-            style: emphasized.titleMedium.copyWith(
-              color: colorScheme.onSurface,
+          if (distance != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppStatusPill(
+                label: distance,
+                icon: Icons.location_on_outlined,
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppTaskButton(
+              label: 'Lihat foto registrasi wajah',
+              icon: Icons.photo_library_outlined,
+              variant: AppTaskButtonVariant.secondary,
+              size: AppTaskButtonSize.small,
+              onPressed: _openFacePhotos,
             ),
           ),
-          AppSpacing.vGapSm,
-          _buildInfoCard(context),
           if (_request.isPending) ..._buildDecision(context),
-          AppSpacing.vGapSm,
-          AppButton(
-            style: AppButtonColor.tonal,
-            shape: AppButtonShape.square,
-            onPressed: _openFacePhotos,
-            child: const Text('Lihat foto registrasi wajah'),
-          ),
-          AppSpacing.vGapSm,
-          AppButton(
-            style: AppButtonColor.tonal,
-            shape: AppButtonShape.square,
-            onPressed: () => Navigator.of(context).maybePop(),
-            child: const Text('Tutup'),
-          ),
         ],
       ),
     );
   }
 
   List<Widget> _buildDecision(BuildContext context) {
+    final tones = KawaloTones.of(context);
     return [
-      AppSpacing.vGap200,
+      const SizedBox(height: 14),
       AppTextField(
         label: 'Catatan admin (opsional)',
         variant: AppTextFieldVariant.outlined,
@@ -217,7 +195,7 @@ class _ManualRequestDetailSheetState extends State<ManualRequestDetailSheet> {
         maxLength: 200,
         maxLines: 2,
       ),
-      AppSpacing.vGapSm,
+      const SizedBox(height: 8),
       BlocBuilder<ManualRequestsCubit, ManualRequestsState>(
         bloc: widget.cubit,
         buildWhen: (a, b) => a.decidingIds != b.decidingIds,
@@ -226,19 +204,20 @@ class _ManualRequestDetailSheetState extends State<ManualRequestDetailSheet> {
           return Row(
             children: [
               Expanded(
-                child: AppButton(
-                  style: AppButtonColor.tonal,
-                  shape: AppButtonShape.square,
-                  onPressed: busy ? null : () => _decide(approve: false),
-                  child: const Text('Tolak'),
+                child: taskSecondary(
+                  'Tolak',
+                  busy ? null : () => _decide(approve: false),
                 ),
               ),
-              AppSpacing.hGapSm,
+              const SizedBox(width: 8),
               Expanded(
-                child: AppButton(
-                  shape: AppButtonShape.square,
+                child: AppTaskButton(
+                  label: busy ? 'Memproses…' : 'Setujui',
+                  icon: Icons.check_rounded,
+                  tone: tones.adm,
+                  size: AppTaskButtonSize.medium,
+                  isLoading: busy,
                   onPressed: busy ? null : () => _decide(approve: true),
-                  child: Text(busy ? 'Memproses...' : 'Setujui'),
                 ),
               ),
             ],
@@ -248,101 +227,29 @@ class _ManualRequestDetailSheetState extends State<ManualRequestDetailSheet> {
     ];
   }
 
-  Widget _buildInfoCard(BuildContext context) {
-    final rows = <(String, String, String)>[
-      (
-        KawaloColorVectors.calendar1,
-        'Waktu permintaan',
-        _request.displayRequestedAt,
-      ),
-      (KawaloColorVectors.checklist2, 'Alasan', _request.displayReason),
-      if ((_request.note ?? '').isNotEmpty)
-        (KawaloColorVectors.cardTag1, 'Catatan petugas', _request.note!),
-      (KawaloColorVectors.timeRotation, 'Shift kerja', _request.displayShift),
-      if ((_request.locationName ?? '').isNotEmpty)
-        (KawaloColorVectors.location1, 'Pos absensi', _request.locationName!),
-      if (_request.displayDistance != null)
-        (KawaloColorVectors.location1, 'Jarak', _request.displayDistance!),
-      if (_request.failedAttempts > 0)
-        (
-          KawaloColorVectors.cardTag1,
-          'Verifikasi wajah gagal',
-          '${_request.failedAttempts} kali',
-        ),
-      if (!_request.isPending) ...[
-        (
-          KawaloColorVectors.group2,
-          'Diputuskan oleh',
-          '${_request.decidedBy ?? '—'} • ${_request.displayDecidedAt}',
-        ),
-        if ((_request.decisionNote ?? '').isNotEmpty)
-          (
-            KawaloColorVectors.cardTag1,
-            'Catatan admin',
-            _request.decisionNote!,
+  Widget _buildInfoCard() {
+    return TaskBox(
+      children: [
+        TaskKeyValue('Dilaporkan', _request.displayRequestedAt),
+        TaskKeyValue('Alasan', _request.displayReason),
+        if ((_request.note ?? '').isNotEmpty)
+          TaskKeyValue('Catatan petugas', _request.note!),
+        if ((_request.locationName ?? '').isNotEmpty)
+          TaskKeyValue('Pos absensi', _request.locationName!),
+        if (_request.failedAttempts > 0)
+          TaskKeyValue(
+            'Verifikasi wajah gagal',
+            '${_request.failedAttempts} kali',
           ),
+        if (!_request.isPending) ...[
+          TaskKeyValue(
+            'Diputuskan oleh',
+            '${_request.decidedBy ?? '—'} · ${_request.displayDecidedAt}',
+          ),
+          if ((_request.decisionNote ?? '').isNotEmpty)
+            TaskKeyValue('Catatan admin', _request.decisionNote!),
+        ],
       ],
-    ];
-    return AppCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space200,
-        vertical: AppSpacing.space150,
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0) const AppDivider(),
-            _InfoRow(icon: rows[i].$1, label: rows[i].$2, value: rows[i].$3),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final String icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Padding(
-      padding: AppSpacing.paddingVerticalSm,
-      child: Row(
-        children: [
-          AppSvgIcon.color(icon, size: 32),
-          AppSpacing.hGapSm,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: theme.typeScale.bodyMedium.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                AppSpacing.vGap25,
-                Text(
-                  value,
-                  style: theme.typography.emphasized.bodyLarge.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
