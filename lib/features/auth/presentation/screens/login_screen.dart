@@ -3,35 +3,34 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
+import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/utils/app_keyboard_auto_scroller.dart';
 import 'package:kawalo_mobile/core/utils/app_validator.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_card.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/widgets/app_inline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/app_tappable.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/auth/presentation/cubit/saved_email_cubit.dart';
-import 'package:kawalo_mobile/features/auth/presentation/widgets/auth_header_widget.dart';
+import 'package:kawalo_mobile/features/auth/presentation/widgets/forgot_password_sheet.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/privacy_policy_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/terms_and_privacy_widget.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/terms_of_service_bottom_sheet.dart';
 
-/// Clean & Responsive Login Screen refactored from Figma specifications.
+/// "Masuk" (redesign 2026): e-mail and password, the 64 px "Masuk" button
+/// pinned above the keyboard. A wrong password is shown under the password
+/// field; a lockout (429) and being offline get a banner above the form.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({this.sessionExpiredMessage, super.key});
 
-  /// Pesan opsional yang ditampilkan saat pengguna dialihkan ke login karena
-  /// sesi kedaluwarsa atau anomali keamanan.
+  /// Shown once as a snackbar when the user was sent here because the session
+  /// expired or a security anomaly was detected.
   final String? sessionExpiredMessage;
 
   @override
@@ -39,29 +38,21 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final TextEditingController _emailController;
-  late final TextEditingController _passwordController;
-  late final ScrollController _scrollController;
-  late final FocusNode _emailFocusNode;
-  late final FocusNode _passwordFocusNode;
-  late final AppKeyboardAutoScroller _keyboardScroller;
-  final GlobalKey _loginButtonKey = GlobalKey();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
   late final SavedEmailCubit _savedEmailCubit;
+
+  String? _emailError;
+  String? _passwordError;
+
+  /// Server message of a 429 (account locked or too many attempts).
+  String? _lockedMessage;
 
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController();
-    _passwordController = TextEditingController();
-    _scrollController = ScrollController();
-    _emailFocusNode = FocusNode();
-    _passwordFocusNode = FocusNode();
-
-    _keyboardScroller = AppKeyboardAutoScroller(
-      scrollController: _scrollController,
-    );
-    _keyboardScroller.registerNodes([_emailFocusNode, _passwordFocusNode]);
-
     if (widget.sessionExpiredMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -69,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       });
     }
-
     _savedEmailCubit = SavedEmailCubit(context.read<SecureStorageService?>())
       ..load();
   }
@@ -83,68 +73,62 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     unawaited(_savedEmailCubit.close());
-    _keyboardScroller.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _scrollController.dispose();
     super.dispose();
-  }
-
-  String? _emailError;
-  String? _passwordError;
-
-  void _validateInputs() {
-    setState(() {
-      _emailError = AppValidator.validateEmail(_emailController.text);
-      _passwordError = AppValidator.validateLoginPassword(
-        _passwordController.text,
-      );
-    });
   }
 
   void _onLoginSubmitted() {
     if (context.read<AuthBloc>().state is AuthLoading) return;
 
-    _validateInputs();
-
+    setState(() {
+      _emailError = AppValidator.validateEmail(_emailController.text);
+      _passwordError = AppValidator.validateLoginPassword(
+        _passwordController.text,
+      );
+      _lockedMessage = null;
+    });
     if (_emailError != null) {
       _emailFocusNode.requestFocus();
-      _keyboardScroller.scrollToNode(_emailFocusNode, immediate: true);
       return;
     }
-
     if (_passwordError != null) {
       _passwordFocusNode.requestFocus();
-      _keyboardScroller.scrollToNode(_passwordFocusNode, immediate: true);
       return;
     }
 
-    // Dismiss keyboard before the loading state begins.
     FocusScope.of(context).unfocus();
-
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
     context.read<AuthBloc>().add(
-      LoginSubmitted(email: email, password: password),
+      LoginSubmitted(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      ),
     );
   }
 
-  void _onForgotPasswordTap() {
-    AppSnackbar.show(
-      context,
-      message: 'Fitur Lupa Password akan segera hadir.',
-    );
+  void _onAuthState(BuildContext context, AuthState state) {
+    switch (state) {
+      case AuthFailure(statusCode: 401, :final message):
+        setState(() => _passwordError = message);
+      case AuthFailure(statusCode: 429, :final message):
+        setState(() => _lockedMessage = message);
+      case AuthFailure(:final message):
+        AppSnackbar.show(context, message: message);
+      case Authenticated():
+        unawaited(AppRouter.of(context).toMain());
+      case GroupSelectionRequired(:final user):
+        unawaited(AppRouter.of(context).toGroupSelection(user));
+      default:
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    _keyboardScroller.attachContext(context);
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final typeScale = theme.typeScale;
+    final tones = KawaloTones.of(context);
+    final connectivity = context.read<ConnectivityCubit?>();
 
     return BlocListener<SavedEmailCubit, String?>(
       bloc: _savedEmailCubit,
@@ -152,123 +136,62 @@ class _LoginScreenState extends State<LoginScreen> {
         if (email != null) _prefillEmail(email);
       },
       child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthFailure) {
-            AppSnackbar.show(context, message: state.message);
-          } else if (state is Authenticated) {
-            unawaited(AppRouter.of(context).toMain());
-          } else if (state is GroupSelectionRequired) {
-            unawaited(AppRouter.of(context).toGroupSelection(state.user));
-          }
-        },
+        listener: _onAuthState,
         builder: (context, state) {
           final isLoading = state is AuthLoading;
+          final isOffline =
+              connectivity != null &&
+              context.select<ConnectivityCubit, bool>((c) => c.isOffline);
 
           return PopScope(
             canPop: !isLoading,
-            child: Stack(
-              children: [
-                Scaffold(
-                  backgroundColor: colorScheme.surface,
-                  body: SafeArea(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isCompact = AppLayout.isCompact(
-                          constraints.maxWidth,
-                        );
-                        final horizontalPadding = AppLayout.horizontalMargin(
-                          constraints.maxWidth,
-                        );
-
-                        Widget formContent = Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (isCompact) const Spacer(),
-
-                            // 1. Header (Logo Responsif, Judul & Subjudul)
-                            const AuthHeaderWidget(),
-
-                            AppSpacing.vGap400,
-
-                            // 2. Input Form (Email & Password)
-                            _buildLoginForm(context, isLoading: isLoading),
-
-                            AppSpacing.vGap300,
-
-                            // 3. Terms & Privacy Consent Text
-                            TermsAndPrivacyWidget(
-                              onPrivacyTap: () =>
-                                  showPrivacyPolicyBottomSheet(context),
-                              onTermsTap: () =>
-                                  showTermsOfServiceBottomSheet(context),
-                            ),
-
-                            if (isCompact) const Spacer(),
-
-                            AppSpacing.vGap300,
-
-                            // 4. Action Button (Masuk)
-                            AppButton(
-                              key: _loginButtonKey,
-                              shape: AppButtonShape.square,
-                              size: AppButtonSize.md,
-                              enabled: !isLoading,
-                              semanticLabel: isLoading
-                                  ? 'Memverifikasi akun'
-                                  : 'Masuk',
-                              onPressed: isLoading ? null : _onLoginSubmitted,
-                              child: Text(
-                                'Masuk',
-                                style: typeScale.titleMedium,
-                              ),
-                            ),
-                          ],
-                        );
-
-                        if (!isCompact) {
-                          formContent = AppCard(
-                            variant: AppCardVariant.outlined,
-                            padding: AppSpacing.paddingAllXl,
-                            child: formContent,
-                          );
-                        }
-
-                        return SingleChildScrollView(
-                          controller: _scrollController,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          padding: EdgeInsets.only(
-                            left: horizontalPadding,
-                            right: horizontalPadding,
-                            top: AppSpacing.space200,
-                            bottom: AppSpacing.space200,
-                          ),
-                          child: AppScrollPadding(
-                            revealTargetKey: _loginButtonKey,
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: AppLayout.contentMaxWidth,
-                                  minHeight:
-                                      constraints.maxHeight -
-                                      (AppSpacing.space200 * 2),
-                                ),
-                                child: isCompact
-                                    ? IntrinsicHeight(child: formContent)
-                                    : formContent,
-                              ),
+            child: Scaffold(
+              backgroundColor: tones.background,
+              body: SafeArea(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppLayout.contentMaxWidth,
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: const EdgeInsets.fromLTRB(16, 26, 16, 12),
+                            child: _buildForm(
+                              tones,
+                              isLoading: isLoading,
+                              isOffline: isOffline,
                             ),
                           ),
-                        );
-                      },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppTaskButton(
+                                label: isLoading ? 'Memeriksa…' : 'Masuk',
+                                isLoading: isLoading,
+                                onPressed: isOffline ? null : _onLoginSubmitted,
+                              ),
+                              const SizedBox(height: 8),
+                              TermsAndPrivacyWidget(
+                                onPrivacyTap: () =>
+                                    showPrivacyPolicyBottomSheet(context),
+                                onTermsTap: () =>
+                                    showTermsOfServiceBottomSheet(context),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-
-                // Modal Scrim Overlay
-                if (isLoading)
-                  const AppLoadingOverlay(semanticLabel: 'Memverifikasi akun'),
-              ],
+              ),
             ),
           );
         },
@@ -276,19 +199,63 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Membangun form masukan email dan password dengan ikon SVG.
-  /// [isLoading] mengunci seluruh field saat request async sedang berjalan
-  /// sesuai M3 Disabled State — mencegah perubahan input yang sudah dikirim.
-  Widget _buildLoginForm(BuildContext context, {required bool isLoading}) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final typeScale = theme.typeScale;
-
+  Widget _buildForm(
+    KawaloTones tones, {
+    required bool isLoading,
+    required bool isOffline,
+  }) {
+    final lockedMessage = _lockedMessage;
     return Column(
-      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Input E-mail
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: tones.ptt.soft,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(
+              Icons.shield_outlined,
+              size: 28,
+              color: tones.ptt.color,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Semantics(
+          header: true,
+          child: Text(
+            'Masuk',
+            style: TextStyle(
+              color: tones.ink,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Pakai akun Kawalo dari admin grup Anda.',
+          style: TextStyle(color: tones.ink2, fontSize: 14),
+        ),
+        if (isOffline) ...[
+          const SizedBox(height: 14),
+          const AppInlineBanner(
+            message: 'Tidak ada koneksi internet. Sambungkan dulu untuk masuk.',
+          ),
+        ] else if (lockedMessage != null) ...[
+          const SizedBox(height: 14),
+          AppInlineBanner(
+            message: lockedMessage,
+            icon: Icons.lock_outline_rounded,
+            kind: AppInlineBannerKind.error,
+          ),
+        ],
+        const SizedBox(height: 14),
         AppTextField(
           label: 'E-mail',
           variant: AppTextFieldVariant.outlined,
@@ -301,18 +268,20 @@ class _LoginScreenState extends State<LoginScreen> {
           onTapOutside: (_) => FocusScope.of(context).unfocus(),
           onSubmitted: (_) => _passwordFocusNode.requestFocus(),
           onChanged: (_) {
-            if (_emailError != null) {
+            if (_emailError != null || _lockedMessage != null) {
               setState(() {
-                _emailError = AppValidator.validateEmail(_emailController.text);
+                _lockedMessage = null;
+                if (_emailError != null) {
+                  _emailError = AppValidator.validateEmail(
+                    _emailController.text,
+                  );
+                }
               });
             }
           },
           leading: const AppSvgIcon(KawaloVectors.mailAtSign01),
         ),
-
-        AppSpacing.vGap200,
-
-        // Input Password dengan tombol toggle password bawaan M3E
+        const SizedBox(height: 14),
         AppTextField(
           label: 'Password',
           variant: AppTextFieldVariant.outlined,
@@ -338,24 +307,14 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           leading: const AppSvgIcon(KawaloVectors.lockPassword),
         ),
-
-        AppSpacing.vGapXs,
-
-        // Link Lupa Password (Compact Hyperlink)
+        const SizedBox(height: 14),
         Align(
-          alignment: Alignment.centerRight,
-          child: AppTappable(
-            onTap: _onForgotPasswordTap,
-            semanticLabel: 'Lupa password?',
-            child: Padding(
-              padding: AppSpacing.paddingAllXs,
-              child: Text(
-                'Lupa password?',
-                style: typeScale.labelLarge.copyWith(
-                  color: colorScheme.primary,
-                ),
-              ),
-            ),
+          alignment: Alignment.centerLeft,
+          child: AppTaskButton(
+            label: 'Lupa password?',
+            variant: AppTaskButtonVariant.secondary,
+            size: AppTaskButtonSize.small,
+            onPressed: () => unawaited(ForgotPasswordSheet.show(context)),
           ),
         ),
       ],

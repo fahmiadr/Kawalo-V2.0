@@ -5,15 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
@@ -111,8 +107,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     required VoidCallback onChanged,
     TextInputAction action = TextInputAction.next,
     VoidCallback? onSubmitted,
+    String? supportingText,
   }) => AppTextField(
     label: label,
+    supportingText: supportingText,
     variant: AppTextFieldVariant.outlined,
     controller: controller,
     obscureText: true,
@@ -129,81 +127,81 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
     return BlocConsumer<ChangePasswordCubit, ChangePasswordState>(
       listener: _onState,
       builder: (context, state) {
         final saving = state.status == ChangePasswordStatus.saving;
         final success = state.status == ChangePasswordStatus.success;
         return Scaffold(
-          backgroundColor: colors.surface,
-          appBar: const AppHomeAppBar(
-            title: 'Ganti Password',
-            showBackButton: true,
-            showTrailing: false,
+          backgroundColor: tones.background,
+          appBar: AppBar(
+            backgroundColor: tones.background,
+            scrolledUnderElevation: 0,
+            title: const Text('Ganti Password'),
           ),
-          bottomNavigationBar: AppPageActions(
-            children: [
-              AppButton(
-                size: AppButtonSize.md,
-                enabled: _valid && !saving && !success,
-                onPressed: _submit,
-                child: const Text('Simpan'),
-              ),
-            ],
-          ),
-          body: Stack(
-            children: [
-              SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.space200),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxWidth: AppLayout.contentMaxWidth,
-                      ),
-                      child: Column(
-                        children: [
-                          _field(
-                            label: 'Password saat ini',
-                            controller: _current,
-                            enabled: !saving,
-                            errorText: _currentError,
-                            onChanged: () => _onChanged(clearServerError: true),
-                          ),
-                          AppSpacing.vGap200,
-                          _field(
-                            label: 'Password baru',
-                            controller: _new,
-                            enabled: !saving,
-                            errorText: ChangePasswordRules.newPassword(
-                              _new.text,
-                              _current.text,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: AppLayout.contentMaxWidth,
+                        ),
+                        child: Column(
+                          children: [
+                            _field(
+                              label: 'Password lama',
+                              controller: _current,
+                              enabled: !saving,
+                              errorText: _currentError,
+                              onChanged: () =>
+                                  _onChanged(clearServerError: true),
                             ),
-                            onChanged: _onChanged,
-                          ),
-                          AppSpacing.vGap200,
-                          _field(
-                            label: 'Ulangi password baru',
-                            controller: _repeat,
-                            enabled: !saving,
-                            errorText: ChangePasswordRules.repeat(
-                              _repeat.text,
-                              _new.text,
+                            const SizedBox(height: 14),
+                            _field(
+                              label: 'Password baru',
+                              controller: _new,
+                              enabled: !saving,
+                              errorText: ChangePasswordRules.newPassword(
+                                _new.text,
+                                _current.text,
+                              ),
+                              supportingText: 'Minimal 8 karakter',
+                              onChanged: _onChanged,
                             ),
-                            onChanged: _onChanged,
-                            action: TextInputAction.done,
-                            onSubmitted: _submit,
-                          ),
-                        ],
+                            const SizedBox(height: 14),
+                            _field(
+                              label: 'Ulangi password baru',
+                              controller: _repeat,
+                              enabled: !saving,
+                              errorText: ChangePasswordRules.repeat(
+                                _repeat.text,
+                                _new.text,
+                              ),
+                              onChanged: _onChanged,
+                              action: TextInputAction.done,
+                              onSubmitted: _submit,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (saving)
-                const AppLoadingOverlay(semanticLabel: 'Menyimpan password'),
-            ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                  child: AppTaskButton(
+                    label: 'Simpan Password',
+                    isLoading: saving,
+                    onPressed: _valid && !success ? _submit : null,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

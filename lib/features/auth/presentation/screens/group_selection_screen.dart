@@ -5,26 +5,17 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kawalo_mobile/app_router.dart';
 import 'package:kawalo_mobile/core/theme/app_layout.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_card.dart';
-import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_selection_action_bar.dart';
-import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_selection_header.dart';
-import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_variant_mapper.dart';
 
-/// Screen for users belonging to multiple groups to choose their active group.
-/// Follows Material 3 Expressive standards, accessible touch targets, and
-/// design system tokens.
+/// "Pilih grup" (redesign 2026) for users in several groups. The logout
+/// button in the top bar returns to login (to use another account).
 class GroupSelectionScreen extends StatefulWidget {
   const GroupSelectionScreen({
     required this.user,
@@ -133,9 +124,8 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final typeScale = AppTheme.typeScaleOf(context);
+    final tones = KawaloTones.of(context);
+    final count = widget.user.groups.length;
 
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -154,127 +144,80 @@ class _GroupSelectionScreenState extends State<GroupSelectionScreen> {
 
         return PopScope(
           canPop: !isLoading,
-          child: Stack(
-            children: [
-              Scaffold(
-                backgroundColor: colorScheme.surface,
-                appBar: AppBar(
-                  backgroundColor: colorScheme.surface,
-                  scrolledUnderElevation: 0,
-                  elevation: 0,
-                  leading: AppIconButton(
-                    icon: const AppSvgIcon(KawaloVectors.arrowLeft02, size: 24),
-                    onPressed: isLoading ? null : _onBackPressed,
-                    semanticLabel: widget.allowCancel
-                        ? 'Kembali'
-                        : 'Kembali ke halaman login',
-                  ),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        right: AppSpacing.space150,
-                      ),
-                      child: AppButton(
-                        style: AppButtonColor.text,
-                        enabled: !isLoading,
-                        onPressed: isLoading ? null : _onLogoutPressed,
-                        semanticLabel: 'Ganti akun',
-                        decoration: AppButtonDecoration(
-                          foregroundColor: WidgetStatePropertyAll<Color?>(
-                            colorScheme.error,
-                          ),
-                        ),
-                        child: Text('Ganti akun', style: typeScale.labelLarge),
-                      ),
-                    ),
-                  ],
+          child: Scaffold(
+            backgroundColor: tones.background,
+            appBar: AppBar(
+              backgroundColor: tones.background,
+              scrolledUnderElevation: 0,
+              automaticallyImplyLeading: false,
+              leading: widget.allowCancel
+                  ? IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      tooltip: 'Kembali',
+                      onPressed: isLoading ? null : _onBackPressed,
+                    )
+                  : null,
+              title: const Text('Pilih grup'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded),
+                  tooltip: 'Keluar dan ganti akun',
+                  onPressed: isLoading ? null : _onLogoutPressed,
                 ),
-                body: SafeArea(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final horizontalPadding = AppLayout.horizontalMargin(
-                        constraints.maxWidth,
-                      );
-
-                      return Column(
-                        children: [
-                          // Scrollable List of Groups
-                          Expanded(
-                            child: SingleChildScrollView(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: horizontalPadding,
-                                vertical: AppSpacing.space200,
-                              ),
-                              child: Center(
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: AppLayout.contentMaxWidth,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      // Header Section
-                                      GroupSelectionHeader(
-                                        userName: widget.user.name,
-                                      ),
-                                      AppSpacing.vGap400,
-
-                                      // Group Cards List
-                                      ...widget.user.groups.map((group) {
-                                        final isSelected =
-                                            group.groupUid == _selectedGroupUid;
-
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: AppSpacing.space150,
-                                          ),
-                                          child: GroupCard(
-                                            key: ValueKey(group.groupUid),
-                                            group: group,
-                                            isSelected: isSelected,
-                                            isLoading: isLoading,
-                                            focusNode:
-                                                _groupFocusNodes[group
-                                                    .groupUid],
-                                            onSelect: () => _onGroupSelected(
-                                              group.groupUid,
-                                            ),
-                                            roleVariant: roleToVariant(
-                                              group.category,
-                                            ),
-                                            statusVariant: groupStatusToVariant(
-                                              group.groupStatus,
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                      AppSpacing.vGap200,
-                                    ],
-                                  ),
-                                ),
-                              ),
+                const SizedBox(width: 4),
+              ],
+            ),
+            body: SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppLayout.contentMaxWidth,
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+                          children: [
+                            Text(
+                              'Akun Anda terdaftar di $count grup. '
+                              'Pilih grup untuk bertugas hari ini.',
+                              style: TextStyle(color: tones.ink2, fontSize: 14),
                             ),
-                          ),
-
-                          // Persistent Sticky Action Bar (Always Visible)
-                          GroupSelectionActionBar(
-                            horizontalPadding: horizontalPadding,
-                            isLoading: isLoading,
-                            canConfirm: _selectedGroupUid.isNotEmpty,
-                            onConfirm: _onConfirmSelection,
-                          ),
-                        ],
-                      );
-                    },
+                            const SizedBox(height: 14),
+                            for (final group in widget.user.groups) ...[
+                              GroupCard(
+                                key: ValueKey(group.groupUid),
+                                group: group,
+                                isSelected: group.groupUid == _selectedGroupUid,
+                                isLoading: isLoading,
+                                focusNode: _groupFocusNodes[group.groupUid],
+                                onSelect: () =>
+                                    _onGroupSelected(group.groupUid),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                        child: AppTaskButton(
+                          label: 'Lanjut',
+                          isLoading: isLoading,
+                          semanticLabel: isLoading
+                              ? 'Menyiapkan grup'
+                              : 'Lanjut dengan grup terpilih',
+                          onPressed: _selectedGroupUid.isEmpty
+                              ? null
+                              : _onConfirmSelection,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              // Modal Scrim Overlay
-              if (isLoading)
-                const AppLoadingOverlay(semanticLabel: 'Menyiapkan grup'),
-            ],
+            ),
           ),
         );
       },

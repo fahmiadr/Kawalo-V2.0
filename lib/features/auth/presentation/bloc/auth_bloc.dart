@@ -52,7 +52,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       await result.fold(
-        (failure) async => emit(AuthFailure(message: failure.message)),
+        (failure) async => emit(
+          AuthFailure(message: failure.message, statusCode: failure.statusCode),
+        ),
         (user) async {
           if (user.groups.length > 1) {
             emit(GroupSelectionRequired(user: user));

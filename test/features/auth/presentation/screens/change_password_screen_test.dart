@@ -5,9 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
-import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_event.dart';
@@ -62,14 +60,9 @@ void main() {
     await tester.pump();
   }
 
-  bool simpanEnabled(WidgetTester tester) => tester
-      .widget<AppButton>(
-        find.descendant(
-          of: find.byType(AppPageActions),
-          matching: find.byType(AppButton),
-        ),
-      )
-      .enabled;
+  bool simpanEnabled(WidgetTester tester) =>
+      tester.widget<AppTaskButton>(find.byType(AppTaskButton)).onPressed !=
+      null;
 
   void stubChange(Either<Failure, void> result) => when(
     () => repository.changePassword(
@@ -83,20 +76,18 @@ void main() {
 
     expect(
       find.descendant(
-        of: find.byType(AppHomeAppBar),
-        matching: find.text('Simpan'),
+        of: find.byType(AppBar),
+        matching: find.text('Simpan Password'),
       ),
       findsNothing,
     );
     expect(
-      find.descendant(
-        of: find.byType(AppPageActions),
-        matching: find.text('Simpan'),
-      ),
+      find.widgetWithText(AppTaskButton, 'Simpan Password'),
       findsOneWidget,
     );
+    expect(find.text('Minimal 8 karakter'), findsOneWidget);
     expect(find.text('Ganti Password'), findsOneWidget);
-    expect(find.text('Password saat ini'), findsOneWidget);
+    expect(find.text('Password lama'), findsOneWidget);
     expect(find.text('Password baru'), findsOneWidget);
     expect(find.text('Ulangi password baru'), findsOneWidget);
   });
@@ -142,7 +133,7 @@ void main() {
     await pump(tester);
     await fill(tester);
 
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Simpan Password'));
     await tester.pumpAndSettle();
 
     expect(find.text('Password saat ini salah.'), findsOneWidget);
@@ -161,7 +152,7 @@ void main() {
     await pump(tester);
     await fill(tester);
 
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Simpan Password'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -177,7 +168,7 @@ void main() {
     await pump(tester);
     await fill(tester);
 
-    await tester.tap(find.text('Simpan'));
+    await tester.tap(find.text('Simpan Password'));
     await tester.pumpAndSettle();
 
     verify(

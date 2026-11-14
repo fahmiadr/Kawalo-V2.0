@@ -35,11 +35,15 @@ class Unauthenticated extends AuthState {
 }
 
 class AuthFailure extends AuthState {
-  const AuthFailure({required this.message});
+  const AuthFailure({required this.message, this.statusCode});
   final String message;
 
+  /// HTTP status of the failed request (401 wrong credentials, 429 locked or
+  /// rate limited), so the login screen can place the message.
+  final int? statusCode;
+
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }
 
 class GroupSelectionRequired extends AuthState {

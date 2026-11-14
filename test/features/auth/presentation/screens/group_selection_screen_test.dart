@@ -8,14 +8,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/switch_group_usecase.dart';
 import 'package:kawalo_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:kawalo_mobile/features/auth/presentation/screens/group_selection_screen.dart';
+import 'package:kawalo_mobile/features/auth/presentation/widgets/group_selection/group_card.dart';
 import 'package:kawalo_mobile/features/information/presentation/cubit/information_cubit.dart';
 import 'package:kawalo_mobile/features/main_navigation/presentation/screens/main_navigation_screen.dart';
 import 'package:mocktail/mocktail.dart';
@@ -100,68 +100,44 @@ void main() {
     );
   }
 
-  testWidgets(
-    'GroupSelectionScreen renders all groups with owners, status, permissions',
-    (WidgetTester tester) async {
-      final mockLogin = MockLoginUseCase();
-      final mockSwitch = MockSwitchGroupUseCase();
+  final lanjut = find.widgetWithText(AppTaskButton, 'Lanjut');
 
-      await tester.pumpWidget(
-        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
-      );
-      await tester.pumpAndSettle();
+  bool isSelected(WidgetTester tester, String uid) =>
+      tester.widget<GroupCard>(find.byKey(ValueKey(uid))).isSelected;
 
-      expect(find.text('Pilih grup'), findsOneWidget);
-      expect(find.text('PT Kawalo Security'), findsOneWidget);
-      expect(find.text('PT Maju Bersama'), findsOneWidget);
-      expect(find.text('Pemilik: Budi Santoso'), findsOneWidget);
-      expect(find.text('Pemilik: Siti Rahma'), findsOneWidget);
-      expect(find.text('ADMIN'), findsOneWidget);
-      expect(find.text('GUARD'), findsOneWidget);
-      expect(find.text('PAID'), findsOneWidget);
-      expect(find.text('CLIENT'), findsOneWidget);
+  testWidgets('renders every group with owner and role, CTA pinned', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createWidgetUnderTest(
+        mockLogin: MockLoginUseCase(),
+        mockSwitch: MockSwitchGroupUseCase(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      // Active group GRP-001 starts expanded
-      expect(find.text('Admin: Aktif'), findsOneWidget);
-      expect(find.text('Patroli: Aktif'), findsOneWidget);
-      expect(find.text('Monitor patroli: Nonaktif'), findsOneWidget);
-
-      final buttonFinder = find.text('Lanjutkan ke beranda');
-      await tester.ensureVisible(buttonFinder);
-      expect(buttonFinder, findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'tapping an unselected group expands it and shows its permissions',
-    (WidgetTester tester) async {
-      final mockLogin = MockLoginUseCase();
-      final mockSwitch = MockSwitchGroupUseCase();
-
-      await tester.pumpWidget(
-        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
-      );
-      await tester.pumpAndSettle();
-
-      // Before selecting GRP-002, permissions ('Monitor patroli: Aktif') hidden
-      expect(find.text('Monitor patroli: Aktif'), findsNothing);
-
-      // Tap second group
-      await tester.tap(find.text('PT Maju Bersama'));
-      await tester.pumpAndSettle();
-
-      // Now GRP-002 is expanded and shows its permissions
-      expect(find.text('Monitor patroli: Aktif'), findsOneWidget);
-      expect(find.text('Admin: Nonaktif'), findsOneWidget);
-    },
-  );
+    expect(find.text('Pilih grup'), findsOneWidget);
+    expect(
+      find.text(
+        'Akun Anda terdaftar di 2 grup. Pilih grup untuk bertugas hari ini.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('PT Kawalo Security'), findsOneWidget);
+    expect(find.text('PT Maju Bersama'), findsOneWidget);
+    expect(find.text('Pemilik: Budi Santoso'), findsOneWidget);
+    expect(find.text('Pemilik: Siti Rahma'), findsOneWidget);
+    expect(find.text('ADMIN'), findsOneWidget);
+    expect(find.text('GUARD'), findsOneWidget);
+    expect(lanjut, findsOneWidget);
+    expect(tester.getRect(lanjut).bottom, lessThanOrEqualTo(600));
+    expect(FocusManager.instance.primaryFocus?.debugLabel, 'GroupCard_GRP-001');
+  });
 
   testWidgets(
-    'submits SwitchGroupSubmitted when a group is selected and CTA tapped',
-    (WidgetTester tester) async {
-      final mockLogin = MockLoginUseCase();
+    'submits SwitchGroupSubmitted for the tapped group and goes to the shell',
+    (tester) async {
       final mockSwitch = MockSwitchGroupUseCase();
-
       when(() => mockSwitch(any())).thenAnswer(
         (_) async => const Right(
           UserEntity(
@@ -184,21 +160,16 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
+        createWidgetUnderTest(
+          mockLogin: MockLoginUseCase(),
+          mockSwitch: mockSwitch,
+        ),
       );
       await tester.pumpAndSettle();
 
-      // Tap second group card
       await tester.tap(find.text('PT Maju Bersama'));
       await tester.pumpAndSettle();
-
-      // Ensure button is visible before tapping
-      final buttonFinder = find.text('Lanjutkan ke beranda');
-      await tester.ensureVisible(buttonFinder);
-      await tester.pumpAndSettle();
-
-      // Tap confirm button
-      await tester.tap(buttonFinder);
+      await tester.tap(lanjut);
       await tester.pump();
       await tester.pumpAndSettle();
 
@@ -213,111 +184,57 @@ void main() {
           ),
         ),
       ).called(1);
-
       expect(find.byType(MainNavigationScreen), findsOneWidget);
     },
   );
 
-  testWidgets(
-    'shows modal scrim overlay with AppLoadingIndicator (contained variant) '
-    'while loading',
-    (WidgetTester tester) async {
-      final mockLogin = MockLoginUseCase();
-      final mockSwitch = MockSwitchGroupUseCase();
-      final completer = Completer<Either<Failure, UserEntity>>();
+  testWidgets('Lanjut shows a spinner while switching', (tester) async {
+    final mockSwitch = MockSwitchGroupUseCase();
+    final completer = Completer<Either<Failure, UserEntity>>();
+    when(() => mockSwitch(any())).thenAnswer((_) => completer.future);
 
-      when(() => mockSwitch(any())).thenAnswer((_) => completer.future);
+    await tester.pumpWidget(
+      createWidgetUnderTest(
+        mockLogin: MockLoginUseCase(),
+        mockSwitch: mockSwitch,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(lanjut);
+    await tester.pump();
 
-      await tester.pumpWidget(
-        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
-      );
-      await tester.pumpAndSettle();
+    expect(tester.widget<AppTaskButton>(lanjut).isLoading, isTrue);
 
-      final buttonFinder = find.text('Lanjutkan ke beranda');
-      await tester.ensureVisible(buttonFinder);
-      await tester.pumpAndSettle();
-
-      await tester.tap(buttonFinder);
-      await tester.pump();
-
-      // Modal overlay is displayed with contained AppLoadingIndicator
-      final indicatorFinder = find.byType(AppLoadingIndicator);
-      expect(indicatorFinder, findsOneWidget);
-
-      final indicator = tester.widget<AppLoadingIndicator>(indicatorFinder);
-      expect(indicator.variant, AppLoadingIndicatorVariant.contained);
-      expect(indicator.semanticLabel, 'Menyiapkan grup');
-
-      // Complete future to settle
-      completer.complete(
-        const Right(
-          UserEntity(
-            id: 'user_123',
-            email: 'admin@kawalo.co.id',
-            name: 'Super Admin',
-            groups: [],
-          ),
+    completer.complete(
+      const Right(
+        UserEntity(
+          id: 'user_123',
+          email: 'admin@kawalo.co.id',
+          name: 'Super Admin',
+          groups: [],
         ),
-      );
-      await tester.pumpAndSettle();
-    },
-  );
+      ),
+    );
+    await tester.pumpAndSettle();
+  });
 
-  testWidgets(
-    'initial focus is requested on active group and CTA is always visible',
-    (WidgetTester tester) async {
-      final mockLogin = MockLoginUseCase();
-      final mockSwitch = MockSwitchGroupUseCase();
+  testWidgets('keyboard Enter on a focused group selects it', (tester) async {
+    await tester.pumpWidget(
+      createWidgetUnderTest(
+        mockLogin: MockLoginUseCase(),
+        mockSwitch: MockSwitchGroupUseCase(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.pumpWidget(
-        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
-      );
-      await tester.pumpAndSettle();
+    FocusManager.instance.rootScope.descendants
+        .firstWhere((n) => n.debugLabel == 'GroupCard_GRP-002')
+        .requestFocus();
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
 
-      // Active group GRP-001 has focus
-      final primaryFocus = FocusManager.instance.primaryFocus;
-      expect(primaryFocus?.debugLabel, 'GroupCard_GRP-001');
-
-      // The CTA button is immediately visible without needing to scroll
-      final buttonFinder = find.widgetWithText(
-        AppButton,
-        'Lanjutkan ke beranda',
-      );
-      expect(buttonFinder, findsOneWidget);
-      expect(tester.getRect(buttonFinder).bottom, lessThanOrEqualTo(600));
-    },
-  );
-
-  testWidgets(
-    'keyboard Enter key on focused unselected group triggers selection',
-    (WidgetTester tester) async {
-      final mockLogin = MockLoginUseCase();
-      final mockSwitch = MockSwitchGroupUseCase();
-
-      await tester.pumpWidget(
-        createWidgetUnderTest(mockLogin: mockLogin, mockSwitch: mockSwitch),
-      );
-      await tester.pumpAndSettle();
-
-      final secondCardFinder = find.byWidgetPredicate(
-        (w) => w is Focus && w.debugLabel == 'GroupCard_GRP-002',
-      );
-      expect(secondCardFinder, findsOneWidget);
-
-      (tester.widget(secondCardFinder) as Focus).focusNode?.requestFocus();
-      await tester.pumpAndSettle();
-
-      expect(
-        FocusManager.instance.primaryFocus?.debugLabel,
-        'GroupCard_GRP-002',
-      );
-
-      // Send Enter key
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.pumpAndSettle();
-
-      // GRP-002 is now selected (its permissions are expanded)
-      expect(find.text('Monitor patroli: Aktif'), findsOneWidget);
-    },
-  );
+    expect(isSelected(tester, 'GRP-002'), isTrue);
+    expect(isSelected(tester, 'GRP-001'), isFalse);
+  });
 }

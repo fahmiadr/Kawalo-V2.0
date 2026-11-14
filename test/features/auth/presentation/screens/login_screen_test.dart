@@ -7,7 +7,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:kawalo_mobile/core/error/failures.dart';
 import 'package:kawalo_mobile/core/storage/secure_storage_service.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
+import 'package:kawalo_mobile/core/widgets/app_task_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_text_field.dart';
 import 'package:kawalo_mobile/features/auth/domain/entities/user_entity.dart';
 import 'package:kawalo_mobile/features/auth/domain/usecases/login_usecase.dart';
@@ -22,6 +22,8 @@ import '../../../../helpers/mock_screen_cubits.dart';
 class MockLoginUseCase extends Mock implements LoginUseCase {}
 
 class MockSecureStorageService extends Mock implements SecureStorageService {}
+
+final Finder masukButton = find.widgetWithText(AppTaskButton, 'Masuk');
 
 void main() {
   setUpAll(() {
@@ -54,10 +56,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.text('Selamat Datang'), findsOneWidget);
+      expect(
+        find.text('Pakai akun Kawalo dari admin grup Anda.'),
+        findsOneWidget,
+      );
       expect(find.text('E-mail'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
-      expect(find.text('Masuk'), findsOneWidget);
+      expect(masukButton, findsOneWidget);
+      expect(find.text('Lupa password?'), findsOneWidget);
     },
   );
 
@@ -73,7 +79,7 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Masuk'));
+    await tester.tap(masukButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Harap isi email terlebih dahulu.'), findsOneWidget);
@@ -93,7 +99,7 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Masuk'));
+    await tester.tap(masukButton);
     await tester.pumpAndSettle();
 
     // M3: first invalid field (email) must receive focus automatically.
@@ -127,7 +133,7 @@ void main() {
     await tester.enterText(find.byType(EditableText).last, 'password123');
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Masuk'));
+    await tester.tap(masukButton);
     // One pump so the BLoC emits AuthLoading before the future resolves.
     await tester.pump();
 
@@ -143,12 +149,11 @@ void main() {
       );
     }
 
-    // Verify modal scrim overlay with contained AppLoadingIndicator
-    final indicatorFinder = find.byType(AppLoadingIndicator);
-    expect(indicatorFinder, findsOneWidget);
-    final indicator = tester.widget<AppLoadingIndicator>(indicatorFinder);
-    expect(indicator.variant, AppLoadingIndicatorVariant.contained);
-    expect(indicator.semanticLabel, 'Memverifikasi akun');
+    final button = tester.widget<AppTaskButton>(
+      find.widgetWithText(AppTaskButton, 'Memeriksa…'),
+    );
+    expect(button.isLoading, isTrue);
+    expect(find.text('Memeriksa…'), findsOneWidget);
 
     // Release the completer so the BLoC and widget tree can settle cleanly.
     completer.complete(
@@ -189,13 +194,12 @@ void main() {
       await tester.enterText(find.byType(EditableText).last, 'password123');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Masuk'));
+      await tester.tap(masukButton);
       await tester.pump();
       await tester.pumpAndSettle();
 
       verify(() => mockLoginUseCase(any())).called(1);
       expect(find.byType(MainNavigationScreen), findsOneWidget);
-      expect(find.text('Selamat Datang'), findsNothing);
     },
   );
 
@@ -232,33 +236,32 @@ void main() {
     );
   });
 
-  testWidgets(
-    'auto-scrolls to reveal Masuk button when keyboard appears on login screen',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      addTearDown(tester.view.resetViewInsets);
+  testWidgets('keeps the Masuk button visible above the keyboard', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
 
-      final mockLoginUseCase = MockLoginUseCase();
+    final mockLoginUseCase = MockLoginUseCase();
 
-      await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
+    await tester.pumpAndSettle();
 
-      final masukButtonFinder = find.text('Masuk');
-      expect(masukButtonFinder, findsOneWidget);
+    final masukButtonFinder = masukButton;
+    expect(masukButtonFinder, findsOneWidget);
 
-      // Simulate keyboard appearing and tap email field
-      tester.view.viewInsets = const FakeViewPadding(bottom: 320);
-      await tester.tap(find.byType(EditableText).first);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 350));
-      await tester.pumpAndSettle();
+    // Simulate keyboard appearing and tap email field
+    tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+    await tester.tap(find.byType(EditableText).first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
 
-      expect(masukButtonFinder, findsOneWidget);
-    },
-  );
+    expect(masukButtonFinder, findsOneWidget);
+  });
 
   testWidgets('pre-fills the email saved by the previous login', (
     tester,
@@ -317,5 +320,61 @@ void main() {
 
     expect(find.text('typed@kawalo.id'), findsOneWidget);
     expect(find.text('saved@kawalo.id'), findsNothing);
+  });
+
+  group('failures', () {
+    Future<void> submitWith(WidgetTester tester, Failure failure) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      final mockLoginUseCase = MockLoginUseCase();
+      when(
+        () => mockLoginUseCase(any()),
+      ).thenAnswer((_) async => Left(failure));
+      await tester.pumpWidget(createWidgetUnderTest(mockLoginUseCase));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(EditableText).first, 'a@kawalo.id');
+      await tester.enterText(find.byType(EditableText).last, 'salah123');
+      await tester.tap(masukButton);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('401 shows the server message under the password field', (
+      tester,
+    ) async {
+      await submitWith(
+        tester,
+        const AuthFailure('E-mail atau password salah.'),
+      );
+      expect(find.text('E-mail atau password salah.'), findsOneWidget);
+      final password = tester.widget<AppTextField>(
+        find.byType(AppTextField).last,
+      );
+      expect(password.errorText, 'E-mail atau password salah.');
+    });
+
+    testWidgets('429 shows the lockout banner', (tester) async {
+      const message =
+          'Akun Anda dikunci sementara karena beberapa kali kegagalan masuk. '
+          'Silakan coba kembali dalam 15 menit.';
+      await submitWith(tester, const ServerFailure(message, 429));
+      expect(find.text(message), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+    });
+  });
+
+  testWidgets('Lupa password? opens the contact-admin sheet', (tester) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(createWidgetUnderTest(MockLoginUseCase()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Lupa password?'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Hubungi admin grup Anda'), findsOneWidget);
+    await tester.tap(find.text('Mengerti'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Hubungi admin grup Anda'), findsNothing);
   });
 }
