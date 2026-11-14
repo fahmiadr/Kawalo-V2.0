@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kawalo_mobile/core/theme/app_layout.dart';
 import 'package:kawalo_mobile/core/theme/app_spacing.dart';
 import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
@@ -29,9 +28,7 @@ class LoadMoreScrollController extends ScrollController {
 }
 
 /// Paginated list with a trailing loading indicator while [isLoadingMore].
-///
-/// [bottomPadding] defaults to the FAB clearance; pass a plain spacing for
-/// screens without a FAB.
+/// Rows are 8 px apart, as in the redesign (`.ls` in `rd.css`).
 class ListScreenListView extends StatelessWidget {
   const ListScreenListView({
     required this.controller,
@@ -39,7 +36,7 @@ class ListScreenListView extends StatelessWidget {
     required this.isLoadingMore,
     required this.itemBuilder,
     super.key,
-    this.bottomPadding = AppLayout.fabScrollClearance,
+    this.bottomPadding = AppSpacing.space200,
   });
 
   final ScrollController controller;
@@ -59,7 +56,7 @@ class ListScreenListView extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: _listPadding.copyWith(bottom: bottomPadding),
       itemCount: itemCount + (isLoadingMore ? 1 : 0),
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap100,
       itemBuilder: (context, index) {
         if (index == itemCount) {
           return const Padding(
@@ -79,7 +76,7 @@ class ListScreenSkeleton extends StatelessWidget {
   const ListScreenSkeleton({
     required this.itemBuilder,
     super.key,
-    this.bottomPadding = AppLayout.fabScrollClearance,
+    this.bottomPadding = AppSpacing.space200,
   });
 
   final IndexedWidgetBuilder itemBuilder;
@@ -92,7 +89,7 @@ class ListScreenSkeleton extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: _listPadding.copyWith(bottom: bottomPadding),
       itemCount: 4,
-      separatorBuilder: (_, _) => AppSpacing.vGap200,
+      separatorBuilder: (_, _) => AppSpacing.vGap100,
       itemBuilder: itemBuilder,
     );
   }

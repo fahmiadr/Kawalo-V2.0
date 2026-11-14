@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kawalo_mobile/core/theme/app_state_layer.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/widgets/app_destructive_button.dart';
-import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_inline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_keyboard_insets_padding.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_overlay.dart';
 import 'package:kawalo_mobile/core/widgets/app_page_actions.dart';
@@ -13,6 +12,7 @@ import 'package:kawalo_mobile/core/widgets/app_refresh_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
 import 'package:kawalo_mobile/core/widgets/app_selection.dart';
 import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_selection_controller.dart';
 
 /// Multi-select and batch-delete wiring of a [ListScreenScaffold].
@@ -51,9 +51,11 @@ class ListScreenSelection {
   final String deletingMessage;
 }
 
-/// Scaffold shared by the list screens: search-aware home app bar, optional
-/// selection app bar, filter bar, pull-to-refresh body, create FAB and
-/// offline handling.
+/// Scaffold shared by the list screens, in the Redesign 2026 look: the
+/// `AppTopBar` (back, title, optional subtitle, action icons ending with
+/// search), an optional selection bar, the filter bar, an inline offline
+/// notice above the list and a pull-to-refresh body. Screen actions such as
+/// "Catat Tamu" go in [bottomNavigationBar].
 ///
 /// Set [canPop] to false together with [onPopBlocked] to intercept back
 /// navigation.
@@ -62,7 +64,6 @@ class ListScreenScaffold extends StatelessWidget {
     required this.title,
     required this.searchLabel,
     required this.refreshLabel,
-    required this.greeting,
     required this.isInitialLoading,
     required this.isOffline,
     required this.isSearchExpanded,
@@ -74,12 +75,12 @@ class ListScreenScaffold extends StatelessWidget {
     required this.filterBar,
     required this.body,
     super.key,
+    this.subtitle,
+    this.lastSync = '',
     this.showBackButton = true,
     this.hasBottomNavigationBar = false,
     this.bottomNavigationBar,
     this.selection,
-    this.createLabel,
-    this.onCreate,
     this.canRefresh = true,
     this.canPop = true,
     this.onPopBlocked,
@@ -88,12 +89,15 @@ class ListScreenScaffold extends StatelessWidget {
 
   final String title;
 
+  final String? subtitle;
+
   /// Hint of the search field and semantic label of the search button.
   final String searchLabel;
 
   final String refreshLabel;
 
-  final String greeting;
+  /// "Diperbarui ..." of the cached data; shown in the offline notice.
+  final String lastSync;
 
   final bool isInitialLoading;
 
@@ -123,11 +127,6 @@ class ListScreenScaffold extends StatelessWidget {
 
   final ListScreenSelection? selection;
 
-  /// The create FAB is hidden when [onCreate] is null or while selecting.
-  final String? createLabel;
-
-  final VoidCallback? onCreate;
-
   /// Pull-to-refresh is always off while selecting.
   final bool canRefresh;
 
@@ -135,12 +134,12 @@ class ListScreenScaffold extends StatelessWidget {
 
   final VoidCallback? onPopBlocked;
 
-  /// Icon buttons shown to the left of the search button in the idle app bar.
+  /// Icon buttons shown to the left of the search button in the idle top bar.
   final List<Widget> trailingActions;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = AppTheme.of(context).colorScheme;
+    final tones = KawaloTones.of(context);
     final selection = this.selection;
     final isSelecting = selection?.controller.isSelectionMode ?? false;
 
@@ -153,18 +152,14 @@ class ListScreenScaffold extends StatelessWidget {
         isSearchExpanded ? KawaloVectors.cancel01 : KawaloVectors.search01,
         size: 24,
         color: !isInitialLoading
-            ? colorScheme.onSurface
-            : colorScheme.onSurface.withValues(
-                alpha: AppStateLayer.disabledOpacity,
-              ),
+            ? tones.ink
+            : tones.ink.withValues(alpha: AppStateLayer.disabledOpacity),
       ),
     );
 
-    final idleAppBar = AppHomeAppBar(
-      greeting: greeting,
-      reserveGreetingSpace: true,
-      greetingLoading: isInitialLoading && greeting.isEmpty,
-      title: isSearchExpanded ? null : title,
+    final idleAppBar = AppTopBar(
+      title: title,
+      subtitle: subtitle,
       titleWidget: isSearchExpanded
           ? AppSearchBar(
               controller: searchController,
@@ -175,25 +170,13 @@ class ListScreenScaffold extends StatelessWidget {
               constraints: const BoxConstraints(minHeight: 40, maxHeight: 40),
             )
           : null,
-      showBackButton: showBackButton,
-      trailing: trailingActions.isEmpty
-          ? searchButton
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [...trailingActions, searchButton],
-            ),
-      trailingWidth: trailingActions.isEmpty
-          ? null
-          : AppStateLayer.minTouchTarget * (trailingActions.length + 1),
+      leading: showBackButton ? AppTopBarLeading.back : AppTopBarLeading.none,
+      actions: [...trailingActions, searchButton],
     );
-
-    final canCreate = onCreate != null && !isSelecting;
 
     Widget result = Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: colorScheme.surface,
-      floatingActionButtonLocation: const AppStationaryEndFloatFabLocation(),
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
+      backgroundColor: tones.background,
       appBar: selection == null
           ? idleAppBar
           : AppSelectionAppBar(
@@ -204,13 +187,6 @@ class ListScreenScaffold extends StatelessWidget {
               onClear: selection.onClear,
               onAllSelected: selection.onAllSelected,
             ),
-      floatingActionButton: canCreate
-          ? AppExtendedFab(
-              onPressed: isOffline ? null : onCreate,
-              icon: const AppSvgIcon(KawaloVectors.add01, size: 24),
-              label: createLabel!,
-            )
-          : null,
       bottomNavigationBar: selection == null || !isSelecting
           ? bottomNavigationBar
           : Column(
@@ -233,11 +209,20 @@ class ListScreenScaffold extends StatelessWidget {
         top: false,
         child: AppKeyboardInsetsPadding(
           hasBottomNavigationBar: hasBottomNavigationBar,
-          isOffline: isOffline,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               filterBar,
+              if (isOffline)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                  child: AppInlineBanner(
+                    message: lastSync.isEmpty
+                        ? 'Anda offline. Menampilkan data tersimpan.'
+                        : 'Anda offline. Menampilkan data tersimpan. '
+                              '$lastSync.',
+                  ),
+                ),
               Expanded(
                 child: AppRefreshIndicator.contained(
                   semanticsLabel: refreshLabel,

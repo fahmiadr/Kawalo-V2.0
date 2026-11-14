@@ -52,6 +52,13 @@ class AppSnackbar extends StatelessWidget {
   static DateTime? _lastShownTime;
 
   /// Minimum duration between identical messages before showing again.
+  /// The one text for any action whose feature is not built yet (user
+  /// decision: such actions look normal and say this when used).
+  static const String inProgressMessage = 'Fitur dalam pengerjaan';
+
+  static void showInProgress(BuildContext context) =>
+      show(context, message: inProgressMessage);
+
   static const Duration duplicateDebounceDuration = Duration(
     milliseconds: 1500,
   );

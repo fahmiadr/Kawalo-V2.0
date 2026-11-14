@@ -70,6 +70,62 @@ void main() {
     });
   }
 
+  group('AppMultiShotCameraScreen allowSkip', () {
+    testWidgets('shows Lewati and the counter; Lewati returns no photos', (
+      tester,
+    ) async {
+      configureTestView(tester);
+      final controller = MockCameraController();
+      when(() => controller.value).thenReturn(
+        const CameraValue.uninitialized(
+          CameraDescription(
+            name: '0',
+            lensDirection: CameraLensDirection.back,
+            sensorOrientation: 90,
+          ),
+        ).copyWith(isInitialized: true, previewSize: const Size(1920, 1080)),
+      );
+      when(() => controller.cameraId).thenReturn(1);
+      when(controller.buildPreview).thenReturn(const SizedBox());
+
+      List<AppMediaFile>? result;
+      await tester.pumpWidget(
+        _buildTestApp(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async =>
+                  result = await AppMultiShotCameraScreen.show(
+                    context,
+                    controller: controller,
+                    allowSkip: true,
+                  ),
+              child: const Text('Buka Kamera'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka Kamera'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('0/4'), findsOneWidget);
+      await tester.tap(find.text('Lewati'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppMultiShotCameraScreen), findsNothing);
+      expect(result, isEmpty);
+    });
+
+    test('permission denied offers the given exit label', () {
+      final data = CameraActionableError.fromCameraException(
+        CameraException('CameraAccessDenied', null),
+        onRetry: () {},
+        onExit: () {},
+        permissionExitLabel: 'Lanjut tanpa foto',
+      );
+      expect(data.secondaryActionLabel, 'Lanjut tanpa foto');
+    });
+  });
+
   group('AppMultiShotCameraScreen Widget Tests', () {
     testWidgets('shows error view when cameras list is empty', (tester) async {
       configureTestView(tester);
@@ -116,8 +172,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Top bar quota badge
+      // Top bar quota badge; skip and the shutter-row counter are opt-in.
       expect(find.text('1 / 4 foto'), findsOneWidget);
+      expect(find.text('Lewati'), findsNothing);
+      expect(find.text('1/4'), findsNothing);
       expect(find.bySemanticsLabel('1 dari 4 foto dipilih'), findsOneWidget);
 
       // Close and flash buttons exist in top bar

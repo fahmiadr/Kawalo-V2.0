@@ -248,6 +248,7 @@ void main() {
                 double maxWidth = 1920,
                 double maxHeight = 1920,
                 int imageQuality = 85,
+                bool allowSkip = false,
               }) async {
                 capturedContext = context;
                 passedMaxPhotos = maxPhotos;

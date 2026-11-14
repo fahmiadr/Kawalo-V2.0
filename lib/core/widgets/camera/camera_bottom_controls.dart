@@ -32,6 +32,8 @@ class CameraBottomControls extends StatelessWidget {
     this.onSwitchCamera,
     this.latestCapturedPath,
     this.removingPhotoPath,
+    this.onSkip,
+    this.photoCounter,
     super.key,
   });
 
@@ -52,6 +54,12 @@ class CameraBottomControls extends StatelessWidget {
   final ValueChanged<int> onRemoveCapturedPhoto;
   final VoidCallback onTakePicture;
   final VoidCallback onDone;
+
+  /// Shows "Lewati" in the left wing.
+  final VoidCallback? onSkip;
+
+  /// (taken, max) shown as "1/4" in the right wing, before the switch button.
+  final (int, int)? photoCounter;
 
   @override
   Widget build(BuildContext context) {
@@ -163,11 +171,25 @@ class CameraBottomControls extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Sayap Kiri: Spacer penyeimbang simetri shutter
-                const Expanded(
+                // Sayap Kiri: Lewati, atau spacer penyeimbang simetri shutter
+                Expanded(
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: SizedBox(width: 56, height: 56),
+                    child: onSkip != null
+                        ? TextButton(
+                            key: const ValueKey<String>('camera_skip_button'),
+                            onPressed: isCapturing ? null : onSkip,
+                            style: TextButton.styleFrom(
+                              foregroundColor: switchIconBaseColor,
+                              minimumSize: const Size(72, 48),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            child: const Text('Lewati'),
+                          )
+                        : const SizedBox(width: 56, height: 56),
                   ),
                 ),
 
@@ -184,8 +206,26 @@ class CameraBottomControls extends StatelessWidget {
                 Expanded(
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: hasMultipleCameras
-                        ? AppIconButton(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (photoCounter case (final taken, final max)) ...[
+                          Semantics(
+                            label: '$taken dari $max foto',
+                            excludeSemantics: true,
+                            child: Text(
+                              '$taken/$max',
+                              style: TextStyle(
+                                color: switchIconBaseColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          if (hasMultipleCameras) AppSpacing.hGap150,
+                        ],
+                        if (hasMultipleCameras)
+                          AppIconButton(
                             key: const ValueKey<String>('camera_switch_button'),
                             size: AppIconButtonSize.md,
                             semanticLabel: isCurrentCameraFront
@@ -209,11 +249,14 @@ class CameraBottomControls extends StatelessWidget {
                               ),
                             ),
                           )
-                        : const SizedBox(
+                        else if (photoCounter == null)
+                          const SizedBox(
                             key: ValueKey<String>('camera_switch_placeholder'),
                             width: 56,
                             height: 56,
                           ),
+                      ],
+                    ),
                   ),
                 ),
               ],

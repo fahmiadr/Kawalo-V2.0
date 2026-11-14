@@ -85,6 +85,7 @@ class AppMultiShotCameraScreen extends StatefulWidget {
     this.errorFormatter,
     this.isProduction,
     this.imageCropper = const DefaultImageCropper(),
+    this.allowSkip = false,
     super.key,
   });
 
@@ -175,6 +176,12 @@ class AppMultiShotCameraScreen extends StatefulWidget {
   /// [DefaultImageCropper.new].
   final ImageCropper imageCropper;
 
+  /// Photos are optional (incident report): shows "Lewati" left of the
+  /// shutter and an "n/max" counter right of it, and the permission-denied
+  /// screen offers "Lanjut tanpa foto" instead of "Kembali". Both close the
+  /// camera with no photos, like the close button.
+  final bool allowSkip;
+
   /// Menampilkan layar kamera multi-shot dan mengembalikan daftar
   /// [AppMediaFile] terpilih.
   ///
@@ -208,6 +215,7 @@ class AppMultiShotCameraScreen extends StatefulWidget {
     DiagnosticErrorFormatter? errorFormatter,
     bool? isProduction,
     ImageCropper imageCropper = const DefaultImageCropper(),
+    bool allowSkip = false,
   }) async {
     final results = await Navigator.of(context).push<List<AppMediaFile>>(
       MaterialPageRoute<List<AppMediaFile>>(
@@ -229,6 +237,7 @@ class AppMultiShotCameraScreen extends StatefulWidget {
           errorFormatter: errorFormatter,
           isProduction: isProduction,
           imageCropper: imageCropper,
+          allowSkip: allowSkip,
         ),
       ),
     );
@@ -338,6 +347,9 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
   /// galat aktif atau busy-lock.
   bool get _canInteract => _actionableError == null && !_isBusy;
 
+  String get _permissionExitLabel =>
+      widget.allowSkip ? 'Lanjut tanpa foto' : 'Kembali';
+
   static const SystemUiOverlayStyle _lightOverlayStyle = SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
@@ -391,6 +403,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
           errorDescription ?? 'Terjadi kendala saat kamera beroperasi.',
           onRetry: _initCamera,
           onExit: _handleBackOrClose,
+          permissionExitLabel: _permissionExitLabel,
           openAppSettingsFn: _handleOpenAppSettings,
           launcherService: widget.launcherService,
           errorFormatter: widget.errorFormatter,
@@ -678,6 +691,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
           e,
           onRetry: _initCamera,
           onExit: _handleBackOrClose,
+          permissionExitLabel: _permissionExitLabel,
           openAppSettingsFn: _handleOpenAppSettings,
           launcherService: widget.launcherService,
           errorFormatter: widget.errorFormatter,
@@ -692,6 +706,7 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
           e,
           onRetry: _initCamera,
           onExit: _handleBackOrClose,
+          permissionExitLabel: _permissionExitLabel,
           openAppSettingsFn: _handleOpenAppSettings,
           launcherService: widget.launcherService,
           errorFormatter: widget.errorFormatter,
@@ -1190,6 +1205,17 @@ class _AppMultiShotCameraScreenState extends State<AppMultiShotCameraScreen>
                                       removingPhotoPath: _photos.removingPath,
                                       onTakePicture: _takePicture,
                                       onDone: _handleDone,
+                                      // Once photos are picked the done
+                                      // button is the way forward; skipping
+                                      // would only clear the selection.
+                                      onSkip:
+                                          widget.allowSkip &&
+                                              _photos.selected.isEmpty
+                                          ? _handleBackOrClose
+                                          : null,
+                                      photoCounter: widget.allowSkip
+                                          ? (_totalSelected, widget.maxPhotos)
+                                          : null,
                                     ),
                                   ),
                               ],

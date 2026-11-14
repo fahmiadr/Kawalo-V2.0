@@ -10,6 +10,9 @@ abstract final class AppRouteNames {
   static const String login = '/login';
   static const String groupSelection = '/group-selection';
   static const String main = '/main';
+  static const String account = '/account';
+  static const String themeMode = '/account/theme';
+  static const String manage = '/manage';
 
   static const String guests = '/guests';
   static const String guestDetail = '/guests/detail';

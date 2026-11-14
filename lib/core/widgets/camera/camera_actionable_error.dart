@@ -41,6 +41,7 @@ class CameraActionableError {
   /// pengaturan.
   static AppActionableErrorData _buildPermissionDenied({
     required VoidCallback onExit,
+    required String exitLabel,
     Future<bool> Function()? openAppSettingsFn,
     AppLauncherService launcherService = const DefaultAppLauncherService(),
   }) {
@@ -62,7 +63,7 @@ class CameraActionableError {
           unawaited(launcherService.openAppSettings());
         }
       },
-      secondaryActionLabel: 'Kembali',
+      secondaryActionLabel: exitLabel,
       onSecondaryAction: onExit,
       themeMode: AppActionableErrorThemeMode.dark,
     );
@@ -81,6 +82,7 @@ class CameraActionableError {
     CameraException e, {
     required VoidCallback onRetry,
     required VoidCallback onExit,
+    String permissionExitLabel = 'Kembali',
     Future<bool> Function()? openAppSettingsFn,
     AppLauncherService launcherService = const DefaultAppLauncherService(),
     DiagnosticErrorFormatter? errorFormatter,
@@ -102,6 +104,7 @@ class CameraActionableError {
     if (isPermissionDenied) {
       return _buildPermissionDenied(
         onExit: onExit,
+        exitLabel: permissionExitLabel,
         openAppSettingsFn: openAppSettingsFn,
         launcherService: launcherService,
       );
@@ -167,6 +170,7 @@ class CameraActionableError {
     Object error, {
     required VoidCallback onRetry,
     required VoidCallback onExit,
+    String permissionExitLabel = 'Kembali',
     Future<bool> Function()? openAppSettingsFn,
     AppLauncherService launcherService = const DefaultAppLauncherService(),
     DiagnosticErrorFormatter? errorFormatter,
@@ -175,6 +179,7 @@ class CameraActionableError {
     if (error is CameraException) {
       return fromCameraException(
         error,
+        permissionExitLabel: permissionExitLabel,
         onRetry: onRetry,
         onExit: onExit,
         openAppSettingsFn: openAppSettingsFn,
@@ -193,6 +198,7 @@ class CameraActionableError {
     if (isPermissionDenied) {
       return _buildPermissionDenied(
         onExit: onExit,
+        exitLabel: permissionExitLabel,
         openAppSettingsFn: openAppSettingsFn,
         launcherService: launcherService,
       );

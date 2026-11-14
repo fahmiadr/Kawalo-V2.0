@@ -78,6 +78,16 @@ class SecureStorageService {
 
   Future<String?> getThemeMode() => _storage.read(key: _themeModeKey);
 
+  // Per user and group (see `HomeLayoutRepositoryImpl`); a preference, not
+  // session data, so logout keeps it like the theme mode.
+  static const String _homeLayoutPrefix = 'HOME_LAYOUT_';
+
+  Future<void> saveHomeLayout(String scope, String json) =>
+      _storage.write(key: '$_homeLayoutPrefix$scope', value: json);
+
+  Future<String?> getHomeLayout(String scope) =>
+      _storage.read(key: '$_homeLayoutPrefix$scope');
+
   Future<void> saveLastEmail(String email) async {
     await _storage.write(key: _lastEmailKey, value: email.trim());
   }

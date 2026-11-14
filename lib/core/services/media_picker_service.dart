@@ -102,10 +102,12 @@ abstract interface class MediaPickerService {
   ///
   /// Parameter [maxPhotos] menentukan kapasitas maksimal jepretan foto, dan
   /// [alreadyAttachedCount] menentukan jumlah foto yang sudah terpasang.
+  /// See `AppMultiShotCameraScreen.allowSkip` for [allowSkip].
   Future<List<AppMediaFile>> captureMultiImagesFromCamera(
     BuildContext context, {
     int maxPhotos = DefaultMediaPickerService.defaultMaxPhotos,
     int alreadyAttachedCount = 0,
+    bool allowSkip = false,
   });
 
   /// Memilih satu dokumen lokal dari penyimpanan berkas perangkat.
@@ -124,6 +126,7 @@ typedef CameraScreenLauncher =
       double maxWidth,
       double maxHeight,
       int imageQuality,
+      bool allowSkip,
     });
 
 /// Signature fungsi callback untuk memilih dokumen tunggal dari penyimpanan
@@ -212,6 +215,7 @@ final class DefaultMediaPickerService implements MediaPickerService {
     BuildContext context, {
     int maxPhotos = defaultMaxPhotos,
     int alreadyAttachedCount = 0,
+    bool allowSkip = false,
   }) {
     return _cameraLauncher(
       context,
@@ -220,6 +224,7 @@ final class DefaultMediaPickerService implements MediaPickerService {
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality,
+      allowSkip: allowSkip,
     );
   }
 

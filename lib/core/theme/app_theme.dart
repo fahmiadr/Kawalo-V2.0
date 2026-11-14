@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart' as mui;
 
+export 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 export 'package:material_3_expressive/material_3_expressive.dart'
     show
         M3EButtonFontSize,
@@ -92,6 +94,13 @@ abstract final class AppTheme {
     brightness: Brightness.dark,
   );
 
+  /// Style for clock times, durations and counts. The redesign asks for IBM
+  /// Plex Mono, which is not bundled (no font assets in pubspec), so it uses
+  /// tabular figures of the app font: digits keep a fixed width as they tick.
+  static const TextStyle monoFigures = TextStyle(
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
   /// Standard light ThemeData helper converted with Material 3 Expressive
   /// tokens for screens and widgets requiring Flutter [ThemeData].
   static ThemeData lightThemeData({String? fontFamily = defaultFontFamily}) {
@@ -99,6 +108,7 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: lightColorScheme(),
       fontFamily: fontFamily,
+      extensions: const [KawaloTones.light],
     );
   }
 
@@ -109,6 +119,7 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: darkColorScheme(),
       fontFamily: fontFamily,
+      extensions: const [KawaloTones.dark],
     );
   }
 }
