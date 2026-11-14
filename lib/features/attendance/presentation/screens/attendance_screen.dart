@@ -6,15 +6,11 @@ import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
+import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/widgets/app_date_filter_bottom_sheet.dart';
-import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fetch_feedback.dart';
 import 'package:kawalo_mobile/core/widgets/app_snackbar.dart';
-import 'package:kawalo_mobile/core/widgets/app_svg_icon.dart';
-import 'package:kawalo_mobile/core/widgets/list_screen/list_filter_bar.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_scaffold.dart';
 import 'package:kawalo_mobile/core/widgets/list_screen/list_screen_views.dart';
 import 'package:kawalo_mobile/features/attendance/attendance_module.dart';
@@ -26,12 +22,10 @@ import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendanc
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_detail_bottom_sheet.dart';
 import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_card.dart';
 import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_cubit.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
-/// Layar utama fitur Data Absensi Kehadiran.
-///
-/// Menyajikan data catatan absensi personil dari tabel tkabsen
-/// dengan filter pencarian terintegrasi, pemisahan kartu hemat ruang,
-/// dan tampilan peta detail OpenStreetMap.
+/// `GET /attendance` as "Riwayat Absen" (guards) or "Laporan Absensi"
+/// (admins, with the summary): preset range chips, search, detail sheet.
 class AttendanceScreen extends StatefulWidget {
   /// Membuat instance [AttendanceScreen].
   const AttendanceScreen({super.key, this.cubit, this.statsCubit});
@@ -204,11 +198,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
-  Future<void> _onResetDateFilter() async {
-    final cubit = _resolveCubit(context);
-    _showFeedback(cubit, await cubit.resetDateFilter());
-  }
-
   Future<void> _resetAllFilters() async {
     final cubit = _resolveCubit(context);
     _searchController.clear();
@@ -221,6 +210,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final connectivityCubit = context.watch<ConnectivityCubit?>();
     final isDeviceOffline =
         connectivityCubit?.state == ConnectivityStatus.offline;
+    final isAdmin =
+        context.watch<UserSessionCubit?>()?.state?.isAdminRole ?? false;
 
     final consumer = BlocConsumer<AttendanceCubit, AttendanceState>(
       bloc: cubit,
@@ -241,10 +232,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             state is AttendanceInitial || state is AttendanceLoading;
 
         return ListScreenScaffold(
-          title: 'Data absensi',
+          title: isAdmin ? 'Laporan Absensi' : 'Riwayat Absen',
           searchLabel: 'Cari data absensi',
           refreshLabel: 'Memuat ulang data absensi',
-          greeting: state.lastSync,
+          lastSync: state.lastSync,
           isInitialLoading: isInitialLoading,
           isOffline: isOffline,
           isSearchExpanded: _isSearchExpanded,
@@ -253,18 +244,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           onOpenSearch: _onOpenSearch,
           onCloseSearch: _onCloseSearch,
           onRefresh: () => _handleRefresh(cubit),
-          bottomNavigationBar: AppBottomOfflineBanner(isOffline: isOffline),
-          filterBar: ListFilterBar(
-            isLoading: isInitialLoading,
-            isDateActive: state.hasActiveDateFilter,
-            dateLabel: state.filterPeriod.resolveDisplayLabel(
-              startDate: state.startDate,
-              endDate: state.endDate,
-            ),
-            onDatePressed: _onFilterPressed,
-            onDateReset: _onResetDateFilter,
-          ),
-          body: _buildBody(context, state, cubit),
+          filterBar: _buildRangeBar(state, isLoading: isInitialLoading),
+          body: _buildBody(context, state, cubit, isAdmin: isAdmin),
         );
       },
     );
@@ -288,11 +269,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildBody(
     BuildContext context,
     AttendanceState state,
-    AttendanceCubit cubit,
-  ) {
+    AttendanceCubit cubit, {
+    required bool isAdmin,
+  }) {
     if (state is AttendanceInitial || state is AttendanceLoading) {
       return ListScreenSkeleton(
-        bottomPadding: AppSpacing.space200,
         itemBuilder: (_, _) => const AttendanceCardSkeleton(),
       );
     }
@@ -305,7 +286,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             onReset: _resetAllFilters,
           );
         }
-        return _buildEmptyGroupState();
+        return _buildEmptyGroupState(isAdmin: isAdmin);
       }
       return _buildAttendanceListView(
         attendances: state.attendances,
@@ -355,7 +336,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final offset = stats == null ? 0 : 1;
     return ListScreenListView(
       controller: _scrollController,
-      bottomPadding: AppSpacing.space200,
       itemCount: attendances.length + offset,
       isLoadingMore: isLoadingMore,
       itemBuilder: (context, index) {
@@ -369,11 +349,108 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildEmptyGroupState() {
-    return const AppEmptyState(
-      icon: AppSvgIcon.color(KawaloColorVectors.checklist2),
-      title: 'Belum ada data absensi',
-      description: 'Belum ada aktivitas absensi personil pada hari ini.',
+  Widget _buildEmptyGroupState({required bool isAdmin}) {
+    final tones = KawaloTones.of(context);
+    return TaskMessage(
+      icon: Icon(isAdmin ? Icons.insert_chart_outlined : Icons.schedule),
+      kind: isAdmin ? TaskMessageKind.neutral : TaskMessageKind.tone,
+      tone: tones.abs,
+      title: 'Belum ada absensi',
+      message: isAdmin
+          ? 'Belum ada yang check-in pada rentang ini.'
+          : 'Check-in Anda pada rentang ini akan muncul di sini.',
+    );
+  }
+
+  // Preset ranges of the chips (`RdRiwayatAbsen`, `RdLaporanAbsen`), mapped
+  // onto the cubit's date filter; "Pilih tanggal" opens the full picker.
+  static const _today = 'today';
+  static const _days7 = '7';
+  static const _days30 = '30';
+  static const _thisMonth = 'month';
+  static const _custom = 'custom';
+
+  static bool _sameDay(DateTime? a, DateTime b) =>
+      a != null && a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _selectedRange(AttendanceState state) {
+    switch (state.filterPeriod) {
+      case AppDateFilterPeriod.today:
+        return _today;
+      case AppDateFilterPeriod.thisMonth:
+        return _thisMonth;
+      case AppDateFilterPeriod.thisWeek:
+        return _custom;
+      case AppDateFilterPeriod.custom:
+        final now = DateTime.now();
+        if (!_sameDay(state.endDate, now)) return _custom;
+        for (final (key, days) in [(_days7, 6), (_days30, 29)]) {
+          if (_sameDay(
+            state.startDate,
+            DateTime(now.year, now.month, now.day - days),
+          )) {
+            return key;
+          }
+        }
+        return _custom;
+    }
+  }
+
+  Future<void> _onRangeSelected(String range) async {
+    final cubit = _resolveCubit(context);
+    final now = DateTime.now();
+    AppDateFilterResult preset(int days) => AppDateFilterResult.sanitize(
+      period: AppDateFilterPeriod.custom,
+      startDate: DateTime(now.year, now.month, now.day - days),
+      endDate: now,
+      scope: AppDateFilterScope.pastOnly,
+    );
+    final AppFetchResult result;
+    switch (range) {
+      case _today:
+        result = await cubit.resetDateFilter();
+      case _days7:
+        result = await cubit.setFilter(preset(6));
+      case _days30:
+        result = await cubit.setFilter(preset(29));
+      case _thisMonth:
+        result = await cubit.setFilter(
+          AppDateFilterResult.sanitize(period: AppDateFilterPeriod.thisMonth),
+        );
+      default:
+        await _onFilterPressed();
+        return;
+    }
+    _showFeedback(cubit, result);
+  }
+
+  Widget _buildRangeBar(AttendanceState state, {required bool isLoading}) {
+    final tones = KawaloTones.of(context);
+    final selected = _selectedRange(state);
+    final customLabel = selected == _custom
+        ? state.filterPeriod.resolveDisplayLabel(
+            startDate: state.startDate,
+            endDate: state.endDate,
+          )
+        : 'Pilih tanggal';
+    return ColoredBox(
+      color: tones.background,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+        child: TaskChoiceChips<String>(
+          enabled: !isLoading,
+          tone: tones.abs,
+          selected: selected,
+          onSelected: (range) => unawaited(_onRangeSelected(range)),
+          options: [
+            (_today, 'Hari ini'),
+            (_days7, '7 hari'),
+            (_days30, '30 hari'),
+            (_thisMonth, 'Bulan ini'),
+            (_custom, customLabel),
+          ],
+        ),
+      ),
     );
   }
 }

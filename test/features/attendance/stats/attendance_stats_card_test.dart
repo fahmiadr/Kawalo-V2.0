@@ -59,9 +59,9 @@ void main() {
       );
     await tester.pumpWidget(host(cubit));
 
-    final total = tester.getTopLeft(find.text('Total'));
-    final late = tester.getTopLeft(find.text('Terlambat'));
-    final early = tester.getTopLeft(find.text('Pulang cepat'));
+    final total = tester.getCenter(find.text('Total'));
+    final late = tester.getCenter(find.text('Terlambat'));
+    final early = tester.getCenter(find.text('Pulang cepat'));
     expect(late.dy, greaterThan(total.dy));
     expect(early.dy, late.dy);
     expect(late.dx, total.dx);

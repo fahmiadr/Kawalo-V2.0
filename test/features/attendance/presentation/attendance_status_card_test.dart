@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/session/auth_session_entity.dart';
 import 'package:kawalo_mobile/core/session/user_session_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card.dart';
 
@@ -14,7 +14,9 @@ void main() {
     home: Scaffold(body: child),
   );
 
-  testWidgets('early check-out is a red tag with the minutes', (tester) async {
+  testWidgets('early check-out is an amber pill with the minutes', (
+    tester,
+  ) async {
     const item = AttendanceItemEntity(
       id: '1',
       category: 'PULANG',
@@ -24,10 +26,10 @@ void main() {
     );
     await tester.pumpWidget(host(const AttendanceCard(item: item)));
 
-    final tag = tester.widget<AppTag>(
-      find.widgetWithText(AppTag, 'Pulang lebih cepat 12 menit'),
+    final pill = tester.widget<AppStatusPill>(
+      find.widgetWithText(AppStatusPill, 'Pulang lebih cepat 12 menit'),
     );
-    expect(tag.variant, AppTagVariant.error);
+    expect(pill.kind, AppStatusKind.bad);
   });
 
   testWidgets('shows "Tidak terverifikasi" only when faceVerified is false', (
@@ -40,7 +42,10 @@ void main() {
       faceVerified: false,
     );
     await tester.pumpWidget(host(const AttendanceCard(item: manual)));
-    expect(find.widgetWithText(AppTag, 'Tidak terverifikasi'), findsOneWidget);
+    expect(
+      find.widgetWithText(AppStatusPill, 'Tidak terverifikasi'),
+      findsOneWidget,
+    );
 
     const unknown = AttendanceItemEntity(
       id: '2',
@@ -75,7 +80,7 @@ void main() {
     );
 
     await tester.pumpWidget(asRole('ADMIN'));
-    expect(find.widgetWithText(AppTag, 'Kemiripan 87%'), findsOneWidget);
+    expect(find.textContaining('Kemiripan 87%'), findsOneWidget);
 
     await tester.pumpWidget(asRole('GUARD'));
     expect(find.textContaining('Kemiripan'), findsNothing);

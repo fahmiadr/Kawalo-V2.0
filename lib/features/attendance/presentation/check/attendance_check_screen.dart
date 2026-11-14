@@ -6,8 +6,10 @@ import 'package:kawalo_mobile/core/routes/app_page_route.dart';
 import 'package:kawalo_mobile/core/routes/app_route_names.dart';
 import 'package:kawalo_mobile/core/services/app_launcher_service.dart';
 import 'package:kawalo_mobile/core/services/location_service.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
 import 'package:kawalo_mobile/core/theme/kawalo_vectors.dart';
 import 'package:kawalo_mobile/core/utils/app_date_format.dart';
+import 'package:kawalo_mobile/core/utils/duration_text.dart';
 import 'package:kawalo_mobile/core/widgets/app_button.dart';
 import 'package:kawalo_mobile/core/widgets/app_loading_indicator.dart';
 import 'package:kawalo_mobile/core/widgets/location_actionable_error.dart';
@@ -17,6 +19,7 @@ import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_
 import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_check_module.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_check_state.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/check/widgets/attendance_check_views.dart';
+import 'package:kawalo_mobile/features/face/domain/face_quality.dart';
 import 'package:kawalo_mobile/features/face/domain/repositories/face_repository.dart';
 import 'package:kawalo_mobile/features/face/presentation/camera/face_camera.dart';
 import 'package:kawalo_mobile/features/face/presentation/camera/ml_kit_face_camera.dart';
@@ -24,6 +27,7 @@ import 'package:kawalo_mobile/features/face/presentation/screens/face_registrati
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_camera_view.dart';
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_errors.dart';
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_result_layout.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 
 /// Where the caller should go after the flow closes.
 enum AttendanceCheckExit { openAttendanceList, openSchedule }
@@ -69,220 +73,8 @@ class AttendanceCheckScreen extends StatelessWidget {
         cameraFactory: cameraFactory ?? MlKitFaceCamera.new,
         location: location,
       )..load(),
-      child: BlocBuilder<AttendanceCheckCubit, AttendanceCheckState>(
-        builder: _build,
-      ),
+      child: _AttendanceCheckBody(screen: this),
     );
-  }
-
-  Widget _build(BuildContext context, AttendanceCheckState state) {
-    final cubit = context.read<AttendanceCheckCubit>();
-    void exit([AttendanceCheckExit? to]) => Navigator.of(context).pop(to);
-    void retryLoad() => unawaited(cubit.load());
-    void scan() => unawaited(cubit.startScan());
-
-    return switch (state) {
-      AttendanceCheckLoading() => const Scaffold(
-        body: Center(child: AppLoadingIndicator()),
-      ),
-      AttendanceCheckOffline() => faceErrorPage(
-        AppActionableErrorData(
-          icon: KawaloVectors.wifiOff01,
-          title: 'Absensi butuh koneksi internet',
-          message:
-              'Verifikasi wajah dilakukan di server, jadi check-in dan '
-              'check-out tidak bisa dicatat saat offline.',
-          primaryActionLabel: 'Coba Lagi',
-          onPrimaryAction: retryLoad,
-          secondaryActionLabel: 'Kembali',
-          onSecondaryAction: exit,
-        ),
-      ),
-      AttendanceCheckLoadFailed(:final message) => faceErrorPage(
-        AppActionableErrorData(
-          icon: KawaloVectors.alertCircle,
-          title: 'Gagal memuat data absensi',
-          message: message,
-          primaryActionLabel: 'Coba Lagi',
-          onPrimaryAction: retryLoad,
-          secondaryActionLabel: 'Kembali',
-          onSecondaryAction: exit,
-        ),
-      ),
-      AttendanceCheckServiceUnavailable() => faceServiceUnavailableView(
-        onBack: exit,
-      ),
-      AttendanceCheckFaceNotRegistered(:final reregister) => FaceResultLayout(
-        tone: FaceResultTone.neutral,
-        icon: KawaloVectors.userShield01,
-        title: reregister
-            ? 'Wajah perlu didaftarkan ulang'
-            : 'Wajah belum terdaftar',
-        message: reregister
-            ? 'Data wajah Anda tidak bisa dipakai lagi untuk verifikasi. '
-                  'Daftarkan ulang wajah Anda, hanya sekitar 30 detik.'
-            : 'Check-in dan check-out wajib memakai verifikasi wajah. '
-                  'Daftarkan wajah Anda dulu, hanya sekitar 30 detik.',
-        actions: [
-          FaceResultAction(
-            'Daftarkan Wajah',
-            () => unawaited(_register(context, replaceExisting: reregister)),
-          ),
-          FaceResultAction('Nanti', exit, style: AppButtonColor.tonal),
-        ],
-      ),
-      AttendanceCheckNoSchedule(:final date) => FaceResultLayout(
-        tone: FaceResultTone.neutral,
-        icon: KawaloVectors.calendar01,
-        title: 'Tidak ada jadwal hari ini',
-        message:
-            'Anda tidak punya jadwal shift pada '
-            '${AppDateFormat.formatWeekdayDate(date)}. Bila ini keliru, '
-            'hubungi admin grup.',
-        actions: [
-          FaceResultAction(
-            'Lihat Jadwal Kerja',
-            () => exit(AttendanceCheckExit.openSchedule),
-          ),
-          FaceResultAction('Kembali', exit, style: AppButtonColor.tonal),
-        ],
-      ),
-      AttendanceCheckCompleted(:final slot) => FaceResultLayout(
-        tone: FaceResultTone.success,
-        icon: KawaloVectors.checkmarkCircle01Filled,
-        title: 'Absensi hari ini sudah lengkap',
-        message: _completedMessage(slot),
-        actions: [
-          FaceResultAction(
-            'Lihat Data Absensi',
-            () => exit(AttendanceCheckExit.openAttendanceList),
-          ),
-          FaceResultAction('Kembali', exit, style: AppButtonColor.tonal),
-        ],
-      ),
-      AttendanceCheckLocationFailed(:final result) => faceErrorPage(
-        LocationActionableError.fromLocationResult(
-          result,
-          onDismiss: exit,
-          onRetry: retryLoad,
-          launcherService: launcherService,
-          secondaryActionLabel: 'Kembali',
-        ),
-      ),
-      AttendanceCheckReady() => AttendanceReadyView(
-        state: state,
-        now: DateTime.now(),
-        onStart: scan,
-        onClose: exit,
-      ),
-      AttendanceCheckScanning(
-        :final slot,
-        :final action,
-        :final issue,
-        :final canRequestManual,
-      ) =>
-        FaceCameraView(
-          camera: cubit.camera,
-          title: 'Verifikasi Wajah',
-          hint: issue?.message ?? 'Wajah terdeteksi. Tahan sebentar',
-          hintOk: issue == null,
-          heading: 'Hadapkan wajah ke kamera',
-          message:
-              '${_actionLabel(action)} · ${slot.shiftName}\n'
-              'Posisikan wajah di dalam oval.',
-          cancelLabel: 'Batal',
-          onCancel: exit,
-          extraActionLabel: canRequestManual ? 'Lapor ke Admin' : null,
-          onExtraAction: canRequestManual
-              ? () => unawaited(
-                  cubit.openManualRequest(ManualAttendanceReason.faceFailed),
-                )
-              : null,
-        ),
-      AttendanceCheckVerifying(:final slot, :final action) => PopScope(
-        canPop: false,
-        child: FaceCameraView(
-          title: 'Verifikasi Wajah',
-          hint: 'Wajah terdeteksi',
-          hintOk: true,
-          heading: 'Memverifikasi wajah dan lokasi...',
-          message:
-              '${_actionLabel(action)} · ${slot.shiftName}\n'
-              'Mengirim foto dan lokasi ke server. Jangan tutup aplikasi.',
-          cancelLabel: 'Batal',
-          busy: true,
-        ),
-      ),
-      AttendanceCheckSuccess(:final result) => AttendanceResultView(
-        result: result,
-        onDone: exit,
-        onOpenList: () => exit(AttendanceCheckExit.openAttendanceList),
-      ),
-      AttendanceCheckFaceNotMatch() => FaceNotMatchView(
-        state: state,
-        onRetry: scan,
-        onReport: () => unawaited(
-          cubit.openManualRequest(ManualAttendanceReason.faceFailed),
-        ),
-        onBack: exit,
-      ),
-      AttendanceCheckOutOfRadius(:final message) => FaceResultLayout(
-        tone: FaceResultTone.error,
-        icon: KawaloVectors.locationOffline01,
-        title: 'Di luar radius absen',
-        message: message,
-        actions: [
-          FaceResultAction('Perbarui Lokasi', retryLoad),
-          FaceResultAction('Kembali', exit, style: AppButtonColor.tonal),
-        ],
-      ),
-      AttendanceCheckRejected(:final title, :final message) => FaceResultLayout(
-        tone: FaceResultTone.error,
-        icon: KawaloVectors.alertCircle,
-        title: title,
-        message: message,
-        actions: [
-          FaceResultAction('Coba Lagi', scan),
-          FaceResultAction('Kembali', exit, style: AppButtonColor.tonal),
-        ],
-      ),
-      AttendanceCheckSubmitFailed(:final message) => faceErrorPage(
-        AppActionableErrorData(
-          icon: KawaloVectors.cloudOff,
-          title: 'Absensi belum terkirim',
-          message: message,
-          primaryActionLabel: 'Coba Lagi',
-          onPrimaryAction: () => unawaited(cubit.resubmit()),
-          secondaryActionLabel: 'Kembali',
-          onSecondaryAction: exit,
-        ),
-      ),
-      AttendanceCheckCameraFault(:final fault) => faceCameraFaultView(
-        fault: fault,
-        onRetry: scan,
-        onOpenSettings: () => unawaited(launcherService.openAppSettings()),
-        onBack: exit,
-        secondaryLabel: 'Lapor ke Admin',
-        onSecondary: () => unawaited(
-          cubit.openManualRequest(ManualAttendanceReason.cameraUnavailable),
-        ),
-      ),
-      AttendanceCheckManualRequest() => ManualRequestView(
-        state: state,
-        onSend: (note) => unawaited(cubit.sendManualRequest(note)),
-        onCancel: cubit.cancelManualRequest,
-      ),
-      AttendanceCheckManualSent(:final alreadyPending) => FaceResultLayout(
-        tone: FaceResultTone.success,
-        icon: KawaloVectors.checkmarkCircle01Filled,
-        title: alreadyPending ? 'Laporan sudah ada' : 'Laporan terkirim',
-        message: alreadyPending
-            ? 'Laporan Anda sebelumnya masih menunggu tinjauan admin grup.'
-            : 'Admin grup akan meninjau laporan Anda dan mencatat absensi '
-                  'secara manual bila disetujui.',
-        actions: [FaceResultAction('Selesai', exit)],
-      ),
-    };
   }
 
   Future<void> _register(
@@ -312,5 +104,308 @@ class AttendanceCheckScreen extends StatelessWidget {
     }
     return 'Check-in pukul ${hhmm(checkin)} dan check-out pukul '
         '${hhmm(checkout)} untuk ${slot.shiftName} sudah tercatat.';
+  }
+}
+
+/// Maps the cubit states to the redesign screens. Ready opens the camera at
+/// once (the home card already asked "Check-in dengan Wajah"); an early
+/// check-out is confirmed first (`RdBerandaLainnyaPulangAwal`), once per visit.
+class _AttendanceCheckBody extends StatefulWidget {
+  const _AttendanceCheckBody({required this.screen});
+
+  final AttendanceCheckScreen screen;
+
+  @override
+  State<_AttendanceCheckBody> createState() => _AttendanceCheckBodyState();
+}
+
+class _AttendanceCheckBodyState extends State<_AttendanceCheckBody> {
+  bool _earlyCheckoutConfirmed = false;
+  AttendanceAction? _action;
+  String? _shiftName;
+
+  AttendanceCheckScreen get _screen => widget.screen;
+
+  void _exit([AttendanceCheckExit? to]) => Navigator.of(context).pop(to);
+
+  Future<void> _onReady(AttendanceCheckReady ready) async {
+    final cubit = context.read<AttendanceCheckCubit>();
+    final now = DateTime.now();
+    final early = earlyCheckoutMinutes(ready.slot, ready.action, now);
+    if (early != null && !_earlyCheckoutConfirmed) {
+      final confirmed = await showTaskConfirmDialog(
+        context: context,
+        title: 'Pulang lebih awal?',
+        message:
+            'Shift selesai pukul ${dotTime(ready.slot.endsAt)}. Check-out '
+            'sekarang (${dotTime(now)}) tercatat pulang lebih awal '
+            '${formatMinutes(early)}.',
+        confirmLabel: 'Tetap Check-out',
+        tone: KawaloTones.of(context).abs,
+      );
+      if (!mounted) return;
+      if (!confirmed) return _exit();
+      _earlyCheckoutConfirmed = true;
+    }
+    await cubit.startScan();
+  }
+
+  static String _pill(AttendanceSlot slot) {
+    final place = slot.locationName;
+    return place == null || place.isEmpty ? slot.shiftName : place;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<AttendanceCheckCubit, AttendanceCheckState>(
+      listenWhen: (_, current) => current is AttendanceCheckReady,
+      listener: (context, state) {
+        if (state is AttendanceCheckReady) {
+          setState(() {
+            _action = state.action;
+            _shiftName = state.slot.shiftName;
+          });
+          unawaited(_onReady(state));
+        }
+      },
+      builder: _build,
+    );
+  }
+
+  Widget _build(BuildContext context, AttendanceCheckState state) {
+    final cubit = context.read<AttendanceCheckCubit>();
+    void exit([AttendanceCheckExit? to]) => _exit(to);
+    void retryLoad() => unawaited(cubit.load());
+    void scan() => unawaited(cubit.startScan());
+    final action = _action;
+    final screenTitle = action == null
+        ? 'Absensi'
+        : AttendanceCheckScreen._actionLabel(action);
+
+    return switch (state) {
+      AttendanceCheckLoading() => TaskScaffold(
+        title: screenTitle,
+        onClose: exit,
+        scrollable: false,
+        body: const Center(child: AppLoadingIndicator()),
+      ),
+      AttendanceCheckOffline() => faceErrorPage(
+        AppActionableErrorData(
+          icon: KawaloVectors.wifiOff01,
+          title: 'Absensi butuh koneksi internet',
+          message:
+              'Verifikasi wajah dilakukan di server, jadi check-in dan '
+              'check-out tidak bisa dicatat saat offline.',
+          primaryActionLabel: 'Coba Lagi',
+          onPrimaryAction: retryLoad,
+          secondaryActionLabel: 'Kembali',
+          onSecondaryAction: exit,
+        ),
+        title: screenTitle,
+        neutral: true,
+        onClose: exit,
+      ),
+      AttendanceCheckLoadFailed(:final message) => faceErrorPage(
+        AppActionableErrorData(
+          icon: KawaloVectors.alertCircle,
+          title: 'Gagal memuat data absensi',
+          message: message,
+          primaryActionLabel: 'Coba Lagi',
+          onPrimaryAction: retryLoad,
+          secondaryActionLabel: 'Kembali',
+          onSecondaryAction: exit,
+        ),
+        title: screenTitle,
+        onClose: exit,
+      ),
+      AttendanceCheckServiceUnavailable() => faceServiceUnavailableView(
+        onBack: exit,
+        title: screenTitle,
+      ),
+      AttendanceCheckFaceNotRegistered(:final reregister) => FaceResultLayout(
+        screenTitle: screenTitle,
+        onClose: exit,
+        tone: FaceResultTone.success,
+        icon: KawaloVectors.userShield01,
+        title: reregister ? 'Daftarkan ulang wajah' : 'Daftarkan wajah dulu',
+        message: reregister
+            ? 'Data wajah Anda tidak bisa dipakai lagi untuk verifikasi. '
+                  'Daftarkan ulang, sekitar 30 detik.'
+            : 'Sekali saja, sekitar 30 detik. Setelah itu check-in cukup '
+                  'menghadap kamera.',
+        actions: [
+          FaceResultAction(
+            'Daftarkan Wajah',
+            () => unawaited(
+              _screen._register(context, replaceExisting: reregister),
+            ),
+          ),
+        ],
+      ),
+      AttendanceCheckNoSchedule(:final date) => FaceResultLayout(
+        screenTitle: screenTitle,
+        onClose: exit,
+        tone: FaceResultTone.neutral,
+        icon: KawaloVectors.calendar01,
+        title: 'Tidak ada jadwal hari ini',
+        message:
+            'Anda tidak punya jadwal shift pada '
+            '${AppDateFormat.formatWeekdayDate(date)}. Bila ini keliru, '
+            'hubungi admin grup.',
+        actions: [
+          FaceResultAction(
+            'Lihat Jadwal Saya',
+            () => exit(AttendanceCheckExit.openSchedule),
+          ),
+        ],
+      ),
+      AttendanceCheckCompleted(:final slot) => FaceResultLayout(
+        tone: FaceResultTone.success,
+        icon: KawaloVectors.check,
+        title: 'Absensi hari ini selesai',
+        message: AttendanceCheckScreen._completedMessage(slot),
+        actions: [
+          FaceResultAction('Kembali ke Beranda', exit),
+          FaceResultAction(
+            'Lihat Riwayat Absen',
+            () => exit(AttendanceCheckExit.openAttendanceList),
+            style: AppButtonColor.tonal,
+          ),
+        ],
+      ),
+      AttendanceCheckLocationFailed(:final result) => faceErrorPage(
+        LocationActionableError.fromLocationResult(
+          result,
+          onDismiss: exit,
+          onRetry: retryLoad,
+          launcherService: _screen.launcherService,
+          secondaryActionLabel: 'Kembali',
+        ),
+        title: screenTitle,
+        onClose: exit,
+      ),
+      AttendanceCheckReady(:final slot) => FaceCameraView(
+        title: screenTitle,
+        hint: 'Menyiapkan kamera…',
+        hintOk: false,
+        busy: true,
+        pill: _pill(slot),
+        pillIcon: Icons.location_on_outlined,
+        cancelLabel: 'Tutup',
+        onCancel: exit,
+      ),
+      AttendanceCheckScanning(
+        :final slot,
+        :final action,
+        :final issue,
+        :final canRequestManual,
+      ) =>
+        FaceCameraView(
+          camera: cubit.camera,
+          title: AttendanceCheckScreen._actionLabel(action),
+          hint: switch (issue) {
+            null => 'Tahan sebentar…',
+            FaceIssue.noFace => 'Posisikan wajah di dalam oval',
+            _ => issue.message,
+          },
+          hintOk: issue == null,
+          pill: _pill(slot),
+          pillIcon: Icons.location_on_outlined,
+          caption: 'Foto tidak disimpan bila gagal',
+          cancelLabel: 'Tutup',
+          onCancel: exit,
+          extraActionLabel: canRequestManual ? 'Lapor ke Admin' : null,
+          onExtraAction: canRequestManual
+              ? () => unawaited(
+                  cubit.openManualRequest(ManualAttendanceReason.faceFailed),
+                )
+              : null,
+        ),
+      AttendanceCheckVerifying(:final slot, :final action) => PopScope(
+        canPop: false,
+        child: FaceCameraView(
+          title: AttendanceCheckScreen._actionLabel(action),
+          hint: 'Mencocokkan wajah…',
+          hintOk: true,
+          busy: true,
+          pill: _pill(slot),
+          pillIcon: Icons.location_on_outlined,
+          caption: 'Mengirim foto dan lokasi. Jangan tutup aplikasi.',
+          cancelLabel: 'Tutup',
+        ),
+      ),
+      AttendanceCheckSuccess(:final result) => AttendanceResultView(
+        result: result,
+        onDone: exit,
+        onOpenList: () => exit(AttendanceCheckExit.openAttendanceList),
+      ),
+      AttendanceCheckFaceNotMatch() => FaceNotMatchView(
+        state: state,
+        onRetry: scan,
+        onReport: () => unawaited(
+          cubit.openManualRequest(ManualAttendanceReason.faceFailed),
+        ),
+        onBack: exit,
+      ),
+      AttendanceCheckOutOfRadius(:final message) => FaceResultLayout(
+        screenTitle: screenTitle,
+        onClose: exit,
+        tone: FaceResultTone.error,
+        icon: KawaloVectors.locationOffline01,
+        title: 'Di luar radius absen',
+        message: message,
+        actions: [FaceResultAction('Periksa Lagi', retryLoad)],
+      ),
+      AttendanceCheckRejected(title: final rejected, :final message) =>
+        FaceResultLayout(
+          screenTitle: screenTitle,
+          onClose: exit,
+          tone: FaceResultTone.error,
+          icon: KawaloVectors.alertCircle,
+          title: rejected,
+          message: message,
+          actions: [
+            FaceResultAction('Coba Lagi', scan),
+            FaceResultAction('Kembali', exit, style: AppButtonColor.tonal),
+          ],
+        ),
+      AttendanceCheckSubmitFailed(:final message) => faceErrorPage(
+        AppActionableErrorData(
+          icon: KawaloVectors.cloudOff,
+          title: 'Absensi belum terkirim',
+          message: message,
+          primaryActionLabel: 'Coba Lagi',
+          onPrimaryAction: () => unawaited(cubit.resubmit()),
+          secondaryActionLabel: 'Kembali',
+          onSecondaryAction: exit,
+        ),
+        title: screenTitle,
+        onClose: exit,
+      ),
+      AttendanceCheckCameraFault(:final fault) => faceCameraFaultView(
+        fault: fault,
+        title: screenTitle,
+        onRetry: scan,
+        onOpenSettings: () =>
+            unawaited(_screen.launcherService.openAppSettings()),
+        onBack: exit,
+        secondaryLabel: 'Lapor ke Admin',
+        onSecondary: () => unawaited(
+          cubit.openManualRequest(ManualAttendanceReason.cameraUnavailable),
+        ),
+      ),
+      AttendanceCheckManualRequest() => ManualRequestView(
+        state: state,
+        subtitle: action == null
+            ? null
+            : '$screenTitle ${_shiftName ?? ''}'.trim(),
+        onSend: (note) => unawaited(cubit.sendManualRequest(note)),
+        onCancel: cubit.cancelManualRequest,
+      ),
+      AttendanceCheckManualSent(:final alreadyPending) => ManualSentView(
+        alreadyPending: alreadyPending,
+        onDone: exit,
+      ),
+    };
   }
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_check_result.dart';
+import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_slot.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/check/attendance_check_state.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/check/widgets/attendance_check_views.dart';
 import 'package:kawalo_mobile/features/face/presentation/widgets/face_result_layout.dart';
@@ -39,37 +40,39 @@ void main() {
   FaceResultTone tone(WidgetTester tester) =>
       tester.widget<FaceResultLayout>(find.byType(FaceResultLayout)).tone;
 
-  AppTagVariant tag(WidgetTester tester) =>
-      tester.widget<AppTag>(find.byType(AppTag)).variant;
+  AppStatusKind pill(WidgetTester tester) =>
+      tester.widget<AppStatusPill>(find.byType(AppStatusPill)).kind;
 
-  testWidgets('on-time check-in is green', (tester) async {
+  testWidgets('on-time check-in shows the time large and a green pill', (
+    tester,
+  ) async {
     await pump(tester, _result(checkIn: true));
     expect(find.text('Check-in berhasil'), findsOneWidget);
+    expect(find.text('07.12'), findsOneWidget);
     expect(find.text('Tepat waktu'), findsOneWidget);
     expect(tone(tester), FaceResultTone.success);
-    expect(tag(tester), AppTagVariant.primary);
+    expect(pill(tester), AppStatusKind.ok);
   });
 
   testWidgets('shows the plain verified label, never a similarity', (
     tester,
   ) async {
     await pump(tester, _result(checkIn: true));
-    expect(find.text('Terverifikasi wajah'), findsOneWidget);
+    expect(find.textContaining('Terverifikasi wajah'), findsOneWidget);
     expect(find.textContaining('Kemiripan'), findsNothing);
   });
 
-  testWidgets('late check-in is red', (tester) async {
+  testWidgets('late check-in is recorded with an amber pill', (tester) async {
     await pump(
       tester,
       _result(checkIn: true, status: AttendanceCheckStatus.late),
     );
-    expect(find.text('Masuk 07:12'), findsOneWidget);
+    expect(find.text('07.12'), findsOneWidget);
     expect(find.text('Terlambat 12 menit'), findsOneWidget);
-    expect(tone(tester), FaceResultTone.error);
-    expect(tag(tester), AppTagVariant.error);
+    expect(pill(tester), AppStatusKind.bad);
   });
 
-  testWidgets('early check-out is red, on-time check-out green', (
+  testWidgets('early check-out is amber, on-time check-out green', (
     tester,
   ) async {
     await pump(
@@ -77,11 +80,11 @@ void main() {
       _result(checkIn: false, status: AttendanceCheckStatus.earlyLeave),
     );
     expect(find.text('Pulang 40 menit lebih cepat'), findsOneWidget);
-    expect(tone(tester), FaceResultTone.error);
+    expect(pill(tester), AppStatusKind.bad);
 
     await pump(tester, _result(checkIn: false));
     expect(find.text('Sesuai jadwal'), findsOneWidget);
-    expect(tone(tester), FaceResultTone.success);
+    expect(pill(tester), AppStatusKind.ok);
   });
 
   group('FaceNotMatchView', () {
@@ -144,5 +147,28 @@ void main() {
       expect(reported, 1);
       expect(retried, 0);
     });
+  });
+
+  test('only a check-out before the shift end counts as early', () {
+    final slot = AttendanceSlot(
+      date: DateTime(2026, 11, 12),
+      shiftName: 'Shift Pagi',
+      startTime: '07:00',
+      endTime: '15:00',
+    );
+    final at1320 = DateTime(2026, 11, 12, 13, 20);
+    expect(earlyCheckoutMinutes(slot, AttendanceAction.checkOut, at1320), 100);
+    expect(
+      earlyCheckoutMinutes(slot, AttendanceAction.checkIn, at1320),
+      isNull,
+    );
+    expect(
+      earlyCheckoutMinutes(
+        slot,
+        AttendanceAction.checkOut,
+        DateTime(2026, 11, 12, 15, 3),
+      ),
+      isNull,
+    );
   });
 }

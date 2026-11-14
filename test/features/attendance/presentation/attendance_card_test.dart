@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/core/widgets/app_user_avatar.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card.dart';
@@ -38,16 +38,13 @@ void main() {
       );
 
       expect(find.text('Ahmad Santoso'), findsOneWidget);
-      expect(find.text('guard.ahmad@kawalo.id'), findsOneWidget);
-      expect(find.widgetWithText(AppTag, 'Masuk'), findsOneWidget);
+      expect(find.textContaining('Masuk '), findsOneWidget);
+      expect(find.textContaining('Gerbang Utama Pos 1'), findsOneWidget);
 
-      final diffTag = tester.widget<AppTag>(
-        find.widgetWithText(AppTag, 'Terlambat 5 menit'),
+      final diffPill = tester.widget<AppStatusPill>(
+        find.widgetWithText(AppStatusPill, 'Terlambat 5 menit'),
       );
-      expect(diffTag.variant, AppTagVariant.error);
-
-      expect(find.text('Shift Pagi • 07:00 - 15:00'), findsOneWidget);
-      expect(find.text('Gerbang Utama Pos 1'), findsOneWidget);
+      expect(diffPill.kind, AppStatusKind.bad);
 
       await tester.tap(find.byType(AttendanceCard));
       expect(tapped, isTrue);
@@ -89,12 +86,12 @@ void main() {
       );
 
       expect(find.text('Budi Pratama'), findsOneWidget);
-      expect(find.widgetWithText(AppTag, 'Pulang'), findsOneWidget);
+      expect(find.textContaining('Pulang '), findsOneWidget);
 
-      final onTimeTag = tester.widget<AppTag>(
-        find.widgetWithText(AppTag, 'Tepat waktu'),
+      final onTimePill = tester.widget<AppStatusPill>(
+        find.widgetWithText(AppStatusPill, 'Tepat waktu'),
       );
-      expect(onTimeTag.variant, AppTagVariant.primary);
+      expect(onTimePill.kind, AppStatusKind.ok);
     });
 
     testWidgets('shows a shift colour marker only for a usable colour', (

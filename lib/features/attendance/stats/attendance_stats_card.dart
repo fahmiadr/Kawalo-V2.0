@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kawalo_mobile/core/theme/app_radius.dart';
-import 'package:kawalo_mobile/core/theme/app_spacing.dart';
-import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_tag.dart';
+import 'package:kawalo_mobile/core/theme/kawalo_tones.dart';
+import 'package:kawalo_mobile/core/widgets/app_status_pill.dart';
 import 'package:kawalo_mobile/features/attendance/stats/attendance_stats.dart';
 import 'package:kawalo_mobile/features/attendance/stats/attendance_stats_cubit.dart';
 
@@ -43,9 +41,7 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    final emphasized = theme.typography.emphasized;
+    final tones = KawaloTones.of(context);
     final stats = this.stats;
 
     String value(int? n) => n?.toString() ?? '–';
@@ -66,53 +62,33 @@ class _Card extends StatelessWidget {
       label:
           'Ringkasan absensi $rangeLabel: ${cells.map((c) => '${c.label} ${c.value}').join(', ')}',
       child: ExcludeSemantics(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: AppRadius.borderLarge,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.space200,
-              vertical: AppSpacing.space150,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Ringkasan absensi',
-                        style: emphasized.titleMedium.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Ringkasan absensi',
+                      style: TextStyle(
+                        color: tones.ink2,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    AppSpacing.hGapSm,
-                    AppTag(
-                      label: rangeLabel,
-                      variant: AppTagVariant.neutral,
-                      size: AppTagSize.small,
-                    ),
-                  ],
-                ),
-                AppSpacing.vGapSm,
-                // Two rows of three slots: five cells in one row squeezed the
-                // labels onto two lines.
-                _CellRow(cells: cells.sublist(0, 3)),
-                AppSpacing.vGapSm,
-                _CellRow(cells: cells.sublist(3), slots: 3),
-                AppSpacing.vGapSm,
-                Text(
-                  'Dihitung dari seluruh data pada rentang tanggal, bukan '
-                  'hanya yang termuat.',
-                  style: theme.typeScale.labelMedium.copyWith(
-                    color: colorScheme.onSurfaceVariant,
                   ),
-                ),
-              ],
-            ),
+                  AppStatusPill(label: rangeLabel),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Two rows of three slots: five cells in one row squeezed the
+              // labels onto two lines.
+              _CellRow(cells: cells.sublist(0, 3)),
+              const SizedBox(height: 6),
+              _CellRow(cells: cells.sublist(3), slots: 3),
+            ],
           ),
         ),
       ),
@@ -131,61 +107,64 @@ class _CellRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = AppTheme.of(context).colorScheme;
     final count = slots ?? cells.length;
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < count; i++) ...[
-            if (i > 0)
-              VerticalDivider(
-                width: AppSpacing.space200,
-                color: i < cells.length
-                    ? colorScheme.outlineVariant
-                    : Colors.transparent,
-              ),
-            Expanded(child: i < cells.length ? cells[i] : const SizedBox()),
-          ],
+    return Row(
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          Expanded(child: i < cells.length ? cells[i] : const SizedBox()),
         ],
-      ),
+      ],
     );
   }
 }
 
+/// `.stat` cell: a large figure over a small label.
 class _Cell extends StatelessWidget {
   const _Cell(this.label, this.value, {this.isAlert = false});
 
   final String label;
   final String value;
 
-  /// Red when the count is above zero (late check-ins, early check-outs).
+  /// Amber when the count is above zero (late check-ins, early check-outs).
   final bool isAlert;
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            value,
-            style: theme.typography.emphasized.titleLarge.copyWith(
-              color: isAlert ? colorScheme.error : colorScheme.onSurface,
+    final tones = KawaloTones.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      decoration: BoxDecoration(
+        color: tones.surface,
+        border: Border.all(color: tones.line),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: isAlert ? tones.sos.color : tones.ink,
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ),
-        ),
-        Text(
-          label,
-          style: theme.typeScale.labelSmall.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: tones.ink2,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

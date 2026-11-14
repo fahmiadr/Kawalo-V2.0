@@ -4,18 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kawalo_mobile/core/network/app_fetch_result.dart';
 import 'package:kawalo_mobile/core/network/connectivity_cubit.dart';
 import 'package:kawalo_mobile/core/theme/app_theme.dart';
-import 'package:kawalo_mobile/core/widgets/app_bottom_offline_banner.dart';
-import 'package:kawalo_mobile/core/widgets/app_chip.dart';
-import 'package:kawalo_mobile/core/widgets/app_empty_state.dart';
 import 'package:kawalo_mobile/core/widgets/app_fab.dart';
-import 'package:kawalo_mobile/core/widgets/app_home_app_bar.dart';
 import 'package:kawalo_mobile/core/widgets/app_icon_button.dart';
+import 'package:kawalo_mobile/core/widgets/app_inline_banner.dart';
 import 'package:kawalo_mobile/core/widgets/app_search.dart';
+import 'package:kawalo_mobile/core/widgets/app_top_bar.dart';
 import 'package:kawalo_mobile/features/attendance/domain/entities/attendance_item_entity.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_cubit.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/cubit/attendance_state.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/screens/attendance_screen.dart';
 import 'package:kawalo_mobile/features/attendance/presentation/widgets/attendance_card.dart';
+import 'package:kawalo_mobile/features/face/presentation/widgets/task_layout.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAttendanceCubit extends Mock implements AttendanceCubit {}
@@ -70,13 +69,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppHomeAppBar), findsOneWidget);
-        expect(find.text('Data absensi'), findsOneWidget);
+        expect(find.byType(AppTopBar), findsOneWidget);
+        expect(find.text('Riwayat Absen'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari data absensi'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
         expect(find.byType(AppExtendedFab), findsNothing);
-        expect(find.byType(AppEmptyState), findsOneWidget);
-        expect(find.text('Belum ada data absensi'), findsOneWidget);
+        expect(find.byType(TaskMessage), findsOneWidget);
+        expect(find.text('Belum ada absensi'), findsOneWidget);
       },
     );
 
@@ -96,17 +95,17 @@ void main() {
 
         final searchToggleBtn = find.bySemanticsLabel('Cari data absensi');
         expect(searchToggleBtn, findsOneWidget);
-        expect(find.text('Data absensi'), findsOneWidget);
+        expect(find.text('Riwayat Absen'), findsOneWidget);
         expect(find.byType(AppSearchBar), findsNothing);
 
         // Tap search icon button -> opens search bar
         await tester.tap(searchToggleBtn);
         await tester.pumpAndSettle();
 
-        expect(find.text('Data absensi'), findsNothing);
+        expect(find.text('Riwayat Absen'), findsNothing);
         expect(find.byType(AppSearchBar), findsOneWidget);
         expect(find.text('Cari data absensi'), findsOneWidget);
-        expect(find.text('Diperbarui Hari ini, 15.20'), findsOneWidget);
+        expect(find.text('Diperbarui Hari ini, 15.20'), findsNothing);
 
         final cancelToggleBtn = find.bySemanticsLabel('Tutup pencarian');
         expect(cancelToggleBtn, findsOneWidget);
@@ -116,7 +115,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(AppSearchBar), findsNothing);
-        expect(find.text('Data absensi'), findsOneWidget);
+        expect(find.text('Riwayat Absen'), findsOneWidget);
         expect(find.bySemanticsLabel('Cari data absensi'), findsOneWidget);
       },
     );
@@ -260,7 +259,7 @@ void main() {
     );
 
     testWidgets(
-      'renders empty search state and offline bottom banner when offline and '
+      'renders empty search state and offline notice when offline and '
       'no results found',
       (tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
@@ -300,7 +299,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(AppBottomOfflineBanner), findsOneWidget);
+        expect(find.byType(AppInlineBanner), findsOneWidget);
         expect(find.text('Data absensi tidak ditemukan'), findsOneWidget);
         expect(find.text('Reset filter & pencarian'), findsOneWidget);
 
@@ -396,12 +395,11 @@ void main() {
         );
         expect(searchButton.onPressed, isNull);
 
-        // Filter chip harus disabled (onPressed null)
-        final chipFinder = find.byType(AppChip);
-        expect(chipFinder, findsOneWidget);
-
-        final chip = tester.widget<AppChip>(chipFinder);
-        expect(chip.onPressed, isNull);
+        // The range chips are disabled while the first page loads.
+        final chips = tester.widget<TaskChoiceChips<String>>(
+          find.byType(TaskChoiceChips<String>),
+        );
+        expect(chips.enabled, isFalse);
       },
     );
 
